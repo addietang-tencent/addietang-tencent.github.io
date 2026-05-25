@@ -116,7 +116,7 @@ function SecretInput({ value, onChange, placeholder }: { value: string; onChange
   const [vis, setVis] = useState(false);
   return (
     <div className="relative">
-      <Input type={vis ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="pr-8 font-mono text-xs h-8" />
+      <Input type={vis ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="pr-8 font-mono text-xs" />
       <button type="button" onClick={() => setVis(!vis)} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
         {vis ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
       </button>
@@ -424,16 +424,16 @@ rm -f /tmp/openclaw-state.tgz`;
         <button onClick={() => setLocation("/admin/openclaw-monitor")} className="flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] mb-2 transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" /> 返回 Agent 列表
         </button>
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">智能体迁移</h1>
-        <p className="text-sm text-[#737373] mt-1">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
+        <h1 className="text-[20px] font-semibold text-[#0A0A0A]">智能体迁移</h1>
+        <p className="text-[14px] text-[#737373] mt-1">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
       </div>
 
       {/* ==================== Section 1: 源端配置 ==================== */}
-      <Card className="p-4 mb-4">
+      <Card className="p-4 mb-4 rounded-[4px]">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</div>
-          <h2 className="text-sm font-semibold text-[#0A0A0A]">源端环境</h2>
-          <span className="text-xs text-[#A3A3A3]">— 选择源端类型，配置密钥和迁移选项</span>
+          <div className="w-5 h-5 rounded bg-[#355EF1] text-white flex items-center justify-center text-xs font-bold">1</div>
+          <h2 className="text-[14px] font-semibold text-[#0A0A0A]">源端环境</h2>
+          <span className="text-[12px] text-[#A3A3A3]">— 选择源端类型，配置密钥和迁移选项</span>
         </div>
 
         <div className="flex items-end gap-4">
@@ -441,7 +441,7 @@ rm -f /tmp/openclaw-state.tgz`;
           <div className="w-48 flex-shrink-0">
             <Label className="text-xs text-[#737373] mb-1 block">源端类型</Label>
             <Select value={sourceType} onValueChange={(v) => { setSourceType(v as SourceType); setRows([]); setSrcLoaded(false); setCosLoaded(false); }}>
-              <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 text-[14px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {SOURCE_TYPES.map((s) => (
                   <SelectItem key={s.value} value={s.value} disabled={!s.enabled}>
@@ -470,7 +470,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <SecretInput value={srcSk} onChange={setSrcSk} placeholder="源端 SecretKey" />
               </div>
               <div className="flex-shrink-0">
-                <Button size="sm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading} className="h-8">
+                <Button size="sm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading}>
                   {srcLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Search className="w-3.5 h-3.5 mr-1" />}
                   获取实例
                 </Button>
@@ -482,7 +482,7 @@ rm -f /tmp/openclaw-state.tgz`;
           {sourceType === "eks" && (
             <div className="flex-1">
               <Label className="text-xs text-[#737373] mb-1 block">待迁移目录（逗号分隔）</Label>
-              <Input value={containerDirs} onChange={(e) => setContainerDirs(e.target.value)} placeholder="/root/.agent" className="h-8 text-xs font-mono" />
+              <Input value={containerDirs} onChange={(e) => setContainerDirs(e.target.value)} placeholder="/root/.agent" className="text-xs font-mono" />
             </div>
           )}
         </div>
@@ -520,7 +520,7 @@ rm -f /tmp/openclaw-state.tgz`;
                   通过 <code className="bg-amber-50 px-1 rounded">kubectl exec &lt;pod&gt; -- bash /tmp/migrate.sh</code> 执行
                 </p>
               )}
-              <div className="relative bg-gray-900 rounded-xl p-3 overflow-x-auto">
+              <div className="relative bg-gray-900 rounded-[4px] p-3 overflow-x-auto">
                 <div className="absolute top-2 right-2"><CopyBtn text={uploadScript} /></div>
                 <pre className="text-xs text-green-400 font-mono whitespace-pre leading-relaxed">{uploadScript}</pre>
               </div>
@@ -550,13 +550,13 @@ rm -f /tmp/openclaw-state.tgz`;
       </Card>
 
       {/* ==================== Section 2: 迁移映射 ==================== */}
-      <Card className="p-4 mb-4">
+      <Card className="p-4 mb-4 rounded-[4px]">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center text-xs font-bold">2</div>
-            <h2 className="text-sm font-semibold text-[#0A0A0A]">迁移映射</h2>
-            <span className="text-xs text-[#A3A3A3]">— 建立源端与 ClawPro 用户/实例的对应关系</span>
-            <span className="text-xs text-[#A3A3A3] ml-auto mr-2">{validRows.length} / {rows.length} 有效</span>
+            <div className="w-5 h-5 rounded bg-[#355EF1] text-white flex items-center justify-center text-xs font-bold">2</div>
+            <h2 className="text-[14px] font-semibold text-[#0A0A0A]">迁移映射</h2>
+            <span className="text-[12px] text-[#A3A3A3]">— 建立源端与 ClawPro 用户/实例的对应关系</span>
+            <span className="text-[12px] text-[#A3A3A3] ml-auto mr-2">{validRows.length} / {rows.length} 有效</span>
           </div>
           <Tabs value={editMode} onValueChange={(v) => setEditMode(v as EditMode)}>
             <TabsList className="h-8 bg-[#F5F5F5] p-1 rounded-[4px]">
@@ -569,8 +569,8 @@ rm -f /tmp/openclaw-state.tgz`;
         {editMode === "csv" ? (
           /* ===== CSV Tab ===== */
           <div className="space-y-3">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-              <p className="text-xs text-[#355EF1] leading-relaxed">
+            <div className="bg-[#F5F5F5] border border-[#E4E4E4] rounded-[4px] p-3">
+              <p className="text-xs text-[#737373] leading-relaxed">
                 <FileSpreadsheet className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
                 <strong>批量迁移推荐使用 CSV：</strong>下载映射模板 → 在 Excel 中填写源端标识与目标用户/实例的对应关系 → 上传 CSV 自动导入。
               </p>
@@ -600,7 +600,7 @@ rm -f /tmp/openclaw-state.tgz`;
               </Button>
               <label className="cursor-pointer">
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-blue-200 bg-blue-50 text-xs font-medium text-[#355EF1] hover:bg-blue-100 cursor-pointer transition-colors">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[4px] border border-[#E4E4E4] bg-white text-xs font-medium text-[#355EF1] hover:border-[#355EF1] cursor-pointer transition-colors">
                   <Upload className="w-3 h-3" /> 上传 CSV 文件
                 </span>
               </label>
@@ -609,7 +609,7 @@ rm -f /tmp/openclaw-state.tgz`;
               CSV 格式：<code className="bg-gray-100 px-1 rounded">源端标识,ClawPro用户名,Agent名</code>（第一行为表头）
             </div>
             {rows.length > 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-2.5">
+              <div className="bg-green-50 border border-green-200 rounded-[4px] p-2.5">
                 <p className="text-xs text-green-700 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   已导入 {rows.length} 条映射，其中 {validRows.length} 条有效。可切换到「在线编辑」查看和调整。
@@ -631,17 +631,17 @@ rm -f /tmp/openclaw-state.tgz`;
                     <Input value={srcSearch} onChange={(e) => setSrcSearch(e.target.value)} placeholder="搜索源端标识..." className="h-7 text-xs w-48" />
                   )}
                 </div>
-                <div className="border rounded-xl overflow-hidden max-h-[380px] overflow-y-auto">
+                <div className="border border-[#f0f0f0] rounded-[4px] overflow-hidden max-h-[380px] overflow-y-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-gray-50 sticky top-0 z-10">
-                        <TableHead className="text-xs py-2 w-[200px]">
+                      <TableRow className="sticky top-0 z-10">
+                        <TableHead className="w-[200px]">
                           {isAuto ? "源端实例 ID" : "COS 文件 / 源端标识"}
                         </TableHead>
-                        <TableHead className="text-xs py-2 w-[30px]"></TableHead>
-                        <TableHead className="text-xs py-2">ClawPro 用户</TableHead>
-                        <TableHead className="text-xs py-2">Agent 实例</TableHead>
-                        <TableHead className="text-xs py-2 w-[40px]"></TableHead>
+                        <TableHead className="w-[30px]"></TableHead>
+                        <TableHead>ClawPro 用户</TableHead>
+                        <TableHead>Agent 实例</TableHead>
+                        <TableHead className="w-[40px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -721,11 +721,11 @@ rm -f /tmp/openclaw-state.tgz`;
       </Card>
 
       {/* ==================== Section 3: 执行 ==================== */}
-      <Card className="p-4 mb-4">
+      <Card className="p-4 mb-4 rounded-[4px]">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-5 h-5 rounded bg-blue-500 text-white flex items-center justify-center text-xs font-bold">3</div>
-          <h2 className="text-sm font-semibold text-[#0A0A0A]">执行迁移</h2>
-          <span className="text-xs text-[#A3A3A3]">— 确认无误后一键执行，平台自动创建操作台并运行迁移脚本</span>
+          <div className="w-5 h-5 rounded bg-[#355EF1] text-white flex items-center justify-center text-xs font-bold">3</div>
+          <h2 className="text-[14px] font-semibold text-[#0A0A0A]">执行迁移</h2>
+          <span className="text-[12px] text-[#A3A3A3]">— 确认无误后一键执行，平台自动创建操作台并运行迁移脚本</span>
         </div>
 
         {tasks.length === 0 ? (
@@ -744,7 +744,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 {showCommand ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="relative bg-gray-900 rounded-xl p-3 overflow-x-auto mb-3">
+                <div className="relative bg-gray-900 rounded-[4px] p-3 overflow-x-auto mb-3">
                   <div className="absolute top-2 right-2"><CopyBtn text={migrationCommand} /></div>
                   <pre className="text-xs text-green-400 font-mono whitespace-pre leading-relaxed">{migrationCommand}</pre>
                 </div>
@@ -752,8 +752,7 @@ rm -f /tmp/openclaw-state.tgz`;
             </Collapsible>
 
             <div className="flex items-center gap-3">
-              <Button onClick={startMigration} disabled={validRows.length === 0}
-                style={{ background: validRows.length > 0 ? "#355EF1" : undefined }} className="px-6">
+              <Button variant="claw-primary" onClick={startMigration} disabled={validRows.length === 0} className="px-6">
                 <Play className="w-4 h-4 mr-1.5" />
                 开始迁移（{validRows.length} 台）
               </Button>
@@ -786,7 +785,7 @@ rm -f /tmp/openclaw-state.tgz`;
             {/* Task list */}
             <div className="space-y-1 max-h-[260px] overflow-y-auto">
               {tasks.map((t, i) => (
-                <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs ${
+                <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-[4px] text-xs ${
                   t.status === "success" ? "bg-green-50" :
                   t.status === "failed" ? "bg-red-50" :
                   t.status === "pending" ? "bg-gray-50" : "bg-blue-50"
@@ -840,23 +839,23 @@ rm -f /tmp/openclaw-state.tgz`;
           {showHistory ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="border rounded-xl overflow-hidden">
+          <div className="border border-[#f0f0f0] rounded-[4px] overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="text-xs py-1.5">批次</TableHead>
-                  <TableHead className="text-xs py-1.5">场景</TableHead>
-                  <TableHead className="text-xs py-1.5">时间</TableHead>
-                  <TableHead className="text-xs py-1.5">结果</TableHead>
+                <TableRow>
+                  <TableHead>批次</TableHead>
+                  <TableHead>场景</TableHead>
+                  <TableHead>时间</TableHead>
+                  <TableHead>结果</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {MOCK_HISTORY.map((h) => (
                   <TableRow key={h.batchId}>
-                    <TableCell className="text-xs font-mono py-1.5">{h.batchId}</TableCell>
-                    <TableCell className="text-xs py-1.5">{h.scene}</TableCell>
-                    <TableCell className="text-xs text-[#737373] py-1.5">{h.createdAt}</TableCell>
-                    <TableCell className="text-xs py-1.5">
+                    <TableCell className="font-mono">{h.batchId}</TableCell>
+                    <TableCell>{h.scene}</TableCell>
+                    <TableCell className="text-[#737373]">{h.createdAt}</TableCell>
+                    <TableCell>
                       <span className="text-green-600">{h.success}✓</span>
                       {h.failed > 0 && <span className="text-red-500 ml-1">{h.failed}✗</span>}
                       <span className="text-[#A3A3A3] ml-1">/ {h.total}</span>

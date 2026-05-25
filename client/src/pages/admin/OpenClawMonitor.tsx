@@ -115,17 +115,18 @@ const STATUS_CONFIG: Record<ClawStatus, {
   label: string;
   badgeClass: string;       // 复用 index.css 中的 badge-* class
   dotColor: string;         // 小圆点颜色
+  tagVariant: "green" | "blue" | "red" | "gray";  // StatusTag variant
   spinning?: boolean;       // 是否用旋转圆圈替代实心圆点
 }> = {
-  creating:    { label: "创建中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500" },
-  createFail:  { label: "创建失败", badgeClass: "badge-stopped",  dotColor: "bg-red-500" },
-  running:     { label: "运行中",   badgeClass: "badge-running",  dotColor: "bg-green-500" },
-  loading:     { label: "加载中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500" },
-  loadFail:    { label: "加载失败", badgeClass: "badge-stopped",  dotColor: "bg-red-500" },
-  shutdown:    { label: "已关机",   badgeClass: "badge-shutdown", dotColor: "bg-gray-400" },
-  maintaining: { label: "维护中",   badgeClass: "badge-pending",  dotColor: "bg-orange-500" },
-  pending:     { label: "待处理",   badgeClass: "badge-pending",  dotColor: "bg-orange-500" },
-  upgrading:   { label: "升级中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500" },
+  creating:    { label: "创建中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500", tagVariant: "blue" },
+  createFail:  { label: "创建失败", badgeClass: "badge-stopped",  dotColor: "bg-red-500", tagVariant: "red" },
+  running:     { label: "运行中",   badgeClass: "badge-running",  dotColor: "bg-green-500", tagVariant: "green" },
+  loading:     { label: "加载中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500", tagVariant: "blue" },
+  loadFail:    { label: "加载失败", badgeClass: "badge-stopped",  dotColor: "bg-red-500", tagVariant: "red" },
+  shutdown:    { label: "已关机",   badgeClass: "badge-shutdown", dotColor: "bg-gray-400", tagVariant: "gray" },
+  maintaining: { label: "维护中",   badgeClass: "badge-pending",  dotColor: "bg-orange-500", tagVariant: "blue" },
+  pending:     { label: "待处理",   badgeClass: "badge-pending",  dotColor: "bg-orange-500", tagVariant: "gray" },
+  upgrading:   { label: "升级中",   badgeClass: "badge-loading",  dotColor: "bg-blue-500", tagVariant: "blue" },
 };
 
 const DEFAULT_PLUGIN_VERSIONS: PluginVersions = { wechat: "3.2.1", dingtalk: "2.8.0", feishu: "1.5.3", wecom: "2.1.4", qq: "1.0.2" };
@@ -1771,7 +1772,7 @@ export default function AgentMonitor() {
         </div>
 
         {/* 状态统计卡片 */}
-        <div className="grid grid-cols-4 gap-5 mb-6">
+        <div className="grid grid-cols-4 gap-5 mb-16">
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
@@ -1830,22 +1831,22 @@ export default function AgentMonitor() {
                 <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{otherCount}</p>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="p-3 w-fit bg-white border border-[#e5e5e5] shadow-lg" style={{ color: 'inherit' }}>
-              <div className="space-y-2.5">
+            <TooltipContent side="bottom" className="p-4 w-fit bg-white border border-[#e5e5e5] shadow-lg" style={{ color: 'inherit' }}>
+              <div className="space-y-3">
                 <div>
-                  <p className="text-xs font-semibold text-orange-500 mb-1.5">⚠ 需关注</p>
-                  <div className="flex gap-1">
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-red-50 text-red-700 whitespace-nowrap">创建失败</span>
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-red-50 text-red-700 whitespace-nowrap">加载失败</span>
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-orange-50 text-orange-700 whitespace-nowrap">维护中</span>
-                    <span className="inline-block px-1.5 py-0.5 rounded-full text-xs bg-orange-50 text-orange-700 whitespace-nowrap">待处理</span>
+                  <p className="text-xs font-medium text-[#020617] mb-2">需关注</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <StatusTag variant="red" dot>创建失败</StatusTag>
+                    <StatusTag variant="red" dot>加载失败</StatusTag>
+                    <StatusTag variant="gray" dot>维护中</StatusTag>
+                    <StatusTag variant="gray" dot>待处理</StatusTag>
                   </div>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-[#737373] mb-1.5">◎ 处理中</p>
-                  <div className="flex gap-1">
-                    <StatusTag variant="blue">创建中</StatusTag>
-                    <StatusTag variant="blue">加载中</StatusTag>
+                <div className="border-t border-[#f0f0f0] pt-3">
+                  <p className="text-xs font-medium text-[#020617] mb-2">处理中</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <StatusTag variant="blue" dot>创建中</StatusTag>
+                    <StatusTag variant="blue" dot>加载中</StatusTag>
                   </div>
                 </div>
               </div>
@@ -1972,34 +1973,31 @@ export default function AgentMonitor() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem
-                    className="text-sm cursor-pointer flex items-center gap-2"
+                    className="cursor-pointer py-2.5"
                     onClick={() => setDispatchPresetIds([])}
                   >
-                    <TerminalSquare className="w-3.5 h-3.5 text-[#355EF1]" />
                     <div>
-                      <div>立即下发命令</div>
-                      <div className="text-[10px] text-[#A3A3A3] mt-0.5">挑选命令模板并选择目标实例</div>
+                      <div className="text-[14px] font-medium text-[#020617]">立即下发命令</div>
+                      <div className="text-[12px] text-[#737373] mt-0.5">挑选命令模板并选择目标实例</div>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    className="text-sm cursor-pointer flex items-center gap-2"
+                    className="cursor-pointer py-2.5"
                     onClick={() => setLocation("/admin/agent-commands?tab=list")}
                   >
-                    <ListChecks className="w-3.5 h-3.5 text-[#355EF1]" />
                     <div>
-                      <div>命令列表</div>
-                      <div className="text-[10px] text-[#A3A3A3] mt-0.5">管理命令模板（沉淀团队 SOP）</div>
+                      <div className="text-[14px] font-medium text-[#020617]">命令列表</div>
+                      <div className="text-[12px] text-[#737373] mt-0.5">管理命令模板（沉淀团队 SOP）</div>
                     </div>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="text-sm cursor-pointer flex items-center gap-2"
+                    className="cursor-pointer py-2.5"
                     onClick={() => setLocation("/admin/agent-commands?tab=history")}
                   >
-                    <HistoryIcon className="w-3.5 h-3.5 text-[#737373]" />
                     <div>
-                      <div>执行记录</div>
-                      <div className="text-[10px] text-[#A3A3A3] mt-0.5">查看历史下发任务与单机输出</div>
+                      <div className="text-[14px] font-medium text-[#020617]">执行记录</div>
+                      <div className="text-[12px] text-[#737373] mt-0.5">查看历史下发任务与单机输出</div>
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -2033,23 +2031,16 @@ export default function AgentMonitor() {
             <TableHeader>
               <TableRow>
                 {/* 复选框列 - sticky left */}
-                <TableHead className="whitespace-nowrap sticky left-0 z-50 relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px', backgroundColor: '#fafafa' }}>
-                  {isTableScrolled && (
-                    <>
-                      <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-                      <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
-                    </>
-                  )}
-                  <div className="flex items-center gap-1.5">
+                <TableHead className="whitespace-nowrap px-4" style={{ width: '120px', minWidth: '120px' }}>
+                  <div className="flex items-center gap-2">
                     <Checkbox
                       checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
                       onCheckedChange={(v) => handleSelectAll(!!v)}
-                      className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 data-[state=indeterminate]:bg-blue-500 data-[state=indeterminate]:border-blue-500"
                     />
-                    <span className="text-xs font-medium text-[#737373] whitespace-nowrap">全选</span>
+                    <span className="whitespace-nowrap">全选</span>
                   </div>
                 </TableHead>
-                <TableHead className="whitespace-nowrap pr-4" style={{ minWidth: '240px', paddingLeft: '4px' }}>名称 / ID</TableHead>
+                <TableHead className="whitespace-nowrap px-4" style={{ minWidth: '240px' }}>名称 / ID</TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
@@ -2199,9 +2190,7 @@ export default function AgentMonitor() {
                 </TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
-                <TableHead className="whitespace-nowrap sticky right-0 z-50 relative" style={{ width: '240px', minWidth: '240px', backgroundColor: '#fafafa' }}>
-                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
-                  <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
+                <TableHead className="whitespace-nowrap" style={{ width: '240px', minWidth: '240px' }}>
                   操作
                 </TableHead>
               </TableRow>
@@ -2226,21 +2215,14 @@ export default function AgentMonitor() {
                   return (
                     <TableRow key={claw.id} className="group hover:bg-gray-50/50 transition-colors">
                       {/* 复选框 */}
-                      <TableCell className="py-4 whitespace-nowrap sticky left-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ width: '56px', minWidth: '56px', paddingLeft: '12px', paddingRight: '8px' }}>
-                        {isTableScrolled && (
-                          <>
-                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
-                          </>
-                        )}
+                      <TableCell className="py-4 px-4 whitespace-nowrap" style={{ width: '120px', minWidth: '120px' }}>
                         <Checkbox
                           checked={selectedIds.has(claw.id)}
                           onCheckedChange={(v) => handleSelectOne(claw.id, !!v)}
-                          className="size-4 border border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                         />
                       </TableCell>
                       {/* 名称/ID */}
-                      <TableCell className="pr-4 py-4" style={{ paddingLeft: '4px', width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                      <TableCell className="px-4 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="min-w-0 flex-1">
                             <Tooltip>
@@ -2260,10 +2242,9 @@ export default function AgentMonitor() {
                       </TableCell>
                       {/* 状态列 */}
                       <TableCell className="px-4 py-4">
-                        <span className={`${statusConfig.badgeClass}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full inline-block flex-shrink-0 ${statusConfig.dotColor}`} />
+                        <StatusTag variant={statusConfig.tagVariant} dot>
                           {statusConfig.label}
-                        </span>
+                        </StatusTag>
                       </TableCell>
                       {/* 创建人 */}
                       <TableCell className="px-4 py-4" style={{ maxWidth: '208px' }}>
@@ -2421,86 +2402,59 @@ export default function AgentMonitor() {
                         )}
                       </TableCell>
                       {/* 操作 */}
-                      <TableCell className="px-4 py-4 sticky right-0 z-50 bg-white group-hover:bg-gray-50 transition-colors relative" style={{ minWidth: '240px' }}>
-                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
-                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
+                      <TableCell className="px-4" style={{ minWidth: '240px' }}>
                         <div className="flex items-center gap-3 h-5 whitespace-nowrap">
                           {/* 终端 */}
                           {!isRunning ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-xs text-[#A3A3A3] cursor-not-allowed leading-none whitespace-nowrap">
-                                  <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
-                                  终端
-                                </span>
+                                <span className="text-[14px] text-[rgba(2,6,23,0.3)] cursor-not-allowed whitespace-nowrap">终端</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs">
                                 仅运行中的实例可进入终端
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <button
-                              className="inline-flex items-center gap-1 text-xs text-[#334155] hover:text-[#0A0A0A] leading-none whitespace-nowrap"
-                              onClick={() => handleOpenTerminal(claw)}
-                            >
-                              <Terminal className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => handleOpenTerminal(claw)}>
                               终端
-                            </button>
+                            </Button>
                           )}
 
                           {/* 关机/开机 */}
                           {claw.status === "running" ? (
-                            <button
-                              className="inline-flex items-center gap-1 text-xs text-[#334155] hover:text-[#0A0A0A] leading-none whitespace-nowrap"
-                              onClick={() => setShutdownTarget(claw.id)}
-                            >
-                              <Power className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => setShutdownTarget(claw.id)}>
                               关机
-                            </button>
+                            </Button>
                           ) : claw.status === "shutdown" ? (
-                            <button
-                              className="inline-flex items-center gap-1 text-xs text-[#334155] hover:text-[#0A0A0A] leading-none whitespace-nowrap"
-                              onClick={() => setShutdownTarget(claw.id)}
-                            >
-                              <Power className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => setShutdownTarget(claw.id)}>
                               开机
-                            </button>
+                            </Button>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs text-[#A3A3A3] leading-none whitespace-nowrap">
-                              <Power className="w-3.5 h-3.5 flex-shrink-0" />
-                              开机
-                            </span>
+                            <span className="text-[14px] text-[rgba(2,6,23,0.3)] whitespace-nowrap">开机</span>
                           )}
 
                           {/* 删除 */}
                           {["creating", "loading", "pending"].includes(claw.status) ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-xs text-[#A3A3A3] cursor-not-allowed leading-none whitespace-nowrap">
-                                  <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
-                                  删除
-                                </span>
+                                <span className="text-[14px] text-[rgba(2,6,23,0.3)] cursor-not-allowed whitespace-nowrap">删除</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs">
                                 当前状态不可删除
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <button
-                              className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 leading-none whitespace-nowrap"
-                              onClick={() => handleDeleteClick(claw)}
-                            >
-                              <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
+                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => handleDeleteClick(claw)}>
                               删除
-                            </button>
+                            </Button>
                           )}
 
                           {/* 更多操作 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <button className="inline-flex items-center text-xs text-[#A3A3A3] hover:text-[#737373] leading-none">
-                                <MoreHorizontal className="w-3.5 h-3.5" />
-                              </button>
+                              <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]">
+                                更多
+                              </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               <DropdownMenuItem
@@ -2695,10 +2649,9 @@ export default function AgentMonitor() {
                         <span className="font-mono text-xs text-[#334155]">{c.version}</span>
                       </td>
                       <td className="px-3 py-3">
-                        <span className={`${sc.badgeClass} inline-flex items-center gap-1 text-xs`}>
-                          <span className={`inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full ${sc.dotColor}`} />
+                        <StatusTag variant={sc.tagVariant} dot>
                           {sc.label}
-                        </span>
+                        </StatusTag>
                       </td>
                       <td className="py-3 pl-3 pr-2 text-right">
                         <button
@@ -2787,13 +2740,15 @@ export default function AgentMonitor() {
           </DialogHeader>
 
           {/* 提示语 */}
-          <div className="flex items-start gap-2 px-3 py-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-[#737373]">
-            <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[#355EF1]" />
-            <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
-              <li>当前仅支持使用<a href="https://console.cloud.tencent.com/tag/taglist" target="_blank" rel="noopener noreferrer" className="text-[#355EF1] hover:text-[#355EF1] hover:underline mx-0.5" onClick={(e) => e.stopPropagation()}>腾讯云控制台</a>已创建的标签。</li>
-              <li>将在用户端新建实例时自动配置勾选的标签（仅限新建实例，已创建实例暂不支持绑定标签）。</li>
-            </ol>
-          </div>
+          <Alert variant="info">
+            <Info className="w-4 h-4" />
+            <AlertDescription>
+              <ol className="list-decimal list-inside space-y-1 leading-relaxed text-xs">
+                <li>当前仅支持使用<a href="https://console.cloud.tencent.com/tag/taglist" target="_blank" rel="noopener noreferrer" className="text-[#355EF1] hover:underline mx-0.5" onClick={(e) => e.stopPropagation()}>腾讯云控制台</a>已创建的标签。</li>
+                <li>将在用户端新建实例时自动配置勾选的标签（仅限新建实例，已创建实例暂不支持绑定标签）。</li>
+              </ol>
+            </AlertDescription>
+          </Alert>
 
           {/* 已选标签 Tag 列表 */}
           {pendingTags.length > 0 && (
@@ -2822,8 +2777,8 @@ export default function AgentMonitor() {
           )}
 
           {/* 添加标签区域 */}
-          <div className="border border-gray-200 rounded-xl p-4 space-y-3">
-            <div className="text-sm font-medium text-[#334155]">添加标签</div>
+          <div className="border border-[#e5e5e5] rounded-[4px] p-4 space-y-3 mt-4">
+            <div className="text-sm font-medium text-[#020617]">添加标签</div>
             <div className="flex items-center gap-2">
               {/* 标签键下拉 */}
               <div className="relative flex-1 min-w-0">
@@ -2832,11 +2787,11 @@ export default function AgentMonitor() {
                     <TooltipTrigger asChild>
                       <PopoverTrigger asChild>
                         <button
-                          className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                          className="w-full min-w-0 flex items-center justify-between h-9 px-3 text-sm border border-[#E5E5E5] rounded-[4px] bg-white hover:border-[#1447E6] transition-colors overflow-hidden"
                           onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
                         >
                           <span className={`truncate min-w-0 flex-1 text-left ${addingKey ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>{addingKey || '选择标签键'}</span>
-                          <ChevronDown className="w-4 h-4 text-[#A3A3A3] flex-shrink-0 ml-1" />
+                          <ChevronDown className="w-4 h-4 text-[#737373] flex-shrink-0 ml-1" />
                         </button>
                       </PopoverTrigger>
                     </TooltipTrigger>
@@ -2893,11 +2848,11 @@ export default function AgentMonitor() {
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
                           <button
-                            className="w-full min-w-0 flex items-center justify-between px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white hover:border-gray-300 transition-colors overflow-hidden"
+                            className="w-full min-w-0 flex items-center justify-between h-9 px-3 text-sm border border-[#E5E5E5] rounded-[4px] bg-white hover:border-[#1447E6] transition-colors overflow-hidden"
                             onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
                           >
                             <span className={`truncate min-w-0 flex-1 text-left ${addingValue ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>{addingValue || '选择标签値'}</span>
-                            <ChevronDown className="w-4 h-4 text-[#A3A3A3] flex-shrink-0 ml-1" />
+                            <ChevronDown className="w-4 h-4 text-[#737373] flex-shrink-0 ml-1" />
                           </button>
                         </PopoverTrigger>
                       </TooltipTrigger>
@@ -2924,7 +2879,7 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <div className="w-full px-3 py-2 text-sm border border-[#e5e5e5] rounded-xl bg-gray-50 text-[#A3A3A3] cursor-not-allowed truncate">
+                  <div className="w-full h-9 px-3 flex items-center text-sm border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-[#A3A3A3] cursor-not-allowed truncate">
                     请先选择标签键
                   </div>
                 )}
@@ -2955,6 +2910,7 @@ export default function AgentMonitor() {
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); }}>取消</Button>
             <Button
+              variant="dialog-confirm"
               onClick={() => {
                 // 如果已选了键和值但未点击+，toast 提示
                 if (addingKey && addingValue) {

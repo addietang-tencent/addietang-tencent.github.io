@@ -1284,9 +1284,10 @@ export default function FileManagement() {
         </div>
 
         {/* 工具栏（独立于表格） */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 mt-16">
             <div className="flex items-center gap-3">
               <Button
+                variant="dialog-confirm"
                 onClick={handleBatchEnable}
                 disabled={selectedInstances.size === 0}
               >

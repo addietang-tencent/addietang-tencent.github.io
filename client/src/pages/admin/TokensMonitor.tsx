@@ -1188,23 +1188,23 @@ export default function TokensMonitor() {
         {/* Detail Tabs */}
         <Segment defaultValue="instance">
           <div className="flex items-center justify-between mb-2">
-            <SegmentList>
-              <SegmentItem value="instance">按实例</SegmentItem>
-              <SegmentItem value="member">按用户</SegmentItem>
-              <SegmentItem value="model">按模型</SegmentItem>
-              {hasOneid && <SegmentItem value="department">按部门</SegmentItem>}
-              <SegmentItem value="group" className="relative pr-3">
+            <SegmentList className="bg-transparent p-0 h-auto gap-0 rounded-none border-b border-[#f0f0f0] w-auto">
+              <SegmentItem value="instance" className="rounded-none bg-transparent shadow-none border-0 h-auto px-4 py-3 text-[14px] font-medium data-[state=active]:font-semibold data-[state=active]:text-[#020617] data-[state=active]:border-b-2 data-[state=active]:border-[#020617] data-[state=active]:-mb-px text-[#737373]">按实例</SegmentItem>
+              <SegmentItem value="member" className="rounded-none bg-transparent shadow-none border-0 h-auto px-4 py-3 text-[14px] font-medium data-[state=active]:font-semibold data-[state=active]:text-[#020617] data-[state=active]:border-b-2 data-[state=active]:border-[#020617] data-[state=active]:-mb-px text-[#737373]">按用户</SegmentItem>
+              <SegmentItem value="model" className="rounded-none bg-transparent shadow-none border-0 h-auto px-4 py-3 text-[14px] font-medium data-[state=active]:font-semibold data-[state=active]:text-[#020617] data-[state=active]:border-b-2 data-[state=active]:border-[#020617] data-[state=active]:-mb-px text-[#737373]">按模型</SegmentItem>
+              {hasOneid && <SegmentItem value="department" className="rounded-none bg-transparent shadow-none border-0 h-auto px-4 py-3 text-[14px] font-medium data-[state=active]:font-semibold data-[state=active]:text-[#020617] data-[state=active]:border-b-2 data-[state=active]:border-[#020617] data-[state=active]:-mb-px text-[#737373]">按部门</SegmentItem>}
+              <SegmentItem value="group" className="rounded-none bg-transparent shadow-none border-0 h-auto px-4 py-3 text-[14px] font-medium data-[state=active]:font-semibold data-[state=active]:text-[#020617] data-[state=active]:border-b-2 data-[state=active]:border-[#020617] data-[state=active]:-mb-px text-[#737373] relative pr-5">
                 按分组
-                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                <span className="absolute top-2 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full" />
               </SegmentItem>
-              <SegmentItem value="session">按会话</SegmentItem>
+              <SegmentItem value="session" className="rounded-none bg-transparent shadow-none border-0 h-auto px-4 py-3 text-[14px] font-medium data-[state=active]:font-semibold data-[state=active]:text-[#020617] data-[state=active]:border-b-2 data-[state=active]:border-[#020617] data-[state=active]:-mb-px text-[#737373]">按会话</SegmentItem>
             </SegmentList>
           </div>
 
           {/* 按实例 */}
           <SegmentContent value="instance">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
+              <p className="text-[13px] text-[#737373]">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <Button
@@ -1227,10 +1227,10 @@ export default function TokensMonitor() {
                     <TableHead style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>名称 / ID</TableHead>
                     <TableHead>用户 ID</TableHead>
                     {hasOneid && <TableHead>所属部门</TableHead>}
-                    <TableHead className="text-right">总请求数</TableHead>
-                    <TableHead className="text-right">输入 Tokens</TableHead>
-                    <TableHead className="text-right">输出 Tokens</TableHead>
-                    <TableHead className="text-right">总 Tokens</TableHead>
+                    <TableHead>总请求数</TableHead>
+                    <TableHead>输入 Tokens</TableHead>
+                    <TableHead>输出 Tokens</TableHead>
+                    <TableHead>总 Tokens</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1251,10 +1251,10 @@ export default function TokensMonitor() {
                       </TableCell>
                       <TableCell className="text-sm text-[#737373]">{inst.creator || "—"}</TableCell>
                       {hasOneid && <TableCell className="text-sm text-[#737373]">{inst.department || "—"}</TableCell>}
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(inst.requests)}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(inst.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(inst.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(inst.total)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(inst.requests)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(inst.inputTokens)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(inst.outputTokens)}</TableCell>
+                      <TableCell className="font-medium tabular-nums">{fmt(inst.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1268,7 +1268,7 @@ export default function TokensMonitor() {
           {/* 按用户 */}
           <SegmentContent value="member">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
+              <p className="text-[13px] text-[#737373]">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <Button
@@ -1289,10 +1289,10 @@ export default function TokensMonitor() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>用户 ID</TableHead>
-                    <TableHead className="text-right">总请求数</TableHead>
-                    <TableHead className="text-right">输入 Tokens</TableHead>
-                    <TableHead className="text-right">输出 Tokens</TableHead>
-                    <TableHead className="text-right">总 Tokens</TableHead>
+                    <TableHead>总请求数</TableHead>
+                    <TableHead>输入 Tokens</TableHead>
+                    <TableHead>输出 Tokens</TableHead>
+                    <TableHead>总 Tokens</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1308,10 +1308,10 @@ export default function TokensMonitor() {
                           <UITooltipContent side="top" className="text-xs max-w-xs break-all">{m.id}</UITooltipContent>
                         </UITooltip>
                       </TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.requests)}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(m.total)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(m.requests)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(m.inputTokens)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="font-medium tabular-nums">{fmt(m.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1325,7 +1325,7 @@ export default function TokensMonitor() {
           {/* 按模型 */}
           <SegmentContent value="model">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
+              <p className="text-[13px] text-[#737373]">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <Button
@@ -1346,10 +1346,10 @@ export default function TokensMonitor() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>模型名称</TableHead>
-                    <TableHead className="text-right">总请求数</TableHead>
-                    <TableHead className="text-right">输入 Tokens</TableHead>
-                    <TableHead className="text-right">输出 Tokens</TableHead>
-                    <TableHead className="text-right">总 Tokens</TableHead>
+                    <TableHead>总请求数</TableHead>
+                    <TableHead>输入 Tokens</TableHead>
+                    <TableHead>输出 Tokens</TableHead>
+                    <TableHead>总 Tokens</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -1358,10 +1358,10 @@ export default function TokensMonitor() {
                   ) : modelPaged.map((m) => (
                     <TableRow key={m.name}>
                       <TableCell className="text-sm font-medium text-[#0A0A0A]">{m.name}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.requests)}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(m.total)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(m.requests)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(m.inputTokens)}</TableCell>
+                      <TableCell className="tabular-nums">{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="font-medium tabular-nums">{fmt(m.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1376,7 +1376,7 @@ export default function TokensMonitor() {
           {hasOneid && (
             <SegmentContent value="department">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
+                <p className="text-[13px] text-[#737373]">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
                 <div className="flex items-center gap-2">
                   <TokenDepartmentFilter
                     departments={MOCK_DEPARTMENTS}
@@ -1405,10 +1405,10 @@ export default function TokensMonitor() {
                     <TableRow>
                       <TableHead>部门名称</TableHead>
                       <TableHead>所属路径</TableHead>
-                      <TableHead className="text-right">总请求数</TableHead>
-                      <TableHead className="text-right">输入 Tokens</TableHead>
-                      <TableHead className="text-right">输出 Tokens</TableHead>
-                      <TableHead className="text-right">总 Tokens</TableHead>
+                      <TableHead>总请求数</TableHead>
+                      <TableHead>输入 Tokens</TableHead>
+                      <TableHead>输出 Tokens</TableHead>
+                      <TableHead>总 Tokens</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1418,10 +1418,10 @@ export default function TokensMonitor() {
                       <TableRow key={d.departmentId}>
                         <TableCell className="text-sm font-medium text-[#0A0A0A]">{d.departmentName}</TableCell>
                         <TableCell className="text-sm text-[#737373]">{d.path.replace(/\//g, " / ")}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{fmt(d.requests)}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{fmt(d.inputTokens)}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{fmt(d.outputTokens)}</TableCell>
-                        <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(d.totalTokens)}</TableCell>
+                        <TableCell className="tabular-nums">{fmt(d.requests)}</TableCell>
+                        <TableCell className="tabular-nums">{fmt(d.inputTokens)}</TableCell>
+                        <TableCell className="tabular-nums">{fmt(d.outputTokens)}</TableCell>
+                        <TableCell className="font-medium tabular-nums">{fmt(d.totalTokens)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1436,7 +1436,7 @@ export default function TokensMonitor() {
           {/* 按分组 */}
           <SegmentContent value="group">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
+              <p className="text-[13px] text-[#737373]">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
               <div className="flex items-center gap-2">
                 <TokenGroupFilter
                   groups={groupTree}
@@ -1464,12 +1464,12 @@ export default function TokensMonitor() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>分组名称</TableHead>
-                    <TableHead className="text-right">总请求数</TableHead>
-                    <TableHead className="text-right">输入 Tokens</TableHead>
-                    <TableHead className="text-right">输出 Tokens</TableHead>
-                    <TableHead className="text-right">总 Tokens</TableHead>
+                    <TableHead>总请求数</TableHead>
+                    <TableHead>输入 Tokens</TableHead>
+                    <TableHead>输出 Tokens</TableHead>
+                    <TableHead>总 Tokens</TableHead>
                     {IS_GLOBAL_BY_GROUP && (
-                      <TableHead className="text-right whitespace-nowrap">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</TableHead>
+                      <TableHead className="whitespace-nowrap">{globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}</TableHead>
                     )}
                   </TableRow>
                 </TableHeader>
@@ -1481,12 +1481,12 @@ export default function TokensMonitor() {
                     return (
                       <TableRow key={g.groupId}>
                         <TableCell className="text-sm font-medium text-[#0A0A0A]">{g.groupName}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{fmt(g.requests)}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{fmt(g.inputTokens)}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{fmt(g.outputTokens)}</TableCell>
-                        <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(g.totalTokens)}</TableCell>
+                        <TableCell className="tabular-nums">{fmt(g.requests)}</TableCell>
+                        <TableCell className="tabular-nums">{fmt(g.inputTokens)}</TableCell>
+                        <TableCell className="tabular-nums">{fmt(g.outputTokens)}</TableCell>
+                        <TableCell className="font-medium tabular-nums">{fmt(g.totalTokens)}</TableCell>
                         {IS_GLOBAL_BY_GROUP && q && (
-                          <TableCell className="text-sm text-right">
+                          <TableCell>
                             {q.unlimited ? (
                               <span className="text-xs font-semibold text-[#355EF1] bg-blue-100 px-2 py-1 rounded-xl">无限制</span>
                             ) : (
@@ -1706,7 +1706,7 @@ export default function TokensMonitor() {
                 </div>
               </div>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-[#A3A3A3]">全部会话已按tokens排序，点击可查看会话详情</p>
+                <p className="text-[13px] text-[#737373]">全部会话已按tokens排序，点击可查看会话详情</p>
                 <UITooltip>
                   <UITooltipTrigger asChild>
                     <Button
@@ -1730,10 +1730,10 @@ export default function TokensMonitor() {
                       <TableHead>渠道</TableHead>
                       <TableHead>模型</TableHead>
                       <TableHead>最后活动时间</TableHead>
-                      <TableHead className="text-right">轮次</TableHead>
-                      <TableHead className="text-right">TOKENS</TableHead>
-                      <TableHead className="text-right">成本</TableHead>
-                      <TableHead className="text-right">耗时</TableHead>
+                      <TableHead>轮次</TableHead>
+                      <TableHead>TOKENS</TableHead>
+                      <TableHead>成本</TableHead>
+                      <TableHead>耗时</TableHead>
                       <TableHead className="text-center">操作</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1750,10 +1750,10 @@ export default function TokensMonitor() {
                         <TableCell className="text-sm text-[#334155]">{s.channel}</TableCell>
                         <TableCell className="text-sm text-[#334155]">{s.model}</TableCell>
                         <TableCell className="text-sm text-[#737373]">{s.lastActiveTime}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{s.rounds}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right font-mono">${s.cost.toFixed(4)}</TableCell>
-                        <TableCell className="text-sm text-[#737373] text-right">{s.duration}</TableCell>
+                        <TableCell className="tabular-nums">{s.rounds}</TableCell>
+                        <TableCell className="font-mono tabular-nums">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
+                        <TableCell className="font-mono tabular-nums">${s.cost.toFixed(4)}</TableCell>
+                        <TableCell className="tabular-nums">{s.duration}</TableCell>
                         <TableCell className="text-center">
                           <Button
                             onClick={(e) => {

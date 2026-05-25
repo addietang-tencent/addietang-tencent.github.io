@@ -77,6 +77,22 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
+/**
+ * TableHead - 表头单元格（强制样式，与 audit-log 页面视觉一致）
+ *
+ * 强制规范：
+ * - 背景色：继承 TableHeader 的 bg-[#fafafa]（灰色）
+ * - 文字色：#09090b（黑色）
+ * - 字号：14px
+ * - 字重：font-semibold（600）
+ * - 行高：h-[54px]
+ * - 内边距：px-4
+ * - 对齐：text-left align-middle
+ * - 不换行：whitespace-nowrap
+ *
+ * 禁止通过 className 覆盖以上字体/颜色/字重属性。
+ * className 仅用于控制宽度（w-[xx%]）、对齐（text-right/text-center）等布局属性。
+ */
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th

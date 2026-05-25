@@ -55,7 +55,7 @@ function statusLabel(status: string): { text: string; tone: "ok" | "pending" | "
 function StatusBadge({ status }: { status: string }) {
   const { text, tone } = statusLabel(status);
   const colorMap = {
-    ok: { dot: "bg-green-500", text: "text-gray-600" },
+    ok: { dot: "bg-green-500", text: "text-[#737373]" },
     pending: { dot: "bg-amber-500", text: "text-amber-600" },
     error: { dot: "bg-red-500", text: "text-red-600" },
   } as const;
@@ -124,22 +124,22 @@ export default function AgentTypesTable({
         <table className="w-full text-sm table-auto">
           <thead>
             <tr className="border-b border-gray-50 bg-gray-50/50">
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
                 Agent 类型
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 170 }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 170 }}>
                 Agent 版本
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 220 }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 220 }}>
                 镜像
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 160 }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 160 }}>
                 应用范围
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 100 }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 100 }}>
                 用户可见
               </th>
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 300, width: "1%" }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: 300, width: "1%" }}>
                 操作
               </th>
             </tr>
@@ -223,7 +223,7 @@ function AgentTypeRow({
         {/* 1. Agent 类型 */}
         <td className="px-4 py-4 align-top" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-sm font-semibold text-gray-900 truncate max-w-[160px]">
+            <span className="text-sm font-semibold text-[#0A0A0A] truncate max-w-[160px]">
               {label}
             </span>
             {isDefault && (
@@ -279,7 +279,7 @@ function AgentTypeRow({
               onViewHistory={() => onViewPublicHistory(selected.id)}
             />
           ) : (
-            <span className="text-[12px] text-gray-400">—</span>
+            <span className="text-[12px] text-[#A3A3A3]">—</span>
           )}
         </td>
 
@@ -288,7 +288,7 @@ function AgentTypeRow({
           {selected ? (
             <ImageCombinedCell image={selected} />
           ) : (
-            <span className="text-[12px] text-gray-400">尚未选择镜像</span>
+            <span className="text-[12px] text-[#A3A3A3]">尚未选择镜像</span>
           )}
         </td>
 
@@ -426,7 +426,7 @@ function AgentVersionCell({
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 whitespace-nowrap">
-        <span className="text-sm font-medium text-gray-900">
+        <span className="text-sm font-medium text-[#0A0A0A]">
           v{image.agentVersion}
         </span>
         {isPublic && (
@@ -458,19 +458,19 @@ function ImageCombinedCell({ image }: { image: ViewImage }) {
         <StatusTag variant="gray" className="text-[10px] h-4 px-1.5">
           {isPublic ? "公共" : "自定义"}
         </StatusTag>
-        <span className="text-sm font-medium text-gray-900 truncate">
+        <span className="text-sm font-medium text-[#0A0A0A] truncate">
           {image.name}
         </span>
       </div>
-      <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
+      <div className="flex items-center gap-2 text-[11px] text-[#A3A3A3] mt-0.5 flex-wrap">
         <span className="font-mono truncate">{image.id}</span>
-        <span className="text-gray-300">·</span>
+        <span className="text-[#A3A3A3]">·</span>
         <StatusBadge status={image.status} />
         {/* 仅自定义镜像展示导入时间，公共镜像不展示（公共镜像无"导入"语义） */}
         {!isPublic && image.createTime && (
           <>
-            <span className="text-gray-300">·</span>
-            <span className="text-gray-400 whitespace-nowrap">
+            <span className="text-[#A3A3A3]">·</span>
+            <span className="text-[#A3A3A3] whitespace-nowrap">
               导入 {image.createTime.split(" ")[0]}
             </span>
           </>

@@ -251,14 +251,14 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               <button
                 key={`dir-${dirPath}`}
                 onClick={() => toggleDir(dirPath)}
-                className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors cursor-pointer"
+                className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-[#737373] hover:bg-gray-50 rounded transition-colors cursor-pointer"
                 style={{ paddingLeft: `${8 + depth * 16}px` }}
               >
-                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />}
+                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />}
                 <span className="truncate font-medium">{parts[i - 1]}</span>
                 {isExpanded
-                  ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
-                  : <ChevronRight className="w-3 h-3 ml-auto text-gray-400 flex-shrink-0" />
+                  ? <ChevronDown className="w-3 h-3 ml-auto text-[#A3A3A3] flex-shrink-0" />
+                  : <ChevronRight className="w-3 h-3 ml-auto text-[#A3A3A3] flex-shrink-0" />
                 }
               </button>
             );
@@ -289,14 +289,14 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
           disabled={!canView}
           className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
             expandedFile === file.name
-              ? 'bg-blue-50 text-blue-700'
+              ? 'bg-blue-50 text-[#355EF1]'
               : canView
-              ? 'hover:bg-gray-50 text-gray-600 cursor-pointer'
-              : 'text-gray-500 cursor-not-allowed opacity-60'
+              ? 'hover:bg-gray-50 text-[#737373] cursor-pointer'
+              : 'text-[#737373] cursor-not-allowed opacity-60'
           }`}
           style={{ paddingLeft: `${8 + depth * 16}px` }}
         >
-          <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+          <FileText className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
           <span className="truncate">{parts[parts.length - 1]}</span>
         </button>
       );
@@ -395,7 +395,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
       {/* 返回按钮 */}
       <button
         onClick={onBack}
-        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+        className="flex items-center gap-2 text-[#355EF1] hover:text-[#355EF1] transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         返回列表
@@ -405,10 +405,10 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{plugin.name}</h1>
-            <p className="text-sm text-gray-500 mb-3">slug: {plugin.slug}</p>
+            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-1">{plugin.name}</h1>
+            <p className="text-sm text-[#737373] mb-3">slug: {plugin.slug}</p>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
                 v{plugin.version}
               </span>
             </div>
@@ -435,7 +435,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
           </div>
         </div>
         {plugin.description && (
-          <p className="text-sm text-gray-600 mt-3">{plugin.description}</p>
+          <p className="text-sm text-[#737373] mt-3">{plugin.description}</p>
         )}
       </div>
 
@@ -445,13 +445,13 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
             <TabsTrigger
               value="files"
-              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-xl px-4 py-1.5 text-sm text-[#737373] bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-[#355EF1] data-[state=active]:border-blue-200 transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-xl px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-xl px-4 py-1.5 text-sm text-[#737373] bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-[#355EF1] data-[state=active]:border-blue-200 transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -463,7 +463,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               {/* 左列：版本号选择 */}
               <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
                 <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-gray-900">版本</p>
+                  <p className="text-xs font-medium text-[#0A0A0A]">版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {plugin.versions?.map((ver: string, idx: number) => {
@@ -478,11 +478,11 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                          <span className={`text-[11px] font-semibold ${isSelected ? 'text-[#0A0A0A]' : 'text-[#334155]'}`}>
                             {ver}
                           </span>
                           {isLatest && (
-                            <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                            <span className="text-[10px] font-medium text-[#355EF1] bg-blue-100 px-1.5 py-0.5 rounded">
                               最新
                             </span>
                           )}
@@ -496,7 +496,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               {/* 中列：文件列表 */}
               <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
                 <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-gray-900">{selectedVersion || plugin.version}</p>
+                  <p className="text-xs font-medium text-[#0A0A0A]">{selectedVersion || plugin.version}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {renderFileTree(processedFiles)}
@@ -508,15 +508,15 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                 {expandedFile ? (
                   <>
                     <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
-                      <p className="text-xs font-medium text-gray-900">{expandedFile}</p>
+                      <p className="text-xs font-medium text-[#0A0A0A]">{expandedFile}</p>
                       {isMarkdownFile(expandedFile) && (
                         <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                           <button
                             onClick={() => setFileViewMode('preview')}
                             className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                               fileViewMode === 'preview'
-                                ? 'bg-white text-gray-900 shadow-sm font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                                : 'text-[#737373] hover:text-[#334155]'
                             }`}
                           >
                             <Eye className="w-3 h-3" />
@@ -526,8 +526,8 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                             onClick={() => setFileViewMode('source')}
                             className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                               fileViewMode === 'source'
-                                ? 'bg-white text-gray-900 shadow-sm font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                                : 'text-[#737373] hover:text-[#334155]'
                             }`}
                           >
                             <Code className="w-3 h-3" />
@@ -541,7 +541,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                         const content = getFileContent(expandedFile);
                         if (!content) {
                           return (
-                            <div className="flex items-center justify-center h-full text-gray-400">
+                            <div className="flex items-center justify-center h-full text-[#A3A3A3]">
                               <p className="text-sm">文件内容暂无</p>
                             </div>
                           );
@@ -552,7 +552,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                           registerLanguage(lang);
                           return (
                             <Suspense fallback={
-                              <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre font-mono leading-5 bg-gray-50 p-3 m-0">
+                              <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre font-mono leading-5 bg-gray-50 p-3 m-0">
                                 {content}
                               </pre>
                             }>
@@ -579,7 +579,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                     </div>
                   </>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-gray-500">
+                  <div className="flex items-center justify-center h-full text-[#737373]">
                     <p className="text-sm">选择一个文件查看内容</p>
                   </div>
                 )}
@@ -592,7 +592,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">下发记录</h3>
+                  <h3 className="font-semibold text-[#0A0A0A]">下发记录</h3>
                   <Button
                     onClick={() => setDistributeDialogOpen(true)}
                     className="bg-blue-600 hover:bg-blue-700"
@@ -606,7 +606,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               <div className="space-y-3 mt-4">
                 {distributionRecords.length === 0 ? (
                   <div className="text-center py-8 bg-gray-50 rounded-xl">
-                    <p className="text-gray-500">还没有下发记录</p>
+                    <p className="text-[#737373]">还没有下发记录</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -616,13 +616,13 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                         <div key={record.id} className="border border-gray-200 rounded-xl p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <p className="text-sm font-semibold text-gray-900">
+                              <p className="text-sm font-semibold text-[#0A0A0A]">
                                 #{idx + 1} · v{plugin.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                                record.status === 'distributing' ? 'bg-blue-50 text-blue-700' :
+                                record.status === 'distributing' ? 'bg-blue-50 text-[#355EF1]' :
                                 record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
                                 'bg-yellow-50 text-yellow-700'
                               }`}>
@@ -639,7 +639,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                                   setDetailSearchQuery('');
                                   setDetailsOpen(true);
                                 }}
-                                className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
+                                className="text-[#355EF1] hover:text-[#355EF1] h-auto py-1 px-2"
                               >
                                 查看详情
                               </Button>
@@ -696,7 +696,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
                   <Input
                     placeholder="搜索实例名称/ID..."
                     value={detailSearchQuery}
@@ -720,32 +720,32 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700 min-w-[140px]">实例ID</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">失败原因</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">实例名称</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155] min-w-[140px]">实例ID</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">状态</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">失败原因</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInstances.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
+                        <td colSpan={4} className="px-4 py-4 text-center text-[#737373]">
                           没有符合条件的记录
                         </td>
                       </tr>
                     ) : (
                       filteredInstances.map((instance) => (
                         <tr key={instance.id} className="border-b border-[#e5e5e5] hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">{instance.name}</td>
-                          <td className="px-4 py-2 text-gray-600 font-mono whitespace-nowrap">{instance.id}</td>
+                          <td className="px-4 py-2 text-[#0A0A0A]">{instance.name}</td>
+                          <td className="px-4 py-2 text-[#737373] font-mono whitespace-nowrap">{instance.id}</td>
                           <td className="px-4 py-2">
                             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-gray-500'
+                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-[#737373]'
                             }`}>
                               {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-500">
+                          <td className="px-4 py-2 text-sm text-[#737373]">
                             {(instance as any).failReason || '-'}
                           </td>
                         </tr>

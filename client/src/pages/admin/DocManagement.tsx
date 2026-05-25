@@ -44,8 +44,8 @@ export default function DocManagement() {
       <div className="page-enter">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">帮助文档</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-[#0A0A0A]">帮助文档</h1>
+            <p className="text-sm text-[#737373] mt-1">
               此处配置的文档将展示在企业用户看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加或删除文档。
             </p>
           </div>
@@ -60,11 +60,11 @@ export default function DocManagement() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">文档标题</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">添加时间</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">添加人</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">展示状态</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">文档标题</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">添加时间</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">添加人</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">展示状态</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -72,24 +72,24 @@ export default function DocManagement() {
                 <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                      <FileText className="w-4 h-4 text-[#355EF1] flex-shrink-0" />
                       <button
                         onClick={() => toast.info("跳转到用户端文档页面")}
-                        className="text-sm font-medium text-gray-900 hover:text-blue-600 transition-colors flex items-center gap-1 underline underline-offset-2 decoration-transparent hover:decoration-blue-600"
+                        className="text-sm font-medium text-[#0A0A0A] hover:text-[#355EF1] transition-colors flex items-center gap-1 underline underline-offset-2 decoration-transparent hover:decoration-blue-600"
                       >
                         {doc.title}
-                        <ExternalLink className="w-3 h-3 text-gray-400 group-hover:text-blue-600" />
+                        <ExternalLink className="w-3 h-3 text-[#A3A3A3] group-hover:text-[#355EF1]" />
                       </button>
                       {doc.isDefault && (
-                        <Badge variant="outline" className="text-xs border-blue-200 text-blue-500 bg-blue-50">默认</Badge>
+                        <Badge variant="outline" className="text-xs border-blue-200 text-[#355EF1] bg-blue-50">默认</Badge>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-500">{doc.addTime}</span>
+                    <span className="text-sm text-[#737373]">{doc.addTime}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-500">{doc.addBy}</span>
+                    <span className="text-sm text-[#737373]">{doc.addBy}</span>
                   </td>
                   <td className="px-6 py-4">
                     {doc.visible ? (
@@ -107,7 +107,7 @@ export default function DocManagement() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">用户可见</span>
+                        <span className="text-xs text-[#A3A3A3]">用户可见</span>
                         <Switch
                           checked={doc.visible}
                           onCheckedChange={(v) => {
@@ -118,7 +118,7 @@ export default function DocManagement() {
                       </div>
                       <button
                         onClick={() => { setDocs(docs.filter((d) => d.id !== doc.id)); toast.success("文档已删除"); }}
-                        className="text-gray-300 hover:text-red-500 transition-colors">
+                        className="text-[#A3A3A3] hover:text-red-500 transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -127,7 +127,7 @@ export default function DocManagement() {
               ))}
             </tbody>
           </table>
-          <div className="px-6 py-3 border-t border-gray-50 text-xs text-gray-400">
+          <div className="px-6 py-3 border-t border-gray-50 text-xs text-[#A3A3A3]">
             共 {docs.length} 篇文档
           </div>
         </SurfaceCard>
@@ -150,17 +150,17 @@ export default function DocManagement() {
             </div>
             <div className="space-y-2">
               <Label>上传文档</Label>
-              <p className="text-xs text-gray-400">仅支持上传 .md 格式的 Markdown 文件</p>
+              <p className="text-xs text-[#A3A3A3]">仅支持上传 .md 格式的 Markdown 文件</p>
               <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors">
                 {newDoc.file ? (
                   <div className="text-center">
-                    <FileText className="w-6 h-6 text-blue-500 mx-auto mb-1" />
-                    <span className="text-sm text-blue-600">{newDoc.file.name}</span>
+                    <FileText className="w-6 h-6 text-[#355EF1] mx-auto mb-1" />
+                    <span className="text-sm text-[#355EF1]">{newDoc.file.name}</span>
                   </div>
                 ) : (
                   <>
-                    <Upload className="w-6 h-6 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">点击上传 .md 文件</span>
+                    <Upload className="w-6 h-6 text-[#A3A3A3] mb-2" />
+                    <span className="text-sm text-[#737373]">点击上传 .md 文件</span>
                   </>
                 )}
                 <input type="file" accept=".md" className="hidden"

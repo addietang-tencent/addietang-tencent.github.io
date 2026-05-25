@@ -948,9 +948,40 @@ import {
 
 **操作列规则（强制）：**
 - 操作列必须使用 `<TableActionCell>` 包裹 —— 内部按钮自动应用 `link-dark` 黑色文字按钮样式
+- 操作列必须使用**文字按钮**（如"编辑"、"删除"、"终端"、"关机"），禁止使用纯 icon 按钮
 - 也可在 `<TableCell>` 中手动使用 `<Button variant="link-dark">`
 - 操作按钮之间用 `gap-3` 或 `gap-4` 分隔
 - 禁止在操作列使用 ghost、outline、default 或自定义按钮样式
+- **横向滚动固定**：当表格列过多需横向滚动时，操作列必须 `sticky right-0` 固定在表格最右侧，其余列横向滚动。操作列表头和单元格需加 `sticky right-0 z-10 bg-white`（单元格）或 `bg-[#fafafa]`（表头），并在左侧添加阴影分隔线：
+
+```tsx
+// 操作列表头
+<TableHead className="sticky right-0 z-10 bg-[#fafafa]">操作</TableHead>
+
+// 操作列单元格
+<TableActionCell className="sticky right-0 z-10 bg-white">
+  <Button>编辑</Button>
+  <Button>删除</Button>
+</TableActionCell>
+```
+
+- 阴影分隔线推荐写法（可选，表格有横向滚动时添加）：
+```tsx
+// 在 sticky 单元格内部添加左侧阴影
+<div className="absolute left-0 top-0 bottom-0 w-[6px] -ml-[6px]" 
+     style={{ background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+```
+
+**表头规则（强制，参照 /admin/audit-log 页面视觉）：**
+- `TableHeader` 强制灰色背景 `bg-[#fafafa]`，不允许覆盖
+- `TableHead` 强制样式：`text-[#09090b] font-semibold text-[14px] h-[54px] px-4 text-left`
+- `TableCell` 强制样式：`text-[#09090b] text-[14px] px-4 py-3`
+- **表头与单元格 padding 必须一致**：均为 `px-4`（16px），确保列对齐；禁止表头用 `px-4` 而单元格用 `px-6` 等不一致写法
+- **每列标题和内容必须左对齐**，禁止使用 `text-center` 或 `text-right`（数字列除外）
+- 禁止通过 className 覆盖表头的字体颜色、字号、字重、对齐方式
+- className 仅用于布局属性：宽度 `w-[xx%]`、sticky 定位
+- 禁止在 TableHead 上使用 `text-xs`、`text-gray-500`、`uppercase`、`tracking-wide` 等非标准样式
+- 禁止使用原生 `<th>` 替代 `<TableHead>`、原生 `<td>` 替代 `<TableCell>`
 
 **禁止事项：**
 - 禁止使用原生 `<table>` + 自定义 class（如 `text-xs font-medium text-gray-500 uppercase tracking-wide`）

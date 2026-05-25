@@ -77,6 +77,23 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
+/**
+ * TableHead - 表头单元格（强制样式，与 audit-log 页面视觉一致）
+ *
+ * 强制规范：
+ * - 背景色：继承 TableHeader 的 bg-[#fafafa]（灰色）
+ * - 文字色：#09090b（黑色）
+ * - 字号：14px
+ * - 字重：font-semibold（600）
+ * - 行高：h-[54px]
+ * - 内边距：px-4
+ * - 对齐：text-left align-middle（强制左对齐，禁止 text-center/text-right）
+ * - 不换行：whitespace-nowrap
+ *
+ * 禁止通过 className 覆盖以上字体/颜色/字重/对齐属性。
+ * className 仅用于控制宽度（w-[xx%]）和 sticky 定位。
+ * 每列标题和内容必须统一左对齐。
+ */
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
@@ -95,7 +112,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-4 py-3 align-middle whitespace-nowrap text-[14px] text-[#09090b] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "px-4 py-3 align-middle whitespace-nowrap text-[14px] text-[#09090b] text-left [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}

@@ -84,7 +84,7 @@ function ScopeBadges({ role }: { role: Role }) {
   const isPublic = role.scope === 'public' || !role.groupIds || role.groupIds.length === 0;
   if (isPublic) {
     return (
-      <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-full">
+      <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-blue-50 text-[#355EF1] text-xs font-medium rounded-full">
         全部用户
       </span>
     );
@@ -98,11 +98,11 @@ function ScopeBadges({ role }: { role: Role }) {
     <Tooltip delayDuration={300}>
       <TooltipTrigger asChild>
         <span className="inline-flex items-center gap-1 cursor-default">
-          <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full max-w-[100px] truncate">
+          <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full max-w-[100px] truncate">
             {firstName}
           </span>
           {rest > 0 && (
-            <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full whitespace-nowrap">
+            <span className="inline-block px-2 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full whitespace-nowrap">
               +{rest}
             </span>
           )}
@@ -164,7 +164,7 @@ function EditRoleScopePopover({
             <PopoverTrigger asChild>
               <button
                 onClick={(e) => e.stopPropagation()}
-                className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
+                className="p-0.5 text-[#A3A3A3] hover:text-[#0A0A0A] rounded transition-colors flex-shrink-0"
               >
                 <Edit2 className="w-3 h-3" />
               </button>
@@ -184,8 +184,8 @@ function EditRoleScopePopover({
                 onClick={() => setDraftScope('public')}
                 className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                   draftScope === 'public'
-                    ? 'border-blue-200 bg-blue-50 text-blue-600'
-                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    ? 'border-blue-200 bg-blue-50 text-[#355EF1]'
+                    : 'border-gray-200 bg-white text-[#737373] hover:bg-gray-50'
                 }`}
               >
                 全部用户
@@ -194,8 +194,8 @@ function EditRoleScopePopover({
                 onClick={() => setDraftScope('private')}
                 className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
                   draftScope === 'private'
-                    ? 'border-blue-200 bg-blue-50 text-blue-600'
-                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    ? 'border-blue-200 bg-blue-50 text-[#355EF1]'
+                    : 'border-gray-200 bg-white text-[#737373] hover:bg-gray-50'
                 }`}
               >
                 按分组
@@ -204,7 +204,7 @@ function EditRoleScopePopover({
             {draftScope === 'private' && (
               <div className="space-y-1.5">
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                   <input
                     type="text"
                     placeholder="搜索分组…"
@@ -213,14 +213,14 @@ function EditRoleScopePopover({
                     className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
                   />
                   {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
                       <X className="w-3 h-3" />
                     </button>
                   )}
                 </div>
                 <div className="max-h-[200px] overflow-y-auto space-y-0.5">
                   {filteredGroups.length === 0 ? (
-                    <p className="text-[11px] text-gray-400 text-center py-3">无匹配分组</p>
+                    <p className="text-[11px] text-[#A3A3A3] text-center py-3">无匹配分组</p>
                   ) : (
                     filteredGroups.map((group) => {
                       const checked = draftGroupIds.includes(group.id);
@@ -235,16 +235,16 @@ function EditRoleScopePopover({
                           }`}>
                             {checked && <Check className="w-2.5 h-2.5 text-white" />}
                           </span>
-                          <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                          <span className="text-xs text-[#334155] truncate">{group.name}</span>
                         </button>
                       );
                     })
                   )}
                 </div>
                 <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] text-gray-400">已选 {draftGroupIds.length} 个分组</p>
+                  <p className="text-[11px] text-[#A3A3A3]">已选 {draftGroupIds.length} 个分组</p>
                   {draftGroupIds.length > 0 && (
-                    <button onClick={() => { setDraftGroupIds([]); setSearchQuery(''); }} className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline">
+                    <button onClick={() => { setDraftGroupIds([]); setSearchQuery(''); }} className="text-[11px] text-[#355EF1] hover:text-[#355EF1] hover:underline">
                       清除筛选
                     </button>
                   )}
@@ -568,7 +568,7 @@ function SortableRoleRow({
         <button
           {...attributes}
           {...listeners}
-          className="p-1 rounded text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing"
+          className="p-1 rounded text-[#A3A3A3] hover:text-[#737373] cursor-grab active:cursor-grabbing"
         >
           <GripVertical className="w-4 h-4" />
         </button>
@@ -577,14 +577,14 @@ function SortableRoleRow({
       <td className="px-4 py-4">
         <button
           onClick={() => onEdit(role)}
-          className="font-semibold text-sm text-gray-900 hover:text-blue-600 hover:underline transition-colors text-left"
+          className="font-semibold text-sm text-[#0A0A0A] hover:text-[#355EF1] hover:underline transition-colors text-left"
         >
           {role.name}
         </button>
       </td>
       {/* Description */}
       <td className="px-4 py-4 max-w-[320px]">
-        <div className="text-xs text-gray-400 truncate">{role.description}</div>
+        <div className="text-xs text-[#A3A3A3] truncate">{role.description}</div>
       </td>
       {/* 应用范围 */}
       <td className="px-4 py-4">
@@ -605,14 +605,14 @@ function SortableRoleRow({
         <div className="flex items-center gap-1">
           <button
             onClick={() => onEdit(role)}
-            className="p-1.5 rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            className="p-1.5 rounded-xl text-[#A3A3A3] hover:text-[#355EF1] hover:bg-blue-50 transition-colors"
             title="编辑"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(role)}
-            className="p-1.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="p-1.5 rounded-xl text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 transition-colors"
             title="删除"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -1745,7 +1745,7 @@ export default function SkillRolesTab() {
     <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="text-base font-bold text-gray-900">角色列表</div>
+        <div className="text-base font-bold text-[#0A0A0A]">角色列表</div>
         <div className="flex items-center gap-3">
           {/* 应用范围筛选 */}
           <div className="relative" ref={scopeDropdownRef}>
@@ -1754,7 +1754,7 @@ export default function SkillRolesTab() {
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-xl bg-white text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -1763,7 +1763,7 @@ export default function SkillRolesTab() {
                         ? '全部应用范围'
                         : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[280px]">
@@ -1795,7 +1795,7 @@ export default function SkillRolesTab() {
                   {/* 搜索框 */}
                   <div className="px-2 pb-1.5 pt-1">
                     <div className="relative">
-                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                       <input
                         placeholder="搜索..."
                         value={scopeSearchQuery}
@@ -1817,7 +1817,7 @@ export default function SkillRolesTab() {
                         }
                         setScopeSearchQuery('');
                       }}
-                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                     >
                       <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                         isAllSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -1830,13 +1830,13 @@ export default function SkillRolesTab() {
                   {/* 全部用户 区域 */}
                   {showPublic && (
                     <>
-                      <div className="px-3 pt-2 pb-1 text-xs font-medium text-gray-400 select-none">
+                      <div className="px-3 pt-2 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
                         全部用户
                       </div>
                       <button
                         type="button"
                         onClick={() => toggleScope('public')}
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                       >
                         <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                           selectedScopes.has('public') ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -1850,7 +1850,7 @@ export default function SkillRolesTab() {
                   {/* 按分组 区域 */}
                   {showGroupSection && (
                     <>
-                      <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-gray-400 select-none">
+                      <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
                         按分组
                       </div>
                       <div className="max-h-44 overflow-y-auto">
@@ -1859,7 +1859,7 @@ export default function SkillRolesTab() {
                             key={group.id}
                             type="button"
                             onClick={() => toggleScope(group.id)}
-                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
                           >
                             <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                               selectedScopes.has(group.id) ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -1870,7 +1870,7 @@ export default function SkillRolesTab() {
                           </button>
                         ))}
                         {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
-                          <p className="text-xs text-gray-400 py-2 text-center">没有匹配的结果</p>
+                          <p className="text-xs text-[#A3A3A3] py-2 text-center">没有匹配的结果</p>
                         )}
                       </div>
                     </>
@@ -1878,14 +1878,14 @@ export default function SkillRolesTab() {
                   {/* 底部：已选数量 + 清除 */}
                   {selectedScopes.size > 0 && (
                     <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
-                      <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
+                      <span className="text-xs text-[#737373]">已选 {selectedScopes.size} 个应用范围</span>
                       <button
                         type="button"
                         onClick={() => {
                           setSelectedScopes(new Set());
                           setScopeSearchQuery('');
                         }}
-                        className="text-xs text-blue-500 hover:text-blue-600"
+                        className="text-xs text-[#355EF1] hover:text-[#355EF1]"
                       >
                         清除
                       </button>
@@ -1917,11 +1917,11 @@ export default function SkillRolesTab() {
             <thead>
               <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
                 <th className="w-10 px-3 py-3" />
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">角色名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">角色描述</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">应用范围</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户可见</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-24">操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">角色名称</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">角色描述</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">应用范围</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">用户可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-24">操作</th>
               </tr>
             </thead>
             <SortableContext
@@ -1943,7 +1943,7 @@ export default function SkillRolesTab() {
             </SortableContext>
           </table>
         </DndContext>
-        <div className="px-4 py-3 border-t border-gray-50 text-sm text-gray-400">
+        <div className="px-4 py-3 border-t border-gray-50 text-sm text-[#A3A3A3]">
           共 {filteredRoles.length} 个角色{selectedScopes.size > 0 ? `（筛选中，全部 ${roles.length} 个）` : ''}
         </div>
       </div>

@@ -38,7 +38,7 @@ export default function RecentHistorySection({
   limit = 5,
   title,
   description,
-  iconColor = "text-blue-500",
+  iconColor = "text-[#355EF1]",
 }: Props) {
   const records = useMemo<HistoryRecord[]>(() => {
     return MOCK_HISTORY.filter((h) => h.action === action).slice(0, limit);
@@ -70,8 +70,8 @@ export default function RecentHistorySection({
       <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
         <TitleIcon className={`w-4 h-4 ${iconColor}`} />
         <div className="flex-1">
-          <h2 className="font-semibold text-gray-900 text-base">{title ?? defaultTitle}</h2>
-          <p className="text-xs text-gray-500 mt-0.5">{description ?? defaultDescription}</p>
+          <h2 className="font-semibold text-[#0A0A0A] text-base">{title ?? defaultTitle}</h2>
+          <p className="text-xs text-[#737373] mt-0.5">{description ?? defaultDescription}</p>
         </div>
         <Button variant="outline" size="sm" className="h-8 text-xs" onClick={goToHistoryTab}>
           <ExternalLink className="w-3.5 h-3.5 mr-1" />
@@ -82,25 +82,25 @@ export default function RecentHistorySection({
       {records.length === 0 ? (
         <div className="py-12 text-center">
           <Sparkles className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-          <p className="text-sm text-gray-400">暂无记录</p>
+          <p className="text-sm text-[#A3A3A3]">暂无记录</p>
         </div>
       ) : (
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-50 bg-gray-50/50">
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                 任务 ID
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">
                 {action === "agent-upgrade" ? "更新内容" : "命令"}
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                 执行人
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[16%]">
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[16%]">
                 执行时间
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">
                 结果
               </th>
             </tr>
@@ -124,7 +124,7 @@ function RecordRow({ record }: { record: HistoryRecord }) {
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
       <td className="px-6 py-3">
-        <span className="text-xs font-mono text-gray-600 bg-gray-50 px-1.5 py-0.5 rounded select-all">
+        <span className="text-xs font-mono text-[#737373] bg-gray-50 px-1.5 py-0.5 rounded select-all">
           {record.taskId}
         </span>
       </td>
@@ -133,25 +133,25 @@ function RecordRow({ record }: { record: HistoryRecord }) {
       <td className="px-6 py-3">
         {record.action === "agent-upgrade" && (
           <div className="space-y-0.5">
-            <div className="text-sm text-gray-900 truncate max-w-[280px] flex items-center gap-1.5">
-              <ArrowUpRight className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+            <div className="text-sm text-[#0A0A0A] truncate max-w-[280px] flex items-center gap-1.5">
+              <ArrowUpRight className="w-3.5 h-3.5 text-[#355EF1] shrink-0" />
               {record.assetName}
             </div>
             {record.fromVersion && record.toVersion ? (
-              <div className="text-xs font-mono text-gray-500 tabular-nums pl-5">
-                {record.fromVersion} <span className="text-gray-400">→</span>{" "}
-                <span className="text-gray-700 font-semibold">{record.toVersion}</span>
+              <div className="text-xs font-mono text-[#737373] tabular-nums pl-5">
+                {record.fromVersion} <span className="text-[#A3A3A3]">→</span>{" "}
+                <span className="text-[#334155] font-semibold">{record.toVersion}</span>
               </div>
             ) : record.toVersion ? (
-              <div className="text-xs font-mono text-gray-500 tabular-nums pl-5">
-                → <span className="text-gray-700 font-semibold">{record.toVersion}</span>
+              <div className="text-xs font-mono text-[#737373] tabular-nums pl-5">
+                → <span className="text-[#334155] font-semibold">{record.toVersion}</span>
               </div>
             ) : null}
           </div>
         )}
         {record.action === "command-execute" && (
           <div className="space-y-0.5">
-            <div className="text-sm text-gray-900 truncate max-w-[280px] flex items-center gap-1.5">
+            <div className="text-sm text-[#0A0A0A] truncate max-w-[280px] flex items-center gap-1.5">
               <Code2 className="w-3.5 h-3.5 text-purple-500 shrink-0" />
               {record.assetName}
               {record.commandExtra?.testInstanceId && (
@@ -162,10 +162,10 @@ function RecordRow({ record }: { record: HistoryRecord }) {
               )}
             </div>
             {record.commandExtra?.commandContent && (
-              <code className="text-xs font-mono text-gray-500 truncate block max-w-[280px] pl-5">
+              <code className="text-xs font-mono text-[#737373] truncate block max-w-[280px] pl-5">
                 {record.commandExtra.commandContent.split("\n")[0]}
                 {record.commandExtra.commandContent.includes("\n") && (
-                  <span className="text-gray-400 ml-1">…</span>
+                  <span className="text-[#A3A3A3] ml-1">…</span>
                 )}
               </code>
             )}
@@ -177,19 +177,19 @@ function RecordRow({ record }: { record: HistoryRecord }) {
       <td className="px-6 py-3">
         {record.isAuto ? (
           <div className="inline-flex items-center gap-1.5 text-sm">
-            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-blue-700 truncate max-w-[120px]">{record.operator}</span>
+            <Sparkles className="w-3.5 h-3.5 text-[#355EF1]" />
+            <span className="text-[#355EF1] truncate max-w-[120px]">{record.operator}</span>
           </div>
         ) : (
           <div className="inline-flex items-center gap-1.5 text-sm">
-            <User className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-700 truncate max-w-[120px]">{record.operator}</span>
+            <User className="w-3.5 h-3.5 text-[#A3A3A3]" />
+            <span className="text-[#334155] truncate max-w-[120px]">{record.operator}</span>
           </div>
         )}
       </td>
 
       {/* 执行时间 */}
-      <td className="px-6 py-3 text-sm text-gray-500 tabular-nums whitespace-nowrap">
+      <td className="px-6 py-3 text-sm text-[#737373] tabular-nums whitespace-nowrap">
         {record.operatedAt}
       </td>
 
@@ -203,7 +203,7 @@ function RecordRow({ record }: { record: HistoryRecord }) {
           ) : (
             <XCircle className="w-4 h-4 text-red-500" />
           )}
-          <span className="text-xs text-gray-700 font-mono tabular-nums">
+          <span className="text-xs text-[#334155] font-mono tabular-nums">
             {record.successCount}/{record.totalInstances}
             {record.failedCount > 0 && (
               <span className="text-red-600 ml-1">· {record.failedCount} 失败</span>

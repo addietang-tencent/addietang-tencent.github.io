@@ -345,7 +345,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                           </span>
                         )}
                         {file.status === 'error' && <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
-                        {file.status === 'parsing' && <Loader className="w-5 h-5 text-blue-600 animate-spin shrink-0" />}
+                        {file.status === 'parsing' && <Loader className="w-5 h-5 text-[#355EF1] animate-spin shrink-0" />}
                         <div className="flex items-center gap-2 min-w-0">
                           <p className="text-sm font-normal text-[#0A0A0A]">{file.name}</p>
                           {file.status === 'success' && file.files && (

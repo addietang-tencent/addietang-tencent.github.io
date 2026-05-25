@@ -143,7 +143,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
       <div className="flex items-center gap-2">
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-[#737373] hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">返回</span>
@@ -152,19 +152,19 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
       {/* 会话标题 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">会话详情</h1>
-        <p className="text-sm text-gray-500 mt-1">会话 ID: {sessionInfo.id} • Agent名称: {sessionInfo.openClawName}</p>
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">会话详情</h1>
+        <p className="text-sm text-[#737373] mt-1">会话 ID: {sessionInfo.id} • Agent名称: {sessionInfo.openClawName}</p>
       </div>      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-3 gap-4">       <div
           className="bg-white rounded-xl border border-[#e5e5e5] px-4 py-4"
         >
           <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">TOKEN 总量</span>
+            <span className="text-xs text-[#737373]">TOKEN 总量</span>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalTokens}</div>
+          <div className="text-2xl font-bold text-[#0A0A0A]">{sessionInfo.totalTokens}</div>
 
         </div>
 
@@ -172,12 +172,12 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           className="bg-white rounded-xl border border-[#e5e5e5] px-4 py-4"
         >
           <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">成本总量</span>
+            <span className="text-xs text-[#737373]">成本总量</span>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-gray-900">$0.2743</div>
+          <div className="text-2xl font-bold text-[#0A0A0A]">$0.2743</div>
 
         </div>
 
@@ -185,12 +185,12 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           className="bg-white rounded-xl border border-[#e5e5e5] px-4 py-4"
         >
           <div className="flex items-start justify-between mb-2">
-            <span className="text-xs text-gray-500">会话轮次</span>
+            <span className="text-xs text-[#737373]">会话轮次</span>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center">
               <MessageSquare className="w-4 h-4 text-white" />
             </div>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{sessionInfo.totalRounds}</div>
+          <div className="text-2xl font-bold text-[#0A0A0A]">{sessionInfo.totalRounds}</div>
 
         </div>
       </div>
@@ -205,7 +205,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-            <span className="text-sm font-medium text-gray-700">Token 流量</span>
+            <span className="text-sm font-medium text-[#334155]">Token 流量</span>
 
           </div>
           <div className="px-4 pt-4 pb-2">
@@ -230,7 +230,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
           className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
-            <span className="text-sm font-medium text-gray-700">成本趋势</span>
+            <span className="text-sm font-medium text-[#334155]">成本趋势</span>
 
           </div>
           <div className="px-4 pt-4 pb-2">
@@ -253,40 +253,40 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
       {/* ══ 交互链 ═════════════════════════════════════════════════════════════ */}
       <div>
-        <p className="text-sm font-medium text-gray-700 mb-4">交互链</p>
+        <p className="text-sm font-medium text-[#334155] mb-4">交互链</p>
         <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
          >
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-50 bg-gray-50/50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">时间</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">角色</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">内容</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">停止原因</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">INPUT</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">OUTPUT</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">CACHE R/W</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">时间</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">角色</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">内容</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">模型</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">停止原因</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">INPUT</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">OUTPUT</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">CACHE R/W</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">TOKENS</th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">成本</th>
 
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {INTERACTION_CHAIN.map((item, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-3 text-sm text-gray-600">{item.timestamp}</td>
+                    <td className="px-4 py-3 text-sm text-[#737373]">{item.timestamp}</td>
                     <td className="px-4 py-3 text-sm">
                       <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                        item.role === "user" ? "bg-blue-100 text-blue-700" :
+                        item.role === "user" ? "bg-blue-100 text-[#355EF1]" :
                         item.role === "assistant" ? "bg-purple-100 text-purple-700" :
-                        "bg-gray-100 text-gray-700"
+                        "bg-gray-100 text-[#334155]"
                       }`}>
                         {item.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
+                    <td className="px-4 py-3 text-sm text-[#737373] max-w-xs truncate">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -298,7 +298,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-[#737373]">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -310,7 +310,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-[#737373]">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -322,7 +322,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                    <td className="px-4 py-3 text-sm text-[#737373] text-right">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -334,7 +334,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                    <td className="px-4 py-3 text-sm text-[#737373] text-right">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -346,7 +346,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">
+                    <td className="px-4 py-3 text-sm text-[#737373] text-right">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -358,7 +358,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono">
+                    <td className="px-4 py-3 text-sm text-[#737373] text-right font-mono">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
@@ -383,7 +383,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
                         </UITooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right font-mono">
+                    <td className="px-4 py-3 text-sm text-[#737373] text-right font-mono">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>

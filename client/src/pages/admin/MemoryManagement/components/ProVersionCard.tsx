@@ -52,11 +52,11 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
             >
               <Gem className="w-5 h-5 text-white" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">Memory Pro 版</h2>
+            <h2 className="text-lg font-bold text-[#0A0A0A]">Memory Pro 版</h2>
             
             {/* 状态标签 - 跟在标题后面 */}
             {serviceStatus === 'activating' && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-[#355EF1] border border-blue-200">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 初始化中
               </span>
@@ -73,8 +73,8 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
           {serviceStatus === 'activating' ? (
             <div className="mb-4">
               <h3 className="text-base font-bold text-slate-700 mb-1.5">🚀 Memory Pro 正在初始化</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                正在为您创建向量数据库并配置记忆空间，预计需要 <strong className="text-gray-700">1-2 分钟</strong>，初始化完成后将自动进入管理页面。
+              <p className="text-sm text-[#737373] leading-relaxed">
+                正在为您创建向量数据库并配置记忆空间，预计需要 <strong className="text-[#334155]">1-2 分钟</strong>，初始化完成后将自动进入管理页面。
               </p>
             </div>
           ) : serviceStatus === 'error' ? (
@@ -86,7 +86,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
             </div>
           ) : (
             <>
-              <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+              <p className="text-sm text-[#737373] mb-4 leading-relaxed">
                 基于腾讯云向量数据库的企业级记忆服务，实现语义级记忆检索与企业级数据管理。
               </p>
 
@@ -96,7 +96,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
                   {PRO_FEATURES.map((f) => {
                     const Icon = f.icon;
                     return (
-                      <div key={f.title} className="flex items-center gap-2 text-sm text-gray-600">
+                      <div key={f.title} className="flex items-center gap-2 text-sm text-[#737373]">
                         <div
                           className="w-5 h-5 rounded flex-shrink-0 flex items-center justify-center"
                           style={{ background: `${f.color}15` }}
@@ -121,8 +121,8 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
           <div className="mt-auto pt-4 border-t border-[#e5e5e5]">
             {serviceStatus === 'activating' ? (
               <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-100 w-fit">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
-                <span className="text-sm text-blue-700 font-medium">请稍候...</span>
+                <Loader2 className="w-4 h-4 animate-spin text-[#355EF1]" />
+                <span className="text-sm text-[#355EF1] font-medium">请稍候...</span>
               </div>
             ) : serviceStatus === 'error' ? (
               <Button
@@ -137,7 +137,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-gray-900">免费体验中</span>
+                    <span className="text-2xl font-bold text-[#0A0A0A]">免费体验中</span>
                   </div>
                   <button
                     onClick={handleOpenClick}
@@ -150,7 +150,7 @@ export const ProVersionCard: React.FC<ProVersionCardProps> = ({
                   </button>
                 </div>
                 {/* 引导说明 */}
-                <p className="text-xs text-gray-400 mt-3 leading-relaxed">
+                <p className="text-xs text-[#A3A3A3] mt-3 leading-relaxed">
                   开通后，用户可在 Agent 设置页面自行选择启用 Memory Pro 版
                 </p>
               </div>

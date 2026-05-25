@@ -147,7 +147,7 @@ function StepCard({
               <StatusTag variant="gray" dot>待完成</StatusTag>
             )}
           </div>
-          <p className="text-xs text-black/70 leading-5 tracking-[0.18px]">{description}</p>
+          <p className="text-xs text-[#0A0A0A]/70 leading-5 tracking-[0.18px]">{description}</p>
           <div className="mt-4">{children}</div>
         </div>
       </div>
@@ -223,7 +223,7 @@ function InlineQuotaField({
     <div className="space-y-2">
       <Label className="text-xs font-medium ">
         {label}
-        {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
+        {hint && <span className="text-[#A3A3A3] font-normal ml-1">{hint}</span>}
       </Label>
 
       {!editing ? (
@@ -236,8 +236,8 @@ function InlineQuotaField({
           className="w-full max-w-[360px] flex items-center bg-white border border-[#E5E5E5] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
         >
           <span>{displayValue}</span>
-          {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
-          <Pencil className="w-3 h-3 text-gray-300 group-hover:text-blue-500 ml-2 shrink-0 transition-colors" />
+          {unitText && <span className="text-[#A3A3A3] font-normal ml-1">{unitText}</span>}
+          <Pencil className="w-3 h-3 text-[#A3A3A3] group-hover:text-[#355EF1] ml-2 shrink-0 transition-colors" />
         </button>
       ) : (
         <div className="flex items-center gap-2">
@@ -369,8 +369,8 @@ export default function StandardBasicInfo() {
     <div className="page-enter">
       {/* 页面标题 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">基础信息配置</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">基础信息配置</h1>
+        <p className="text-sm text-[#737373] mt-1">
           以下为必要的初始化配置，全部完成后用户端方可正常使用，更多高级配置可随时前往对应功能页调整
         </p>
       </div>
@@ -391,7 +391,7 @@ export default function StandardBasicInfo() {
               <div className="flex flex-col gap-2 mb-3">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-[#020617] leading-[22px]">网站名称</p>
-                  <p className="text-xs text-black/30 leading-5">将展示在用户端左上角常驻和首页</p>
+                  <p className="text-xs text-[#0A0A0A]/30 leading-5">将展示在用户端左上角常驻和首页</p>
                 </div>
                 <Input
                   id="siteName"
@@ -404,7 +404,7 @@ export default function StandardBasicInfo() {
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-medium text-[#020617] leading-[22px]">网站logo</p>
-                  <p className="text-xs text-black/30 leading-5">建议尺寸200x200px，不超过512kb</p>
+                  <p className="text-xs text-[#0A0A0A]/30 leading-5">建议尺寸200x200px，不超过512kb</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <img src="/icon/上传图片默认icon.svg" alt="" className="w-14 h-14 shrink-0 rounded-[6px]" />
@@ -529,7 +529,7 @@ export default function StandardBasicInfo() {
                   >
                     <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
                       {ssoImTypes.length === 0 ? (
-                        <span className="text-gray-400">请选择登录方式</span>
+                        <span className="text-[#A3A3A3]">请选择登录方式</span>
                       ) : (
                         ssoImTypes.map((val) => {
                           const opt = ssoImTypeOptions.find((o) => o.value === val);
@@ -551,7 +551,7 @@ export default function StandardBasicInfo() {
                         })
                       )}
                     </div>
-                    <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                    <ChevronDown className="w-4 h-4 text-[#A3A3A3] shrink-0" />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -580,12 +580,12 @@ export default function StandardBasicInfo() {
                             }}
                             className="shrink-0"
                           />
-                          <span className="text-sm text-gray-700">{opt.label}</span>
+                          <span className="text-sm text-[#334155]">{opt.label}</span>
                         </label>
                       );
                     })}
                     {ssoImTypeOptions.length === 0 && (
-                      <div className="px-3 py-4 text-sm text-gray-400 text-center">暂无可选登录方式</div>
+                      <div className="px-3 py-4 text-sm text-[#A3A3A3] text-center">暂无可选登录方式</div>
                     )}
                   </div>
                 </PopoverContent>
@@ -619,7 +619,7 @@ export default function StandardBasicInfo() {
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -640,7 +640,7 @@ export default function StandardBasicInfo() {
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -661,7 +661,7 @@ export default function StandardBasicInfo() {
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -682,7 +682,7 @@ export default function StandardBasicInfo() {
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-gray-400">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-blue-500 hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -712,27 +712,27 @@ export default function StandardBasicInfo() {
           <div
             className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <p className="text-sm font-medium text-black tracking-[0.07px] mb-4">平台基础信息</p>
+            <p className="text-sm font-medium text-[#0A0A0A] tracking-[0.07px] mb-4">平台基础信息</p>
             <div className="flex flex-col gap-4">
               <div className="flex gap-4 items-center">
                 <img src="/icon/所在地域.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-1">
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">所在地域</p>
-                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
+                  <p className="text-xs text-[#0A0A0A]/30 leading-5 tracking-[0.06px]">所在地域</p>
+                  <p className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">{SITE_CONFIG.region}</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
                 <img src="/icon/域名.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-1">
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">域名</p>
-                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
+                  <p className="text-xs text-[#0A0A0A]/30 leading-5 tracking-[0.06px]">域名</p>
+                  <p className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">https://nmyy3n7z.clawpro.cloud/</p>
                 </div>
               </div>
               <div className="flex gap-4 items-center">
                 <img src="/icon/关联腾讯云账号.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-1">
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
-                  <p className="text-sm font-medium text-black leading-[22px] tracking-[0.07px]">{SITE_CONFIG.tencentUin}</p>
+                  <p className="text-xs text-[#0A0A0A]/30 leading-5 tracking-[0.06px]">关联腾讯云账号</p>
+                  <p className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">{SITE_CONFIG.tencentUin}</p>
                 </div>
               </div>
             </div>
@@ -747,8 +747,8 @@ export default function StandardBasicInfo() {
               <div className="flex items-center gap-4">
                 <img src="/icon/api文档-icon.svg" alt="" className="w-9 h-9 shrink-0 rounded-[4px]" />
                 <div className="flex flex-col gap-0.5">
-                  <p className="text-sm font-medium text-black tracking-[0.07px] group-hover:text-[#355EF1] transition-colors">API 文档</p>
-                  <p className="text-xs text-black/30 leading-5 tracking-[0.06px] group-hover:text-[#355EF1] transition-colors">查阅开放接口与调用示例</p>
+                  <p className="text-sm font-medium text-[#0A0A0A] tracking-[0.07px] group-hover:text-[#355EF1] transition-colors">API 文档</p>
+                  <p className="text-xs text-[#0A0A0A]/30 leading-5 tracking-[0.06px] group-hover:text-[#355EF1] transition-colors">查阅开放接口与调用示例</p>
                 </div>
               </div>
               <img src="/icon/arrow-left-stroke.svg" alt="" className="w-4 h-4 opacity-30 group-hover:opacity-100 group-hover:[filter:invert(32%)_sepia(98%)_saturate(1497%)_hue-rotate(215deg)_brightness(96%)_contrast(95%)] transition-all rotate-[-45deg]" />
@@ -759,7 +759,7 @@ export default function StandardBasicInfo() {
           <div
             className="bg-white rounded-xl border border-[#e5e5e5] p-5"
           >
-            <p className="text-sm font-medium text-black tracking-[0.07px] mb-6">产品动态</p>
+            <p className="text-sm font-medium text-[#0A0A0A] tracking-[0.07px] mb-6">产品动态</p>
             <div className="flex flex-col gap-3">
               {PRODUCT_UPDATES.map((item, idx) => (
                 <div key={idx}>
@@ -781,17 +781,17 @@ export default function StandardBasicInfo() {
                       </StatusTag>
                     </div>
                     {/* 标题 */}
-                    <p className="text-xs font-medium text-black leading-5">{item.title}</p>
+                    <p className="text-xs font-medium text-[#0A0A0A] leading-5">{item.title}</p>
                     {/* 描述 */}
-                    <p className="text-xs text-black/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden">{item.summary}</p>
+                    <p className="text-xs text-[#0A0A0A]/60 leading-5 tracking-[0.06px] line-clamp-2 h-10 overflow-hidden">{item.summary}</p>
                     {/* 日期 */}
-                    <p className="text-xs text-black/30 leading-5 tracking-[0.06px]">{item.date}</p>
+                    <p className="text-xs text-[#0A0A0A]/30 leading-5 tracking-[0.06px]">{item.date}</p>
                   </div>
                 </div>
               ))}
             </div>
             {/* 查看全部更新按钮 */}
-            <button className="mt-6 border border-black/9 rounded-[4px] px-3 py-2 flex items-center gap-1 text-xs text-black leading-5 hover:bg-[#f5f5f5] transition-colors">
+            <button className="mt-6 border border-black/9 rounded-[4px] px-3 py-2 flex items-center gap-1 text-xs text-[#0A0A0A] leading-5 hover:bg-[#f5f5f5] transition-colors">
               查看全部更新
               <img src="/icon/arrow-left-stroke.svg" alt="" className="w-3 h-3" />
             </button>

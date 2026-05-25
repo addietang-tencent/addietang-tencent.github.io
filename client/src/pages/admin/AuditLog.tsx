@@ -223,14 +223,14 @@ export default function AuditLog() {
     <>
       <div className="page-enter">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">操作记录</h1>
-          <p className="text-sm text-gray-500 mt-1">记录管理员在管控端的所有操作，包括 API 调用详情。</p>
+          <h1 className="text-2xl font-bold text-[#0A0A0A]">操作记录</h1>
+          <p className="text-sm text-[#737373] mt-1">记录管理员在管控端的所有操作，包括 API 调用详情。</p>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap gap-3 mb-4 items-center">
           <div className="relative flex-1 min-w-48 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
             <Input
               placeholder="搜索操作人或操作事件"
               value={search}
@@ -244,7 +244,7 @@ export default function AuditLog() {
               onChange={handleDateFrom}
               placeholder="开始日期"
             />
-            <span className="text-gray-400 text-sm shrink-0">—</span>
+            <span className="text-[#A3A3A3] text-sm shrink-0">—</span>
             <DatePicker
               value={dateTo}
               onChange={handleDateTo}
@@ -330,15 +330,15 @@ export default function AuditLog() {
           </DialogHeader>
           {selectedLog && (
             <div className="bg-gray-950 rounded-xl p-5 font-mono text-sm overflow-auto max-h-96">
-              <div className="text-gray-400 mb-3">{"{"} <span className="text-gray-500 text-xs">{Object.keys(selectedLog.detail).length} items</span></div>
+              <div className="text-[#A3A3A3] mb-3">{"{"} <span className="text-[#737373] text-xs">{Object.keys(selectedLog.detail).length} items</span></div>
               {Object.entries(selectedLog.detail).map(([key, value]) => (
                 <div key={key} className="ml-4 mb-1.5">
-                  <span className="text-gray-300">"{key}"</span>
-                  <span className="text-gray-500"> : </span>
+                  <span className="text-[#A3A3A3]">"{key}"</span>
+                  <span className="text-[#737373]"> : </span>
                   <span className="text-orange-400">"{value}"</span>
                 </div>
               ))}
-              <div className="text-gray-400">{"}"}</div>
+              <div className="text-[#A3A3A3]">{"}"}</div>
             </div>
           )}
           <DialogFooter>

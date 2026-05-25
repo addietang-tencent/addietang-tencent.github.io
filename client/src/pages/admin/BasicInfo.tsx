@@ -219,7 +219,7 @@ function InlineQuotaField({
     <div className="space-y-2">
       <Label className="text-xs font-medium ">
         {label}
-        {hint && <span className="text-gray-400 font-normal ml-1">{hint}</span>}
+        {hint && <span className="text-[#A3A3A3] font-normal ml-1">{hint}</span>}
       </Label>
 
       {!editing ? (
@@ -232,8 +232,8 @@ function InlineQuotaField({
           className="w-full max-w-[360px] flex items-center bg-white border border-[#E5E5E5] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
         >
           <span>{displayValue}</span>
-          {unitText && <span className="text-gray-400 font-normal ml-1">{unitText}</span>}
-          <Pencil className="w-3 h-3 text-gray-300 group-hover:text-blue-500 ml-2 shrink-0 transition-colors" />
+          {unitText && <span className="text-[#A3A3A3] font-normal ml-1">{unitText}</span>}
+          <Pencil className="w-3 h-3 text-[#A3A3A3] group-hover:text-[#355EF1] ml-2 shrink-0 transition-colors" />
         </button>
       ) : (
         <div className="flex items-center gap-2">

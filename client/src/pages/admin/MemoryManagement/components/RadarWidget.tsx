@@ -227,7 +227,7 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
               transition={{ duration: 0.25 }}
               className="text-center"
             >
-              <div className="text-[10px] text-blue-500 font-medium mb-0.5">Memory Pro 版</div>
+              <div className="text-[10px] text-[#355EF1] font-medium mb-0.5">Memory Pro 版</div>
               <div
                 className="text-lg font-bold font-mono"
                 style={{ color: '#355EF1', textShadow: '0 0 12px rgba(20,71,230,0.25)' }}
@@ -244,8 +244,8 @@ export function RadarWidget({ hovered, onHoverChange }: RadarWidgetProps) {
               transition={{ duration: 0.25 }}
               className="text-center"
             >
-              <div className="text-[10px] text-gray-400 mb-0.5">Agent 原生</div>
-              <div className="text-lg font-bold font-mono text-gray-400">
+              <div className="text-[10px] text-[#A3A3A3] mb-0.5">Agent 原生</div>
+              <div className="text-lg font-bold font-mono text-[#A3A3A3]">
                 {TOTAL.openClaw}%
               </div>
             </motion.div>

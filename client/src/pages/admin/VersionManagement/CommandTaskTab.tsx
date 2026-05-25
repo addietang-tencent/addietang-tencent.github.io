@@ -63,12 +63,12 @@ export default function CommandTaskTab() {
       >
         {/* 标题栏 */}
         <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
-          <Code2 className="w-4 h-4 text-blue-500" />
+          <Code2 className="w-4 h-4 text-[#355EF1]" />
           <div className="flex-1">
-            <h2 className="font-semibold text-gray-900 text-base">命令库</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h2 className="font-semibold text-[#0A0A0A] text-base">命令库</h2>
+            <p className="text-xs text-[#737373] mt-0.5">
               沉淀团队的运维命令模板，便于复用与审计；当前共
-              <span className="font-semibold tabular-nums text-gray-700 mx-1">
+              <span className="font-semibold tabular-nums text-[#334155] mx-1">
                 {MOCK_COMMAND_TEMPLATES.length}
               </span>
               个命令
@@ -76,7 +76,7 @@ export default function CommandTaskTab() {
           </div>
           <div className="flex items-center gap-2">
             <div className="relative w-[260px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -103,7 +103,7 @@ export default function CommandTaskTab() {
         {templates.length === 0 ? (
           <div className="py-16 text-center">
             <Code2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[#A3A3A3]">
               {search ? "没有匹配的命令" : "暂无命令，点击「创建命令」开始沉淀团队 SOP"}
             </p>
           </div>
@@ -111,22 +111,22 @@ export default function CommandTaskTab() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[22%]">
                   命令 ID / 名称
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[8%]">
                   类型
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">
                   命令内容
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                   创建人
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                   最近执行
                 </th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+                <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                   操作
                 </th>
               </tr>
@@ -137,15 +137,15 @@ export default function CommandTaskTab() {
                   <td className="px-6 py-4">
                     {/* ID 上、名称下：参考 TAT 命令列表 */}
                     <CopyableId id={t.id} primary />
-                    <div className="text-sm font-medium text-gray-900 mt-0.5">{t.name}</div>
+                    <div className="text-sm font-medium text-[#0A0A0A] mt-0.5">{t.name}</div>
                     {t.description && (
-                      <div className="text-xs text-gray-400 mt-0.5 truncate max-w-[260px]">
+                      <div className="text-xs text-[#A3A3A3] mt-0.5 truncate max-w-[260px]">
                         {t.description}
                       </div>
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700">
+                    <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded bg-blue-50 text-[#355EF1]">
                       {t.type}
                     </span>
                   </td>
@@ -153,10 +153,10 @@ export default function CommandTaskTab() {
                     <TooltipProvider delayDuration={150}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <code className="text-xs font-mono text-gray-600 bg-gray-50 px-2 py-1 rounded block truncate max-w-[420px]">
+                          <code className="text-xs font-mono text-[#737373] bg-gray-50 px-2 py-1 rounded block truncate max-w-[420px]">
                             {t.content.split("\n")[0]}
                             {t.content.includes("\n") && (
-                              <span className="text-gray-400 ml-1">…</span>
+                              <span className="text-[#A3A3A3] ml-1">…</span>
                             )}
                           </code>
                         </TooltipTrigger>
@@ -169,16 +169,16 @@ export default function CommandTaskTab() {
                     </TooltipProvider>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-700 truncate max-w-[120px]">{t.createdBy}</div>
-                    <div className="text-[11px] text-gray-400 tabular-nums">{t.createdAt.slice(0, 10)}</div>
+                    <div className="text-sm text-[#334155] truncate max-w-[120px]">{t.createdBy}</div>
+                    <div className="text-[11px] text-[#A3A3A3] tabular-nums">{t.createdAt.slice(0, 10)}</div>
                   </td>
                   <td className="px-6 py-4">
                     {t.lastRunAt ? (
-                      <div className="text-sm text-gray-700 tabular-nums">{t.lastRunAt.slice(5, 16)}</div>
+                      <div className="text-sm text-[#334155] tabular-nums">{t.lastRunAt.slice(5, 16)}</div>
                     ) : (
-                      <span className="text-sm text-gray-300">从未执行</span>
+                      <span className="text-sm text-[#A3A3A3]">从未执行</span>
                     )}
-                    <div className="text-[11px] text-gray-400 tabular-nums">
+                    <div className="text-[11px] text-[#A3A3A3] tabular-nums">
                       共 {t.totalRuns} 次
                     </div>
                   </td>
@@ -187,7 +187,7 @@ export default function CommandTaskTab() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                        className="h-7 px-2 text-xs text-[#355EF1] hover:bg-blue-50 hover:text-[#355EF1]"
                         onClick={() => setDispatchTarget(t)}
                       >
                         <Play className="w-3.5 h-3.5 mr-0.5" />
@@ -196,7 +196,7 @@ export default function CommandTaskTab() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
-                            <MoreVertical className="w-4 h-4 text-gray-400" />
+                            <MoreVertical className="w-4 h-4 text-[#A3A3A3]" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-32">
@@ -253,7 +253,7 @@ export default function CommandTaskTab() {
               删除命令？
             </DialogTitle>
             <DialogDescription>
-              即将删除「<span className="font-medium text-gray-700">{deleteTarget?.name}</span>」，已存在的执行记录不会被删除。
+              即将删除「<span className="font-medium text-[#334155]">{deleteTarget?.name}</span>」，已存在的执行记录不会被删除。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

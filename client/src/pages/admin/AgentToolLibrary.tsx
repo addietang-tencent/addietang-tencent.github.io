@@ -64,7 +64,7 @@ export default function AgentToolLibrary() {
     <div className="page-enter w-full min-w-0">
       {/* 页面标题 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Agent 工具库</h1>
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 工具库</h1>
       </div>
 
       {/* Tab 切换器 - LineTabs */}
@@ -88,29 +88,29 @@ export default function AgentToolLibrary() {
 
       {/* Tab 描述 */}
       <div className="mt-3 mb-6 space-y-2">
-        <p className="text-sm text-gray-500 leading-relaxed">{currentTab.description}</p>
+        <p className="text-sm text-[#737373] leading-relaxed">{currentTab.description}</p>
         {currentTab.id === 'enterprise' && (
           <div className="flex items-center justify-between gap-4">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-[4px] whitespace-nowrap">
-              <svg className="w-3 h-3 text-blue-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg className="w-3 h-3 text-[#355EF1] flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
                 <path d="M20 3v4" /><path d="M22 5h-4" /><path d="M4 17v2" /><path d="M5 18H3" />
               </svg>
-              <span className="text-xs text-blue-600">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
+              <span className="text-xs text-[#355EF1]">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
             </div>
 
             {/* 安全检测服务区域 — 右上角 */}
             <div className="flex items-center gap-2 flex-shrink-0">
               {!securityServiceActive ? (
                 <>
-                  <span className="text-xs text-gray-500 flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-xs text-[#737373] flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#A3A3A3]" />
                     恶意 Skills 扫描 API
                   </span>
                   <StatusTag variant="gray">未开通</StatusTag>
                   <button
                     onClick={() => setSecurityApplyDialogOpen(true)}
-                    className="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                    className="text-xs text-[#355EF1] hover:text-[#355EF1] font-medium"
                   >
                     开通
                   </button>
@@ -119,7 +119,7 @@ export default function AgentToolLibrary() {
                 <HoverCard openDelay={300}>
                   <HoverCardTrigger asChild>
                     <div className="flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs text-gray-700 flex items-center gap-1">
+                      <span className="text-xs text-[#334155] flex items-center gap-1">
                         <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
                         恶意 Skills 扫描 API
                       </span>
@@ -129,7 +129,7 @@ export default function AgentToolLibrary() {
                   <HoverCardContent side="bottom" align="end" className="w-80 p-4">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900 flex items-center gap-1.5">
+                        <span className="text-sm font-medium text-[#0A0A0A] flex items-center gap-1.5">
                           <ShieldCheck className="w-4 h-4 text-green-600" />
                           恶意 Skills 扫描 API
                         </span>
@@ -137,14 +137,14 @@ export default function AgentToolLibrary() {
                           试用中
                         </span>
                       </div>
-                      <div className="space-y-2 text-xs text-gray-600">
+                      <div className="space-y-2 text-xs text-[#737373]">
                         <div className="flex items-start gap-2">
-                          <span className="text-gray-500 shrink-0 w-16">试用有效期</span>
+                          <span className="text-[#737373] shrink-0 w-16">试用有效期</span>
                           <span>有效期至 2026年6月30日</span>
                         </div>
                         <div className="flex items-start gap-2">
-                          <span className="text-gray-500 shrink-0 w-16">已用额度</span>
-                          <span>{securityServiceUsed}/1000次<span className="text-gray-400">（有效期到期后，剩余未使用的调用额度将清空）</span></span>
+                          <span className="text-[#737373] shrink-0 w-16">已用额度</span>
+                          <span>{securityServiceUsed}/1000次<span className="text-[#A3A3A3]">（有效期到期后，剩余未使用的调用额度将清空）</span></span>
                         </div>
                         {/* 进度条 */}
                         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -159,7 +159,7 @@ export default function AgentToolLibrary() {
                           href="https://cloud.tencent.com/document/api/664/131590"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-500 hover:text-blue-600 flex items-center gap-1"
+                          className="text-xs text-[#355EF1] hover:text-[#355EF1] flex items-center gap-1"
                         >
                           说明文档
                           <ExternalLink className="w-3 h-3" />
@@ -179,7 +179,7 @@ export default function AgentToolLibrary() {
                       localStorage.setItem('skill_security_service_active', String(next));
                       toast.success(next ? '已模拟开通安全检测服务' : '已模拟取消安全检测服务');
                     }}
-                    className="w-5 h-5 rounded border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 flex items-center justify-center text-[10px] ml-1"
+                    className="w-5 h-5 rounded border border-dashed border-gray-300 text-[#A3A3A3] hover:text-[#737373] flex items-center justify-center text-[10px] ml-1"
                   >
                     ↻
                   </button>

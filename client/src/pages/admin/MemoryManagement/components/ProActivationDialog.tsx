@@ -102,24 +102,24 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
             {/* 记忆空间配额 */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-700">记忆空间配额</p>
-                <Lock className="w-3.5 h-3.5 text-gray-400" />
+                <p className="text-sm text-[#334155]">记忆空间配额</p>
+                <Lock className="w-3.5 h-3.5 text-[#A3A3A3]" />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-900">{FIXED_MEMORY_SPACES} 个</span>
-                <span className="text-xs text-gray-400">如需更多请联系商务</span>
+                <span className="text-sm font-medium text-[#0A0A0A]">{FIXED_MEMORY_SPACES} 个</span>
+                <span className="text-xs text-[#A3A3A3]">如需更多请联系商务</span>
               </div>
             </div>
 
             {/* 默认开通 */}
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-700">默认开通</p>
+              <p className="text-sm text-[#334155]">默认开通</p>
               <div className="flex items-center gap-2">
                 <Switch 
                   checked={autoEnableForNewInstances} 
                   onCheckedChange={setAutoEnableForNewInstances}
                 />
-                <span className="text-xs text-gray-400">新创建的 Agent 自动开通 Pro 版</span>
+                <span className="text-xs text-[#A3A3A3]">新创建的 Agent 自动开通 Pro 版</span>
               </div>
             </div>
           </div>

@@ -345,12 +345,12 @@ export default function DispatchCommandDialog({
             {/* 命令选择/预览 */}
             {!pickedCommand ? (
               <div className="rounded-xl border border-gray-100 bg-gray-50/40 p-4 space-y-3">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                <Label className="text-sm font-medium text-[#334155] flex items-center gap-1">
                   <Code2 className="w-3.5 h-3.5" />
                   选择命令 <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
                   <Input
                     value={commandSearch}
                     onChange={(e) => setCommandSearch(e.target.value)}
@@ -360,7 +360,7 @@ export default function DispatchCommandDialog({
                 </div>
                 <div className="rounded-lg border border-gray-100 bg-white max-h-[260px] overflow-y-auto divide-y divide-gray-50">
                   {commandCandidates.length === 0 ? (
-                    <div className="py-10 text-center text-xs text-gray-400">
+                    <div className="py-10 text-center text-xs text-[#A3A3A3]">
                       没有匹配的命令；请前往「命令下发」页面创建新命令。
                     </div>
                   ) : (
@@ -374,15 +374,15 @@ export default function DispatchCommandDialog({
                         <Code2 className="w-3.5 h-3.5 text-purple-500 mt-1 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-900 truncate">{t.name}</span>
-                            <span className="text-[10px] font-mono text-gray-400">{t.id}</span>
+                            <span className="text-sm font-medium text-[#0A0A0A] truncate">{t.name}</span>
+                            <span className="text-[10px] font-mono text-[#A3A3A3]">{t.id}</span>
                           </div>
-                          <code className="text-xs font-mono text-gray-500 truncate block mt-0.5">
+                          <code className="text-xs font-mono text-[#737373] truncate block mt-0.5">
                             {t.content.split("\n")[0]}
-                            {t.content.includes("\n") && <span className="text-gray-400 ml-1">…</span>}
+                            {t.content.includes("\n") && <span className="text-[#A3A3A3] ml-1">…</span>}
                           </code>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 mt-1 shrink-0" />
+                        <ChevronRight className="w-4 h-4 text-[#A3A3A3] group-hover:text-[#355EF1] mt-1 shrink-0" />
                       </button>
                     ))
                   )}
@@ -390,25 +390,25 @@ export default function DispatchCommandDialog({
               </div>
             ) : (
               <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 space-y-2">
-                <div className="flex items-center gap-3 text-xs text-gray-500">
-                  <span>类型：<span className="font-medium text-gray-700">SHELL</span></span>
+                <div className="flex items-center gap-3 text-xs text-[#737373]">
+                  <span>类型：<span className="font-medium text-[#334155]">SHELL</span></span>
                   <span>·</span>
-                  <span>执行用户：<span className="font-mono text-gray-700">{pickedCommand.runAsUser}</span></span>
+                  <span>执行用户：<span className="font-mono text-[#334155]">{pickedCommand.runAsUser}</span></span>
                   <span>·</span>
-                  <span>路径：<span className="font-mono text-gray-700">{pickedCommand.workingDir}</span></span>
+                  <span>路径：<span className="font-mono text-[#334155]">{pickedCommand.workingDir}</span></span>
                   <span>·</span>
-                  <span>超时：<span className="tabular-nums text-gray-700">{pickedCommand.timeoutSec}</span> 秒</span>
+                  <span>超时：<span className="tabular-nums text-[#334155]">{pickedCommand.timeoutSec}</span> 秒</span>
                   {!command && (
                     <button
                       type="button"
                       onClick={() => setPickedCommand(null)}
-                      className="ml-auto text-blue-600 hover:text-blue-700 text-xs"
+                      className="ml-auto text-[#355EF1] hover:text-[#355EF1] text-xs"
                     >
                       切换命令
                     </button>
                   )}
                 </div>
-                <pre className="text-xs font-mono text-gray-700 bg-white rounded p-2 max-h-[100px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
+                <pre className="text-xs font-mono text-[#334155] bg-white rounded p-2 max-h-[100px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
                   {pickedCommand.content}
                 </pre>
               </div>
@@ -432,11 +432,11 @@ export default function DispatchCommandDialog({
 
             {/* 执行对象选择 */}
             <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-1">
+              <Label className="text-sm font-medium text-[#334155] mb-2 flex items-center gap-1">
                 <Server className="w-3.5 h-3.5" />
                 选择执行对象 <span className="text-red-500">*</span>
                 {selected.size > 0 && (
-                  <span className="ml-1 text-xs text-blue-600 tabular-nums">
+                  <span className="ml-1 text-xs text-[#355EF1] tabular-nums">
                     · 已选 {selected.size} 台
                   </span>
                 )}
@@ -475,16 +475,16 @@ export default function DispatchCommandDialog({
                           className="size-4"
                         />
                       </th>
-                      <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium">实例</th>
-                      <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[16%]">类型</th>
-                      <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[16%]">版本</th>
-                      <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[20%]">创建人</th>
+                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium">实例</th>
+                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium w-[16%]">类型</th>
+                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium w-[16%]">版本</th>
+                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium w-[20%]">创建人</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {candidateInstances.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-10 text-xs text-gray-400">
+                        <td colSpan={5} className="text-center py-10 text-xs text-[#A3A3A3]">
                           没有符合条件的实例
                         </td>
                       </tr>
@@ -501,16 +501,16 @@ export default function DispatchCommandDialog({
                               />
                             </td>
                             <td className="px-3 py-2">
-                              <div className="text-sm text-gray-900">{i.name}</div>
-                              <div className="text-[11px] text-gray-400 font-mono">{i.instanceId}</div>
+                              <div className="text-sm text-[#0A0A0A]">{i.name}</div>
+                              <div className="text-[11px] text-[#A3A3A3] font-mono">{i.instanceId}</div>
                             </td>
-                            <td className="px-3 py-2 text-xs text-gray-600">
+                            <td className="px-3 py-2 text-xs text-[#737373]">
                               {AGENT_TYPE_LABEL[i.agentType]}
                             </td>
-                            <td className="px-3 py-2 text-xs text-gray-600 font-mono tabular-nums">
+                            <td className="px-3 py-2 text-xs text-[#737373] font-mono tabular-nums">
                               {i.agentVersion}
                             </td>
-                            <td className="px-3 py-2 text-xs text-gray-500 truncate max-w-[140px]">
+                            <td className="px-3 py-2 text-xs text-[#737373] truncate max-w-[140px]">
                               {i.owner}
                             </td>
                           </tr>
@@ -531,11 +531,11 @@ export default function DispatchCommandDialog({
                   className="mt-0.5"
                 />
                 <div className="flex-1">
-                  <div className="text-sm text-gray-900 inline-flex items-center gap-1 font-medium">
+                  <div className="text-sm text-[#0A0A0A] inline-flex items-center gap-1 font-medium">
                     <FlaskConical className="w-3.5 h-3.5 text-amber-500" />
                     测试机优先（推荐）
                   </div>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-[#737373] mt-0.5">
                     先在 1 台测试机上执行，确认输出正常后再下发到剩余实例；过程中你可随时终止。
                   </p>
                 </div>
@@ -543,7 +543,7 @@ export default function DispatchCommandDialog({
 
               {useTestRun && (
                 <div className="ml-6 pl-1">
-                  <Label className="text-xs text-gray-500 mb-1.5 block">从已选实例中选择测试机</Label>
+                  <Label className="text-xs text-[#737373] mb-1.5 block">从已选实例中选择测试机</Label>
                   <Select
                     value={testInstanceId ?? ""}
                     onValueChange={(v) => setTestInstanceId(v)}
@@ -557,7 +557,7 @@ export default function DispatchCommandDialog({
                         return (
                           <SelectItem key={iid} value={iid}>
                             {inst?.name ?? iid}
-                            <span className="text-gray-400 ml-2 font-mono text-[11px]">{iid}</span>
+                            <span className="text-[#A3A3A3] ml-2 font-mono text-[11px]">{iid}</span>
                           </SelectItem>
                         );
                       })}
@@ -568,15 +568,15 @@ export default function DispatchCommandDialog({
             </div>
 
             <DialogFooter>
-              <div className="flex-1 text-xs text-gray-500">
+              <div className="flex-1 text-xs text-[#737373]">
                 {useTestRun && testInstanceId && selected.size > 1 && (
-                  <>先在 <span className="font-medium text-gray-700">{testInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
+                  <>先在 <span className="font-medium text-[#334155]">{testInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
                 )}
                 {useTestRun && testInstanceId && selected.size === 1 && (
                   <>仅 1 台实例，将作为测试机执行</>
                 )}
                 {!useTestRun && selected.size > 0 && (
-                  <>将立即下发到 <span className="font-medium text-gray-700 tabular-nums">{selected.size}</span> 台实例</>
+                  <>将立即下发到 <span className="font-medium text-[#334155] tabular-nums">{selected.size}</span> 台实例</>
                 )}
               </div>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -585,7 +585,7 @@ export default function DispatchCommandDialog({
               <Button
                 onClick={handleStart}
                 disabled={!canStart}
-                className="text-white disabled:bg-gray-200 disabled:text-gray-400"
+                className="text-white disabled:bg-gray-200 disabled:text-[#A3A3A3]"
                 style={canStart ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
               >
                 {useTestRun ? "在测试机上执行" : "立即下发"}
@@ -601,10 +601,10 @@ export default function DispatchCommandDialog({
               <Loader2 className="w-7 h-7 text-amber-500 animate-spin" />
             </div>
             <div className="space-y-1">
-              <div className="text-sm font-medium text-gray-900">
+              <div className="text-sm font-medium text-[#0A0A0A]">
                 正在 <span className="text-amber-700">{testInstanceName}</span> 上执行
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-[#737373]">
                 超时 {pickedCommand?.timeoutSec ?? 60} 秒，请勿关闭弹窗
               </div>
             </div>
@@ -636,7 +636,7 @@ export default function DispatchCommandDialog({
                     <span className="font-mono mx-1">{testInstanceName}</span>
                     {testResult.status === "success" ? "执行成功" : "执行失败"}
                   </div>
-                  <div className="text-xs text-gray-600 mt-1 flex items-center gap-3">
+                  <div className="text-xs text-[#737373] mt-1 flex items-center gap-3">
                     <span>退出码：<span className="font-mono tabular-nums">{testResult.exitCode}</span></span>
                     <span>·</span>
                     <span>耗时：<span className="font-mono tabular-nums">{testResult.durationMs}ms</span></span>
@@ -648,8 +648,8 @@ export default function DispatchCommandDialog({
             {/* stdout */}
             {testResult.stdout && (
               <div>
-                <Label className="text-xs text-gray-500 mb-1 block">执行结果 (stdout)</Label>
-                <pre className="text-xs font-mono text-gray-700 bg-gray-50 border border-gray-100 rounded p-3 max-h-[160px] overflow-auto whitespace-pre-wrap break-all">
+                <Label className="text-xs text-[#737373] mb-1 block">执行结果 (stdout)</Label>
+                <pre className="text-xs font-mono text-[#334155] bg-gray-50 border border-gray-100 rounded p-3 max-h-[160px] overflow-auto whitespace-pre-wrap break-all">
                   {testResult.stdout}
                 </pre>
               </div>
@@ -666,7 +666,7 @@ export default function DispatchCommandDialog({
             )}
 
             {/* 决策提示 */}
-            <div className="rounded-lg bg-blue-50/60 border border-blue-100 px-3 py-2 text-xs text-blue-800">
+            <div className="rounded-lg bg-blue-50/60 border border-blue-100 px-3 py-2 text-xs text-[#1447E6]">
               {testResult.status === "success"
                 ? `请确认输出无异常。点击「继续下发」会向剩余 ${selected.size - 1} 台实例发送同样的命令。`
                 : "测试机执行失败，建议检查命令后重新提交；剩余实例不会被执行。"}

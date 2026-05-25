@@ -69,11 +69,11 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
         {names.map((name) => (
           <span
             key={name}
-            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 text-[11px] shrink-0"
+            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-gray-100 text-[#334155] text-[11px] shrink-0"
           >
             {name}
             {onRemove && !lockedSet.has(name) && (
-              <span onClick={(e) => { e.stopPropagation(); onRemove(name); }} className="text-gray-400 hover:text-gray-600 cursor-pointer">
+              <span onClick={(e) => { e.stopPropagation(); onRemove(name); }} className="text-[#A3A3A3] hover:text-[#737373] cursor-pointer">
                 <X className="w-3 h-3" />
               </span>
             )}
@@ -623,14 +623,14 @@ function AddMemberFormFields({
     return (
       <div key={node.id}>
         <div
-          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer ${isSelected ? "hover:bg-gray-50 text-blue-600" : "hover:bg-gray-50 text-gray-700"}`}
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer ${isSelected ? "hover:bg-gray-50 text-[#355EF1]" : "hover:bg-gray-50 text-[#334155]"}`}
           style={{ paddingLeft: 8 + depth * 16 }}
           onClick={() => toggleGroup(node.id)}
         >
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -650,7 +650,7 @@ function AddMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户信息</p>
+        <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-3">用户信息</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -658,7 +658,7 @@ function AddMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>填写企业用户的唯一 ID，例如企业邮箱或企业用户唯一名称，作为企业用户登录用户端的账号</TooltipContent>
@@ -709,8 +709,8 @@ function AddMemberFormFields({
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
                 <div className="p-2 border-b border-[#e5e5e5]">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
                 <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
@@ -719,13 +719,13 @@ function AddMemberFormFields({
                       {/* OneID 模式：组织架构 + 用户组 */}
                       {deptTree.length > 0 && (
                         <div className="mb-1">
-                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">部门</div>
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">部门</div>
                           {deptTree.map((n) => renderTreeNode(n, 0))}
                         </div>
                       )}
                       {ogTree.length > 0 && (
                         <div className="mb-1">
-                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">自定义分组</div>
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">自定义分组</div>
                           {ogTree.map((n) => renderTreeNode(n, 0))}
                         </div>
                       )}
@@ -736,19 +736,19 @@ function AddMemberFormFields({
                         </div>
                       )}
                       {deptTree.length === 0 && ogTree.length === 0 && manualTree.length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                        <p className="text-xs text-[#A3A3A3] text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
                       )}
                     </>
                   ) : (
                     <>
                       {filteredGroups.map((g) => (
-                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
+                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-[#355EF1]" : "text-[#334155]"}`} onClick={() => toggleGroup(g.id)}>
                           <span className="truncate">{g.name}</span>
-                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-[#355EF1] shrink-0" />}
                         </button>
                       ))}
                       {filteredGroups.length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                        <p className="text-xs text-[#A3A3A3] text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
                       )}
                     </>
                   )}
@@ -764,7 +764,7 @@ function AddMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
@@ -776,7 +776,7 @@ function AddMemberFormFields({
       </div>
 
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-3">用户配额</p>
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
@@ -804,8 +804,8 @@ function AddMemberFormFields({
                 </TableBody>
               </Table>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
+            <p className="text-xs text-[#A3A3A3] leading-relaxed">
+              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-[#355EF1] hover:text-[#355EF1] hover:underline">平台策略</a>页进行配置。
             </p>
           </div>
         ) : (
@@ -816,7 +816,7 @@ function AddMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
@@ -844,7 +844,7 @@ function AddMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
@@ -957,14 +957,14 @@ function EditMemberFormFields({
     return (
       <div key={node.id}>
         <div
-          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer ${isSelected ? "hover:bg-gray-50 text-blue-600" : "hover:bg-gray-50 text-gray-700"}`}
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors cursor-pointer ${isSelected ? "hover:bg-gray-50 text-[#355EF1]" : "hover:bg-gray-50 text-[#334155]"}`}
           style={{ paddingLeft: 8 + depth * 16 }}
           onClick={() => toggleGroup(node.id)}
         >
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -983,7 +983,7 @@ function EditMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户信息</p>
+        <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-3">用户信息</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -991,7 +991,7 @@ function EditMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>用户 ID 为唯一标识，不可修改</TooltipContent>
@@ -1036,8 +1036,8 @@ function EditMemberFormFields({
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
                 <div className="p-2 border-b border-[#e5e5e5]">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
                 <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
@@ -1046,13 +1046,13 @@ function EditMemberFormFields({
                       {/* OneID 模式：组织架构 + 用户组 */}
                       {deptTree.length > 0 && (
                         <div className="mb-1">
-                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">部门</div>
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">部门</div>
                           {deptTree.map((n) => renderTreeNode(n, 0))}
                         </div>
                       )}
                       {ogTree.length > 0 && (
                         <div className="mb-1">
-                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">自定义分组</div>
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">自定义分组</div>
                           {ogTree.map((n) => renderTreeNode(n, 0))}
                         </div>
                       )}
@@ -1063,19 +1063,19 @@ function EditMemberFormFields({
                         </div>
                       )}
                       {deptTree.length === 0 && ogTree.length === 0 && manualTree.length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                        <p className="text-xs text-[#A3A3A3] text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
                       )}
                     </>
                   ) : (
                     <>
                       {filteredGroups.map((g) => (
-                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
+                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-[#355EF1]" : "text-[#334155]"}`} onClick={() => toggleGroup(g.id)}>
                           <span className="truncate">{g.name}</span>
-                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-[#355EF1] shrink-0" />}
                         </button>
                       ))}
                       {filteredGroups.length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                        <p className="text-xs text-[#A3A3A3] text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
                       )}
                     </>
                   )}
@@ -1089,7 +1089,7 @@ function EditMemberFormFields({
 
       {/* 第二大块：用户配额 */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-3">用户配额</p>
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
@@ -1117,8 +1117,8 @@ function EditMemberFormFields({
                 </TableBody>
               </Table>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
+            <p className="text-xs text-[#A3A3A3] leading-relaxed">
+              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-[#355EF1] hover:text-[#355EF1] hover:underline">平台策略</a>页进行配置。
             </p>
           </div>
         ) : (
@@ -1129,7 +1129,7 @@ function EditMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
@@ -1158,7 +1158,7 @@ function EditMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
@@ -1278,14 +1278,14 @@ function OneidEditMemberFormFields({
     const row = (
       <div key={node.id}>
         <div
-          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors ${isDept ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${isSelected ? "hover:bg-gray-50 text-blue-600" : "hover:bg-gray-50 text-gray-700"}`}
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-xs transition-colors ${isDept ? "cursor-not-allowed opacity-50" : "cursor-pointer"} ${isSelected ? "hover:bg-gray-50 text-[#355EF1]" : "hover:bg-gray-50 text-[#334155]"}`}
           style={{ paddingLeft: 8 + depth * 16 }}
           onClick={() => !isDept && toggleGroup(node.id)}
         >
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -1314,7 +1314,7 @@ function OneidEditMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户信息</p>
+        <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-3">用户信息</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -1322,7 +1322,7 @@ function OneidEditMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>用户 ID 由统一身份平台管理</TooltipContent>
@@ -1375,8 +1375,8 @@ function OneidEditMemberFormFields({
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
                 <div className="p-2 border-b border-[#e5e5e5]">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-blue-300 bg-white placeholder:text-gray-400" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-xl outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
                 <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
@@ -1384,30 +1384,30 @@ function OneidEditMemberFormFields({
                     <>
                       {deptTree.length > 0 && (
                         <div className="mb-1">
-                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">部门</div>
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">部门</div>
                           {deptTree.map((n) => renderTreeNode(n, 0))}
                         </div>
                       )}
                       {ogTree.length > 0 && (
                         <div className="mb-1">
-                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">自定义分组</div>
+                          <div className="px-3 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">自定义分组</div>
                           {ogTree.map((n) => renderTreeNode(n, 0))}
                         </div>
                       )}
                       {deptTree.length === 0 && ogTree.length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                        <p className="text-xs text-[#A3A3A3] text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
                       )}
                     </>
                   ) : (
                     <>
                       {filteredGroups.map((g) => (
-                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-blue-600" : "text-gray-700"}`} onClick={() => toggleGroup(g.id)}>
+                        <button key={g.id} className={`w-full flex items-center justify-between px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors ${values.groupIds.includes(g.id) ? "text-[#355EF1]" : "text-[#334155]"}`} onClick={() => toggleGroup(g.id)}>
                           <span className="truncate">{g.name}</span>
-                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-blue-500 shrink-0" />}
+                          {values.groupIds.includes(g.id) && <Check className="w-4 h-4 text-[#355EF1] shrink-0" />}
                         </button>
                       ))}
                       {filteredGroups.length === 0 && (
-                        <p className="text-xs text-gray-400 text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
+                        <p className="text-xs text-[#A3A3A3] text-center py-3">{groupSearchStr.trim() ? "未找到匹配的分组" : "暂无分组"}</p>
                       )}
                     </>
                   )}
@@ -1421,7 +1421,7 @@ function OneidEditMemberFormFields({
 
       {/* 用户配额（可编辑） */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">用户配额</p>
+        <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-3">用户配额</p>
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
@@ -1449,8 +1449,8 @@ function OneidEditMemberFormFields({
                 </TableBody>
               </Table>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-blue-500 hover:text-blue-600 hover:underline">平台策略</a>页进行配置。
+            <p className="text-xs text-[#A3A3A3] leading-relaxed">
+              该用户已加入分组，配额由平台策略统一管理。如需修改请前往<a href="/admin/platform-policy" className="text-[#355EF1] hover:text-[#355EF1] hover:underline">平台策略</a>页进行配置。
             </p>
           </div>
         ) : (
@@ -1461,7 +1461,7 @@ function OneidEditMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
@@ -1490,7 +1490,7 @@ function OneidEditMemberFormFields({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="cursor-default inline-flex">
-                    <Info className="w-3.5 h-3.5 text-gray-400" />
+                    <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
@@ -1531,7 +1531,7 @@ function DepartmentTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+        className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${isSelected ? "bg-blue-50 text-[#355EF1]" : "text-[#334155] hover:bg-gray-100"
           }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(node.id)}
@@ -1542,9 +1542,9 @@ function DepartmentTreeNode({
             onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}
           >
             {isExpanded ? (
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#A3A3A3]" />
             ) : (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />
             )}
           </button>
         ) : (
@@ -1552,8 +1552,8 @@ function DepartmentTreeNode({
             <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
           </span>
         )}
-        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
-        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-[#355EF1] font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-[#355EF1] flex-shrink-0" />}
       </div>
       {hasChildren && isExpanded && node.children!.map((child) => (
         <DepartmentTreeNode
@@ -1640,8 +1640,8 @@ function DepartmentFilter({
               }`}
             onClick={() => setTempValue("")}
           >
-            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
-            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部部门</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
           </div>
           {departments.map((dept) => (
             <DepartmentTreeNode
@@ -1658,22 +1658,22 @@ function DepartmentFilter({
         <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
-              <span className="text-blue-600 font-medium truncate">全部部门</span>
+              <span className="text-[#355EF1] font-medium truncate">全部部门</span>
             ) : pathParts.length > 0 ? (
               pathParts.map((part, idx) => (
                 <span key={idx} className="flex items-center gap-1 shrink-0">
-                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />}
-                  <span className={idx === pathParts.length - 1 ? "text-blue-600 font-medium truncate" : "text-gray-500 truncate"}>
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-[#A3A3A3] flex-shrink-0" />}
+                  <span className={idx === pathParts.length - 1 ? "text-[#355EF1] font-medium truncate" : "text-[#737373] truncate"}>
                     {part}
                   </span>
                 </span>
               ))
             ) : (
-              <span className="text-gray-400 truncate">未选择</span>
+              <span className="text-[#A3A3A3] truncate">未选择</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={handleCancel}>取消</Button>
+            <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2" onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3" onClick={handleConfirm}>确认</Button>
           </div>
         </div>
@@ -1724,13 +1724,13 @@ function CredentialResultDialog({
           {/* 账号密码展示 */}
           <div className="bg-gray-50 rounded-xl border border-[#e5e5e5] p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">用户 ID</span>
-              <span className="text-sm font-mono text-gray-800 select-all">{memberId}</span>
+              <span className="text-xs text-[#A3A3A3] font-medium uppercase tracking-wide">用户 ID</span>
+              <span className="text-sm font-mono text-[#0A0A0A] select-all">{memberId}</span>
             </div>
             <div className="border-t border-[#e5e5e5]" />
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">初始密码</span>
-              <span className="text-sm font-mono text-gray-800 tracking-widest select-none">{maskedPassword}</span>
+              <span className="text-xs text-[#A3A3A3] font-medium uppercase tracking-wide">初始密码</span>
+              <span className="text-sm font-mono text-[#0A0A0A] tracking-widest select-none">{maskedPassword}</span>
             </div>
           </div>
 
@@ -2312,8 +2312,8 @@ export default function MemberManagement() {
       <div className="page-enter min-w-0 overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
-            <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额
+            <h1 className="text-2xl font-bold text-[#0A0A0A]">用户管理</h1>
+            <p className="text-sm text-[#737373] mt-1">管理企业用户的访问权限和资源配额
               {hasOneid && (
                 <>
                   <span className="mx-2">|</span>
@@ -2324,7 +2324,7 @@ export default function MemberManagement() {
                         "_blank"
                       );
                     }}
-                    className="text-gray-500 hover:text-blue-500 inline-flex items-center gap-1 transition-colors cursor-pointer bg-transparent border-none p-0"
+                    className="text-[#737373] hover:text-[#355EF1] inline-flex items-center gap-1 transition-colors cursor-pointer bg-transparent border-none p-0"
                   >
                     前往腾讯统一身份管理用户
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -2338,7 +2338,7 @@ export default function MemberManagement() {
         {/* 我的数据源（OneID 模式下不展示） */}
         {!hasOneid && configuredAuthSources.length > 0 && (
           <div className="mb-5">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">我的数据源</h3>
+            <h3 className="text-sm font-semibold text-[#334155] mb-3">我的数据源</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {configuredAuthSources.map((source) => (
                 <div
@@ -2354,14 +2354,14 @@ export default function MemberManagement() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">{source.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{source.description}</p>
+                      <p className="text-sm font-semibold text-[#0A0A0A]">{source.name}</p>
+                      <p className="text-xs text-[#737373] mt-0.5">{source.description}</p>
                     </div>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-gray-50">
                     <div className="flex items-center gap-3">
                       <button
-                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        className="flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] transition-colors"
                         onClick={() => {
                           setAuthSourceInitialStep(2);
                           setAuthSourceInitialId(source.id);
@@ -2373,7 +2373,7 @@ export default function MemberManagement() {
                         编辑
                       </button>
                       <button
-                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
+                        className="flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] transition-colors"
                         onClick={() => {
                           setAuthSourceInitialStep(1);
                           setAuthSourceInitialId(null);
@@ -2385,7 +2385,7 @@ export default function MemberManagement() {
                         更换
                       </button>
                       <button
-                        className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 transition-colors"
+                        className="flex items-center gap-1 text-xs text-[#737373] hover:text-red-500 transition-colors"
                         onClick={() => {
                           setDeleteAuthSourceConfirm({ open: true, source });
                         }}
@@ -2395,7 +2395,7 @@ export default function MemberManagement() {
                       </button>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs ${source.enabled ? "text-blue-600" : "text-gray-400"}`}>
+                      <span className={`text-xs ${source.enabled ? "text-[#355EF1]" : "text-[#A3A3A3]"}`}>
                         {source.enabled ? "已启用" : "已禁用"}
                       </span>
                       <Switch
@@ -2461,7 +2461,7 @@ export default function MemberManagement() {
             )}
             {/* 搜索框 */}
             <div className="relative w-[260px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
               <Input
                 placeholder="搜索用户 ID..."
                 value={search}
@@ -2474,7 +2474,7 @@ export default function MemberManagement() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700 h-9 px-3"
+                className="text-[#737373] hover:text-[#334155] h-9 px-3"
                 onClick={() => {
                   setDeptFilter("");
                   setSearch("");
@@ -2492,7 +2492,7 @@ export default function MemberManagement() {
           {hasOneid && (
             <Button
               variant="outline"
-              className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+              className="border-gray-200 bg-white text-[#334155] hover:bg-gray-50"
               onClick={handleSync}
               disabled={isSyncing}
             >
@@ -2511,13 +2511,13 @@ export default function MemberManagement() {
          >
           {/* 卡片 header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-            <h2 className="font-semibold text-gray-900">全部用户</h2>
+            <h2 className="font-semibold text-[#0A0A0A]">全部用户</h2>
             {!hasOneid && (
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="icon"
-                  className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50 h-8 w-8"
+                  className="border-gray-200 bg-white text-[#334155] hover:bg-gray-50 h-8 w-8"
                   title="导出用户列表"
                   onClick={() => {
                     const headers = ["用户ID", "姓名", "角色", "状态", "创建时间"];
@@ -2583,7 +2583,7 @@ export default function MemberManagement() {
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
-                      <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                      <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-[#A3A3A3]" /></span></TooltipTrigger>
                       <TooltipContent>企业用户的唯一 ID，例如企业邮箱或企业用户唯一名称</TooltipContent>
                     </Tooltip>
                   </div>
@@ -2594,7 +2594,7 @@ export default function MemberManagement() {
                       <div className="flex items-center gap-1.5">
                         部门
                         <Tooltip>
-                          <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                          <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-[#A3A3A3]" /></span></TooltipTrigger>
                           <TooltipContent>用户的部门信息来自腾讯统一身份管理平台</TooltipContent>
                         </Tooltip>
                       </div>
@@ -2611,7 +2611,7 @@ export default function MemberManagement() {
                   <div className="flex items-center gap-1.5">
                     Agent 上限
                     <Tooltip>
-                      <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                      <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-[#A3A3A3]" /></span></TooltipTrigger>
                       <TooltipContent>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
                     </Tooltip>
                   </div>
@@ -2620,7 +2620,7 @@ export default function MemberManagement() {
                   <div className="flex items-center gap-1.5">
                     每日 Tokens 上限
                     <Tooltip>
-                      <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                      <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-[#A3A3A3]" /></span></TooltipTrigger>
                       <TooltipContent>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
                     </Tooltip>
                   </div>
@@ -2648,7 +2648,7 @@ export default function MemberManagement() {
                   <td className="px-4 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-sm font-medium text-gray-900 truncate block max-w-[180px]">{member.id}</span>
+                        <span className="text-sm font-medium text-[#0A0A0A] truncate block max-w-[180px]">{member.id}</span>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs max-w-xs break-all">{member.id}</TooltipContent>
                     </Tooltip>
@@ -2658,10 +2658,10 @@ export default function MemberManagement() {
                       {/* 部门列 */}
                       <td className="px-3 py-4" style={{ minWidth: "200px" }}>
                         {mmDeptPaths.length === 0 ? (
-                          <span className="text-sm text-gray-300">—</span>
+                          <span className="text-sm text-[#A3A3A3]">—</span>
                         ) : mmDeptPaths.length === 1 ? (
                           <span
-                            className="text-sm text-gray-600 truncate block max-w-[200px]"
+                            className="text-sm text-[#737373] truncate block max-w-[200px]"
                             title={mmDeptPaths[0].path}
                           >
                             {mmDeptPaths[0].path}
@@ -2670,10 +2670,10 @@ export default function MemberManagement() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
-                                <span className="text-sm text-gray-600 truncate">
+                                <span className="text-sm text-[#737373] truncate">
                                   {mmDeptPaths[0].path}
                                 </span>
-                                <span className="text-xs text-gray-400 tabular-nums shrink-0">
+                                <span className="text-xs text-[#A3A3A3] tabular-nums shrink-0">
                                   +{mmDeptPaths.length - 1}
                                 </span>
                               </span>
@@ -2685,7 +2685,7 @@ export default function MemberManagement() {
                                     <span className="text-gray-200 mr-1">{idx + 1}.</span>
                                     <span className="text-white">{dp.path}</span>
                                     {dp.isPrimary && (
-                                      <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
+                                      <span className="ml-2 inline-flex items-center text-[10px] font-medium text-[#355EF1] bg-blue-500/20 rounded px-1.5 py-0.5">
                                         主部门
                                       </span>
                                     )}
@@ -2700,7 +2700,7 @@ export default function MemberManagement() {
                       <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
                         <div className="flex items-center gap-1 max-w-[200px]">
                           {mmGroupItems.length === 0 ? (
-                            <span className="text-sm text-gray-300">—</span>
+                            <span className="text-sm text-[#A3A3A3]">—</span>
                           ) : (
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -2721,7 +2721,7 @@ export default function MemberManagement() {
                                     <span
                                       className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
                                         gi.kind === "oneid-dept"
-                                          ? "text-blue-400 bg-blue-500/20"
+                                          ? "text-[#355EF1] bg-blue-500/20"
                                           : "text-purple-400 bg-purple-500/20"
                                       }`}
                                     >
@@ -2742,7 +2742,7 @@ export default function MemberManagement() {
                     <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1 max-w-[200px]">
                         {manualGroupPaths.length === 0 ? (
-                          <span className="text-sm text-gray-300">—</span>
+                          <span className="text-sm text-[#A3A3A3]">—</span>
                         ) : (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -2786,13 +2786,13 @@ export default function MemberManagement() {
                         return (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-sm text-gray-700 cursor-default border-b border-dashed border-gray-300">按分组</span>
+                              <span className="text-sm text-[#334155] cursor-default border-b border-dashed border-gray-300">按分组</span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs max-w-[240px]">
                               <div className="space-y-1">
                                 {quotas.map((q) => (
                                   <div key={q.groupId} className="flex items-center justify-between gap-3">
-                                    <span className="text-gray-300">{q.groupName}</span>
+                                    <span className="text-[#A3A3A3]">{q.groupName}</span>
                                     <span className="text-white font-medium">{q.clawLimit}</span>
                                   </div>
                                 ))}
@@ -2801,7 +2801,7 @@ export default function MemberManagement() {
                           </Tooltip>
                         );
                       }
-                      return <span className="text-sm text-gray-700">{member.clawLimit}</span>;
+                      return <span className="text-sm text-[#334155]">{member.clawLimit}</span>;
                     })()}
                   </td>
                   <td className="px-3 py-4">
@@ -2811,13 +2811,13 @@ export default function MemberManagement() {
                         return (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span className="text-sm text-gray-700 cursor-default border-b border-dashed border-gray-300">按分组</span>
+                              <span className="text-sm text-[#334155] cursor-default border-b border-dashed border-gray-300">按分组</span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs max-w-[240px]">
                               <div className="space-y-1">
                                 {quotas.map((q) => (
                                   <div key={q.groupId} className="flex items-center justify-between gap-3">
-                                    <span className="text-gray-300">{q.groupName}</span>
+                                    <span className="text-[#A3A3A3]">{q.groupName}</span>
                                     <span className="text-white font-medium">{q.tokenLimit.toLocaleString()}</span>
                                   </div>
                                 ))}
@@ -2826,11 +2826,11 @@ export default function MemberManagement() {
                           </Tooltip>
                         );
                       }
-                      return <span className="text-sm text-gray-700">{member.tokenLimit.toLocaleString()}</span>;
+                      return <span className="text-sm text-[#334155]">{member.tokenLimit.toLocaleString()}</span>;
                     })()}
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-500">{member.joinTime}</span>
+                    <span className="text-sm text-[#737373]">{member.joinTime}</span>
                   </td>
                   <td className="px-4 py-4 sticky right-0 bg-white z-10 relative">
                     {memberTableCanScrollRight && (
@@ -2856,39 +2856,39 @@ export default function MemberManagement() {
                             {member.id === initialAdminId ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                  <span className="flex items-center px-2 py-1.5 text-xs text-[#A3A3A3] cursor-not-allowed select-none rounded-sm">
                                     <Key className="w-3.5 h-3.5 mr-2" />重置密码
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">初始管理员账号不允许重置密码</TooltipContent>
                               </Tooltip>
                             ) : (
-                              <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                              <DropdownMenuItem className="text-xs text-[#737373] focus:text-[#334155] focus:bg-gray-50" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
                                 <Key className="w-3.5 h-3.5 mr-2" />重置密码
                               </DropdownMenuItem>
                             )}
                             {member.id === initialAdminId ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                  <span className="flex items-center px-2 py-1.5 text-xs text-[#A3A3A3] cursor-not-allowed select-none rounded-sm">
                                     <UserX className="w-3.5 h-3.5 mr-2" />禁用
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
                               </Tooltip>
                             ) : member.status === "active" ? (
-                              <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => openDisableConfirm(member)}>
+                              <DropdownMenuItem className="text-xs text-[#737373] focus:text-[#334155] focus:bg-gray-50" onClick={() => openDisableConfirm(member)}>
                                 <UserX className="w-3.5 h-3.5 mr-2" />禁用
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem className="text-xs text-gray-500 focus:text-gray-700 focus:bg-gray-50" onClick={() => openEnableConfirm(member)}>
+                              <DropdownMenuItem className="text-xs text-[#737373] focus:text-[#334155] focus:bg-gray-50" onClick={() => openEnableConfirm(member)}>
                                 <UserCheck className="w-3.5 h-3.5 mr-2" />启用
                               </DropdownMenuItem>
                             )}
                             {member.id === initialAdminId ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="flex items-center px-2 py-1.5 text-xs text-gray-300 cursor-not-allowed select-none rounded-sm">
+                                  <span className="flex items-center px-2 py-1.5 text-xs text-[#A3A3A3] cursor-not-allowed select-none rounded-sm">
                                     <Trash2 className="w-3.5 h-3.5 mr-2" />删除
                                   </span>
                                 </TooltipTrigger>
@@ -3215,18 +3215,18 @@ export default function MemberManagement() {
             <DialogTitle>重置密码</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-5">
-            <p className="text-sm text-gray-600 leading-relaxed">
-              确认重置用户 <span className="font-semibold text-gray-900">{showResetDialog}</span> 的密码？系统将自动生成新密码。
+            <p className="text-sm text-[#737373] leading-relaxed">
+              确认重置用户 <span className="font-semibold text-[#0A0A0A]">{showResetDialog}</span> 的密码？系统将自动生成新密码。
             </p>
 
             {/* 信息发送 - 弱化视觉 */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <span className="text-xs text-gray-400">（选填）信息发送</span>
+                <span className="text-xs text-[#A3A3A3]">（选填）信息发送</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="cursor-default inline-flex">
-                      <Info className="w-3 h-3 text-gray-300" />
+                      <Info className="w-3 h-3 text-[#A3A3A3]" />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>信息发送会产生额外的短信/邮件费用，合并到腾讯云账单计费</TooltipContent>
@@ -3237,7 +3237,7 @@ export default function MemberManagement() {
                 placeholder="输入用户接收新密码的邮箱地址"
                 value={resetForm.notificationEmail}
                 onChange={(e) => setResetForm({ ...resetForm, notificationEmail: e.target.value })}
-                className="bg-white text-sm placeholder:text-gray-300 border-gray-200"
+                className="bg-white text-sm placeholder:text-[#A3A3A3] border-gray-200"
                 tabIndex={-1}
               />
             </div>
@@ -3267,14 +3267,14 @@ export default function MemberManagement() {
       >
         <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-gray-900">同步结果</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-[#0A0A0A]">同步结果</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-6">
 
             {/* ═══ 分组异常区块（上方） ═══ */}
             {(syncResultDialog?.anomalousGroups?.length ?? 0) > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">分组异常</h4>
+                <h4 className="text-sm font-semibold text-[#0A0A0A] mb-3">分组异常</h4>
 
                 {/* 分组异常提示 */}
                 <div className="flex items-start gap-2.5 bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-3">
@@ -3312,20 +3312,20 @@ export default function MemberManagement() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-50 bg-gray-50/50">
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组名称</th>
-                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组总人数</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">分组专属配置</th>
-                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Agent 实例数</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">分组名称</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">分组总人数</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">分组专属配置</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">Agent 实例数</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {syncResultDialog?.anomalousGroups?.map((group) => (
                         <tr key={group.groupId} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-gray-900">{group.groupName}</span>
+                            <span className="text-sm font-medium text-[#0A0A0A]">{group.groupName}</span>
                           </td>
                           <td className="px-6 py-4 text-center">
-                            <span className="text-sm tabular-nums text-gray-600">{group.memberCount}</span>
+                            <span className="text-sm tabular-nums text-[#737373]">{group.memberCount}</span>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex flex-wrap gap-1.5">
@@ -3337,7 +3337,7 @@ export default function MemberManagement() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-center">
-                            <span className={`text-sm tabular-nums ${group.agentInstanceCount > 0 ? "font-semibold text-red-600" : "text-gray-400"}`}>
+                            <span className={`text-sm tabular-nums ${group.agentInstanceCount > 0 ? "font-semibold text-red-600" : "text-[#A3A3A3]"}`}>
                               {group.agentInstanceCount > 0 ? `${group.agentInstanceCount} 个` : "—"}
                             </span>
                           </td>
@@ -3352,17 +3352,17 @@ export default function MemberManagement() {
             {/* ═══ 用户异常区块（下方） ═══ */}
             {(syncResultDialog?.failedUsers.length ?? 0) > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-3">用户异常</h4>
+                <h4 className="text-sm font-semibold text-[#0A0A0A] mb-3">用户异常</h4>
 
                 {/* 同步概要 */}
                 <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-3">
-                  <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-                  <p className="text-sm text-blue-600 leading-relaxed">
+                  <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
+                  <p className="text-sm text-[#355EF1] leading-relaxed">
                     本次同步
                     {[
-                      (syncResultDialog?.addedCount ?? 0) > 0 ? <React.Fragment key="added">新增用户 <span className="font-semibold text-blue-700">{syncResultDialog?.addedCount}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.addedCount ?? 0) > 0 ? <React.Fragment key="added">新增用户 <span className="font-semibold text-[#355EF1]">{syncResultDialog?.addedCount}</span> 个</React.Fragment> : null,
                       (syncResultDialog?.failedUsers.length ?? 0) > 0 ? <React.Fragment key="failed">禁用用户 <span className="font-semibold text-red-600">{syncResultDialog?.failedUsers.length}</span> 个</React.Fragment> : null,
-                      (syncResultDialog?.deletedCount ?? 0) > 0 ? <React.Fragment key="deleted">删除用户 <span className="font-semibold text-blue-700">{syncResultDialog?.deletedCount}</span> 个</React.Fragment> : null,
+                      (syncResultDialog?.deletedCount ?? 0) > 0 ? <React.Fragment key="deleted">删除用户 <span className="font-semibold text-[#355EF1]">{syncResultDialog?.deletedCount}</span> 个</React.Fragment> : null,
                     ].filter(Boolean).reduce<React.ReactNode[]>((acc, item, i) => {
                       if (i === 0) return [item];
                       return [...acc, <React.Fragment key={`sep-${i}`}>，</React.Fragment>, item];
@@ -3385,17 +3385,17 @@ export default function MemberManagement() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-50 bg-gray-50/50">
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">用户 ID</th>
-                        <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">名下 Agent</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">私有网络</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">当前状态</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">用户 ID</th>
+                        <th className="text-center px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">名下 Agent</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">私有网络</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">当前状态</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {syncResultDialog?.failedUsers.map((user) => (
                         <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4">
-                            <span className="text-sm font-medium text-gray-900">{user.id}</span>
+                            <span className="text-sm font-medium text-[#0A0A0A]">{user.id}</span>
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="text-sm font-semibold text-red-600">{user.clawCount} 个</span>
@@ -3403,11 +3403,11 @@ export default function MemberManagement() {
                           <td className="px-6 py-4">
                             {user.vpcName ? (
                               <div className="flex flex-col gap-0.5">
-                                <span className="text-sm font-medium text-blue-600">{user.vpcName}</span>
+                                <span className="text-sm font-medium text-[#355EF1]">{user.vpcName}</span>
                                 <span className="text-xs text-red-600">(有关联云资源)</span>
                               </div>
                             ) : (
-                              <span className="text-sm text-gray-400">—</span>
+                              <span className="text-sm text-[#A3A3A3]">—</span>
                             )}
                           </td>
                           <td className="px-6 py-4">
@@ -3483,23 +3483,23 @@ export default function MemberManagement() {
           <div className="py-2 space-y-3">
             {/* 用户 ID */}
             <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">用户 ID</span>
-              <span className="text-sm font-medium text-gray-900">{deleteCheckDialog?.memberId}</span>
+              <span className="text-sm text-[#737373]">用户 ID</span>
+              <span className="text-sm font-medium text-[#0A0A0A]">{deleteCheckDialog?.memberId}</span>
             </div>
 
             {/* 名下 Agent 数量（单行） */}
             <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 Agent 数量</span>
+              <span className="text-sm text-[#737373]">名下 Agent 数量</span>
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-semibold ${(deleteCheckDialog?.clawCount ?? 0) > 0 ? "text-red-600" : "text-green-600"
                   }`}>
                   {deleteCheckDialog?.clawRefreshing
-                    ? <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+                    ? <Loader2 className="w-4 h-4 animate-spin text-[#A3A3A3]" />
                     : <>{deleteCheckDialog?.clawCount ?? 0} 个</>
                   }
                 </span>
                 <button
-                  className="text-gray-400 hover:text-blue-500 transition-colors"
+                  className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                   title="刷新"
                   onClick={() => {
                     if (!deleteCheckDialog) return;
@@ -3520,19 +3520,19 @@ export default function MemberManagement() {
             {/* 自动分配 VPC：私有网络单行，关联资源状态用括号跟在 VPC 名称后 */}
             {deleteCheckDialog?.vpcType === "auto" && (
               <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-                <span className="text-sm text-gray-500">私有网络</span>
+                <span className="text-sm text-[#737373]">私有网络</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm">
                     <a
                       href="https://console.cloud.tencent.com/vpc"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                      className="font-medium text-[#355EF1] hover:text-[#355EF1] hover:underline"
                     >
                       {deleteCheckDialog?.vpcName}
                     </a>
                     {deleteCheckDialog?.vpcRefreshing ? (
-                      <span className="text-gray-400 ml-1">(检查中...)</span>
+                      <span className="text-[#A3A3A3] ml-1">(检查中...)</span>
                     ) : deleteCheckDialog?.hasVpcResources ? (
                       <span className="text-red-600 ml-1">(有关联云资源)</span>
                     ) : (
@@ -3540,7 +3540,7 @@ export default function MemberManagement() {
                     )}
                   </span>
                   <button
-                    className="text-gray-400 hover:text-blue-500 transition-colors"
+                    className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                     title="刷新"
                     onClick={() => {
                       if (!deleteCheckDialog) return;
@@ -3679,12 +3679,12 @@ export default function MemberManagement() {
           </DialogHeader>
           <div className="py-2 space-y-4">
             <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">用户 ID</span>
-              <span className="text-sm font-medium text-gray-900">{enableConfirmDialog?.memberId}</span>
+              <span className="text-sm text-[#737373]">用户 ID</span>
+              <span className="text-sm font-medium text-[#0A0A0A]">{enableConfirmDialog?.memberId}</span>
             </div>
             <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">名下 Agent 数量</span>
-              <span className="text-sm font-semibold text-gray-800">{enableConfirmDialog?.clawCount ?? 0} 个</span>
+              <span className="text-sm text-[#737373]">名下 Agent 数量</span>
+              <span className="text-sm font-semibold text-[#0A0A0A]">{enableConfirmDialog?.clawCount ?? 0} 个</span>
             </div>
             <div className="rounded-xl bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700 space-y-2">
               <p className="font-medium">启用后将产生以下影响：</p>
@@ -3717,7 +3717,7 @@ export default function MemberManagement() {
             <DialogTitle>确认删除用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <p className="text-sm text-gray-600">以下资源将被删除：</p>
+            <p className="text-sm text-[#737373]">以下资源将被删除：</p>
 
             {/* 资源列表：每行左边有删除 icon */}
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 space-y-2">
@@ -3760,25 +3760,25 @@ export default function MemberManagement() {
             <DialogTitle>存量 Agent 实例处理</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-[#334155]">
               该用户在以下分组中创建了 Agent 实例，用户已从这些分组中移除，请选择如何处理存量实例：
             </p>
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-white">
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">Agent 实例名称 / ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">分组</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {agentInstanceDialog?.agents.flatMap((a) =>
                     a.instances.map((inst) => (
                       <tr key={inst.id}>
-                        <td className="px-3 py-2 text-gray-700">{agentInstanceDialog.userId}</td>
-                        <td className="px-3 py-2 text-gray-700">{inst.name}<span className="text-gray-400 ml-1">({inst.id})</span></td>
-                        <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
+                        <td className="px-3 py-2 text-[#334155]">{agentInstanceDialog.userId}</td>
+                        <td className="px-3 py-2 text-[#334155]">{inst.name}<span className="text-[#A3A3A3] ml-1">({inst.id})</span></td>
+                        <td className="px-3 py-2 text-[#334155]">{a.groupName}</td>
                       </tr>
                     ))
                   )}
@@ -3787,7 +3787,7 @@ export default function MemberManagement() {
             </div>
           </div>
           <div className="py-2 space-y-2">
-            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            <p className="text-xs font-medium text-[#334155] mb-1">处理方式</p>
             {[
               { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
               { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
@@ -3801,8 +3801,8 @@ export default function MemberManagement() {
                   {agentInstanceChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                  <p className="text-sm font-medium text-[#0A0A0A]">{opt.title}</p>
+                  <p className="text-xs text-[#737373] mt-0.5">{opt.desc}</p>
                 </div>
               </label>
             ))}
@@ -3834,24 +3834,24 @@ export default function MemberManagement() {
             <DialogTitle>存量 Agent 实例处理</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-[#334155]">
               本次同步导致部分用户被移除分组或上级分组发生变更，以下用户在原分组中创建了 Agent 实例，请选择如何处理存量实例：
             </p>
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 sticky top-0">
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">Agent 实例名称 / ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">分组</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {syncAgentInstanceDialog?.agents.map((a) => (
                     <tr key={a.instanceId}>
-                      <td className="px-3 py-2 text-gray-700">{a.userId}</td>
-                      <td className="px-3 py-2 text-gray-700">{a.instanceName}<span className="text-gray-400 ml-1">({a.instanceId})</span></td>
-                      <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
+                      <td className="px-3 py-2 text-[#334155]">{a.userId}</td>
+                      <td className="px-3 py-2 text-[#334155]">{a.instanceName}<span className="text-[#A3A3A3] ml-1">({a.instanceId})</span></td>
+                      <td className="px-3 py-2 text-[#334155]">{a.groupName}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -3859,7 +3859,7 @@ export default function MemberManagement() {
             </div>
           </div>
           <div className="py-2 space-y-2">
-            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            <p className="text-xs font-medium text-[#334155] mb-1">处理方式</p>
             {[
               { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
               { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
@@ -3873,8 +3873,8 @@ export default function MemberManagement() {
                   {syncAgentInstanceChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                  <p className="text-sm font-medium text-[#0A0A0A]">{opt.title}</p>
+                  <p className="text-xs text-[#737373] mt-0.5">{opt.desc}</p>
                 </div>
               </label>
             ))}
@@ -3923,7 +3923,7 @@ export default function MemberManagement() {
               <Label>分组名称</Label>
               <div className="flex items-center gap-1">
                 {newGroupParentId && (
-                  <span className="text-xs text-gray-400 shrink-0">
+                  <span className="text-xs text-[#A3A3A3] shrink-0">
                     {(hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS).find((g) => g.id === newGroupParentId)?.name} /
                   </span>
                 )}
@@ -3936,7 +3936,7 @@ export default function MemberManagement() {
                   autoFocus
                 />
               </div>
-              <p className="text-xs text-gray-400">分组名称为唯一标识，不能与已有分组重名，创建后支持修改</p>
+              <p className="text-xs text-[#A3A3A3]">分组名称为唯一标识，不能与已有分组重名，创建后支持修改</p>
             </div>
           </div>
           <DialogFooter>
@@ -3958,20 +3958,20 @@ export default function MemberManagement() {
             return (
               <div className="py-2 space-y-3">
                 <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">分组名称</span>
-                  <span className="text-sm font-medium text-gray-900">{deleteGroupDialog?.groupName}</span>
+                  <span className="text-sm text-[#737373]">分组名称</span>
+                  <span className="text-sm font-medium text-[#0A0A0A]">{deleteGroupDialog?.groupName}</span>
                 </div>
                 <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-                  <span className="text-sm text-gray-500">分组内用户数</span>
-                  <span className="text-sm font-semibold text-gray-800">{deleteGroupDialog?.memberCount ?? 0} 人</span>
+                  <span className="text-sm text-[#737373]">分组内用户数</span>
+                  <span className="text-sm font-semibold text-[#0A0A0A]">{deleteGroupDialog?.memberCount ?? 0} 人</span>
                 </div>
 
                 {/* 已应用配置 */}
                 <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-500">已应用配置</span>
+                    <span className="text-sm text-[#737373]">已应用配置</span>
                     <button
-                      className="text-gray-400 hover:text-blue-500 transition-colors"
+                      className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                       title="刷新"
                       onClick={() => {
                         if (!deleteGroupDialog) return;
@@ -4037,12 +4037,12 @@ export default function MemberManagement() {
           <div className="py-2 space-y-3">
             <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">用户 ID</span>
-                <span className="text-sm font-medium text-gray-900">{removeFromGroupDialog?.memberId}</span>
+                <span className="text-sm text-[#737373]">用户 ID</span>
+                <span className="text-sm font-medium text-[#0A0A0A]">{removeFromGroupDialog?.memberId}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">分组名称</span>
-                <span className="text-sm font-medium text-gray-900">{removeFromGroupDialog?.groupName}</span>
+                <span className="text-sm text-[#737373]">分组名称</span>
+                <span className="text-sm font-medium text-[#0A0A0A]">{removeFromGroupDialog?.groupName}</span>
               </div>
             </div>
             <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 leading-relaxed">
@@ -4071,8 +4071,8 @@ export default function MemberManagement() {
           </DialogHeader>
           {/* 单分组规则提示 */}
           <div className="flex items-center gap-1.5 px-2.5 py-2 bg-blue-50 border border-blue-100 rounded-xl">
-            <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-            <span className="text-xs text-blue-600">一个用户支持加入多个分组，可按分组设置不同的配置与权限</span>
+            <Info className="w-3.5 h-3.5 text-[#355EF1] shrink-0" />
+            <span className="text-xs text-[#355EF1]">一个用户支持加入多个分组，可按分组设置不同的配置与权限</span>
           </div>
           <div className="py-2 space-y-3">
             <div className="flex items-center gap-2">
@@ -4084,7 +4084,7 @@ export default function MemberManagement() {
                 />
               )}
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
                 <Input
                   placeholder="搜索用户 ID..."
                   value={addToGroupSearch}
@@ -4112,7 +4112,7 @@ export default function MemberManagement() {
                     searchFiltered = searchFiltered.filter((m) => (MOCK_MEMBER_DEPARTMENTS[m.id] || "").startsWith(selectedPath));
                   }
                 }
-                if (searchFiltered.length === 0) return <p className="text-xs text-gray-400 text-center py-6">没有可添加的用户</p>;
+                if (searchFiltered.length === 0) return <p className="text-xs text-[#A3A3A3] text-center py-6">没有可添加的用户</p>;
                 return searchFiltered.map((m) => {
                   const isInCurrentGroup = currentGroup?.memberIds.includes(m.id) ?? false;
                   const otherGroup = groups.find((g) => g.id !== selectedGroupId && g.memberIds.includes(m.id));
@@ -4133,14 +4133,14 @@ export default function MemberManagement() {
                             prev.includes(m.id) ? prev.filter((id) => id !== m.id) : [...prev, m.id]
                           );
                         }}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                        className="rounded border-gray-300 text-[#355EF1] focus:ring-blue-500 disabled:opacity-50"
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm text-gray-900 block truncate">{m.id}</span>
+                        <span className="text-sm text-[#0A0A0A] block truncate">{m.id}</span>
                         {hasOneid && MOCK_MEMBER_DEPARTMENTS[m.id] && (
-                          <span className="text-xs text-gray-400 block truncate">{MOCK_MEMBER_DEPARTMENTS[m.id]}</span>
+                          <span className="text-xs text-[#A3A3A3] block truncate">{MOCK_MEMBER_DEPARTMENTS[m.id]}</span>
                         )}
-                        <span className="text-xs text-gray-400 block truncate">{groupDisplay}</span>
+                        <span className="text-xs text-[#A3A3A3] block truncate">{groupDisplay}</span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <StatusTag variant={m.role === "admin" ? "blue" : "gray"}>
@@ -4165,8 +4165,8 @@ export default function MemberManagement() {
             </div>
             {addToGroupSelected.length > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">已选择 {addToGroupSelected.length} 名用户</span>
-                <button className="text-xs text-blue-500 hover:text-blue-600 hover:underline" onClick={() => setAddToGroupSelected([])}>清除筛选</button>
+                <span className="text-xs text-[#737373]">已选择 {addToGroupSelected.length} 名用户</span>
+                <button className="text-xs text-[#355EF1] hover:text-[#355EF1] hover:underline" onClick={() => setAddToGroupSelected([])}>清除筛选</button>
               </div>
             )}
           </div>
@@ -4229,8 +4229,8 @@ export default function MemberManagement() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900">{deleteAuthSourceConfirm.source.name}</p>
-                  <p className="text-xs text-gray-500">{deleteAuthSourceConfirm.source.description}</p>
+                  <p className="text-sm font-medium text-[#0A0A0A]">{deleteAuthSourceConfirm.source.name}</p>
+                  <p className="text-xs text-[#737373]">{deleteAuthSourceConfirm.source.description}</p>
                 </div>
               </div>
             )}

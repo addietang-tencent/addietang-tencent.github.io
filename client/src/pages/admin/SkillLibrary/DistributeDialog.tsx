@@ -111,8 +111,8 @@ export default function DistributeDialog({
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-gray-900">已开始安装流程</p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="font-medium text-[#0A0A0A]">已开始安装流程</p>
+                <p className="text-sm text-[#737373] mt-1">
                   已向 {selectedInstances.length} 个 Agent 实例下发 {skillName}
                 </p>
               </div>
@@ -144,7 +144,7 @@ export default function DistributeDialog({
         {/* 搜索框 + 筛选 */}
         <div className="flex gap-2 mb-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
             <Input
               placeholder="搜索 Agent 云服务器..."
               value={searchQuery}
@@ -174,7 +174,7 @@ export default function DistributeDialog({
               checked={selectedInstances.length === filteredInstances.length && filteredInstances.length > 0}
               onCheckedChange={handleSelectAll}
             />
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-[#0A0A0A]">
               全选 ({selectedInstances.length}/{filteredInstances.length})
             </span>
           </div>
@@ -190,7 +190,7 @@ export default function DistributeDialog({
                 onCheckedChange={() => handleSelectInstance(instance.id)}
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{instance.name}</p>
+                <p className="text-sm font-medium text-[#0A0A0A] truncate">{instance.name}</p>
               </div>
               <div className="flex-shrink-0">
                 {getStatusDisplay(instance.distributionStatus)}

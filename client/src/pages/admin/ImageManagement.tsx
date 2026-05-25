@@ -338,7 +338,7 @@ function ImageScopePopover({
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -357,7 +357,7 @@ function ImageScopePopover({
             {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
             {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
           </span>
-          <span className="text-xs text-gray-700 truncate">{node.name}</span>
+          <span className="text-xs text-[#334155] truncate">{node.name}</span>
         </button>
         {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
       </div>
@@ -433,7 +433,7 @@ function ImageScopePopover({
       {renderBadges()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-          <button className="self-center text-gray-300 hover:text-blue-500 transition-colors" title="编辑应用范围">
+          <button className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors" title="编辑应用范围">
             <Pencil className="w-3 h-3" />
           </button>
         </PopoverTrigger>
@@ -465,11 +465,11 @@ function ImageScopePopover({
               <div className="space-y-1.5">
                 {!hasGroups ? (
                   <div className="text-center py-5 px-2">
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-xs text-[#A3A3A3] leading-relaxed">
                       暂无分组，请前往
                       <a
                         href="/admin/members"
-                        className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5"
+                        className="text-[#355EF1] hover:text-[#355EF1] hover:underline mx-0.5"
                         onClick={(e) => { e.preventDefault(); setOpen(false); window.location.href = "/admin/members"; }}
                       >
                         用户管理
@@ -506,7 +506,7 @@ function ImageScopePopover({
                                 : new Set([tag.id]);
                               setDraftGroupIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
                             }}
-                            className="text-blue-400 hover:text-blue-600 shrink-0"
+                            className="text-[#355EF1] hover:text-[#355EF1] shrink-0"
                           >
                             <XIcon className="w-2.5 h-2.5" />
                           </button>
@@ -517,12 +517,12 @@ function ImageScopePopover({
                         placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-gray-400"
+                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-[#A3A3A3]"
                       />
                       {(selectedTags.length > 0 || searchQuery) && (
                         <button
                           onClick={handleClearSelection}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] opacity-0 group-hover:opacity-100 transition-opacity"
                           title="清除全部"
                         >
                           <XIcon className="w-3.5 h-3.5" />
@@ -537,7 +537,7 @@ function ImageScopePopover({
                         if (!anyVisible) return null;
                         return (
                           <div key={bucket} className="mb-1">
-                            <div className="px-2 py-1 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                            <div className="px-2 py-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wider">
                               {BUCKET_LABELS[bucket]}
                             </div>
                             {trees.map((root) => renderTreeNode(root, 0))}
@@ -1098,9 +1098,9 @@ export default function ImageManagement() {
           {/* 页面标题 */}
           <div className="mb-4">
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-gray-900">Agent 类型</h1>
+              <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-[#737373] mt-1">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
             </p>
           </div>
@@ -1226,7 +1226,7 @@ export default function ImageManagement() {
             <DialogTitle>
               导入自定义镜像
               {importTargetAgentType && (
-                <span className="text-xs text-gray-400 font-normal ml-2">
+                <span className="text-xs text-[#A3A3A3] font-normal ml-2">
                   · {getTypeLabel(importTargetAgentType)}
                 </span>
               )}
@@ -1366,7 +1366,7 @@ export default function ImageManagement() {
                   ))}
                   {customTypes.length > 0 && (
                     <>
-                      <div className="px-2 py-1 text-[10px] text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1">
+                      <div className="px-2 py-1 text-[10px] text-[#A3A3A3] uppercase tracking-wide border-t border-gray-100 mt-1">
                         自定义类型
                       </div>
                       {customTypes.map((t) => (
@@ -1375,7 +1375,7 @@ export default function ImageManagement() {
                             {t.kernelBase === "native" ? (
                               <Sparkles className="w-3 h-3 text-orange-500" />
                             ) : (
-                              <span className="text-[10px] text-blue-500 font-medium">
+                              <span className="text-[10px] text-[#355EF1] font-medium">
                                 [兼容 {kernelBaseLabel(t.kernelBase)}]
                               </span>
                             )}
@@ -1421,7 +1421,7 @@ export default function ImageManagement() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>编辑镜像信息</DialogTitle>
-            <DialogDescription className="text-xs text-gray-500">
+            <DialogDescription className="text-xs text-[#737373]">
               修改该自定义镜像所属的 Agent 类型和版本号
             </DialogDescription>
           </DialogHeader>
@@ -1441,7 +1441,7 @@ export default function ImageManagement() {
                   ))}
                   {customTypes.length > 0 && (
                     <>
-                      <div className="px-2 py-1 text-[10px] text-gray-400 uppercase tracking-wide border-t border-gray-100 mt-1">
+                      <div className="px-2 py-1 text-[10px] text-[#A3A3A3] uppercase tracking-wide border-t border-gray-100 mt-1">
                         自定义类型
                       </div>
                       {customTypes.map((t) => (
@@ -1481,7 +1481,7 @@ export default function ImageManagement() {
         <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>添加自定义 Agent 类型</DialogTitle>
-            <DialogDescription className="text-xs text-gray-500">
+            <DialogDescription className="text-xs text-[#737373]">
               支持基于现有 Agent 内核扩展，或添加完全自研的 Agent 类型
             </DialogDescription>
           </DialogHeader>
@@ -1501,7 +1501,7 @@ export default function ImageManagement() {
               {newTypeNameError ? (
                 <p className="text-xs text-red-500 mt-1">{newTypeNameError}</p>
               ) : (
-                <p className="text-xs text-gray-400 mt-1">用户端展示的类型名称，可包含中英文，需保持唯一</p>
+                <p className="text-xs text-[#A3A3A3] mt-1">用户端展示的类型名称，可包含中英文，需保持唯一</p>
               )}
             </div>
 

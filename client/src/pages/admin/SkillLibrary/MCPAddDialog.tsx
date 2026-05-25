@@ -408,18 +408,18 @@ export default function MCPAddDialog({
               <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
                 step === 1
                   ? 'bg-blue-600 text-white'
-                  : 'bg-blue-100 text-blue-600'
+                  : 'bg-blue-100 text-[#355EF1]'
               }`}>1</span>
-              <span className={`text-sm ${step === 1 ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>基本信息</span>
+              <span className={`text-sm ${step === 1 ? 'text-[#0A0A0A] font-medium' : 'text-[#A3A3A3]'}`}>基本信息</span>
             </div>
             <div className="w-16 h-px bg-gray-200" />
             <div className="flex items-center gap-2">
               <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
                 step === 2
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-400'
+                  : 'bg-gray-200 text-[#A3A3A3]'
               }`}>2</span>
-              <span className={`text-sm ${step === 2 ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>文档说明</span>
+              <span className={`text-sm ${step === 2 ? 'text-[#0A0A0A] font-medium' : 'text-[#A3A3A3]'}`}>文档说明</span>
             </div>
           </div>
         </div>
@@ -438,8 +438,8 @@ export default function MCPAddDialog({
             <div className="flex-1 overflow-y-auto space-y-5 px-6">
               {/* 用户自填字段提示 */}
               <div className="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-                <span className="text-gray-400 text-sm mt-0.5 shrink-0">💡</span>
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <span className="text-[#A3A3A3] text-sm mt-0.5 shrink-0">💡</span>
+                <p className="text-xs text-[#737373] leading-relaxed">
                   用户可在租户端自选配此 MCP，请注意敏感数据泄露风险。
                 </p>
               </div>
@@ -451,7 +451,7 @@ export default function MCPAddDialog({
                   <Label htmlFor="mcp-name" className="text-sm">
                     服务标识 <span className="text-red-500">*</span>
                   </Label>
-                  <p className="text-xs text-gray-400 mt-0.5 mb-1">
+                  <p className="text-xs text-[#A3A3A3] mt-0.5 mb-1">
                     唯一标识，对应 JSON 中的 server key，创建后不可修改
                   </p>
                   <Input
@@ -464,7 +464,7 @@ export default function MCPAddDialog({
                   {errors.name ? (
                     <p className="text-xs text-red-500 mt-1">{errors.name}</p>
                   ) : (
-                    <p className="text-xs text-gray-400 mt-1">仅支持英文字母、数字、连字符，长度 1-64 个字符</p>
+                    <p className="text-xs text-[#A3A3A3] mt-1">仅支持英文字母、数字、连字符，长度 1-64 个字符</p>
                   )}
                 </div>
 
@@ -473,7 +473,7 @@ export default function MCPAddDialog({
                   <Label htmlFor="mcp-display-name" className="text-sm">
                     名称
                   </Label>
-                  <p className="text-xs text-gray-400 mt-0.5 mb-1">
+                  <p className="text-xs text-[#A3A3A3] mt-0.5 mb-1">
                     可选的显示名称，不填则默认与服务标识一致
                   </p>
                   <Input
@@ -519,12 +519,12 @@ export default function MCPAddDialog({
                               : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                           }`}
                         >
-                          <IconComp className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
+                          <IconComp className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-[#355EF1]' : 'text-[#A3A3A3]'}`} />
                           <div className="text-left">
-                            <div className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                            <div className={`text-sm font-medium ${isSelected ? 'text-[#355EF1]' : 'text-[#334155]'}`}>
                               {MCP_CONNECTION_CATEGORY_MAP[cat].label}
                             </div>
-                            <div className="text-xs text-gray-400 mt-0.5">
+                            <div className="text-xs text-[#A3A3A3] mt-0.5">
                               {MCP_CONNECTION_CATEGORY_MAP[cat].description}
                             </div>
                           </div>
@@ -547,7 +547,7 @@ export default function MCPAddDialog({
                       className="overflow-hidden"
                     >
                     <div className="mt-3 ml-1">
-                      <Label className="text-xs text-gray-500 mb-1.5 block">传输协议</Label>
+                      <Label className="text-xs text-[#737373] mb-1.5 block">传输协议</Label>
                       <div className="flex gap-2">
                         {(Object.keys(MCP_REMOTE_PROTOCOL_MAP) as ('streamable-http' | 'sse')[]).map((proto) => {
                           const isSelected = remoteProtocol === proto;
@@ -559,8 +559,8 @@ export default function MCPAddDialog({
                               onClick={() => handleRemoteProtocolChange(proto)}
                               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all text-sm ${
                                 isSelected
-                                  ? 'border-blue-500 bg-blue-50/60 text-blue-700 font-medium'
-                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                  ? 'border-blue-500 bg-blue-50/60 text-[#355EF1] font-medium'
+                                  : 'border-gray-200 bg-white text-[#737373] hover:border-gray-300'
                               }`}
                             >
                               <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isSelected ? 'bg-blue-500' : 'bg-gray-300'}`} />
@@ -600,7 +600,7 @@ export default function MCPAddDialog({
                 <Label className="text-base font-semibold">
                   服务配置 <span className="text-red-500">*</span>
                 </Label>
-                <p className="text-xs text-gray-500 mb-1">
+                <p className="text-xs text-[#737373] mb-1">
                   外层结构 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">mcp.servers.{displayServerName}</code> 已固定，仅需编辑服务器字段内容；可用 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">&lt;&gt;</code> 框住需用户填写的内容。
                 </p>
 
@@ -610,7 +610,7 @@ export default function MCPAddDialog({
                     <button
                       type="button"
                       onClick={() => setConfigRefExpanded(!configRefExpanded)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#737373] bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       {configRefExpanded ? (
                         <ChevronDown className="w-3.5 h-3.5" />
@@ -632,11 +632,11 @@ export default function MCPAddDialog({
                 {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden font-mono text-xs">
                   {/* 固定前缀行（不可编辑）— 4 层深度，2 空格缩进 */}
-                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
+                  <div className="bg-gray-50 text-[#A3A3A3] px-3 py-1.5 border-b border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'{'}</div>
                     <div>{'  "mcp": {'}</div>
                     <div>{'    "servers": {'}</div>
-                    <div>{'      '}<span className="text-gray-500">{`"${displayServerName}"`}</span>{': {'}</div>
+                    <div>{'      '}<span className="text-[#737373]">{`"${displayServerName}"`}</span>{': {'}</div>
                   </div>
                   {/* 可编辑区域（第四层内容） */}
                   <div className="relative">
@@ -647,7 +647,7 @@ export default function MCPAddDialog({
                           <button
                             type="button"
                             onClick={() => setServerValueContent(trimCommonIndent(serverValueContent))}
-                            className="absolute top-1.5 right-2 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                            className="absolute top-1.5 right-2 z-10 flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] text-[#A3A3A3] hover:text-[#737373] hover:bg-gray-100 transition-colors"
                           >
                             <AlignLeft className="w-3 h-3" />
                             整理缩进
@@ -668,7 +668,7 @@ export default function MCPAddDialog({
                     />
                   </div>
                   {/* 固定后缀行（不可编辑） */}
-                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
+                  <div className="bg-gray-50 text-[#A3A3A3] px-3 py-1.5 border-t border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'      }'}</div>
                     <div>{'    }'}</div>
                     <div>{'  }'}</div>
@@ -697,18 +697,18 @@ export default function MCPAddDialog({
                   const fieldKeys = placeholders.length > 0 ? extractFieldKeys(serverValueContent, placeholders) : [];
                   return (
                     <div className="flex items-center gap-2 mt-2 mb-3 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-                      <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                      <div className="text-xs text-blue-700 leading-relaxed flex items-center gap-1.5 flex-wrap">
+                      <Sparkles className="w-3.5 h-3.5 text-[#355EF1] shrink-0" />
+                      <div className="text-xs text-[#355EF1] leading-relaxed flex items-center gap-1.5 flex-wrap">
                         <span>需填写字段：</span>
                         {fieldKeys.length > 0 ? (
                           fieldKeys.map((f, i) => (
                             <span key={f} className="inline-flex items-center">
-                              {i > 0 && <span className="mx-0.5 text-blue-300">、</span>}
-                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium text-xs">{f}</span>
+                              {i > 0 && <span className="mx-0.5 text-[#355EF1]">、</span>}
+                              <span className="px-2 py-0.5 bg-blue-100 text-[#355EF1] rounded-full font-medium text-xs">{f}</span>
                             </span>
                           ))
                         ) : (
-                          <span className="text-blue-400">无</span>
+                          <span className="text-[#355EF1]">无</span>
                         )}
                       </div>
                     </div>
@@ -753,8 +753,8 @@ export default function MCPAddDialog({
                       onClick={() => setUsageViewMode('edit')}
                       className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                         usageViewMode === 'edit'
-                          ? 'bg-white text-gray-900 shadow-sm font-medium'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                          : 'text-[#737373] hover:text-[#334155]'
                       }`}
                     >
                       <Code className="w-3 h-3" />
@@ -765,8 +765,8 @@ export default function MCPAddDialog({
                       onClick={() => setUsageViewMode('preview')}
                       className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                         usageViewMode === 'preview'
-                          ? 'bg-white text-gray-900 shadow-sm font-medium'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                          : 'text-[#737373] hover:text-[#334155]'
                       }`}
                     >
                       <Eye className="w-3 h-3" />
@@ -774,7 +774,7 @@ export default function MCPAddDialog({
                     </button>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">Markdown 格式，说明如何使用该 MCP 服务</p>
+                <p className="text-xs text-[#737373]">Markdown 格式，说明如何使用该 MCP 服务</p>
                 {usageViewMode === 'edit' ? (
                   <Textarea
                     value={usageDoc}
@@ -788,7 +788,7 @@ export default function MCPAddDialog({
                     {usageDoc.trim() ? (
                       <MDXRenderer content={usageDoc} />
                     ) : (
-                      <p className="text-sm text-gray-400">暂无内容</p>
+                      <p className="text-sm text-[#A3A3A3]">暂无内容</p>
                     )}
                   </div>
                 )}
@@ -804,8 +804,8 @@ export default function MCPAddDialog({
                       onClick={() => setToolViewMode('edit')}
                       className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                         toolViewMode === 'edit'
-                          ? 'bg-white text-gray-900 shadow-sm font-medium'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                          : 'text-[#737373] hover:text-[#334155]'
                       }`}
                     >
                       <Code className="w-3 h-3" />
@@ -816,8 +816,8 @@ export default function MCPAddDialog({
                       onClick={() => setToolViewMode('preview')}
                       className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                         toolViewMode === 'preview'
-                          ? 'bg-white text-gray-900 shadow-sm font-medium'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                          : 'text-[#737373] hover:text-[#334155]'
                       }`}
                     >
                       <Eye className="w-3 h-3" />
@@ -825,7 +825,7 @@ export default function MCPAddDialog({
                     </button>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">Markdown 格式，说明该 MCP 暴露的工具及参数</p>
+                <p className="text-xs text-[#737373]">Markdown 格式，说明该 MCP 暴露的工具及参数</p>
                 {toolViewMode === 'edit' ? (
                   <Textarea
                     value={toolDoc}
@@ -839,7 +839,7 @@ export default function MCPAddDialog({
                     {toolDoc.trim() ? (
                       <MDXRenderer content={toolDoc} />
                     ) : (
-                      <p className="text-sm text-gray-400">暂无内容</p>
+                      <p className="text-sm text-[#A3A3A3]">暂无内容</p>
                     )}
                   </div>
                 )}

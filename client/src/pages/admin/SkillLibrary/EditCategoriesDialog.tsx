@@ -52,7 +52,7 @@ export default function EditCategoriesDialog({
         <DialogHeader>
           <DialogTitle>修改分类</DialogTitle>
           {skillName && (
-            <p className="text-sm text-gray-600 mt-2">请选择 {skillName} Skill 的分类</p>
+            <p className="text-sm text-[#737373] mt-2">请选择 {skillName} Skill 的分类</p>
           )}
         </DialogHeader>
 

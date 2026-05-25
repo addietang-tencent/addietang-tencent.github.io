@@ -9,6 +9,7 @@ import { UserRoleProvider } from "./contexts/UserRoleContext";
 // Demo
 import SsoLoginDemo from "./pages/SsoLoginDemo";
 import ComponentPreview from "./pages/ComponentPreview";
+import DesignSystemComponents from "./pages/DesignSystemComponents";
 
 // Landing
 import LandingPageV2 from "./pages/landing";
@@ -66,6 +67,7 @@ function Router() {
        {/* Demo */}
       <Route path="/demo/sso-login" component={SsoLoginDemo} />
       <Route path="/component-preview/:name" component={ComponentPreview} />
+      <Route path="/design-system/components" component={DesignSystemComponents} />
 
       {/* Tenant Routes */}
       <Route path="/my-openclaw" component={MyAgent} />

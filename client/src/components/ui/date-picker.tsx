@@ -28,6 +28,12 @@ export interface DatePickerProps {
   max?: string;
   /** Additional className for the trigger button */
   className?: string;
+  /**
+   * 用户端形态：圆角变为 rounded-full（胶囊），与 tenant-* Button 系列对齐。
+   * 仅 pages/tenant/** 业务页使用；管理端保持 rounded-[4px]。
+   * 规范来源：SKILL-TENANT.md（2026-05-23 控件圆角对齐）
+   */
+  tenant?: boolean;
 }
 
 /** Parse YYYY-MM-DD string to Date (local timezone) */
@@ -59,6 +65,7 @@ function DatePicker({
   min,
   max,
   className,
+  tenant = false,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -92,8 +99,10 @@ function DatePicker({
         <button
           type="button"
           disabled={disabled}
+          data-tenant={tenant ? "true" : undefined}
           className={cn(
-            "inline-flex items-center justify-between gap-2 h-9 px-3 text-sm rounded-[4px] border border-[#E5E5E5] bg-white transition-colors cursor-pointer select-none whitespace-nowrap",
+            "inline-flex items-center justify-between gap-2 h-9 px-3 text-sm border border-[#E5E5E5] bg-white transition-colors cursor-pointer select-none whitespace-nowrap",
+            tenant ? "rounded-full" : "rounded-[4px]",
             "hover:border-[#1447E6]",
             "focus:outline-none focus:border-[#1447E6]",
             "focus-visible:outline-none focus-visible:border-[#1447E6]",

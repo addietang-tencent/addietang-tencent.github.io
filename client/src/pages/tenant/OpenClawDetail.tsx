@@ -10,7 +10,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRoute, Link } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
-import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
+import {
+  TenantSegment as Segment,
+  TenantSegmentList as SegmentList,
+  TenantSegmentItem as SegmentItem,
+} from "@/components/ui/segment";
 import { Badge } from "@/components/ui/badge";
 import { StatusTag } from "@/components/ui/status-tag";
 import { Input } from "@/components/ui/input";
@@ -1079,7 +1083,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       return (
         <div className="space-y-3">
           {/* 快捷/手动 Tab（快捷默认选中） */}
-          <div className="flex rounded-[4px] border border-gray-200">
+          <div className="flex rounded-[12px] border border-gray-200">
             <button
               className={`flex-1 py-2 text-sm font-medium transition-colors rounded-l-lg ${
                 weworkConfigMode === "quick" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"
@@ -1103,6 +1107,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               {currentChannelConfig.fields!.map((field) => (
                 <div key={field.key} className="relative">
                   <Input
+                    tenant
                     type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
                     placeholder={field.label}
                     value={channelFields[field.key] || ""}
@@ -1140,7 +1145,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       return (
         <div className="space-y-3">
           {/* 快捷配置在左，手动配置在右 */}
-          <div className="flex rounded-[4px] border border-gray-200">
+          <div className="flex rounded-[12px] border border-gray-200">
             <button
               className={`flex-1 py-2 text-sm font-medium transition-colors border-r border-gray-200 rounded-l-lg ${feishuConfigMode === "quick" ? "bg-white text-blue-600" : "bg-gray-50 text-gray-500 hover:bg-gray-100"}`}
               onClick={() => setFeishuConfigMode("quick")}
@@ -1160,6 +1165,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               {currentChannelConfig.fields!.map((field) => (
                 <div key={field.key} className="relative">
                   <Input
+                    tenant
                     type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
                     placeholder={field.label}
                     value={channelFields[field.key] || ""}
@@ -1192,7 +1198,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
     if (currentChannelConfig.adminCustomMode) {
       if (!currentChannelConfig.fields || currentChannelConfig.fields.length === 0) {
         return (
-          <div className="rounded-[4px] bg-gray-50 border border-[#e5e5e5] px-4 py-3">
+          <div className="rounded-[12px] bg-gray-50 border border-[#e5e5e5] px-4 py-3">
             <p className="text-xs text-gray-400">该通道无需额外凭证信息</p>
           </div>
         );
@@ -1202,6 +1208,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           {currentChannelConfig.fields.map((field) => (
             <div key={field.key} className="relative">
               <Input
+                tenant
                 type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
                 placeholder={field.label}
                 value={channelFields[field.key] || ""}
@@ -1234,6 +1241,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         {currentChannelConfig.fields?.map((field) => (
           <div key={field.key} className="relative">
             <Input
+              tenant
               type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
               placeholder={field.label}
               value={channelFields[field.key] || ""}
@@ -1270,7 +1278,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       <div className="mx-2 mb-2 space-y-2">
         {isAdminCustom ? (
           /* 管控端自定义通道：展示字段 key，内容加密 */
-          <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-2">
+          <div className="rounded-[12px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-2">
             {ch.fields.length === 0 ? (
               <p className="text-xs text-gray-400">无凭证字段</p>
             ) : (
@@ -1287,7 +1295,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             )}
           </div>
         ) : (
-          <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-2">
+          <div className="rounded-[12px] bg-white border border-[#e5e5e5] px-4 py-3 space-y-2">
             {ch.fields.map((field) => {
               const val = ch.fieldValues[field.key] || "";
               const uniqueKey = `${chIdx}-${field.key}`;
@@ -1305,8 +1313,9 @@ echo "✅ 导出完成，数据已上传到 COS"`;
         )}
          {/* 子框2：飞书 pairing code */}
         {ch.channelValue === "feishu" && (
-          <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3 flex items-center gap-2">
+          <div className="rounded-[12px] bg-white border border-[#e5e5e5] px-4 py-3 flex items-center gap-2">
             <Input
+              tenant
               placeholder="（如需）请输入 pairing code"
               value={feishuPairingCode}
               onChange={(e) => setFeishuPairingCode(e.target.value)}
@@ -1314,7 +1323,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               onKeyDown={(e) => e.key === "Enter" && handleFeishuPairing()}
             />
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               className="shrink-0 text-sm"
               onClick={handleFeishuPairing}
@@ -1589,7 +1598,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="grid grid-cols-3 gap-5" style={{ minHeight: 0, alignItems: "start" }}>
 
           {/* ===== Model Column ===== */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
+          <div className="bg-white rounded-[12px] border border-[#e5e5e5] overflow-hidden flex flex-col relative" style={{ boxShadow: "var(--shadow-card)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -1613,7 +1622,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="p-5 space-y-3">
               {/* 模型厂商选择 */}
               <Select value={selectedProvider} onValueChange={handleProviderChange}>
-                <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                <SelectTrigger tenant className="w-full bg-gray-50 border-gray-200">
                   <SelectValue placeholder="选择模型厂商" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1630,7 +1639,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               {/* 模型版本选择（自定义模型厂商时隐藏） */}
               {selectedProvider !== "custom" && (
                 <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                  <SelectTrigger tenant className="w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="选择模型版本" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1645,7 +1654,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
               {selectedProvider === "custom" && (
                 <div className="space-y-3 pt-1">
-                  <div className="flex rounded-[4px] border border-gray-200 overflow-hidden">
+                  <div className="flex rounded-[12px] border border-gray-200 overflow-hidden">
                     <button
                       className={`flex-1 py-2 text-sm font-medium transition-colors ${customInputMode === "json" ? "bg-white text-blue-600 border-r border-gray-200" : "bg-gray-50 text-gray-500 border-r border-gray-200 hover:bg-gray-100"}`}
                       onClick={() => setCustomInputMode("json")}
@@ -1678,6 +1687,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                         { key: "model_name", label: "请输入自定义模型 model.name" },
                       ].map((field) => (
                         <Input
+                          tenant
                           key={field.key}
                           placeholder={field.label}
                           value={customForm[field.key as keyof typeof customForm]}
@@ -1711,7 +1721,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     </button>
                   </div>
 
-                  <div className="rounded-[4px] bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
+                  <div className="rounded-[12px] bg-amber-50 border border-amber-100 p-3 text-xs text-amber-700 leading-relaxed">
                     使用自定义模型需自行承担 Tokens 费用，不计入公司提供的大模型 Tokens 范围。
                     <a href="#" className="inline-flex items-center gap-0.5 text-blue-500 hover:text-blue-600 underline underline-offset-2 ml-1 transition-colors">
                       自定义模型配置指引 <ExternalLink className="w-3 h-3" />
@@ -1724,7 +1734,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 <TooltipTrigger asChild>
                   <Button 
                     className="w-full text-sm" 
-                    variant="claw-outline" 
+                    variant="tenant-outline" 
                     onClick={handleApplyModel}
                     disabled={isConfiguring}
                   >
@@ -1753,7 +1763,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       {appliedModels.filter(m => m.primary).map((model) => (
                         <div
                           key={model.id}
-                          className="rounded-[4px] border transition-all bg-gray-50 border-[#e5e5e5] p-2.5"
+                          className="rounded-[12px] border transition-all bg-gray-50 border-[#e5e5e5] p-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center min-w-0 flex-1 overflow-hidden">
@@ -1809,7 +1819,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     <p className="text-xs text-gray-400 mb-1">
                       备用模型 ({appliedModels.filter(m => !m.primary).length})
                     </p>
-                    <div className="mb-2 flex items-start gap-2.5 rounded-[4px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
+                    <div className="mb-2 flex items-start gap-2.5 rounded-[12px] border border-blue-200 bg-blue-50 px-3.5 py-3 text-xs text-blue-700 leading-relaxed">
                       <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                       <span>主模型不可用时会自动切换备用模型，此时备用模型消耗的token将统计到主模型下</span>
                     </div>
@@ -1817,7 +1827,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       {[...appliedModels.filter(m => !m.primary)].sort((a, b) => b.addedAt - a.addedAt).map((model) => (
                         <div
                           key={model.id}
-                          className="rounded-[4px] border transition-all bg-white border-[#e5e5e5] hover:bg-gray-50 p-2.5"
+                          className="rounded-[12px] border transition-all bg-white border-[#e5e5e5] hover:bg-gray-50 p-2.5"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center min-w-0 flex-1 overflow-hidden">
@@ -1890,7 +1900,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Channel Column ===== */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col relative" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col relative" style={{ boxShadow: "var(--shadow-card)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1913,7 +1923,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               {/* 通道下拉 - 固定宽度 */}
               <div className="flex items-center gap-2">
                 <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); setFeishuConfigMode("quick"); setWeworkConfigMode("quick"); }}>
-                  <SelectTrigger className="w-full bg-gray-50 border-gray-200">
+                  <SelectTrigger tenant className="w-full bg-gray-50 border-gray-200">
                     <SelectValue placeholder="选择通道类型" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1953,7 +1963,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               {renderChannelInputs()}
 
               {/* 操作按钮 */}
-              <Button className="w-full text-sm" variant="claw-outline" onClick={handleAddChannel}>
+              <Button className="w-full text-sm" variant="tenant-outline" onClick={handleAddChannel}>
                 {(currentChannelConfig?.feishuMode && feishuConfigMode === "quick") || (currentChannelConfig?.weworkMode && weworkConfigMode === "quick") || currentChannelConfig?.wechatMode ? "前往授权" : "添加并应用"}
               </Button>
 
@@ -2014,7 +2024,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
 
           {/* ===== Skills Column ===== */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden flex flex-col" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)", height: "749px" }}>
+          <div className="bg-white rounded-[12px] border border-[#e5e5e5] overflow-hidden flex flex-col" style={{ boxShadow: "var(--shadow-card)", height: "749px" }}>
             <div className="p-5 border-b border-gray-50">
               <div className="flex items-center gap-2 justify-center">
                 <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
@@ -2029,6 +2039,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
+                  tenant
                   placeholder="请输入准确 Skill 名称"
                   value={skillSearch}
                   onChange={(e) => setSkillSearch(e.target.value)}
@@ -2044,7 +2055,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       <span className="w-full block" tabIndex={hasQueueing ? 0 : -1}>
                         <Button
                           className="w-full text-sm"
-                          variant="claw-outline"
+                          variant="tenant-outline"
                           disabled={hasQueueing}
                           onClick={hasQueueing ? undefined : () => {
                             if (!skillSearch.trim()) {
@@ -2104,7 +2115,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     {pendingSkills.some(s => s.status === "failed") && (
                       <div className="ml-auto flex items-center gap-2">
                         <Button
-                          variant="claw-primary"
+                          variant="tenant-primary"
                           size="claw-sm"
                           onClick={handleRetryAllFailed}
                           className="h-7 px-3 text-xs gap-1 [&_svg]:size-3"
@@ -2113,7 +2124,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                           重试
                         </Button>
                         <Button
-                          variant="claw-primary"
+                          variant="tenant-primary"
                           size="claw-sm"
                           onClick={handleDeleteAllFailed}
                           className="h-7 px-3 text-xs gap-1 [&_svg]:size-3"
@@ -2166,14 +2177,14 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           {/* 记忆管理 tab */}
           {activeDetailTab === "memory" && (
             (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
-              <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+              <div className="bg-white rounded-[12px] border border-[#e5e5e5] p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="w-12 h-12 rounded-[4px] bg-gray-50 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
                 <p className="text-sm font-medium text-gray-400">当前 Agent 暂不支持此功能，敬请期待</p>
               </div>
             ) : (
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+            <div className="bg-white rounded-[12px] border border-[#e5e5e5] p-6" style={{ boxShadow: "var(--shadow-card)" }}>
               <MemoryPreview 
                 memoryStatus={memoryStatus}
                 proQuotaAvailable={proQuotaAvailable}
@@ -2216,7 +2227,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                    "类型限制"反馈视觉一致，不显得是为这一块单独糊的提示。 */}
           {activeDetailTab === "doctor" && (
             (claw as any).agentType && (claw as any).agentType !== "openclaw" ? (
-              <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+              <div className="bg-white rounded-[12px] border border-[#e5e5e5] p-12 flex flex-col items-center justify-center gap-3" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="w-12 h-12 rounded-[4px] bg-gray-50 flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
@@ -2226,7 +2237,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             <div className="flex flex-col gap-5">
 
               {/* ===== 一键修复卡片 ===== */}
-              <div className="bg-white rounded-[4px] border border-[#e5e5e5]" style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}>
+              <div className="bg-white rounded-[12px] border border-[#e5e5e5]" style={{ boxShadow: "var(--shadow-card)" }}>
                 <div className="p-6">
                   <h2 className="text-base font-semibold text-gray-900 mb-2">一键修复</h2>
                   <p className="text-sm text-gray-500 mb-4">适合龙虾配置文件中 API KEY、插件、通道等配置异常导致无法启动等常见问题，系统自动检测并尝试修复。</p>
@@ -2248,7 +2259,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="border-t border-[#e5e5e5] pt-4">
                     {quickFixState === "idle" && (
                       <Button
-                        variant="claw-primary"
+                        variant="tenant-primary"
                         size="claw-sm"
                         className="text-xs"
                         onClick={runQuickFixMock}
@@ -2646,7 +2657,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-center pt-1">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               onClick={() => setShowHermesPanelDialog(false)}
               className="px-6"
@@ -2720,7 +2731,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-center gap-3 pt-1">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               onClick={() => setShowWebUIProgressDialog(false)}
               className="px-6"
@@ -2857,7 +2868,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               onClick={() => setShowUpdateConfirmDialog(false)}
               className="px-5"
@@ -3023,7 +3034,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-2">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               onClick={() => setModelConfirmDialog(prev => ({ ...prev, open: false }))}
             >
@@ -3093,7 +3104,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               onClick={() => setSkillInstallConfirm(prev => ({ ...prev, open: false }))}
             >
@@ -4769,7 +4780,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
   return (
     <div
       className="bg-white rounded-[4px] border border-[#e5e5e5] relative"
-      style={{ boxShadow: "0px 1px 4px rgba(0,0,0,0.05), 0px 0px 2px rgba(0,0,0,0.1)" }}
+      style={{ boxShadow: "var(--shadow-card)" }}
     >
       {/* ─── 开始诊断弹窗（仅承担渲染独立选项 + 启动按钮）─────────────────────
           授权 / 配置快照 在此完全独立、并列展示：
@@ -4842,7 +4853,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
               const confirmDisabled = needAuth && !diagOptions.authorize;
               return (
                 <Button
-                  variant="claw-primary"
+                  variant="tenant-primary"
                   size="claw-sm"
                   className="text-xs"
                   onClick={handleStartConfirm}
@@ -4854,7 +4865,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
               );
             })()}
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               className="text-xs"
               onClick={() => setShowStartModal(false)}
@@ -4908,7 +4919,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           </div>
           <div className="flex gap-2 pt-1">
             <Button
-              variant="claw-primary"
+              variant="tenant-primary"
               size="claw-sm"
               className="text-xs"
               onClick={handleEndConfirm}
@@ -4916,7 +4927,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
               确认结束
             </Button>
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               className="text-xs"
               onClick={() => setShowEndModal(false)}
@@ -4962,7 +4973,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           </AlertDialogHeader>
           <AlertDialogFooter>
             <Button
-              variant="claw-primary"
+              variant="tenant-primary"
               onClick={() => setConflictInfo(null)}
             >
               我知道了
@@ -5003,7 +5014,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         </p>
         {showStartButton && (
           <Button
-            variant="claw-primary"
+            variant="tenant-primary"
             size="claw-sm"
             className="text-xs"
             onClick={handleStartDiagnosisClick}
@@ -5019,7 +5030,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
         )}
         {(isActive || isDestroying) && (
           <Button
-            variant="claw-primary"
+            variant="tenant-primary"
             size="claw-sm"
             className="text-xs"
             onClick={handleEndClick}
@@ -5081,7 +5092,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
           {diagPhase === "summary_ready" && instanceStatus === "active" && (
             <div className="px-5 pt-1 pb-2 flex items-center gap-2">
               <Button
-                variant="claw-primary"
+                variant="tenant-primary"
                 onClick={handleStartRepair}
                 className="h-7 text-xs px-3 gap-1"
               >
@@ -5144,7 +5155,7 @@ function DoctorChatCard({ instanceId, instanceName }: { instanceId: string; inst
                     {showCommands && (
                       <div
                         className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-[4px] border border-gray-200 py-1.5 z-50"
-                        style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
+                        style={{ boxShadow: "var(--shadow-overlay)" }}
                       >
                         {DOCTOR_COMMAND_LIST.map((item) => (
                           <button

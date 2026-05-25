@@ -25,17 +25,26 @@ function SelectValue({
 function SelectTrigger({
   className,
   size = "default",
+  tenant = false,
   children,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: "sm" | "default";
+  /**
+   * 用户端形态：圆角变为 rounded-full（胶囊），与 tenant-* Button 系列对齐。
+   * 仅 pages/tenant/** 业务页使用；管理端保持 rounded-[4px]。
+   * 规范来源：SKILL-TENANT.md（2026-05-23 控件圆角对齐）
+   */
+  tenant?: boolean;
 }) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       data-size={size}
+      data-tenant={tenant ? "true" : undefined}
       className={cn(
-        "flex w-fit items-center justify-between gap-2 rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm font-normal whitespace-nowrap transition-colors outline-none",
+        "flex w-fit items-center justify-between gap-2 border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm font-normal whitespace-nowrap transition-colors outline-none",
+        tenant ? "rounded-full" : "rounded-[4px]",
         "hover:border-[#1447E6]",
         "data-[state=open]:border-[#1447E6]",
         "data-[placeholder]:text-[#A3A3A3]",

@@ -347,7 +347,7 @@ export function MemoryPreview({
   // Persona 面板 - 用户画像，样式与场景记忆卡片一致
   const PersonaPanel = () => (
     <div className="h-full flex flex-col">
-      <div className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden flex-1 overflow-y-auto">
+      <div className="bg-white border border-[#e5e5e5] rounded-[12px] overflow-hidden flex-1 overflow-y-auto">
         {/* 白色标题栏 */}
         <div className="px-4 py-3 border-b border-[#e5e5e5]">
           <span className="text-sm font-medium text-[#0A0A0A]">用户画像</span>
@@ -384,7 +384,7 @@ export function MemoryPreview({
         {paginatedScenes.map(scene => {
           const isExpanded = expandedScene === scene.id;
           return (
-            <div key={scene.id} className="bg-white border border-[#e5e5e5] rounded-[4px] overflow-hidden">
+            <div key={scene.id} className="bg-white border border-[#e5e5e5] rounded-[12px] overflow-hidden">
               <button
                 onClick={() => toggleSceneExpand(scene.id)}
                 className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
@@ -464,7 +464,7 @@ export function MemoryPreview({
       </div>
 
       {/* 记录表格（§8.4 表格规范） */}
-      <div className="bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
+      <div className="bg-white border border-[#E5E5E5] rounded-[12px] overflow-hidden flex-1 flex flex-col">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
@@ -679,7 +679,7 @@ export function MemoryPreview({
         </div>
 
         {/* 消息表格（§8.4 表格规范） */}
-        <div className="bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden flex-1 flex flex-col">
+        <div className="bg-white border border-[#E5E5E5] rounded-[12px] overflow-hidden flex-1 flex flex-col">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
@@ -838,7 +838,7 @@ export function MemoryPreview({
         </div>
 
         {/* 能力宣传区域 */}
-        <div className="p-6 bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 rounded-[4px] border border-gray-200">
+        <div className="p-6 bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-50 rounded-[12px] border border-gray-200">
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-4 rounded-[4px] bg-gradient-to-br from-purple-100 to-blue-100 flex items-center justify-center">
               <Sparkles className="w-8 h-8 text-purple-500" />
@@ -851,7 +851,7 @@ export function MemoryPreview({
 
           {/* 核心能力展示 - 四项特性 */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-blue-50 flex items-center justify-center flex-shrink-0">
                 <Target className="w-5 h-5 text-blue-500" />
               </div>
@@ -860,7 +860,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">自动提取偏好、约束与任务状态，无需手动触发</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-purple-50 flex items-center justify-center flex-shrink-0">
                 <Brain className="w-5 h-5 text-purple-500" />
               </div>
@@ -869,7 +869,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">四层记忆金字塔逐步提炼，从"记住你说过什么"到"理解你是谁"</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-green-50 flex items-center justify-center flex-shrink-0">
                 <Search className="w-5 h-5 text-green-500" />
               </div>
@@ -878,7 +878,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">记忆分层组织、按场景归类，按需精准召回</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[4px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-amber-50 flex items-center justify-center flex-shrink-0">
                 <Link2 className="w-5 h-5 text-amber-500" />
               </div>

@@ -18,6 +18,20 @@ description: >
 
 ---
 
+## 📚 配套规范（必读）
+
+本文件是**全平台共享**的基础组件规范。在以下场景中必须叠加加载额外规范：
+
+| 场景 | 必读规范 | 冲突优先级 |
+|------|----------|------------|
+| 用户端（Tenant）页面 / 组件 | 📄 [SKILL-TENANT.md](./SKILL-TENANT.md) | **Tenant > 本文件**（仅在用户端） |
+| 管控端（Admin）页面 / 组件 | 📄 [SKILL.md](./SKILL.md) | 本文件 > SKILL.md |
+| 设计语言 / 色彩 / 布局通则 | 📄 [SKILL.md](./SKILL.md) | — |
+
+**用户端共享组件扩展约束**：用户端如需对 Button / Card / Tabs 等共享组件做差异化样式，**必须新增 `tenant-*` 变体**，禁止覆盖现有 `claw-*` 变体或默认样式，避免影响管控端。具体规则见 `SKILL-TENANT.md`。
+
+---
+
 ## 0. Typography 字体组件（用户端基础文字入口）
 
 **文件**: `client/src/components/ui/Typography.tsx`  

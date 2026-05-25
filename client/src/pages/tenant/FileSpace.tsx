@@ -10,7 +10,8 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SurfaceCard, SurfaceInner } from "@/components/ui/Surface";
+import { TenantCard, SurfaceInner } from "@/components/ui/Surface";
+import { SectionTitle } from "@/components/ui/Typography";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -646,7 +647,7 @@ export default function FileSpace({
   };
 
   return (
-    <div className="space-y-4">
+    <>
       {/* 隐藏的文件上传 input */}
       <input
         ref={fileInputRef}
@@ -655,86 +656,81 @@ export default function FileSpace({
         onChange={handleFileInputChange}
       />
 
-      {/* Header Bar */}
-      <SurfaceCard className="overflow-hidden rounded-[4px]">
-
-        {/* Top Info + Actions */}
-        <div className="px-5 py-4 border-b border-[#E5E5E5]">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div>
-                <h3 className="text-[16px] font-semibold text-[#0A0A0A] leading-5 whitespace-nowrap">{clawName} · 网盘管理</h3>
-                <p className="text-xs text-[#A3A3A3] mt-0.5">
-                  {spaceUsage
-                    ? `已用 ${formatBytes(spaceUsage.used)} / 共 ${formatBytes(spaceUsage.total)}`
-                    : `共 ${totalFileCount} 个文件`
-                  }
-                </p>
+      <TenantCard padding="none" className="overflow-hidden">
+        {/* 卡内顶部：标题 + 操作（无分割线） */}
+        <div className="px-5 py-4 flex items-center gap-3">
+          <SectionTitle className="flex-1 min-w-0">
+            <span className="flex items-baseline gap-2">
+              <span>{clawName} · 网盘管理</span>
+              <span className="text-xs font-normal text-[#A3A3A3]">
+                {spaceUsage
+                  ? `已用 ${formatBytes(spaceUsage.used)} / 共 ${formatBytes(spaceUsage.total)}`
+                  : `共 ${totalFileCount} 个文件`}
+              </span>
+            </span>
+          </SectionTitle>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* 上传进度 */}
+            {uploading && (
+              <div className="flex items-center gap-2 text-xs text-[#1447E6] mr-2">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>上传中 {uploadProgress}%</span>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* 上传进度 */}
-              {uploading && (
-                <div className="flex items-center gap-2 text-xs text-[#1447E6] mr-2">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>上传中 {uploadProgress}%</span>
-                </div>
-              )}
-              {/* 视图切换 */}
-              <div className="inline-flex items-center gap-1 p-1 rounded-[4px]" style={{ background: "#F5F5F5" }}>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("list")}
-                  aria-label="列表视图"
-                  className={`flex items-center justify-center w-7 h-7 rounded-[3px] transition-all duration-150 ${
-                    viewMode === "list"
-                      ? "bg-white text-[#0A0A0A]"
-                      : "text-[#737373] hover:text-[#0A0A0A]"
-                  }`}
-                  style={viewMode === "list" ? { boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : undefined}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("grid")}
-                  aria-label="网格视图"
-                  className={`flex items-center justify-center w-7 h-7 rounded-[3px] transition-all duration-150 ${
-                    viewMode === "grid"
-                      ? "bg-white text-[#0A0A0A]"
-                      : "text-[#737373] hover:text-[#0A0A0A]"
-                  }`}
-                  style={viewMode === "grid" ? { boxShadow: "0 1px 2px rgba(0,0,0,0.06)" } : undefined}
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                </button>
-              </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="claw-outline" size="claw-sm" onClick={() => setShowNewFolder(true)} className="text-xs">
-                    <FolderPlus className="w-3.5 h-3.5 mr-1.5" />
-                    新建文件夹
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">在当前目录创建新文件夹</TooltipContent>
-              </Tooltip>
-              <Button variant="claw-outline" size="claw-sm" onClick={handleRefresh} className="text-xs">
-                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                刷新
-              </Button>
-              <Button
-                variant="claw-primary"
-                size="claw-sm"
-                onClick={handleUploadClick}
-                disabled={uploading}
+            )}
+            {/* 视图切换（§8.6 Segmented Control，0522 胶囊版） */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-muted">
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                aria-label="列表视图"
+                className={`flex items-center justify-center w-7 h-7 rounded-full transition-all duration-150 ${
+                  viewMode === "list"
+                    ? "bg-white text-foreground shadow-[var(--shadow-segment)]"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <Upload className="w-3.5 h-3.5 mr-1.5" />
-                上传文件
-              </Button>
+                <List className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                aria-label="网格视图"
+                className={`flex items-center justify-center w-7 h-7 rounded-full transition-all duration-150 ${
+                  viewMode === "grid"
+                    ? "bg-white text-foreground shadow-[var(--shadow-segment)]"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </button>
             </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="tenant-outline" size="claw-sm" onClick={() => setShowNewFolder(true)} className="text-xs">
+                  <FolderPlus className="w-3.5 h-3.5 mr-1.5" />
+                  新建文件夹
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">在当前目录创建新文件夹</TooltipContent>
+            </Tooltip>
+            <Button variant="tenant-outline" size="claw-sm" onClick={handleRefresh} className="text-xs">
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+              刷新
+            </Button>
+            <Button
+              variant="tenant-dialog-confirm"
+              size="claw-sm"
+              onClick={handleUploadClick}
+              disabled={uploading}
+            >
+              <Upload className="w-3.5 h-3.5 mr-1.5" />
+              上传文件
+            </Button>
           </div>
+        </div>
 
-          {/* Breadcrumb + Search + Sort */}
+        {/* 卡内中部：面包屑 + 搜索 + 排序 */}
+        <div className="px-5 pb-3">
           <div className="flex items-center gap-3">
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1 text-xs flex-shrink-0">
@@ -776,6 +772,7 @@ export default function FileSpace({
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
               <Input
+                tenant
                 placeholder="搜索文件名..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -976,7 +973,7 @@ export default function FileSpace({
             </div>
           )}
         </div>
-      </SurfaceCard>
+      </TenantCard>
 
       {/* Delete Confirm Dialog */}
       <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}>
@@ -988,9 +985,9 @@ export default function FileSpace({
             确定要删除「{deleteConfirm?.name}」吗？{deleteConfirm?.type === "folder" ? "文件夹内的所有内容也将被删除，" : ""}此操作不可恢复。
           </p>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="claw-outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
+            <Button variant="tenant-outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
             <Button
-              variant="destructive"
+              variant="tenant-destructive"
               onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
             >
               确认删除
@@ -1007,6 +1004,7 @@ export default function FileSpace({
           </DialogHeader>
           <div className="py-2">
             <Input
+              tenant
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               placeholder="请输入新名称"
@@ -1016,9 +1014,9 @@ export default function FileSpace({
             />
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="claw-outline" onClick={() => { setRenameTarget(null); setRenameValue(""); }}>取消</Button>
+            <Button variant="tenant-outline" onClick={() => { setRenameTarget(null); setRenameValue(""); }}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="tenant-primary"
               onClick={handleRename}
               disabled={!renameValue.trim() || renameValue === renameTarget?.name}
             >
@@ -1036,6 +1034,7 @@ export default function FileSpace({
           </DialogHeader>
           <div className="py-2">
             <Input
+              tenant
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="请输入文件夹名称"
@@ -1045,9 +1044,9 @@ export default function FileSpace({
             />
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="claw-outline" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }}>取消</Button>
+            <Button variant="tenant-outline" onClick={() => { setShowNewFolder(false); setNewFolderName(""); }}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="tenant-primary"
               onClick={handleCreateFolder}
               disabled={!newFolderName.trim()}
             >
@@ -1152,9 +1151,9 @@ export default function FileSpace({
             </div>
           </div>
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="claw-outline" onClick={() => { setMoveTarget(null); setMoveDestPath("/"); }}>取消</Button>
+            <Button variant="tenant-outline" onClick={() => { setMoveTarget(null); setMoveDestPath("/"); }}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="tenant-primary"
               onClick={handleMove}
             >
               移动到此处
@@ -1162,7 +1161,7 @@ export default function FileSpace({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
 

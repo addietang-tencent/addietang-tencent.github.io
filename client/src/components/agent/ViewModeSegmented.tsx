@@ -1,7 +1,8 @@
 /**
- * ViewModeSegmented - 管理视图 / 对话视图分段切换
- * 对齐 Figma node 358:2376「切换」：
- *   - 浅灰底，选中态白底 + 阴影
+ * ViewModeSegmented - 管理视图 / 对话视图分段切换（v2 / 0522 胶囊版）
+ * 对齐 Figma node 358:2376「切换」+ 0522 §8.6 Segmented Control：
+ *   - 容器 bg-muted (#F5F5F5) + rounded-full
+ *   - 选中态白底 + var(--shadow-segment)
  *   - 每段 padding 4px 12px，gap 4px，含图标 + 文本
  */
 import { LayoutGrid, MessageSquare } from "lucide-react";
@@ -21,8 +22,7 @@ const ITEMS: { key: ViewMode; label: string; Icon: typeof LayoutGrid }[] = [
 export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) => {
   return (
     <div
-      className="inline-flex items-center gap-1 p-1 rounded-[4px]"
-      style={{ background: "#F5F5F5" }}
+      className="inline-flex items-center gap-1 p-1 rounded-full bg-muted"
       role="tablist"
       aria-label="视图切换"
     >
@@ -34,12 +34,11 @@ export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) =
             role="tab"
             aria-selected={active}
             onClick={() => onChange(key)}
-            className={`inline-flex items-center gap-1 px-3 py-1 rounded-[3px] text-sm font-medium transition-all duration-150 ${
+            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-all duration-150 ${
               active
-                ? "bg-white text-[#0A0A0A]"
-                : "text-[#737373] hover:text-[#0A0A0A]"
+                ? "bg-white text-foreground shadow-[var(--shadow-segment)]"
+                : "text-muted-foreground hover:text-foreground"
             }`}
-            style={active ? { boxShadow: "var(--shadow-segment)" } : undefined}
           >
             <Icon className="w-4 h-4" />
             {label}

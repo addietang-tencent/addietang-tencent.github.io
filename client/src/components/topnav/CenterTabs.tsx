@@ -1,12 +1,16 @@
 /**
- * CenterTabs - 中央 segmented 切换控件
+ * CenterTabs - 中央 segmented 切换控件（v3 / [Figma 1077-33929] 胶囊版）
  *
- * 设计来源：Figma 「公共组件/导航」中央 Frame 2147227600（节点 297:3468）
- * 视觉规范：
- *   - 容器：高 39px、padding 4px、bg #F5F5F5、radius 4px
- *   - Tab：padding 4px 12px、字号 14、radius 3px
- *     - Active：bg #FFFFFF、color #020617、shadow 0 1px 2px rgba(0,0,0,.05)
- *     - Normal：color #334155
+ * 设计来源：Figma 「公共组件/导航」中央 Frame（节点 1077:33933 / 历史 297:3468）
+ * 视觉规范（[Figma 1077-33929] 修订）：
+ *   - 容器：高 39px、padding 4px、bg rgba(219,221,228,0.32)（半透灰）、rounded-full（胶囊）
+ *   - Tab：padding 7px 16px、字号 14、rounded-full（胶囊）
+ *     - Active：bg #FFFFFF、color var(--foreground)、shadow var(--shadow-segment)、
+ *               border 1px solid #CDD4DC（[Figma 1077-33929] 新增描边）
+ *     - Normal：color var(--secondary-foreground)（= #334155）
+ *
+ * 阴影来源：index.css §5 阴影系统 L5 segment 滑块（var(--shadow-segment)），
+ * 改 index.css 单变量即可批量影响全站所有 segmented 控件。
  *
  * 用法：
  *   <CenterTabs
@@ -48,8 +52,9 @@ export default function CenterTabs<V extends string = string>({
 
   return (
     <nav
-      className={`flex items-center gap-1 p-1 rounded-[4px] overflow-hidden ${className}`}
-      style={{ background: "#F5F5F5" }}
+      // [Figma 1077-33929] 容器底色 rgba(219,221,228,0.32) — 半透灰，区别于 bg-muted 的 #F5F5F5
+      className={`flex items-center gap-1 p-1 rounded-full ${className}`}
+      style={{ background: "rgba(219, 221, 228, 0.32)" }}
       role="tablist"
     >
       {items.map((item, idx) => {
@@ -62,16 +67,12 @@ export default function CenterTabs<V extends string = string>({
             aria-selected={active}
             onClick={() => onChange?.(item.value, idx)}
             className={[
-              "px-3 py-[7px] rounded-[3px] text-[14px] leading-[22px] transition-all duration-150 whitespace-nowrap",
+              "px-4 py-[7px] rounded-full text-[14px] leading-[22px] transition-all duration-150 whitespace-nowrap",
               active
-                ? "bg-white text-[#020617] font-medium"
-                : "text-[#334155] hover:text-[#020617] font-normal",
+                // [Figma 1077-33929] Active 滑块新增 1px #CDD4DC 描边
+                ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)] border border-[#CDD4DC]"
+                : "text-secondary-foreground hover:text-foreground font-normal border border-transparent",
             ].join(" ")}
-            style={
-              active
-                ? { boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)" }
-                : undefined
-            }
           >
             {item.label}
           </button>

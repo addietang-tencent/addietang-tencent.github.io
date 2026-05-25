@@ -31,14 +31,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Textarea } from "@/components/ui/textarea";
-import { SurfaceCard } from "@/components/ui/Surface";
+import { TenantSection } from "@/components/ui/TenantSection";
+import { Alert, AlertDescription, AlertInfoIcon } from "@/components/ui/alert";
 import {
   Search,
   Plus,
   RefreshCw,
   Code2,
   Trash2,
-  Info,
   CheckCircle2,
   XCircle,
   Wrench,
@@ -592,56 +592,54 @@ export default function ToolsMcpPanel() {
 
   // ── 渲染 ──
   return (
-    <div>
-      {/* ===== MCP 配置 ===== */}
-      <SurfaceCard className="flex flex-col p-0">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-[#E5E5E5]">
-          <h2 className="text-base font-semibold" style={{ color: "#0A0A0A" }}>MCP 配置</h2>
-        </div>
-
-        {/* 操作栏 */}
-        <div className="px-6 pt-4 pb-3 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#b0b6c3" }} />
-              <Input
-                placeholder="搜索 MCP..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-9 text-sm rounded-[4px]"
-              />
-            </div>
-            <Button
-              onClick={() => setAddDialogOpen(true)}
-              size="icon"
-              className="h-9 w-9"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="claw-outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="h-9 w-9"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
+    <>
+    <TenantSection
+      title="MCP 配置"
+      cardPadding="default"
+      actions={
+        <>
+          <div className="relative w-[240px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: "#b0b6c3" }} />
+            <Input
+              tenant
+              placeholder="搜索 MCP..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 text-sm"
+            />
           </div>
-          {/* 提示（§8.8 规范） */}
-          <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-3 py-2.5">
-            <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-blue-600 leading-relaxed">
-              状态验证仅支持公网访问的 MCP。
-              <br />
-              本地命令或者内网访问的MCP，需登录实例校验状态。
-            </p>
-          </div>
-        </div>
+          <Button
+            variant="tenant-dialog-confirm"
+            onClick={() => setAddDialogOpen(true)}
+            className="h-9"
+          >
+            <Plus className="w-4 h-4" />
+            添加 MCP
+          </Button>
+          <Button
+            variant="tenant-outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="h-9 w-9"
+          >
+            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+          </Button>
+        </>
+      }
+    >
+      {/* 提示（§8.8 规范） */}
+      <Alert variant="info">
+        <AlertInfoIcon />
+        <AlertDescription>
+          状态验证仅支持公网访问的 MCP。
+          <br />
+          本地命令或者内网访问的MCP，需登录实例校验状态。
+        </AlertDescription>
+      </Alert>
 
-        {/* 列表区域 */}
-        <div className="flex-1 overflow-y-auto px-6 pb-6">
+      {/* 列表区域 */}
+      <div className="flex-1 overflow-y-auto">
           {filteredList.length === 0 ? (
             <div className="text-center py-16">
               <Wrench className="w-10 h-10 text-gray-200 mx-auto mb-3" />
@@ -660,7 +658,7 @@ export default function ToolsMcpPanel() {
                 return (
                   <div
                     key={mcp.id}
-                    className={`rounded-xl border transition-all ${
+                    className={`rounded-[12px] border transition-all ${
                       !mcp.enabled
                         ? "border-gray-100 bg-gray-50/50 opacity-60"
                         : mcp.status === "connected"
@@ -814,7 +812,7 @@ export default function ToolsMcpPanel() {
 
                       {/* 报错信息（连接失败时展示，独立行+复制按钮） */}
                       {mcp.enabled && mcp.status === "failed" && mcp.errorMessage && (
-                        <div className="mt-1.5 flex items-start gap-1.5 px-2.5 py-1.5 bg-red-50 rounded-lg">
+                        <div className="mt-1.5 flex items-start gap-1.5 px-2.5 py-1.5 bg-red-50 rounded-[4px]">
                           <p className="text-[11px] text-red-500 leading-relaxed flex-1 min-w-0 line-clamp-2">
                             {mcp.errorMessage}
                           </p>
@@ -843,7 +841,7 @@ export default function ToolsMcpPanel() {
             </div>
           )}
         </div>
-      </SurfaceCard>
+    </TenantSection>
 
       {/* ===== 添加 MCP 弹窗 — 步骤1：选择 ===== */}
       <Dialog open={addDialogOpen && !paramTemplate} onOpenChange={setAddDialogOpen}>
@@ -856,6 +854,7 @@ export default function ToolsMcpPanel() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
+                tenant
                 placeholder="搜索名称或描述..."
                 value={addSearchQuery}
                 onChange={(e) => setAddSearchQuery(e.target.value)}
@@ -873,7 +872,7 @@ export default function ToolsMcpPanel() {
                 availableTemplates.map((tpl) => (
                   <div
                     key={tpl.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors group"
+                    className="flex items-center gap-3 p-3 rounded-[12px] border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-colors group"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
@@ -916,6 +915,7 @@ export default function ToolsMcpPanel() {
               <div key={param} className="space-y-1.5">
                 <label className="text-sm font-medium text-gray-700">{param}</label>
                 <Input
+                  tenant
                   placeholder={`请输入 ${param}`}
                   type="password"
                   value={paramValues[param] || ""}
@@ -927,7 +927,7 @@ export default function ToolsMcpPanel() {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="claw-outline" onClick={() => setParamTemplate(null)}>
+            <Button variant="tenant-outline" onClick={() => setParamTemplate(null)}>
               取消
             </Button>
             <Button
@@ -960,7 +960,7 @@ export default function ToolsMcpPanel() {
           </DialogHeader>
           <div className="space-y-3">
             {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
-            <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
+            <div className="border border-gray-200 rounded-[12px] overflow-hidden font-mono text-xs">
               {/* 固定前缀行（不可编辑）— 灰色背景，只显示 "server-name": { */}
               <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                 <div><span className="text-gray-500">{`"${sourceServerName}"`}</span>{': {'}</div>
@@ -998,10 +998,10 @@ export default function ToolsMcpPanel() {
             )}
           </div>
           <DialogFooter className="flex gap-2">
-            <Button variant="claw-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
+            <Button variant="tenant-outline" onClick={() => setSourceDialogOpen(false)} className="text-sm">
               取消
             </Button>
-            <Button variant="claw-outline" onClick={() => handleSaveSource(false)}>
+            <Button variant="tenant-outline" onClick={() => handleSaveSource(false)}>
               保存但不重启
             </Button>
             <Button
@@ -1051,11 +1051,11 @@ export default function ToolsMcpPanel() {
           </DialogHeader>
           <DialogFooter className="flex gap-2">
             {restartAction === "toggle" && (
-              <Button variant="claw-outline" onClick={handleRestartCancel} className="text-xs">
+              <Button variant="tenant-outline" onClick={handleRestartCancel} className="text-xs">
                 取消修改
               </Button>
             )}
-            <Button variant="claw-outline" onClick={handleRestartLater} className="text-xs">
+            <Button variant="tenant-outline" onClick={handleRestartLater} className="text-xs">
               暂不重启
             </Button>
             <Button
@@ -1067,6 +1067,6 @@ export default function ToolsMcpPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

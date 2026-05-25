@@ -4,8 +4,8 @@
  * 严格 1:1 对齐 Figma 节点 358:2325（默认态）/ 363:5079（QuickStart 关闭态）：
  *
  *   358:2325 「页面引导语」（默认态：QuickStart 展开）
- *     ├ height 112 / padding 0 42px / column / center / gap 8
- *     ├ stroke: 仅左右 1px #E2E8F0（strokeWeight: 0 1px）
+ *     ├ height 112 / padding 0 / column / center / gap 8
+ *     ├ 左右内边距统一由页面外层（MyOpenClaw `padding: 0 120px`）提供，本组件不再叠加
  *     ├ background: 透明（无底色）
  *     ├─ 标题: PingFang SC Medium 26/35.56 / letter -4.27%
  *     │       fill: linear-gradient(90deg, #0A0A0A → #355EF1)
@@ -22,9 +22,9 @@
  *
  * NOTE:
  *   1. HeroBanner 区域无任何底色/渐变背景，保持纯白。
- *   2. 底部 1px 分割线左右各外延 80px 贯穿矩阵带，直达视口边缘。
- *   3. HeroBanner 自身无 margin-bottom，与下方 QuickStartGuide 紧贴
- *      （两者之间靠 HeroBanner 底部分割线作为视觉接缝）。
+ *   2. HeroBanner 与下方 QuickStartGuide 通过段间距（QuickStartGuide `mb-5`）分离，
+ *      已不依赖底部分割线作为视觉接缝（与 Figma 1077:33419 改稿一致）。
+ *   3. 左右内边距由页面外层 `padding: 0 120px` 提供，本组件 padding 为 0。
  */
 interface HeroBannerProps {
   /**
@@ -38,18 +38,15 @@ interface HeroBannerProps {
 export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
   return (
     // 外层包裹严格固定 112px，与下方紧贴；防止内部副文+按钮换行时把容器撑高
-    // 底部分割线由绝对定位的子元素实现「100vw」贯穿全视口
     <div className="relative" style={{ height: "112px" }}>
-      {/* 358:2325 / 363:5079 - 页面引导语：高 112 / padding 0 42 / 左右竖线 / 无底色
+      {/* 358:2325 / 363:5079 - 页面引导语：高 112 / padding 0 / 无底色
           overflow:hidden 兜底，防止副文/按钮意外换行撑高
           alignItems: flex-start 让子元素宽度 hug 内容，避免标题用 fit-content 时
           每次父级 reflow 都重新测量渐变文字宽度（这是关闭 QuickStart 时标题抖动的根因之一）*/}
       <div
         style={{
           height: "112px",
-          padding: "0 42px",
-          borderLeft: "1px solid #E2E8F0",
-          borderRight: "1px solid #E2E8F0",
+          padding: 0,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
@@ -153,22 +150,6 @@ export const HeroBanner = ({ onShowQuickStart }: HeroBannerProps) => {
           )}
         </div>
       </div>
-
-      {/*
-        贯穿底部分割线：用 100vw + calc(50% - 50vw) 让线横跨整个视口宽度，
-        在 >1920px 大屏下也能左右真正顶到视口边缘（页面外层有 overflow-x-clip 兜底防止水平滚动）。
-      */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute"
-        style={{
-          left: "calc(50% - 50vw)",
-          width: "100vw",
-          bottom: 0,
-          height: "1px",
-          backgroundColor: "#E2E8F0",
-        }}
-      />
     </div>
   );
 };

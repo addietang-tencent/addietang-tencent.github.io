@@ -974,11 +974,14 @@ import {
 
 **表头规则（强制，参照 /admin/audit-log 页面视觉）：**
 - `TableHeader` 强制灰色背景 `bg-[#fafafa]`，不允许覆盖
-- `TableHead` 强制样式：`text-[#09090b] font-semibold text-[14px] h-[54px] px-4`
-- 禁止通过 className 覆盖表头的字体颜色、字号、字重
-- className 仅用于布局属性：宽度 `w-[xx%]`、对齐 `text-right`/`text-center`
+- `TableHead` 强制样式：`text-[#09090b] font-semibold text-[14px] h-[54px] px-4 text-left`
+- `TableCell` 强制样式：`text-[#09090b] text-[14px] px-4 py-3`
+- **表头与单元格 padding 必须一致**：均为 `px-4`（16px），确保列对齐；禁止表头用 `px-4` 而单元格用 `px-6` 等不一致写法
+- **每列标题和内容必须左对齐**，禁止使用 `text-center` 或 `text-right`（数字列除外）
+- 禁止通过 className 覆盖表头的字体颜色、字号、字重、对齐方式
+- className 仅用于布局属性：宽度 `w-[xx%]`、sticky 定位
 - 禁止在 TableHead 上使用 `text-xs`、`text-gray-500`、`uppercase`、`tracking-wide` 等非标准样式
-- 禁止使用原生 `<th>` 替代 `<TableHead>`
+- 禁止使用原生 `<th>` 替代 `<TableHead>`、原生 `<td>` 替代 `<TableCell>`
 
 **禁止事项：**
 - 禁止使用原生 `<table>` + 自定义 class（如 `text-xs font-medium text-gray-500 uppercase tracking-wide`）

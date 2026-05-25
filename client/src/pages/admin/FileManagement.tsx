@@ -1221,50 +1221,31 @@ export default function FileManagement() {
         <div
           className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
         >
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[35%]">
-                  空间名称
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[18%]">
-                  类型
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">
-                  已用/存储容量
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[19%]">
-                  有效期
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[35%]">空间名称</TableHead>
+                <TableHead className="w-[18%]">类型</TableHead>
+                <TableHead className="w-[28%]">已用/存储容量</TableHead>
+                <TableHead className="w-[19%]">有效期</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {ENTERPRISE_SPACES.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                        <Building className="w-5 h-5 text-white" />
-                      </div>
-                      <span className="text-sm font-medium text-[#0A0A0A]">{item.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-[14px] text-[#09090b]">
-                      {item.type}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[#334155]">
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.type}</TableCell>
+                  <TableCell>
                     <span className="tabular-nums">
-                      {item.used}/{<span className="font-semibold">{item.quota}</span>}
+                      {item.used}/<span className="font-semibold">{item.quota}</span>
                     </span>
-                    <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-600">
-                      免费
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">{item.expiry}</td>
-                </tr>
+                    <StatusTag variant="green" className="ml-2">免费</StatusTag>
+                  </TableCell>
+                  <TableCell className="tabular-nums">{item.expiry}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 

@@ -26,7 +26,7 @@ import {
   Trash2, UserX, UserCheck, MoreHorizontal, Pencil, Key,
   ChevronLeft, ChevronRight, Copy, CheckCircle, AlertTriangle,
   Loader2, X, FileText, ExternalLink, RefreshCw, Users, Check,
-  FolderOpen, UserMinus, FolderPlus, ChevronUp, Link2,
+  FolderOpen, UserMinus, FolderPlus, ChevronUp, Link2, Filter,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdminMode } from "@/contexts/AdminModeContext";
@@ -35,6 +35,9 @@ import AuthSourceImportDialog, { ConfiguredAuthSource } from "./AuthSourceImport
 import NewGroupView from "./MemberManagement/GroupView";
 import { MOCK_USERS as MM_MOCK_USERS, MOCK_USER_OVERRIDES as MM_MOCK_OVERRIDES, MOCK_SYNC_RESULT as MM_MOCK_SYNC_RESULT, MOCK_GROUPS as MM_MOCK_GROUPS, MOCK_MANUAL_GROUPS as MM_MOCK_MANUAL_GROUPS, MOCK_USERS_MANUAL as MM_MOCK_USERS_MANUAL, getPrimaryDeptPath as mmGetPrimaryDeptPath } from "./MemberManagement/mock";
 import type { UserOverrideInfo as MMUserOverrideInfo, UserOrg as MMUserOrg, UserGroup as MMUserGroup } from "./MemberManagement/types";
+// ─── 列头筛选共享组件（与 Agent 列表页共用） ────────────────────────────────
+import { DepartmentColumnFilter, GroupColumnFilter } from "@/components/admin/ColumnFilters";
+import { buildGroupTree as mmBuildGroupTree } from "./MemberManagement/health";
 
 const PAGE_SIZE = 10;
 
@@ -113,7 +116,7 @@ const MOCK_MEMBERS_BASE = [
 const MM_USERS_BY_ID = new Map<string, MMUserOrg>(MM_MOCK_USERS.map((u) => [u.userId, u]));
 
 /** 获取用户所有 oneid-dept 类型部门的完整路径（主部门排首位） */
-function getMmUserDeptPaths(userId: string): Array<{ path: string; isPrimary: boolean }> {
+function getMmUserDeptPaths(userId: string): Array<{ id: string; path: string; isPrimary: boolean }> {
   const user = MM_USERS_BY_ID.get(userId);
   if (!user) return [];
   const deptGroupIds = user.groupIds.filter((gid) => {
@@ -123,6 +126,7 @@ function getMmUserDeptPaths(userId: string): Array<{ path: string; isPrimary: bo
   if (deptGroupIds.length === 0) return [];
   return deptGroupIds
     .map((gid) => ({
+      id: gid,
       path: mmGetPrimaryDeptPath(gid, MM_MOCK_GROUPS),
       isPrimary: gid === user.primaryGroupId,
     }))
@@ -1781,8 +1785,13 @@ function getMemberGroupQuotas(memberId: string, hasOneid: boolean): Array<{ grou
 }
 
 export default function MemberManagement() {
-  // 获取 hasOneid 状态
-  const { hasOneid } = useAdminMode();
+  // 获取 hasOneid / isUnified 状态
+  // - hasOneid：standard 或 unified（用于继承 OneID 视图基础：部门列、按部门搜索、手动同步、前往腾讯统一身份等）
+  // - isUnified：仅 unified（"统一"模式）；用于在 OneID 基础上叠加"普通模式独有功能"
+  // - showCustomExtras：unified 或 custom 都为 true，表示需要展示普通模式独有的功能
+  //   （顶栏「下载用户」「添加用户」、操作列完整三按钮、表格列宽走自适应布局等）
+  const { hasOneid, isUnified } = useAdminMode();
+  const showCustomExtras = isUnified || !hasOneid;
 
   const [members, setMembers] = useState<typeof MOCK_MEMBERS_BASE>(
     hasOneid ? MOCK_MEMBERS_ONEID_BASE : (MOCK_MEMBERS_MANUAL_BASE as typeof MOCK_MEMBERS_BASE)
@@ -1800,6 +1809,16 @@ export default function MemberManagement() {
   // OneID 模式专用状态
   const [deptFilter, setDeptFilter] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "member">("all");
+  // 「全部用户」表格 — 列头筛选（部门/分组）
+  const [groupFilter, setGroupFilter] = useState("");
+  const [deptColFilterOpen, setDeptColFilterOpen] = useState(false);
+  const [groupColFilterOpen, setGroupColFilterOpen] = useState(false);
+  /**
+   * OneID 是否同步出了部门数据：用于决定「部门」列、「分组 sheet 中的组织架构段/部门信息」是否展示。
+   * 口径：本地 MOCK_DEPARTMENTS 树是否非空（即 OneID 是否同步出了部门元数据）。
+   * 后续接入真实接口后，把它替换为「OneID 部门数据是否非空」即可。
+   */
+  const hasDeptData = MOCK_DEPARTMENTS.length > 0;
   const [oneidEditForm, setOneidEditForm] = useState({ ...emptyOneidEditForm });
   const [isSyncing, setIsSyncing] = useState(false);
   /** 组织架构是否已同步为分组（由 GroupView 回调通知） */
@@ -1961,7 +1980,7 @@ export default function MemberManagement() {
   const filtered = sortedMembers.filter((m) => {
     // 搜索筛选
     if (!m.id.toLowerCase().includes(search.toLowerCase())) return false;
-    // OneID 模式：部门筛选
+    // OneID 模式：部门筛选（外部下拉 deptFilter，仅 oneid 专用模式可见）
     if (hasOneid && deptFilter) {
       const memberDept = MOCK_MEMBER_DEPARTMENTS[m.id] || "";
       // 根据部门 ID 匹配部门路径
@@ -1982,9 +2001,50 @@ export default function MemberManagement() {
     if (hasOneid && roleFilter !== "all" && m.role !== roleFilter) return false;
     return true;
   });
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // ─── 列头筛选叠加（部门/分组） ──────────────────────────────────────
+  // 与 Agent 列表（OpenClawMonitor）一致：基于 id 集合（命中节点及其所有子孙）。
+  // - 部门列头筛选：复用 deptFilter state（与外部下拉共用同一个 path-based 过滤逻辑，
+  //   外部下拉在 unified 模式已隐藏，列头入口只在 hasDeptData 时展示，所以两者不会冲突）。
+  // - 分组列头筛选：基于 hasOneid 时的全部 group / 普通模式 manual group。
+  const colGroupAllowedIds = React.useMemo(() => {
+    if (!groupFilter) return null;
+    const allGroups = hasOneid ? MM_MOCK_GROUPS : MM_MOCK_MANUAL_GROUPS;
+    const trees = mmBuildGroupTree(allGroups);
+    type Tree = { id: string; children: Tree[] };
+    const collect = (nodes: Tree[], targetId: string): string[] | null => {
+      for (const n of nodes) {
+        if (n.id === targetId) {
+          const ids = [n.id];
+          const dfs = (cs: Tree[]) => cs.forEach((c) => { ids.push(c.id); dfs(c.children); });
+          dfs(n.children);
+          return ids;
+        }
+        const found = collect(n.children, targetId);
+        if (found) return found;
+      }
+      return null;
+    };
+    return collect(trees as Tree[], groupFilter) ?? [];
+  }, [hasOneid, groupFilter]);
+
+  // 把分组列头筛选叠加到 filtered 之上（部门列头筛选与外部下拉共享 deptFilter，已在 filtered 里生效）
+  const colFiltered = filtered.filter((m) => {
+    if (colGroupAllowedIds) {
+      let userGroupIds: string[] = [];
+      if (hasOneid) {
+        userGroupIds = getMmUserGroupItems(m.id).map((g) => g.id);
+      } else {
+        userGroupIds = getManualUserGroupPaths(m.id).map((g) => g.id);
+      }
+      if (!userGroupIds.some((id) => colGroupAllowedIds.includes(id))) return false;
+    }
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(colFiltered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated = colFiltered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleAdd = () => {
     if (!newMember.id.trim()) { toast.error("请输入用户 ID"); return; }
@@ -2435,16 +2495,16 @@ export default function MemberManagement() {
                 分组
               </button>
             </div>
-            {/* OneID 模式：部门筛选 */}
-            {hasOneid && (
+            {/* OneID 专用模式：部门筛选（unified 统一模式不展示） */}
+            {hasOneid && !isUnified && (
               <DepartmentFilter
                 departments={MOCK_DEPARTMENTS}
                 value={deptFilter}
                 onChange={(v) => { setDeptFilter(v); setPage(1); }}
               />
             )}
-            {/* OneID 模式：角色筛选 */}
-            {hasOneid && (
+            {/* OneID 专用模式：角色筛选（unified 统一模式不展示） */}
+            {hasOneid && !isUnified && (
               <Select
                 value={roleFilter}
                 onValueChange={(v) => { setRoleFilter(v as "all" | "admin" | "member"); setPage(1); }}
@@ -2494,8 +2554,8 @@ export default function MemberManagement() {
             )}
           </div>
 
-          {/* OneID 模式：手动同步按钮 */}
-          {hasOneid && (
+          {/* OneID 专用模式：手动同步按钮（unified 模式下移到下方表格 header 内，与「添加用户」同行） */}
+          {hasOneid && !isUnified && (
             <Button
               variant="outline"
               className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
@@ -2517,7 +2577,7 @@ export default function MemberManagement() {
           {/* 卡片 header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <h2 className="font-semibold text-gray-900">全部用户</h2>
-            {!hasOneid && (
+            {showCustomExtras && (
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
@@ -2569,6 +2629,11 @@ export default function MemberManagement() {
                       <DropdownMenuItem onClick={() => setShowAddDialog(true)}><Plus className="w-4 h-4 mr-2" />单个添加</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => setShowBatchDialog(true)}><Upload className="w-4 h-4 mr-2" />批量导入</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => {
+                        if (isUnified) {
+                          // 统一模式：跳转到外部数据源管理网页（占位 URL，待后续替换为实际地址）
+                          window.open("https://example.com/auth-source-import", "_blank", "noopener,noreferrer");
+                          return;
+                        }
                         setAuthSourceInitialStep(undefined);
                         setAuthSourceInitialId(null);
                         setAuthSourceInitialFormValues(null);
@@ -2577,14 +2642,29 @@ export default function MemberManagement() {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
+                {/* 统一模式：同步按钮（与「添加用户」同行右侧） */}
+                {isUnified && (
+                  <Button
+                    variant="outline"
+                    className="border-gray-200 bg-white text-gray-700 hover:bg-gray-50 h-8 text-sm"
+                    onClick={handleSync}
+                    disabled={isSyncing}
+                  >
+                    {isSyncing ? (
+                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" />同步中...</>
+                    ) : (
+                      <><RefreshCw className="w-4 h-4 mr-2" />同步</>
+                    )}
+                  </Button>
+                )}
               </div>
             )}
           </div>
           <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={memberTableScrollRef}>
-          <table className="text-sm" style={{ width: "max-content", minWidth: hasOneid ? "1320px" : "100%" }}>
+          <table className="text-sm" style={{ width: hasOneid && !isUnified ? "100%" : "max-content", minWidth: hasOneid && !isUnified ? "1180px" : "100%", tableLayout: hasOneid && !isUnified ? "fixed" : "auto" }}>
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "220px" }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={hasOneid ? { width: "22%", minWidth: "200px" } : { minWidth: "220px" }}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -2595,24 +2675,79 @@ export default function MemberManagement() {
                 </th>
                 {hasOneid && (
                   <>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>
-                      <div className="flex items-center gap-1.5">
-                        部门
-                        <Tooltip>
-                          <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
-                          <TooltipContent>用户的部门信息来自腾讯统一身份管理平台</TooltipContent>
-                        </Tooltip>
-                      </div>
+                    {/* 部门列：仅当 OneID 同步出部门数据时展示 */}
+                    {hasDeptData && (
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: "20%", minWidth: "180px" }}>
+                        <div className="flex items-center gap-1.5">
+                          <Popover open={deptColFilterOpen} onOpenChange={setDeptColFilterOpen}>
+                            <PopoverTrigger asChild>
+                              <button className="flex items-center gap-1 group/dept">
+                                <span>部门</span>
+                                <Filter className={`w-3.5 h-3.5 transition-colors ${deptFilter ? 'text-blue-500' : 'text-gray-400 group-hover/dept:text-gray-600'}`} />
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                              <DepartmentColumnFilter
+                                departments={MOCK_DEPARTMENTS}
+                                value={deptFilter}
+                                onConfirm={(v) => { setDeptFilter(v); setPage(1); setDeptColFilterOpen(false); }}
+                                onCancel={() => setDeptColFilterOpen(false)}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <Tooltip>
+                            <TooltipTrigger asChild><span className="cursor-default inline-flex"><Info className="w-3.5 h-3.5 text-gray-400" /></span></TooltipTrigger>
+                            <TooltipContent>用户的部门信息来自腾讯统一身份管理平台</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </th>
+                    )}
+                    {/* 分组列（OneID 模式） */}
+                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ width: "18%", minWidth: "180px" }}>
+                      <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
+                        <PopoverTrigger asChild>
+                          <button className="flex items-center gap-1 group/grp">
+                            <span>分组</span>
+                            <Filter className={`w-3.5 h-3.5 transition-colors ${groupFilter ? 'text-blue-500' : 'text-gray-400 group-hover/grp:text-gray-600'}`} />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                          <GroupColumnFilter
+                            groups={MM_MOCK_GROUPS}
+                            value={groupFilter}
+                            hasOneid={hasOneid}
+                            onConfirm={(v) => { setGroupFilter(v); setPage(1); setGroupColFilterOpen(false); }}
+                            onCancel={() => setGroupColFilterOpen(false)}
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </th>
-                    <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
                   </>
                 )}
                 {!hasOneid && (
-                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
+                  <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "200px" }}>
+                    <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
+                      <PopoverTrigger asChild>
+                        <button className="flex items-center gap-1 group/grp">
+                          <span>分组</span>
+                          <Filter className={`w-3.5 h-3.5 transition-colors ${groupFilter ? 'text-blue-500' : 'text-gray-400 group-hover/grp:text-gray-600'}`} />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                        <GroupColumnFilter
+                          groups={MM_MOCK_MANUAL_GROUPS}
+                          value={groupFilter}
+                          hasOneid={false}
+                          onConfirm={(v) => { setGroupFilter(v); setPage(1); setGroupColFilterOpen(false); }}
+                          onCancel={() => setGroupColFilterOpen(false)}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </th>
                 )}
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "80px" }}>角色</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "80px" }}>状态</th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "120px" }}>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={hasOneid ? { width: "80px", minWidth: "80px" } : { minWidth: "80px" }}>角色</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={hasOneid ? { width: "80px", minWidth: "80px" } : { minWidth: "80px" }}>状态</th>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={hasOneid ? { width: "120px", minWidth: "120px" } : { minWidth: "120px" }}>
                   <div className="flex items-center gap-1.5">
                     Agent 上限
                     <Tooltip>
@@ -2621,7 +2756,7 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={hasOneid ? { width: "150px", minWidth: "150px" } : undefined}>
                   <div className="flex items-center gap-1.5">
                     每日 Tokens 上限
                     <Tooltip>
@@ -2630,8 +2765,11 @@ export default function MemberManagement() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "110px" }}>加入时间</th>
-                <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
+                <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={hasOneid ? { width: "110px", minWidth: "110px" } : { minWidth: "110px" }}>加入时间</th>
+                <th
+                  className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 relative"
+                  style={hasOneid && !isUnified ? { width: "72px", minWidth: "72px", backgroundColor: "#fbfbfd" } : { width: "1%", backgroundColor: "#fbfbfd" }}
+                >
                   {memberTableCanScrollRight && (
                     <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                   )}
@@ -2660,47 +2798,49 @@ export default function MemberManagement() {
                   </td>
                   {hasOneid && (
                     <>
-                      {/* 部门列 */}
-                      <td className="px-3 py-4" style={{ minWidth: "200px" }}>
-                        {mmDeptPaths.length === 0 ? (
-                          <span className="text-sm text-gray-300">—</span>
-                        ) : mmDeptPaths.length === 1 ? (
-                          <span
-                            className="text-sm text-gray-600 truncate block max-w-[200px]"
-                            title={mmDeptPaths[0].path}
-                          >
-                            {mmDeptPaths[0].path}
-                          </span>
-                        ) : (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
-                                <span className="text-sm text-gray-600 truncate">
-                                  {mmDeptPaths[0].path}
+                      {/* 部门列：仅当 OneID 同步出部门数据时展示，与表头联动 */}
+                      {hasDeptData && (
+                        <td className="px-3 py-4" style={{ minWidth: "200px" }}>
+                          {mmDeptPaths.length === 0 ? (
+                            <span className="text-sm text-gray-300">—</span>
+                          ) : mmDeptPaths.length === 1 ? (
+                            <span
+                              className="text-sm text-gray-600 truncate block max-w-[200px]"
+                              title={mmDeptPaths[0].path}
+                            >
+                              {mmDeptPaths[0].path}
+                            </span>
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 max-w-[200px] cursor-default">
+                                  <span className="text-sm text-gray-600 truncate">
+                                    {mmDeptPaths[0].path}
+                                  </span>
+                                  <span className="text-xs text-gray-400 tabular-nums shrink-0">
+                                    +{mmDeptPaths.length - 1}
+                                  </span>
                                 </span>
-                                <span className="text-xs text-gray-400 tabular-nums shrink-0">
-                                  +{mmDeptPaths.length - 1}
-                                </span>
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
-                              <div className="py-2">
-                                {mmDeptPaths.map((dp, idx) => (
-                                  <div key={idx} className="px-3 py-1.5 text-sm">
-                                    <span className="text-gray-200 mr-1">{idx + 1}.</span>
-                                    <span className="text-white">{dp.path}</span>
-                                    {dp.isPrimary && (
-                                      <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
-                                        主部门
-                                      </span>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
-                      </td>
+                              </TooltipTrigger>
+                              <TooltipContent side="bottom" align="start" className="max-w-[360px] p-0">
+                                <div className="py-2">
+                                  {mmDeptPaths.map((dp, idx) => (
+                                    <div key={idx} className="px-3 py-1.5 text-sm">
+                                      <span className="text-gray-200 mr-1">{idx + 1}.</span>
+                                      <span className="text-white">{dp.path}</span>
+                                      {dp.isPrimary && (
+                                        <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
+                                          主部门
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </td>
+                      )}
                       {/* 分组列（OneID 模式：紧跟部门列） */}
                       <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
                         <div className="flex items-center gap-1 max-w-[200px]">
@@ -2843,12 +2983,12 @@ export default function MemberManagement() {
                   <td className="px-3 py-4 whitespace-nowrap">
                     <span className="text-sm text-gray-500">{member.joinTime}</span>
                   </td>
-                  <td className="px-4 py-4 sticky right-0 bg-white z-10 w-[1%] relative">
+                  <td className={`px-4 py-4 sticky right-0 bg-white z-10 relative${showCustomExtras ? " w-[1%]" : ""}`}>
                     {memberTableCanScrollRight && (
                       <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                     )}
                     <div className="flex items-center justify-center gap-0.5">
-                    {hasOneid ? (
+                    {!showCustomExtras ? (
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -2988,6 +3128,7 @@ export default function MemberManagement() {
         {viewMode === "group" && (
           <NewGroupView
             hasOneid={hasOneid}
+            hasDeptData={hasDeptData}
             users={MM_MOCK_USERS}
             overrides={mmOverrides}
             onResolveConflict={handleMmResolveConflict}
@@ -4234,8 +4375,8 @@ export default function MemberManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Auth Source Import Dialog（OneID 模式下不渲染） */}
-      {!hasOneid && (
+      {/* Auth Source Import Dialog（OneID 专用模式下不渲染；普通/统一模式渲染） */}
+      {showCustomExtras && (
         <AuthSourceImportDialog
           open={showAuthSourceDialog}
           onOpenChange={(o) => {
@@ -4263,8 +4404,8 @@ export default function MemberManagement() {
         />
       )}
 
-      {/* Auth Source Delete Confirm Dialog（OneID 模式下不渲染） */}
-      {!hasOneid && (
+      {/* Auth Source Delete Confirm Dialog（OneID 专用模式下不渲染；普通/统一模式渲染） */}
+      {showCustomExtras && (
         <Dialog
           open={!!deleteAuthSourceConfirm?.open}
           onOpenChange={(open) => { if (!open) setDeleteAuthSourceConfirm(null); }}

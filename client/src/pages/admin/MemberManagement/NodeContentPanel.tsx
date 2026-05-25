@@ -96,6 +96,11 @@ interface NodeContentPanelProps {
   onResolveConflict?: (userId: string, winnerResourceId: string) => void;
   /** 是否为 OneID 模式 */
   hasOneid?: boolean;
+  /**
+   * OneID 中是否存在部门数据。仅在 `hasOneid=true` 时生效；为 false 时：
+   * 隐藏「部门」列与"部门："信息。默认 true。
+   */
+  hasDeptData?: boolean;
   /** 是否为普通模式 */
   isManualMode?: boolean;
   /** 全部用户（添加用户到分组弹窗用） */
@@ -347,6 +352,7 @@ export default function NodeContentPanel({
   nodePath,
   users,
   hasOneid = false,
+  hasDeptData = true,
   isManualMode = false,
   allUsers = [],
   onAddUsersToGroup,
@@ -356,6 +362,8 @@ export default function NodeContentPanel({
   anomalousBoundConfigs = [],
   isUninitialized = false,
 }: NodeContentPanelProps) {
+  // 是否显示「部门」相关 UI（OneID 模式 + 存在部门数据）
+  const showDept = hasOneid && hasDeptData;
   const [tab, setTab] = useState<Tab>(isAnomalous ? "config" : "members");
   const [page, setPage] = useState(1);
 
@@ -587,7 +595,7 @@ export default function NodeContentPanel({
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
                         用户 ID
                       </th>
-                      {hasOneid && (
+                      {showDept && (
                         <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                           部门
                         </th>
@@ -616,7 +624,7 @@ export default function NodeContentPanel({
                       <tr>
                         <td
                           colSpan={
-                            (hasOneid ? 5 : 4) +
+                            (showDept ? 5 : 4) +
                             (isManualMode && nodeId !== "__unassigned__" ? 1 : 0)
                           }
                           className="px-6 py-12 text-center text-sm text-gray-400"
@@ -630,7 +638,7 @@ export default function NodeContentPanel({
                           .map((gid) => groupMap.get(gid))
                           .filter(Boolean) as UserGroup[];
                         const manualGroups = userGroups.filter((g) => g.source === "manual");
-                        const deptPaths = hasOneid ? getUserDeptPaths(u, groups) : [];
+                        const deptPaths = showDept ? getUserDeptPaths(u, groups) : [];
                         return (
                           <tr
                             key={u.userId}
@@ -643,8 +651,8 @@ export default function NodeContentPanel({
                               </span>
                             </td>
 
-                            {/* 部门（仅 OneID 模式） */}
-                            {hasOneid && (
+                            {/* 部门（仅 OneID 模式且存在部门数据） */}
+                            {showDept && (
                               <td className="px-3 py-4">
                                 {deptPaths.length === 0 ? (
                                   <span className="text-sm text-gray-300">—</span>
@@ -700,8 +708,11 @@ export default function NodeContentPanel({
                             <td className="px-3 py-4">
                               {(() => {
                                 // OneID 模式：显示部门 + 用户组；普通模式：只显示自建分组
+                                // 当 OneID 中无部门数据时（!showDept），分组列只显示 oneid-group
                                 const displayGroups = hasOneid
-                                  ? userGroups.filter((g) => g.source === "oneid-dept" || g.source === "oneid-group")
+                                  ? showDept
+                                    ? userGroups.filter((g) => g.source === "oneid-dept" || g.source === "oneid-group")
+                                    : userGroups.filter((g) => g.source === "oneid-group")
                                   : manualGroups;
                                 if (displayGroups.length === 0)
                                   return <span className="text-sm text-gray-300">—</span>;
@@ -937,7 +948,7 @@ export default function NodeContentPanel({
                   const isInCurrentGroup = m.groupIds.includes(nodeId);
                   const isDisabled = isInCurrentGroup;
                   // 部门：用户所有 oneid-dept 分组的完整路径（主部门排首位）
-                  const deptPaths = hasOneid
+                  const deptPaths = showDept
                     ? m.groupIds
                         .filter((gid) => groupMap.get(gid)?.source === "oneid-dept")
                         .map((gid) => ({
@@ -950,14 +961,16 @@ export default function NodeContentPanel({
                         .map((d) => d.path)
                     : [];
                   // 分组：
-                  //   OneID 模式：oneid-dept + oneid-group（完整路径）
+                  //   OneID 模式：oneid-dept + oneid-group（完整路径）；无部门数据时只 oneid-group
                   //   普通模式：manual（完整路径）
                   const groupPaths = m.groupIds
                     .filter((gid) => {
                       const g = groupMap.get(gid);
                       if (!g) return false;
                       if (hasOneid) {
-                        return g.source === "oneid-dept" || g.source === "oneid-group";
+                        return showDept
+                          ? g.source === "oneid-dept" || g.source === "oneid-group"
+                          : g.source === "oneid-group";
                       }
                       return g.source === "manual";
                     })
@@ -990,7 +1003,7 @@ export default function NodeContentPanel({
                         <span className="text-sm text-gray-900 block truncate">
                           {m.userId}
                         </span>
-                        {hasOneid && (
+                        {showDept && (
                           <span className="text-xs text-gray-400 block break-all">
                             部门：{deptPaths.length > 0 ? deptPaths.join("、") : "—"}
                           </span>

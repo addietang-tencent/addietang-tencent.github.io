@@ -117,7 +117,7 @@ export function useOutdatedTypes(claws?: ClawLite[]): OutdatedTypeStat[] {
 
     // 按 agent 类型聚合实例
     const result: OutdatedTypeStat[] = [];
-    for (const [imgAgentType, image] of activeMap.entries()) {
+    for (const [imgAgentType, image] of Array.from(activeMap.entries())) {
       // 找到所有 claws 中映射到此类型的实例
       const matchedInstances = effectiveClaws.filter((c) => {
         const mapped = CLAW_TO_IMAGE_AGENT_TYPE[c.agentType] ?? c.agentType;

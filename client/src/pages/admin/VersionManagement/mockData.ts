@@ -382,6 +382,9 @@ export interface CommandExecuteExtra {
   workingDir: string;         // 执行路径
   runAsUser: string;          // 执行用户
   timeoutSec: number;         // 超时时间（秒）
+  // 参数化命令
+  commandContentTemplate?: string;  // 命令模板（含 {{param}} 占位符）
+  paramValues?: Record<string, string>; // 参数值
   // 灰度信息
   testInstanceId?: string;    // 灰度执行：先在 1 台实例（灰度机）上执行
   testStatus?: "success" | "failed";

@@ -9,8 +9,16 @@ function Input({
   onKeyDown,
   onCompositionStart,
   onCompositionEnd,
+  tenant = false,
   ...props
-}: React.ComponentProps<"input">) {
+}: React.ComponentProps<"input"> & {
+  /**
+   * 用户端形态：圆角变为 rounded-full（胶囊），与 tenant-* Button 系列对齐。
+   * 仅 pages/tenant/** 业务页使用；管理端保持 rounded-[4px]。
+   * 规范来源：SKILL-TENANT.md（2026-05-23 控件圆角对齐）
+   */
+  tenant?: boolean;
+}) {
   // Get dialog composition context if available (will be no-op if not inside Dialog)
   const dialogComposition = useDialogComposition();
 
@@ -53,8 +61,10 @@ function Input({
     <input
       type={type}
       data-slot="input"
+      data-tenant={tenant ? "true" : undefined}
       className={cn(
-        "h-9 w-full min-w-0 rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm text-[#0A0A0A] font-normal transition-colors outline-none",
+        "h-9 w-full min-w-0 border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm text-[#0A0A0A] font-normal transition-colors outline-none",
+        tenant ? "rounded-full" : "rounded-[4px]",
         "placeholder:text-[#A3A3A3]",
         "hover:border-[#1447E6]",
         "focus:border-[#1447E6]",

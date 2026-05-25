@@ -1,12 +1,13 @@
 /**
  * QuickStartGuide - 快速上手三步引导
  *
- * 严格 1:1 对齐 Figma node 358:2341（数据来源：figma-framelink MCP 实时拉取）
+ * 严格 1:1 对齐 Figma node 1077:33857（数据来源：figma-framelink MCP 实时拉取）
  *
- *   358:2341 「Frame」
- *     ├ layout_KQP6RJ: row / gap 24 / padding 20 24 20 42 / sizing fill x fixed
- *     ├ fill_OJPF5G: linear-gradient(90deg, #FAFCFF 0% → #F6F8FF 54% → #E7EDFF 100%)
- *     ├ strokeWeight 0 0 1px / stroke #E2E8F0
+ *   1077:33857 「Frame」（旧节点 358:2341 的改稿）
+ *     ├ layout: row / gap 24 / padding 20 24 20 42 / sizing fill x fixed(86)
+ *     ├ borderRadius 12px
+ *     ├ fill: linear-gradient(90deg, #E4F0FF 0% → #E5F6FF 50% → #BBD9FF 100%)
+ *     ├ 不再有底边线（旧 358:2341 的 borderBottom #E2E8F0 在改稿中已移除）
  *     ├
  *     ├─ 358:2342 关闭 (绝对定位 x:1736 y:0 / 24×24)
  *     │     └ fill rgba(255,255,255,0.4) / borderRadius 0 0 0 20px
@@ -90,13 +91,13 @@ const STEPS: Step[] = [
 
 export const QuickStartGuide = ({ onClose }: QuickStartGuideProps) => {
   return (
-    // 358:2341 - 容器：渐变 + 底边线 + 段间距 20px
+    // 1077:33857 - 容器：渐变 + 圆角 12 + 段间距 20px
     <div
       className="relative overflow-hidden mb-5"
       style={{
         background:
-          "linear-gradient(90deg, rgba(250,252,255,1) 0%, rgba(246,248,255,1) 54%, rgba(231,237,255,1) 100%)",
-        borderBottom: "1px solid #E2E8F0",
+          "linear-gradient(90deg, #E4F0FF 0%, #E5F6FF 50%, #BBD9FF 100%)",
+        borderRadius: "12px",
       }}
     >
       {/*

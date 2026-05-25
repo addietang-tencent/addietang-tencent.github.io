@@ -13,7 +13,7 @@ import { Link, useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
-import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
+import { TextSwitch, TextSwitchOption } from "@/components/ui/segment";
 import {
   Dialog,
   DialogContent,
@@ -180,55 +180,6 @@ export default function MyOpenClaw() {
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [showQuickStart, setShowQuickStart] = useState(true);
-
-  // ===== 点阵装饰层动态测量：测量分页栏在中间内容区中的位置，让点阵下边界紧贴分页栏顶部分割线
-  // 设计意图：点阵只在 hero 底线 ~ 分页栏顶线之间显示（四角无点阵）
-  // 实现：用 ref callback + ResizeObserver，监听分页栏自身和中间内容区的尺寸变化
-  // 计算：用 getBoundingClientRect() 算「分页栏顶部 - 中间内容区顶部」的距离，
-  //       再用 middle.offsetHeight 减去它得到 bottom 值。
-  //       不能用 pagination.offsetTop —— 那是相对最近 positioned 祖先的距离，
-  //       而中间嵌了别的 relative 容器（如卡片网格 wrapper）会让 offsetTop 偏小，导致 bottom 偏大、点阵向上抬过头。
-  const roRef = useRef<ResizeObserver | null>(null);
-  const middleSectionRef = useRef<HTMLDivElement | null>(null);
-  const paginationElRef = useRef<HTMLDivElement | null>(null);
-  // 初始值：约 180 = 分页栏典型距底部，避免首次渲染时点阵覆盖到分页栏
-  const [dotsBottom, setDotsBottom] = useState(180);
-  const recompute = useCallback(() => {
-    const middle = middleSectionRef.current;
-    const pagination = paginationElRef.current;
-    if (!middle) return;
-    if (!pagination) {
-      // ChatView 模式无分页栏，bottom 对齐底部分割线（paddingBottom 75px）
-      setDotsBottom(75);
-      return;
-    }
-    // 用 getBoundingClientRect 跨祖先链计算「分页栏顶部相对中间内容区顶部」的真实距离
-    const middleRect = middle.getBoundingClientRect();
-    const paginationRect = pagination.getBoundingClientRect();
-    const paginationTopInMiddle = paginationRect.top - middleRect.top;
-    setDotsBottom(middle.offsetHeight - paginationTopInMiddle);
-  }, []);
-  const middleRef = useCallback((node: HTMLDivElement | null) => {
-    middleSectionRef.current = node;
-    recompute();
-  }, [recompute]);
-  const paginationRef = useCallback((node: HTMLDivElement | null) => {
-    if (roRef.current) {
-      roRef.current.disconnect();
-      roRef.current = null;
-    }
-    paginationElRef.current = node;
-    if (!node) {
-      recompute();
-      return;
-    }
-    recompute();
-    // 同时监听分页栏与中间内容区尺寸变化，任一变化都重新计算
-    const ro = new ResizeObserver(recompute);
-    ro.observe(node);
-    if (middleSectionRef.current) ro.observe(middleSectionRef.current);
-    roRef.current = ro;
-  }, [recompute]);
 
   // ===== 多分组模式 =====
   const [groupMode, setGroupMode] = useState<UserGroupMode>(() => {
@@ -450,64 +401,14 @@ export default function MyOpenClaw() {
     <TooltipProvider delayDuration={200}>
       <TenantLayout>
         {/* SKILL §7.4 响应式：min-w-[1200px] 保最低可用宽度 / max-w-[1920px] 大屏限宽
-            overflow-x-clip：让顶部/底部贯穿全视口的横线（用 100vw 实现）不触发水平滚动条 */}
-        {/* Figma 446:2942 - row flex：[80px 矩阵] + [中间内容区] + [80px 矩阵]，源结构 1:1 还原 */}
-        <div className="min-w-[1200px] overflow-x-clip">
-          <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
-            {/* 左侧 80px 占位带 - Figma 446:2943
-                点阵不再贯穿全高（避免与 hero 段、分页栏段对应的两侧四角重叠），
-                由中间内容区的「中段 wrapper」局部延伸 80px 渲染，仅覆盖 hero 底线 ~ 分页栏顶线 */}
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            {/* 中间内容区 - Figma 446:2944，gap 32px 由各段 mb 控制 / padding-bottom 75px / 子段自带 px-42
-                ref={middleRef}：让点阵装饰层基于中间内容区与分页栏的实际几何动态计算 bottom 值 */}
-            <div ref={middleRef} className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)]" style={{ paddingBottom: "75px" }}>
-              {/* 左右两侧点阵装饰层 - 仅覆盖 hero 底线 ~ 分页栏顶线（四角无点阵）
-                  - 高度自适应：top: 112px = HeroBanner 高度；bottom: dotsBottom（动态 = 中间内容区高度 - 分页栏 offsetTop）
-                    完全摆脱对 pb-32 / mt-6 等常量的依赖，直接读取 DOM 几何
-                  - 宽度自适应：用 CSS calc 让点阵从中间内容区两侧外延到视口边缘
-                    · left: calc((100% - 100vw) / 2)：父级 100% = 中间内容区宽度 W，
-                      该表达式 = (W - 100vw)/2 = 负值，向左延伸 (100vw - W)/2 px 抵达视口左边
-                    · right: 100%：紧贴中间内容区左边外侧（点阵不进入中间内容区）
-                  - 点阵规格：12×12 网格 / 2×2 圆点（半径 1px）/ #DFE2E5 / pointer-events-none */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute z-20"
-                style={{
-                  top: "112px",
-                  bottom: `${dotsBottom}px`,
-                  left: "calc((100% - 100vw) / 2)",
-                  right: "100%",
-                  backgroundImage:
-                    "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                  backgroundSize: "12px 12px",
-                }}
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute z-20"
-                style={{
-                  top: "112px",
-                  bottom: `${dotsBottom}px`,
-                  left: "100%",
-                  right: "calc((100% - 100vw) / 2)",
-                  backgroundImage:
-                    "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                  backgroundSize: "12px 12px",
-                }}
-              />
-              {/* 中间内容区左右两条竖向分隔线：紧贴 80px 矩阵带内侧，贯穿全高（对齐 Figma 整页贯穿样式）
-                  z-30 用于覆盖 QuickStartGuide 自带的渐变背景（否则会被遮住露不出来）；
-                  pointer-events-none 保证不影响内部按钮（如关闭按钮）的点击。 */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
-                style={{ width: "1px", backgroundColor: "#E2E8F0" }}
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
-                style={{ width: "1px", backgroundColor: "#E2E8F0" }}
-              />
+            页面段落对齐（Figma 1077:33419）：所有主区块统一 padding-left/right = 120px，
+            禁止段内再叠加 px-[42px]/w-20 双层缩进 */}
+        <div className="min-w-[1200px]">
+          <div className="max-w-[1920px] mx-auto page-enter">
+            <div
+              className="relative min-h-[calc(100vh-64px)]"
+              style={{ paddingLeft: "120px", paddingRight: "120px", paddingBottom: "75px" }}
+            >
           {/* Hero Banner - Figma 358:2325 / 363:5079
               QuickStart 关闭后传入 onShowQuickStart 回调，副文右侧会出现「查看步骤指引」按钮 */}
           <HeroBanner
@@ -524,7 +425,7 @@ export default function MyOpenClaw() {
           {/* Section Header - 标题 + 视图切换（左） + 分组模式 + 创建按钮（右），合并为一行
               QuickStart 展开时，由 QuickStartGuide 自带的 mb-5 提供与 hero 之间的段间距；
               QuickStart 关闭时，QuickStartGuide 不渲染，需在此补 mt-5 让 hero 与 section 之间保持一致段间距 */}
-          <div className={`flex items-center justify-between mb-4 px-[42px] ${!showQuickStart ? "mt-5" : ""}`}>
+          <div className={`flex items-center justify-between mb-4 ${!showQuickStart ? "mt-5" : ""}`}>
             <div className="flex items-center gap-3">
               <h2 className="text-base font-medium text-foreground">
                 我的 Agent
@@ -533,25 +434,26 @@ export default function MyOpenClaw() {
               {/* 视图切换：管理视图 / 对话视图 */}
               <ViewModeSegmented value={viewMode} onChange={handleViewModeChange} />
             </div>
-            <div className="flex items-center gap-3">
-              {/* 双模式 Segmented：保留 OneID / 普通模式逻辑 */}
-              <SegmentGroup className="hidden md:inline-flex">
-                <SegmentOption
+            {/* TextSwitch 与按钮之间 32px 间距（Figma 1077:33979 layout_JMOUG3 gap=32） */}
+            <div className="flex items-center gap-8">
+              {/* 文字切换器：普通 / 多分组（Figma 1077:33980 文字版，弱切换语义） */}
+              <TextSwitch className="hidden md:inline-flex">
+                <TextSwitchOption
                   active={groupMode === "normal"}
                   onClick={() => handleGroupModeChange("normal")}
                   title="切换到普通用户模式"
                 >
                   普通
-                </SegmentOption>
-                <SegmentOption
+                </TextSwitchOption>
+                <TextSwitchOption
                   active={groupMode === "multi-group"}
                   onClick={() => handleGroupModeChange("multi-group")}
                   title="切换到多分组用户模式"
                 >
                   多分组
-                </SegmentOption>
-              </SegmentGroup>
-              {/* 创建 Agent 按钮：Figma 黑→蓝渐变 */}
+                </TextSwitchOption>
+              </TextSwitch>
+              {/* 创建 Agent 按钮：Figma 1077:33984，黑→蓝渐变 + h-10 + px-18 + icon-text gap 8 */}
               <Button
                 onClick={() => {
                   if (groupMode === "multi-group") {
@@ -560,17 +462,17 @@ export default function MyOpenClaw() {
                   }
                   setShowCreate(true);
                 }}
-                variant="claw-primary"
-                className="px-5"
+                variant="tenant-primary"
+                size="claw-lg"
               >
-                <Plus className="w-4 h-4 mr-1.5" />
+                <Plus className="w-4 h-4" />
                 创建 Agent
               </Button>
             </div>
           </div>
 
-          {/* Content Area - 左右 42px 段落内边距对齐 446:2976 */}
-          <div className="relative px-[42px] pb-8">
+          {/* Content Area - 段落左右内边距由父级 120px 统一控制，本层不再额外缩进 */}
+          <div className="relative pb-8">
             {/* Main Content */}
               {viewMode === "chat" ? (
                 /* 新版对话卡片视图：Figma 1003:22598 还原稿（AgentChat）。
@@ -591,7 +493,7 @@ export default function MyOpenClaw() {
                       <div className="text-center py-24">
                         <Bot className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
                         <p className="text-muted-foreground mb-4">暂无实例</p>
-                        <Button onClick={() => setShowCreate(true)} variant="claw-outline">
+                        <Button onClick={() => setShowCreate(true)} variant="tenant-outline">
                           <Plus className="w-4 h-4 mr-1.5" />
                           创建 Agent
                         </Button>
@@ -637,18 +539,7 @@ export default function MyOpenClaw() {
                     </div>
                     {/* [006] 分页控件 */}
                     {totalPages > 1 && (
-                    <div ref={paginationRef} className="relative mt-6 px-6 py-3">
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute"
-                        style={{
-                          left: "calc(50% - 50vw)",
-                          width: "100vw",
-                          top: 0,
-                          height: "1px",
-                          backgroundColor: "#E2E8F0",
-                        }}
-                      />
+                    <div className="relative mt-6 px-6 py-3">
                       <Pagination
                         total={sortedClaws.length}
                         current={safePage}
@@ -666,29 +557,15 @@ export default function MyOpenClaw() {
               })()}
           </div>
 
-            {/* 底部贯穿分割线 — 绝对定位于容器 bottom: 75px，对话视图和管理视图统一 */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                left: "calc(50% - 50vw)",
-                width: "100vw",
-                bottom: "75px",
-                height: "1px",
-                backgroundColor: "#E2E8F0",
-              }}
-            />
-            {/* /中间内容区 (flex-1) 闭合 */}
+            {/* /内容区（120px padding）闭合 */}
           </div>
-            {/* 右侧 80px 占位带 - Figma 446:3001，与左侧同处理：仅留白，点阵由中段 wrapper 延伸渲染 */}
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
           </div>
         </div>
 
         {/* Notification Panel */}
         {showNotificationPanel && (
           <div className="fixed inset-0 z-50" onClick={() => setShowNotificationPanel(false)}>
-            <div className="absolute right-6 top-[150px] w-80 bg-card rounded-[4px] shadow-lg border border-border z-50 flex flex-col"
+            <div className="absolute right-6 top-[150px] w-80 bg-card rounded-[8px] shadow-lg border border-border z-50 flex flex-col"
               onClick={(e) => e.stopPropagation()}>
               {/* Header - Fixed */}
               <div className="p-3 border-b border-border flex-shrink-0">
@@ -747,7 +624,7 @@ export default function MyOpenClaw() {
               重启后该 OpenClaw「{restartConfirm?.name}」将短暂不可用，期间 IM 消息无法回复，确认重启吗？
             </p>
             <DialogFooter className="gap-2 pt-2">
-              <Button variant="claw-outline" onClick={() => setRestartConfirm(null)}>取消</Button>
+              <Button variant="tenant-outline" onClick={() => setRestartConfirm(null)}>取消</Button>
               <Button
                 className="bg-orange-500 hover:bg-orange-600 text-white"
                 onClick={() => handleRestart(restartConfirm!.id, restartConfirm!.name)}
@@ -770,6 +647,7 @@ export default function MyOpenClaw() {
             <div>
               <label className="text-sm font-medium text-foreground">请输入「重装」以确认</label>
               <Input
+                tenant
                 placeholder="输入「重装」"
                 value={reinstallConfirmInput}
                 onChange={(e) => setReinstallConfirmInput(e.target.value)}
@@ -777,7 +655,7 @@ export default function MyOpenClaw() {
               />
             </div>
             <DialogFooter className="gap-2 pt-2">
-              <Button variant="claw-outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
+              <Button variant="tenant-outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
               <Button
                 className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
                 disabled={reinstallConfirmInput !== "重装"}
@@ -815,6 +693,7 @@ export default function MyOpenClaw() {
               <div>
                 <label className="text-sm font-medium text-foreground">请输入「删除」以确认</label>
                 <Input
+                  tenant
                   placeholder="输入「删除」"
                   value={deleteConfirmInput}
                   onChange={(e) => setDeleteConfirmInput(e.target.value)}
@@ -823,9 +702,9 @@ export default function MyOpenClaw() {
               </div>
             )}
             <DialogFooter className="gap-2 pt-2">
-              <Button variant="claw-outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
+              <Button variant="tenant-outline" onClick={() => setDeleteConfirm(null)}>取消</Button>
               <Button
-                variant="destructive"
+                variant="tenant-destructive"
                 disabled={deleteConfirm?.status === "running" && deleteConfirmInput !== "删除"}
                 onClick={() => handleDelete(deleteConfirm!.id, deleteConfirm!.name)}
               >
@@ -851,7 +730,7 @@ export default function MyOpenClaw() {
               </p>
             </div>
             <DialogFooter className="gap-2 pt-2">
-              <Button variant="claw-outline" onClick={() => setRemoveRoleConfirm(null)}>取消</Button>
+              <Button variant="tenant-outline" onClick={() => setRemoveRoleConfirm(null)}>取消</Button>
               <Button
                 className="bg-orange-500 hover:bg-orange-600 text-white"
                 onClick={() => handleRemoveRole(removeRoleConfirm!.id, removeRoleConfirm!.name)}
@@ -908,7 +787,7 @@ export default function MyOpenClaw() {
             </p>
             <DialogFooter>
               <Button
-                variant="claw-primary"
+                variant="tenant-primary"
                 className="w-full"
                 onClick={() => { window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
               >
@@ -956,7 +835,7 @@ export default function MyOpenClaw() {
                       }
                     }}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger tenant className="w-full">
                       <SelectValue placeholder="选择所属分组" />
                     </SelectTrigger>
                     <SelectContent>
@@ -974,6 +853,7 @@ export default function MyOpenClaw() {
                   Agent 名称
                 </Label>
                 <Input
+                  tenant
                   id="claw-name"
                   placeholder="请输入文本内容"
                   value={newName}
@@ -1069,16 +949,6 @@ export default function MyOpenClaw() {
 
                   return (
                     <SurfaceInner className="mt-3 overflow-hidden bg-[#FAFAFA] relative">
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-x-0 top-0 h-12"
-                        style={{
-                          backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                          backgroundSize: "12px 12px",
-                          maskImage: "linear-gradient(to bottom, black, transparent)",
-                          WebkitMaskImage: "linear-gradient(to bottom, black, transparent)",
-                        }}
-                      />
                       <div className="p-4 space-y-3 relative z-10">
                         <div className="flex items-center gap-2">
                           <AgentAvatar
@@ -1115,13 +985,13 @@ export default function MyOpenClaw() {
 
             <DialogFooter>
               <Button
-                variant="claw-outline"
+                variant="tenant-outline"
                 onClick={() => setShowCreate(false)}
               >
                 取消
               </Button>
               <Button
-                variant="claw-primary"
+                variant="tenant-primary"
                 onClick={handleCreate}
               >
                 确认创建

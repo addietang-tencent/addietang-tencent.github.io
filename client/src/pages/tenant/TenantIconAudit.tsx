@@ -228,7 +228,7 @@ function TopNavSlice() {
           <span className="w-8 h-8 rounded-[4px] flex items-center justify-center hover:bg-[#F5F5F5]"><HelpIcon /></span>
           <span className="relative w-8 h-8 rounded-[4px] flex items-center justify-center hover:bg-[#F5F5F5]"><BellIcon /><span className="absolute right-1.5 top-1.5 w-1 h-1 rounded-full bg-[#E85C5C]" /></span>
           <span className="h-5 w-px bg-[#E5E5E5]" />
-          <span className="h-8 rounded-[4px] px-2 flex items-center gap-2 hover:bg-[#F5F5F5]"><SwitchAdminIcon /><span className="text-sm">管控端</span></span>
+          <span className="h-[34px] rounded-[20px] px-3 bg-[rgba(219,221,228,0.32)] flex items-center gap-2 hover:bg-[#F5F5F5]"><SwitchAdminIcon /><span className="text-sm">管控端</span></span>
         </div>
       </div>
       <p className="text-xs text-[#737373]">来源：自定义 Figma SVG + lucide 菜单图标。核心规格为 16×16。</p>

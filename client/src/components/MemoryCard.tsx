@@ -130,7 +130,7 @@ export default function MemoryCard({
   return (
     <>
       <SurfaceCard
-        className="overflow-hidden flex flex-col"
+        className="overflow-hidden flex flex-col rounded-[12px]"
         style={{ height: "476px" }}
       >
         {/* ── Header - 符合设计规范 ── */}

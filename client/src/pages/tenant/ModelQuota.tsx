@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { SurfaceCard } from "@/components/ui/Surface";
+import { TenantCard } from "@/components/ui/Surface";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -211,13 +211,13 @@ function StatCard({
   value: string;
 }) {
   return (
-    <SurfaceCard className="p-5">
+    <TenantCard padding="none" className="p-5">
       <div className="flex items-center gap-2 mb-3">
         {svgIcon}
         <span className="text-sm text-gray-500">{label}</span>
       </div>
       <StatNumber>{value}</StatNumber>
-    </SurfaceCard>
+    </TenantCard>
   );
 }
 
@@ -293,52 +293,14 @@ export default function ModelQuota() {
   return (
     <TenantLayout>
       <TooltipProvider>
-        {/* SKILL §7.4 用户端通用骨架（以「我的 Agent」为基准）：
-              外层 min-w-[1200px] overflow-x-clip + 中层 max-w-[1920px] mx-auto flex，
-              左右各 w-20 占位带 + 中间 flex-1 min-w-0 px-[42px] py-8 内容区。 */}
-        <div className="min-w-[1200px] overflow-x-clip">
+        {/* SKILL §7.4 用户端通用骨架 */}
+        <div className="min-w-[1200px]">
           <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
             <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)] pb-[75px]">
-          {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute top-0 bottom-0 left-0 z-30 w-px bg-[#E2E8F0]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute top-0 bottom-0 right-0 z-30 w-px bg-[#E2E8F0]"
-          />
-          {/* 左右两侧点阵装饰层 — 对齐「我的 Agent」
-              覆盖范围：hero 底线(112px) ~ 底部分割线(bottom 75px = paddingBottom)
-              点阵规格：12×12 网格 / 2×2 圆点（半径 1px）/ #DFE2E5 */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute"
-            style={{
-              top: "112px",
-              bottom: "75px",
-              left: "calc((100% - 100vw) / 2)",
-              right: "100%",
-              backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-              backgroundSize: "12px 12px",
-            }}
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute"
-            style={{
-              top: "112px",
-              bottom: "75px",
-              left: "100%",
-              right: "calc((100% - 100vw) / 2)",
-              backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-              backgroundSize: "12px 12px",
-            }}
-          />
-          {/* Hero 段 — 对齐「我的 Agent」HeroBanner 样式（112px / 渐变标题 / 底部贯穿分割线） */}
+          {/* Hero 段 — 112px / 渐变标题 */}
           <div className="relative h-[112px]">
-            <div className="h-[112px] px-[42px] border-l border-r border-[#E2E8F0] flex flex-col justify-center gap-2 overflow-hidden">
+            <div className="h-[112px] px-[42px] flex flex-col justify-center gap-2 overflow-hidden">
               <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 w-fit bg-gradient-to-r from-[#0A0A0A] to-[#1447E6] bg-clip-text text-transparent">
                 模型额度
               </h1>
@@ -363,18 +325,6 @@ export default function ModelQuota() {
                 </Tooltip>
               </div>
             </div>
-            {/* 贯穿底部分割线 */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                left: "calc(50% - 50vw)",
-                width: "100vw",
-                bottom: 0,
-                height: "1px",
-                backgroundColor: "#E2E8F0",
-              }}
-            />
           </div>
 
           {/* 内容区 */}
@@ -393,7 +343,7 @@ export default function ModelQuota() {
                 setDetailPage(1);
               }}
             >
-              <SelectTrigger size="default" className="h-9 text-[#334155]">
+              <SelectTrigger tenant size="default" className="h-9 text-[#334155]">
                 <span className="flex items-center gap-2">
                   <Filter className="size-4 text-[#737373]" />
                   <SelectValue placeholder="选择分组" />
@@ -410,17 +360,17 @@ export default function ModelQuota() {
 
             {/* Right: 日期模式 + 日期 + 刷新 */}
             <div className="flex items-center gap-2 ml-auto flex-wrap">
-              {/* Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-[4px] p-1 gap-1 h-9">
+              {/* Mode Toggle（§8.6 Segmented Control，0522 胶囊版） */}
+              <div className="flex items-center bg-muted rounded-full p-1 gap-1 h-9">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => { setDateMode("single"); setSummaryPage(1); setDetailPage(1); }}
                   className={cn(
-                    "px-3 h-7 text-sm rounded-[4px]",
+                    "px-3 h-7 text-sm rounded-full",
                     dateMode === "single"
-                      ? "bg-white text-gray-900 font-medium shadow-sm hover:bg-white"
-                      : "text-gray-500 hover:text-gray-700 hover:bg-transparent"
+                      ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)] hover:bg-white"
+                      : "text-muted-foreground hover:text-foreground hover:bg-transparent"
                   )}
                 >
                   单日
@@ -430,10 +380,10 @@ export default function ModelQuota() {
                   size="sm"
                   onClick={() => { setDateMode("range"); setSummaryPage(1); setDetailPage(1); }}
                   className={cn(
-                    "px-3 h-7 text-sm rounded-[4px]",
+                    "px-3 h-7 text-sm rounded-full",
                     dateMode === "range"
-                      ? "bg-white text-gray-900 font-medium shadow-sm hover:bg-white"
-                      : "text-gray-500 hover:text-gray-700 hover:bg-transparent"
+                      ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)] hover:bg-white"
+                      : "text-muted-foreground hover:text-foreground hover:bg-transparent"
                   )}
                 >
                   时间段
@@ -443,6 +393,7 @@ export default function ModelQuota() {
               {/* Date Input(s) */}
               {dateMode === "single" ? (
                 <DatePicker
+                  tenant
                   value={singleDate}
                   max={TODAY}
                   onChange={(v) => { setSingleDate(v); setSummaryPage(1); setDetailPage(1); }}
@@ -451,6 +402,7 @@ export default function ModelQuota() {
               ) : (
                 <div className="flex items-center gap-2">
                   <DatePicker
+                    tenant
                     value={dateRange.start}
                     max={dateRange.end}
                     onChange={(v) => { setDateRange((r) => ({ ...r, start: v })); setSummaryPage(1); setDetailPage(1); }}
@@ -458,6 +410,7 @@ export default function ModelQuota() {
                   />
                   <span className="text-gray-400 text-sm">—</span>
                   <DatePicker
+                    tenant
                     value={dateRange.end}
                     min={dateRange.start}
                     max={TODAY}
@@ -469,7 +422,7 @@ export default function ModelQuota() {
 
               {/* Refresh */}
               <Button
-                variant="claw-outline"
+                variant="tenant-outline"
                 size="claw"
                 onClick={handleRefresh}
                 className="text-xs"
@@ -504,7 +457,7 @@ export default function ModelQuota() {
             />
 
             {/* Today Quota Card — not affected by time filter */}
-            <SurfaceCard className="p-5 col-span-2 lg:col-span-1">
+            <TenantCard padding="none" className="p-5 col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2 mb-3">
                 {StatIcons.quota}
                 <span className="text-sm text-gray-500 flex items-center gap-1">
@@ -540,14 +493,15 @@ export default function ModelQuota() {
                 </TooltipContent>
               </Tooltip>
               </div>
-            </SurfaceCard>
+            </TenantCard>
           </div>
 
-          {/* Model Usage Summary */}
-          <SurfaceCard className="mb-5 overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#e5e5e5]">
-              <h2 className="text-sm font-semibold text-gray-900">模型使用汇总</h2>
-            </div>
+          {/* Model Usage Summary
+           * 布局规范：段标题独立于卡片之外，与卡片之间留 12px 间距；
+           * 卡片只承载表格，遵循 Figma 用户端「标题 + 表格分体」结构。
+           * 标题字号沿用页面内段标题统一规范：text-sm / font-semibold / #111827。 */}
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">模型使用汇总</h2>
+          <TenantCard padding="none" className="mb-5 overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -583,13 +537,12 @@ export default function ModelQuota() {
               hideOnSinglePage
               onChange={(p) => setSummaryPage(p)}
             />
-          </SurfaceCard>
+          </TenantCard>
 
-          {/* Detail Usage Records */}
-          <SurfaceCard className="overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#e5e5e5]">
-              <h2 className="text-sm font-semibold text-gray-900">详细使用记录</h2>
-            </div>
+          {/* Detail Usage Records
+           * 同上：段标题独立于卡片，与卡片留 12px 间距；卡片仅承载表格 + 分页。 */}
+          <h2 className="text-sm font-semibold text-gray-900 mb-3">详细使用记录</h2>
+          <TenantCard padding="none" className="overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -628,31 +581,18 @@ export default function ModelQuota() {
                 onChange={(p) => setDetailPage(p)}
               />
             </div>
-          </SurfaceCard>
+          </TenantCard>
 
           </div>{/* end 内容区 px-[42px] py-6 */}
 
-          {/* 底部贯穿分割线 — 绝对定位于容器 bottom: 75px（paddingBottom 区域上方），吸底 */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute"
-            style={{
-              left: "calc(50% - 50vw)",
-              width: "100vw",
-              bottom: "75px",
-              height: "1px",
-              backgroundColor: "#E2E8F0",
-            }}
-          />
-
-          {/* 底部提示语 — 位于分割线下方的 paddingBottom 区域内 */}
+          {/* 底部提示语 */}
           <p className="absolute bottom-7 left-0 right-0 text-xs text-gray-400 text-center">
             额度由企业管理员统一配置，如需调整请联系管理员
           </p>
             </div>{/* end flex-1 min-w-0 relative */}
             <div aria-hidden className="shrink-0 w-20 self-stretch" />
           </div>{/* end max-w-[1920px] flex */}
-        </div>{/* end min-w-[1200px] overflow-x-clip */}
+        </div>{/* end min-w-[1200px] */}
       </TooltipProvider>
     </TenantLayout>
   );

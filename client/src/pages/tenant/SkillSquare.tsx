@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { SurfaceCard, SurfaceInner } from '@/components/ui/Surface';
+import { TenantCard } from '@/components/ui/Surface';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import {
   Select,
@@ -280,32 +280,20 @@ export default function SkillSquare() {
   if (selectedSkillId) {
     return (
       <TenantLayout>
-        {/* 标准骨架：min-w-[1200px] + max-w-[1920px] + 左右 80px 占位带
-              · min-h-[calc(100vh-64px)] 放在外层 flex 上，让中间 + 两侧占位带共同撑满视口
-              · 中间内容区仅 flex-1 min-w-0 relative，不带 px/py，由内部各分段（header/tab/内容/底部分隔栏）自管理 */}
-        <div className="min-w-[1200px] overflow-x-clip">
-          <div className="max-w-[1920px] mx-auto flex items-stretch page-enter min-h-[calc(100vh-64px)]">
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div className="flex-1 min-w-0 relative flex flex-col pb-[75px]">
-              {/* 中间内容区左右贯穿竖线 */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute top-0 bottom-0 left-0 z-30 w-px bg-[#E2E8F0]"
-              />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute top-0 bottom-0 right-0 z-30 w-px bg-[#E2E8F0]"
-              />
-              <div className="relative flex-1 flex flex-col">
-                <SkillSquareDetail
+        {/* 用户端单层 120px 骨架（SKILL-TENANT §6.1.1） */}
+        <div className="min-w-[1200px]">
+          <div className="max-w-[1920px] mx-auto page-enter">
+            <div
+              className="relative min-h-[calc(100vh-64px)] flex flex-col"
+              style={{ paddingLeft: 120, paddingRight: 120, paddingBottom: 75 }}
+            >
+              <SkillSquareDetail
                   skillId={selectedSkillId}
                   skills={visibleSkills}
                   onBack={() => { setSelectedSkillId(null); setInitialTab('overview'); }}
                   initialTab={initialTab}
                 />
-              </div>
             </div>
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
           </div>
         </div>
       </TenantLayout>
@@ -314,55 +302,16 @@ export default function SkillSquare() {
 
   return (
     <TenantLayout>
-      {/* 与「我的 Agent」(MyOpenClaw) 完全一致的外壳骨架：
-            · min-w-[1200px] 兜底小屏（整体横滚不重排）
-            · max-w-[1920px] mx-auto 大屏限宽（两侧自动均分留白）
-            · 内层 flex：左右 w-20 (80px) 占位带 + 中间 flex-1 内容区
-            · 内容区内部用 px-[42px] py-8，与「我的 Agent」段落内边距对齐
-            这样技能广场两侧留白与「我的 Agent」完全一致，不会比它更宽。 */}
-      <div className="min-w-[1200px] overflow-x-clip">
-        <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
-          <div aria-hidden className="shrink-0 w-20 self-stretch" />
-          <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)] pb-[75px]">
-            {/* 中间内容区左右竖向分隔线 — 对齐「我的 Agent」 */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute top-0 bottom-0 left-0 z-30 w-px bg-[#E2E8F0]"
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute top-0 bottom-0 right-0 z-30 w-px bg-[#E2E8F0]"
-            />
-            {/* 左右两侧点阵装饰层 — 对齐「我的 Agent」
-                覆盖范围：hero 底线(112px) ~ 底部分割线(bottom 75px = paddingBottom)
-                点阵规格：12×12 网格 / 2×2 圆点（半径 1px）/ #DFE2E5 */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                top: "112px",
-                bottom: "75px",
-                left: "calc((100% - 100vw) / 2)",
-                right: "100%",
-                backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                backgroundSize: "12px 12px",
-              }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                top: "112px",
-                bottom: "75px",
-                left: "100%",
-                right: "calc((100% - 100vw) / 2)",
-                backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                backgroundSize: "12px 12px",
-              }}
-            />
-            {/* Hero 段 — 对齐「我的 Agent」HeroBanner 样式（112px / 渐变标题 / 底部贯穿分割线） */}
+      {/* 用户端单层 120px 骨架（SKILL-TENANT §6.1.1） */}
+      <div className="min-w-[1200px]">
+        <div className="max-w-[1920px] mx-auto page-enter">
+          <div
+            className="relative min-h-[calc(100vh-64px)]"
+            style={{ paddingLeft: 120, paddingRight: 120, paddingBottom: 75 }}
+          >
+            {/* Hero 段 — 112px / 渐变标题 */}
             <div className="relative h-[112px]">
-              <div className="h-[112px] px-[42px] border-l border-r border-[#E2E8F0] flex flex-col justify-center gap-2 overflow-hidden">
+              <div className="h-[112px] flex flex-col justify-center gap-2 overflow-hidden">
                 <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 w-fit bg-gradient-to-r from-[#0A0A0A] to-[#1447E6] bg-clip-text text-transparent">
                   企业技能
                 </h1>
@@ -370,24 +319,10 @@ export default function SkillSquare() {
                   一键选装企业内的优质技能。
                 </p>
               </div>
-              {/* 贯穿底部分割线 */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute"
-                style={{
-                  left: "calc(50% - 50vw)",
-                  width: "100vw",
-                  bottom: 0,
-                  height: "1px",
-                  backgroundColor: "#E2E8F0",
-                }}
-              />
             </div>
 
             {/* 内容段（搜索栏 / 分类 / 卡片网格） */}
-            <div
-              className="relative h-auto px-[42px] py-6"
-            >
+            <div className="relative h-auto py-6">
 
         {/* 搜索栏 + 筛选 */}
         <div className="relative flex h-10 flex-wrap gap-2 mb-4 items-center">
@@ -395,16 +330,17 @@ export default function SkillSquare() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]"/>
             <Input
+              tenant
               placeholder="搜索技能名称或描述..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 bg-white border-[#E5E5E5] rounded-[4px]"
+              className="pl-9 bg-white border-[#E5E5E5]"
             />
           </div>
 
           {/* 排序 */}
           <Select value={sortType} onValueChange={(v) => setSortType(v as SortType)}>
-            <SelectTrigger className="w-32 bg-white border-[#E5E5E5] rounded-[4px]">
+            <SelectTrigger tenant className="w-32 bg-white border-[#E5E5E5]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -415,7 +351,7 @@ export default function SkillSquare() {
 
           {/* 刷新按钮 */}
           <Button
-            variant="claw-outline"
+            variant="tenant-outline"
             size="icon"
             onClick={handleRefresh}
             className="w-9 h-9"
@@ -423,21 +359,19 @@ export default function SkillSquare() {
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
 
-          {/* 视图切换 — 对齐 §8.6 Segmented Control */}
+          {/* 视图切换 — §8.6 Segmented Control（0522 胶囊版） */}
           <div
-            className="inline-flex items-center gap-1 p-1 rounded-[4px] bg-[#F5F5F5]"
-            
+            className="inline-flex items-center gap-1 p-1 rounded-full bg-muted"
           >
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setViewMode('card')}
-              className={`w-8 h-8 rounded-[3px] ${
+              className={`w-8 h-8 rounded-full ${
                 viewMode === 'card'
-                  ? 'bg-white text-[#0A0A0A]'
-                  : 'text-[#737373] hover:text-[#0A0A0A] hover:bg-transparent'
+                  ? 'bg-white text-foreground shadow-[var(--shadow-segment)]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
               }`}
-              style={viewMode === 'card' ? { boxShadow: "var(--shadow-segment)" } : undefined}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
@@ -445,12 +379,11 @@ export default function SkillSquare() {
               variant="ghost"
               size="icon"
               onClick={() => setViewMode('list')}
-              className={`w-8 h-8 rounded-[3px] ${
+              className={`w-8 h-8 rounded-full ${
                 viewMode === 'list'
-                  ? 'bg-white text-[#0A0A0A]'
-                  : 'text-[#737373] hover:text-[#0A0A0A] hover:bg-transparent'
+                  ? 'bg-white text-foreground shadow-[var(--shadow-segment)]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
               }`}
-              style={viewMode === 'list' ? { boxShadow: "var(--shadow-segment)" } : undefined}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -459,11 +392,11 @@ export default function SkillSquare() {
 
         {/* 分类横排按钮 */}
         <div className="flex items-center gap-2 mb-6 flex-wrap">
-          <Button variant="plain" size="sm" data-state={selectedCategory === 'all' ? "active" : undefined} onClick={() => setSelectedCategory('all')}>
+          <Button variant="tenant-plain" size="sm" data-state={selectedCategory === 'all' ? "active" : undefined} onClick={() => setSelectedCategory('all')}>
             全部
           </Button>
           {DEFAULT_CATEGORIES.map(cat => (
-            <Button key={cat.id} variant="plain" size="sm" data-state={selectedCategory === cat.id ? "active" : undefined} onClick={() => setSelectedCategory(cat.id)}>
+            <Button key={cat.id} variant="tenant-plain" size="sm" data-state={selectedCategory === cat.id ? "active" : undefined} onClick={() => setSelectedCategory(cat.id)}>
               {cat.name}
             </Button>
           ))}
@@ -489,8 +422,8 @@ export default function SkillSquare() {
             ))}
           </div>
         ) : (
-          /* 列表视图 — 紧凑横排布局 */
-          <SurfaceCard className="relative overflow-hidden">
+          /* 列表视图 — 紧凑横排布局（外框对齐 AgentCard：12px 圆角 + 单层阴影） */
+          <TenantCard padding="none" className="relative overflow-hidden">
             <div className="divide-y divide-[#F5F5F5]">
               {filteredSkills.map(skill => (
                 <SkillListRow
@@ -502,25 +435,11 @@ export default function SkillSquare() {
                 />
               ))}
             </div>
-          </SurfaceCard>
+          </TenantCard>
         )}
             </div>
             {/* /内容段 */}
-
-            {/* 底部贯穿分割线 — 绝对定位于容器 bottom: 75px（paddingBottom 区域上方），吸底 */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                left: "calc(50% - 50vw)",
-                width: "100vw",
-                bottom: "75px",
-                height: "1px",
-                backgroundColor: "#E2E8F0",
-              }}
-            />
           </div>
-          <div aria-hidden className="shrink-0 w-20 self-stretch" />
         </div>
       </div>
     </TenantLayout>
@@ -580,10 +499,9 @@ function SkillCard({
 
   return (
     <>
-      <SurfaceCard
-        hover
-        className="group relative flex flex-col cursor-pointer"
-        style={{ padding: "20px", gap: "16px" }}
+      <TenantCard
+        interactive
+        className="group relative cursor-pointer"
         onClick={onClick}
       >
         {/* ===== 头部行：图标(字母) + 名称/版本 + 下载量 ===== */}
@@ -688,7 +606,7 @@ function SkillCard({
             </Tooltip>
           ) : (
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="icon-sm"
               onClick={handleDistributeClick}
               className="flex-shrink-0"
@@ -697,7 +615,7 @@ function SkillCard({
             </Button>
           )}
         </div>
-      </SurfaceCard>
+      </TenantCard>
 
       {/* 下发弹窗 */}
       <BatchDistributeDialog
@@ -837,7 +755,7 @@ function SkillListRow({
           </Tooltip>
         ) : (
           <Button
-            variant="claw-outline"
+            variant="tenant-outline"
             size="icon"
             onClick={handleDistributeClick}
             className="w-7 h-7 flex-shrink-0"
@@ -881,62 +799,6 @@ function SkillSquareDetail({
   const [activeTab, setActiveTab] = useState(initialTab);
   const [selectedVersion, setSelectedVersion] = useState<string>('');
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
-
-  // ========== 点阵装饰层动态测量（参照 OpenClawDetailGuide）==========
-  // 点阵从 Header 底部横线开始，到底部分隔栏顶部横线结束
-  const rootRef = useRef<HTMLDivElement | null>(null);
-  const headerElRef = useRef<HTMLElement | null>(null);
-  const bottomBarElRef = useRef<HTMLDivElement | null>(null);
-  const roRef = useRef<ResizeObserver | null>(null);
-  const [dotsTop, setDotsTop] = useState(112);
-  const [dotsBottom, setDotsBottom] = useState(75);
-
-  const recomputeDots = useCallback(() => {
-    const root = rootRef.current;
-    const header = headerElRef.current;
-    const bottomBar = bottomBarElRef.current;
-    if (!root) return;
-    if (header) {
-      const rootRect = root.getBoundingClientRect();
-      const headerRect = header.getBoundingClientRect();
-      setDotsTop(headerRect.bottom - rootRect.top);
-    }
-    if (bottomBar) {
-      const rootRect = root.getBoundingClientRect();
-      const barRect = bottomBar.getBoundingClientRect();
-      const barTopInRoot = barRect.top - rootRect.top;
-      setDotsBottom(root.offsetHeight - barTopInRoot);
-    }
-  }, []);
-
-  const setRootRef = useCallback((node: HTMLDivElement | null) => {
-    rootRef.current = node;
-    if (!node) return;
-    recomputeDots();
-    if (roRef.current) roRef.current.disconnect();
-    const ro = new ResizeObserver(recomputeDots);
-    ro.observe(node);
-    if (headerElRef.current) ro.observe(headerElRef.current);
-    if (bottomBarElRef.current) ro.observe(bottomBarElRef.current);
-    roRef.current = ro;
-  }, [recomputeDots]);
-
-  const setHeaderRef = useCallback((node: HTMLElement | null) => {
-    headerElRef.current = node;
-    recomputeDots();
-    if (node && roRef.current) roRef.current.observe(node);
-  }, [recomputeDots]);
-
-  const setBottomBarRef = useCallback((node: HTMLDivElement | null) => {
-    bottomBarElRef.current = node;
-    recomputeDots();
-    if (node && roRef.current) roRef.current.observe(node);
-  }, [recomputeDots]);
-
-  useEffect(() => {
-    window.addEventListener("resize", recomputeDots);
-    return () => window.removeEventListener("resize", recomputeDots);
-  }, [recomputeDots]);
 
   // 下发记录
   const [distributionRecords, setDistributionRecords] = useState<CachedDistributionRecord[]>([]);
@@ -1210,57 +1072,16 @@ function SkillSquareDetail({
     return (
       <div className="text-center py-12">
         <p>技能未找到</p>
-        <Button onClick={onBack} className="mt-4" variant="claw-outline">返回列表</Button>
+        <Button onClick={onBack} className="mt-4" variant="tenant-outline">返回列表</Button>
       </div>
     );
   }
 
   return (
-    <div ref={setRootRef} className="flex-1 flex flex-col relative">
-      {/* ======== 左右两侧点阵装饰层（覆盖到视口左右边缘的占位带）======== */}
-      {/* 左侧点阵：从 root 左边 - 100vw 起，到 root 左边止 → 覆盖左侧 80px 占位带及外侧 */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute z-0"
-        style={{
-          top: `${dotsTop}px`,
-          bottom: `${dotsBottom}px`,
-          left: "calc((100% - 100vw) / 2)",
-          right: "100%",
-          backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-          backgroundSize: "12px 12px",
-        }}
-      />
-      {/* 右侧点阵 */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute z-0"
-        style={{
-          top: `${dotsTop}px`,
-          bottom: `${dotsBottom}px`,
-          left: "100%",
-          right: "calc((100% - 100vw) / 2)",
-          backgroundImage: "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-          backgroundSize: "12px 12px",
-        }}
-      />
-
+    <div className="flex-1 flex flex-col relative">
       {/* ======== Header（参照 Agent 详情页风格）======== */}
       {/* 与 Agent 详情页一致：外层 items-end（按钮底对齐）、py-6、左侧整组 items-center */}
-      <header ref={setHeaderRef} className="relative flex items-end justify-between gap-6 px-[42px] py-6">
-        {/* Header 底部横线（贯穿全视口，与下方点阵装饰区边线对齐） */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            left: "calc(50% - 50vw)",
-            width: "100vw",
-            bottom: 0,
-            height: "1px",
-            backgroundColor: "#E2E8F0",
-          }}
-        />
-
+      <header className="relative flex items-end justify-between gap-6 py-6">
         <div className="flex items-center gap-3">
           {/* 返回按钮 */}
           <TooltipProvider>
@@ -1360,12 +1181,12 @@ function SkillSquareDetail({
 
         {/* 右：操作按钮组（底对齐到 header 底部） */}
         <div className="flex items-center gap-2 shrink-0">
-          <Button variant="claw-outline" size="claw" onClick={handleDownload} disabled={isDownloading}>
+          <Button variant="tenant-outline" size="claw" onClick={handleDownload} disabled={isDownloading}>
             {isDownloading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             下载
           </Button>
           <Button
-            variant="claw-primary"
+            variant="tenant-primary"
             size="claw"
             onClick={() => setDistributeDialogOpen(true)}
             disabled={hasInProgress}
@@ -1376,29 +1197,29 @@ function SkillSquareDetail({
         </div>
       </header>
 
-      {/* ======== Tab 导航 + 主要内容（标准骨架分段：Tab 区 px-[42px] py-4；内容区 px-[42px] py-0）======== */}
+      {/* ======== Tab 导航 + 主要内容 ======== */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">
         {/* Tab 导航段 */}
-        <div className="relative px-[42px] py-4">
-          {/* §8.6 Segmented Control：灰底容器 + 白滑块 + var(--shadow-segment) */}
+        <div className="relative py-4">
+          {/* §8.6 Segmented Control（0522 胶囊版）：灰底容器 + 白滑块 + var(--shadow-segment) */}
           <TabsList
-            className="inline-flex items-center gap-1 p-1 h-auto rounded-[4px] bg-[#F5F5F5]"
+            className="inline-flex items-center gap-1 p-1 h-auto rounded-full bg-muted"
           >
             <TabsTrigger
               value="overview"
-              className="rounded-[3px] px-3 py-1 text-sm font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
+              className="rounded-full px-3 py-1 text-sm font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-[3px] px-3 py-1 text-sm font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
+              className="rounded-full px-3 py-1 text-sm font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-[3px] px-3 py-1 text-sm font-normal text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
+              className="rounded-full px-3 py-1 text-sm font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -1406,10 +1227,10 @@ function SkillSquareDetail({
         </div>
 
         {/* 主要内容段（flex-1：内容不足一屏时撑开，把底部分隔栏顶到底部） */}
-        <div className="px-[42px] py-0 flex-1">
+        <div className="py-0 flex-1">
           {/* 概述 Tab */}
           <TabsContent value="overview" className="mt-0 p-0">
-            <SurfaceCard className="p-6">
+            <TenantCard padding="none" className="p-6">
               <MDXRenderer content={(() => {
                 if (!selectedVersion || selectedVersion === skill.versions?.[0]) {
                   return skill.content || '';
@@ -1418,12 +1239,12 @@ function SkillSquareDetail({
                 const skillMdFile = versionFiles.find(f => f.name.toLowerCase() === 'skill.md' || f.name.toLowerCase().endsWith('/skill.md'));
                 return skillMdFile?.content || skill.content || '';
               })()} />
-            </SurfaceCard>
+            </TenantCard>
           </TabsContent>
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-0 p-0">
-            <SurfaceCard className="flex h-[47rem] overflow-hidden">
+            <TenantCard padding="none" className="flex h-[47rem] overflow-hidden">
               {/* 左列：版本选择 */}
               <div className="w-[14%] min-w-[120px] border-r border-[#E5E5E5] flex flex-col">
                 <div className="h-12 px-3 border-b border-[#E5E5E5] flex items-center">
@@ -1503,20 +1324,19 @@ function SkillSquareDetail({
                   <>
                     <div className="h-12 px-3 border-b border-[#E5E5E5] flex items-center justify-between">
                       <p className="text-sm font-medium text-[#09090b]">{expandedFile}</p>
-                      {/* 内嵌 Segmented Control（预览/源码） */}
+                      {/* 内嵌 Segmented Control（预览/源码，0522 胶囊版） */}
                       <div
-                        className="flex items-center gap-0.5 rounded-[3px] p-0.5 bg-[#F5F5F5]"
+                        className="flex items-center gap-0.5 rounded-full p-0.5 bg-muted"
                       >
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setFileViewMode('preview')}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-[2px] text-xs h-auto ${
+                          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs h-auto ${
                             fileViewMode === 'preview'
-                              ? 'bg-white font-medium text-[#0A0A0A] hover:bg-white'
-                              : 'text-[#737373] hover:text-[#0A0A0A] hover:bg-transparent'
+                              ? 'bg-white font-medium text-foreground hover:bg-white shadow-[var(--shadow-segment)]'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                           }`}
-                          style={fileViewMode === 'preview' ? { boxShadow: "var(--shadow-segment)" } : undefined}
                         >
                           <Eye className="w-3 h-3" />
                           预览
@@ -1525,12 +1345,11 @@ function SkillSquareDetail({
                           variant="ghost"
                           size="sm"
                           onClick={() => setFileViewMode('source')}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-[2px] text-xs h-auto ${
+                          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs h-auto ${
                             fileViewMode === 'source'
-                              ? 'bg-white font-medium text-[#0A0A0A] hover:bg-white'
-                              : 'text-[#737373] hover:text-[#0A0A0A] hover:bg-transparent'
+                              ? 'bg-white font-medium text-foreground hover:bg-white shadow-[var(--shadow-segment)]'
+                              : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
                           }`}
-                          style={fileViewMode === 'source' ? { boxShadow: "var(--shadow-segment)" } : undefined}
                         >
                           <Code className="w-3 h-3" />
                           源码
@@ -1605,12 +1424,12 @@ function SkillSquareDetail({
                   </div>
                 )}
               </div>
-            </SurfaceCard>
+            </TenantCard>
           </TabsContent>
 
           {/* 下发记录 Tab */}
           <TabsContent value="distribution" className="mt-0 p-0">
-            <SurfaceCard className="p-6">
+            <TenantCard padding="none" className="p-6">
               <div className="space-y-3">
                 <h3 className="font-semibold text-[#0A0A0A]">下发记录</h3>
               </div>
@@ -1626,7 +1445,7 @@ function SkillSquareDetail({
                     {distributionRecords.map((record, idx) => {
                       const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
                       return (
-                        <div key={record.id} className="border border-[#E5E5E5] rounded-[4px] p-4">
+                        <TenantCard key={record.id} padding="none" className="p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <p className="text-sm font-semibold text-[#0A0A0A]">
@@ -1666,31 +1485,16 @@ function SkillSquareDetail({
                               />
                             </div>
                           )}
-                        </div>
+                        </TenantCard>
                       );
                     })}
                   </div>
                 )}
               </div>
-            </SurfaceCard>
+            </TenantCard>
           </TabsContent>
         </div>
       </Tabs>
-
-      {/* ======== 底部分隔栏（标准骨架）======== */}
-      <div ref={setBottomBarRef} className="relative mt-6 px-6 py-3 h-9">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute"
-          style={{
-            left: "calc(50% - 50vw)",
-            width: "100vw",
-            top: 0,
-            height: "1px",
-            backgroundColor: "#E2E8F0",
-          }}
-        />
-      </div>
 
       {/* 下发弹窗 — 用户端简化版 */}
       <BatchDistributeDialog
@@ -1718,6 +1522,7 @@ function SkillSquareDetail({
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]"/>
                   <Input
+                    tenant
                     placeholder="搜索实例名称/ID..."
                     value={detailSearchQuery}
                     onChange={(e) => setDetailSearchQuery(e.target.value)}
@@ -1725,7 +1530,7 @@ function SkillSquareDetail({
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={(value: any) => setStatusFilter(value)}>
-                  <SelectTrigger className="w-24 h-9">
+                  <SelectTrigger tenant className="w-24 h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -1737,7 +1542,7 @@ function SkillSquareDetail({
                 </Select>
               </div>
 
-              <div className="border border-[#E5E5E5] rounded-[4px] overflow-hidden">
+              <div className="border border-[#E5E5E5] rounded-[12px] overflow-hidden">
                 <div className="overflow-y-auto max-h-72">
                   <Table className="table-fixed">
                     <TableHeader className="bg-gray-50/50 border-b border-[#E5E5E5] sticky top-0 z-10">

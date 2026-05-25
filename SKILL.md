@@ -29,6 +29,20 @@ description: >
 
 ---
 
+## 🎨 用户端（Tenant）专属规范（强制引用）
+
+**自 2025-05-22 起，用户端与管控端在按钮圆角、Tab 样式、卡片圆角、装饰背景、顶部导航等方面出现差异，用户端页面必须额外遵循：**
+
+📄 **[SKILL-TENANT.md](./SKILL-TENANT.md)**
+
+加载与覆盖规则：
+1. **写用户端（Tenant）页面/组件** → 必须同时加载 `SKILL.md` + `SKILL-GLOBAL-COMPONENTS.md` + `SKILL-TENANT.md`，**冲突时以 `SKILL-TENANT.md` 为准**。
+2. **写管控端（Admin）页面/组件** → 加载 `SKILL.md` + `SKILL-GLOBAL-COMPONENTS.md`，**忽略** `SKILL-TENANT.md`。
+3. `SKILL-TENANT.md` 只描述用户端**差异点**，未列出的内容沿用本文件 + `SKILL-GLOBAL-COMPONENTS.md`。
+4. 共享组件（按钮 / Tab / 卡片）通过新增 `tenant-*` 变体扩展，**禁止**直接覆盖 `claw-*` 变体或修改默认样式以免破坏管控端。
+
+---
+
 ## 1. 色彩系统
 
 ### 1.1 品牌色

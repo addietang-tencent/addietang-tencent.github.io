@@ -1,17 +1,22 @@
 /**
  * NavIconButton - 顶部导航右侧的图标 / 图标+文本按钮
  *
- * 设计来源：Figma 「图标文本」组件（节点 297:3285、363:5028）
+ * 设计来源：Figma 「图标文本」组件（节点 297:3285、363:5028 默认；1077:34989 胶囊变体）
  * 视觉规范：
- *   - padding: 6px 8px、圆角 4px
- *   - 文本：14 / line-height 22 / color #020617
- *   - hover：bg #F1F5F9 + text #020617
- *   - 红点：4x4，绝对定位，#E85C5C
+ *   默认（图标 / 图标+文字）：
+ *     - padding: 6px 8px、圆角 4px、透明底
+ *     - 文本：14 / line-height 22 / color #020617
+ *     - hover：bg #F5F5F5 + text #020617
+ *     - 红点：4x4，绝对定位，#E85C5C
+ *   pill 胶囊变体（如「切换管控端」按钮，Figma 1077:34989）：
+ *     - padding: 6px 12px、圆角 20px（胶囊）
+ *     - 默认底：rgba(219, 221, 228, 0.32) 浅灰
+ *     - hover：加深至 #F5F5F5
  *
  * 用法：
  *   <NavIconButton icon={<HelpIcon />} title="使用指南" />
  *   <NavIconButton icon={<BellIcon />} title="消息通知" showDot />
- *   <NavIconButton icon={<SwitchAdminIcon />} label="切换管控端" />
+ *   <NavIconButton icon={<SwitchAdminIcon />} label="切换管控端" pill />
  */
 import React from "react";
 
@@ -27,15 +32,25 @@ export interface NavIconButtonProps
   showDot?: boolean;
   /** 文字后的徽章插槽（如未读数）— 与 label 同处按钮内部，hover 背景一并覆盖 */
   badge?: React.ReactNode;
+  /**
+   * 胶囊形态（pill）：圆角 20px、padding 6px 12px、默认带浅灰底；
+   * 适用于「切换管控端」这类需要强调的图标+文字组合按钮（Figma 1077:34989）。
+   */
+  pill?: boolean;
   /** 内部 className */
   className?: string;
 }
 
 const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
   function NavIconButton(
-    { icon, label, title, showDot, badge, className = "", ...rest },
+    { icon, label, title, showDot, badge, pill = false, className = "", ...rest },
     ref
   ) {
+    // 形态分支：默认 = 4px 圆角无底色；pill = 20px 胶囊带浅灰底
+    const shape = pill
+      ? "rounded-[20px] px-3 py-[6px] bg-[rgba(219,221,228,0.32)] hover:bg-[#F5F5F5]"
+      : "rounded-[4px] px-2 py-[6px] hover:bg-[#F5F5F5]";
+
     return (
       <button
         ref={ref}
@@ -43,9 +58,10 @@ const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
         title={title ?? label}
         {...rest}
         className={[
-          "relative inline-flex items-center gap-2 rounded-[4px]",
-          "px-2 py-[6px] text-[14px] leading-[22px]",
-          "text-[#020617]/90 hover:bg-[#F5F5F5] hover:text-[#020617]",
+          "relative inline-flex items-center gap-2",
+          shape,
+          "text-[14px] leading-[22px]",
+          "text-[#020617]/90 hover:text-[#020617]",
           "transition-colors flex-shrink-0 whitespace-nowrap nav-icon-btn",
           className,
         ].join(" ")}

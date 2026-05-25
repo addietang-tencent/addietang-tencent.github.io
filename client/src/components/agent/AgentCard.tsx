@@ -1,16 +1,29 @@
 /**
  * AgentCard - 单个 Agent 卡片
- * 严格对齐 Figma node 358:2387「卡片」：
- *   - 容器：padding 20px、gap 24px (column)、border-radius 4px、shadow 双层
- *   - 头部行：左 (48 头像 + gap 16 + 文字 column gap 4)；右三点菜单
+ *
+ * 严格对齐 Figma node [1077:33986]「卡片」（用户端 0523 修订版）：
+ *   - 容器：使用 <TenantCard interactive>（用户端业务卡专用，12px 圆角 + 三状态）
+ *           padding 20px、column gap 24px、border-radius 12px、shadow var(--shadow-tenant-card)
+ *           ⚠️ padding/gap 0523-2 起由 TenantCard 默认值（padding="default"）承担，
+ *              业务侧不再 inline 覆写，便于全用户端业务卡保持一致间距
+ *           hover：无描边 + 加强阴影 + 微抬 0.5px（normal→hover 过渡，由 TenantCard 自动处理）
+ *   - 头部行：左 (48 头像 + gap 16 + 文字 column gap 4)；
+ *            右上角【只保留三点菜单】（[Figma 1077-33986] 删除外露刷新按钮，刷新仍在三点菜单内）
  *   - 元信息组：column gap 4
  *     · 第 1 行：[角色徽章 #FFF→#F9FBFC 边 #DAE0E9 R2 padding 2x6] | 类型：xxx | ID：xxx [复制]
  *     · 第 2 行：分组：xxx
- *   - 底部行：左 创建时间 (#737373)；右 [详细配置 120x36] + [刷新 48x36]
- *     · 两个按钮统一使用 Figma「按钮」ComponentSet 317:1051 的 `claw-outline` 变体（详见 ui/button.tsx）
+ *   - 底部行：左 创建时间 (#737373)；
+ *            右【设置】+【对话】两个带文字按钮（[Figma 1077-33986]）
+ *     · 两个按钮统一使用 `tenant-outline-r20` 变体（radius 20px，对齐 Figma 1077:33986）
  *   - 无底部分隔线（依靠 column gap-24 留白即可）
  *
- * 所有业务逻辑（删除/重启/重装/移除角色/重试/打开终端/打开面板）通过 props 暴露。
+ * 历史：
+ *   - v1：严格对齐 Figma 358:2387，使用 SurfaceCard（实际 4px 圆角）
+ *   - v2 ([Figma 1077-33986])：简化操作区 + 改文案 + 按钮圆角 20px
+ *   - v3 (0523)：改用 <TenantCard interactive>，把卡片本体圆角从 4px 修正为 12px，
+ *                对齐 SKILL-TENANT.md §5 用户端卡片规范
+ *
+ * 所有业务逻辑（删除/重启/重装/移除角色/重试/打开终端/打开面板/对话）通过 props 暴露。
  */
 import { useState } from "react";
 import { Link } from "wouter";
@@ -28,7 +41,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SurfaceCard } from "@/components/ui/Surface";
+import { TenantCard } from "@/components/ui/Surface";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -118,20 +131,16 @@ export const AgentCard = ({
   };
 
   return (
-    <SurfaceCard
-      hover={!isDisabled}
-      className={`group relative flex flex-col ${
+    <TenantCard
+      interactive={!isDisabled}
+      className={`group relative ${
         !isDisabled ? "cursor-pointer" : "cursor-default"
       }`}
-      style={{
-        padding: "20px",
-        gap: "24px",
-      }}
       onClick={() => {
         if (!isDisabled) onClickCard(claw);
       }}
     >
-      {/* ===== 头部行：头像 + 名称/状态 + 右上角操作（刷新+更多） ===== */}
+      {/* ===== 头部行：头像 + 名称/状态 + 右上角三点菜单 ===== */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-4 min-w-0 flex-1">
           <AgentAvatar
@@ -161,20 +170,8 @@ export const AgentCard = ({
           </div>
         </div>
 
-        {/* 右上角：刷新 + 更多菜单 */}
-        <div className={`flex items-center gap-1 ${isDisabled ? "opacity-40 grayscale" : ""}`}>
-          <button
-            className="w-7 h-7 rounded-[4px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#F5F5F5] transition-colors flex-shrink-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRefresh(e, claw.id, claw.name);
-            }}
-            disabled={refreshing}
-            aria-label="刷新状态"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-          </button>
-
+        {/* 右上角：仅保留三点菜单（[Figma 1077-33986] 删除外露刷新按钮，刷新仍在菜单内） */}
+        <div className={`flex items-center ${isDisabled ? "opacity-40 grayscale" : ""}`}>
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -397,7 +394,7 @@ export const AgentCard = ({
                 e.stopPropagation();
                 onRetry(claw.id, claw.name);
               }}
-              variant="claw-outline"
+              variant="tenant-outline-r20"
               size="claw"
             >
               <RefreshCw className="w-4 h-4" />
@@ -405,7 +402,7 @@ export const AgentCard = ({
             </Button>
           ) : isDisabled ? (
             <Button
-              variant="claw-outline"
+              variant="tenant-outline-r20"
               size="claw"
               disabled
             >
@@ -418,11 +415,11 @@ export const AgentCard = ({
                   </radialGradient>
                 </defs>
               </svg>
-              详细配置
+              设置
             </Button>
           ) : (
             <Link href={`/openclaw/${claw.id}`} onClick={(e) => e.stopPropagation()}>
-              <Button variant="claw-outline" size="claw">
+              <Button variant="tenant-outline-r20" size="claw">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
                   <path d="M9.53796 2H6.46178L6.10863 3.76579C5.81461 3.89729 5.53694 4.05843 5.27938 4.24533L3.57275 3.66799L2.03467 6.33202L3.38795 7.52131C3.37177 7.67884 3.3635 7.83855 3.3635 8C3.3635 8.16151 3.37177 8.32116 3.38795 8.47869L2.03467 9.668L3.57275 12.332L5.27939 11.7547C5.53694 11.9416 5.81462 12.1027 6.10863 12.2342L6.46178 14H9.53796L9.89109 12.2342C10.1851 12.1027 10.4628 11.9416 10.7203 11.7547L12.427 12.332L13.965 9.668L12.6118 8.47869C12.628 8.32116 12.6362 8.16151 12.6362 8C12.6362 7.83855 12.628 7.67884 12.6118 7.52131L13.965 6.33202L12.427 3.66799L10.7203 4.24533C10.4628 4.05843 10.1851 3.89729 9.89109 3.76579L9.53796 2ZM7.99978 10.1818C6.79479 10.1818 5.81796 9.20496 5.81796 8C5.81796 6.79501 6.79479 5.81818 7.99978 5.81818C9.20474 5.81818 10.1816 6.79501 10.1816 8C10.1816 9.20496 9.20474 10.1818 7.99978 10.1818Z" fill="url(#paint0_radial_824_3059b)"/>
                   <defs>
@@ -432,14 +429,14 @@ export const AgentCard = ({
                     </radialGradient>
                   </defs>
                 </svg>
-                详细配置
+                设置
               </Button>
             </Link>
           )}
-          {/* 第二个方形按钮：对话（48x36，仅图标） */}
+          {/* 第二个按钮：对话（带文字，[Figma 1077-33986]） */}
           <Button
-            variant="claw-outline"
-            size="claw-square"
+            variant="tenant-outline-r20"
+            size="claw"
             onClick={(e) => {
               e.stopPropagation();
               onChat(claw);
@@ -458,9 +455,10 @@ export const AgentCard = ({
                 </radialGradient>
               </defs>
             </svg>
+            对话
           </Button>
         </div>
       </div>
-    </SurfaceCard>
+    </TenantCard>
   );
 };

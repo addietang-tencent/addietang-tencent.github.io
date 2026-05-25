@@ -542,10 +542,7 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
         </div>
 
         {/* Segment Tab：wrapper 16 圆角 #F5F6F9 padding 4；激活 item 16 圆角 白底 + 阴影 */}
-        <div
-          className="px-4 pt-3 pb-3"
-          style={{ borderBottom: "1px solid #E9ECF1" }}
-        >
+        <div className="px-4 pt-3 pb-3">
           <div
             className="flex items-center"
             style={{
@@ -828,7 +825,6 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
           style={{
             height: 60,
             padding: "0 16px 0 20px",
-            borderBottom: "1px solid #E9ECF1",
           }}
         >
           <div className="flex items-center gap-2.5 min-w-0">
@@ -1423,7 +1419,7 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
     </div>
   );
 
-  /* ───────── 全屏 wrapper：固定在导航下方（top:64）+ 点阵背景 + padding ───────── */
+  /* ───────── 全屏 wrapper：固定在导航下方（top:64）+ 纯色背景 + padding ───────── */
   const fullscreenWrapper = (
     <div
       className="fixed left-0 right-0 bottom-0 z-[200] flex items-center justify-center"
@@ -1431,9 +1427,6 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
         top: 64,
         background: "#F7F8FB",
         padding: 32,
-        backgroundImage:
-          "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-        backgroundSize: "12px 12px",
       }}
     >
       {appCard}

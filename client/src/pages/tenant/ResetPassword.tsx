@@ -1,15 +1,15 @@
 /**
- * ResetPassword - 租户端重置密码页
+ * ResetPassword - 用户端重置密码页（已对齐统一规范：标题外置 + TenantCard 内容卡）
  */
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SurfaceConfig } from "@/components/ui/Surface";
+import { TenantSection } from "@/components/ui/TenantSection";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import { KeyRound, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function ResetPassword() {
   const [, navigate] = useLocation();
@@ -41,22 +41,15 @@ export default function ResetPassword() {
   return (
     <TenantLayout>
       <div className="max-w-md mx-auto py-16 page-enter">
-        <SurfaceConfig className="p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <KeyRound className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">重置密码</h1>
-              <p className="text-xs text-gray-400">请输入当前密码和新密码</p>
-            </div>
-          </div>
+        <TenantSection title="重置密码">
+          <p className="text-xs text-gray-400 -mt-1">请输入当前密码和新密码</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 mt-2">
             <div className="space-y-1.5">
               <Label className="text-sm text-gray-700">当前密码</Label>
               <div className="relative">
                 <Input
+                  tenant
                   type={showOld ? "text" : "password"}
                   value={oldPwd}
                   onChange={(e) => setOldPwd(e.target.value)}
@@ -74,6 +67,7 @@ export default function ResetPassword() {
               <Label className="text-sm text-gray-700">新密码</Label>
               <div className="relative">
                 <Input
+                  tenant
                   type={showNew ? "text" : "password"}
                   value={newPwd}
                   onChange={(e) => setNewPwd(e.target.value)}
@@ -91,6 +85,7 @@ export default function ResetPassword() {
               <Label className="text-sm text-gray-700">确认新密码</Label>
               <div className="relative">
                 <Input
+                  tenant
                   type={showConfirm ? "text" : "password"}
                   value={confirmPwd}
                   onChange={(e) => setConfirmPwd(e.target.value)}
@@ -105,15 +100,15 @@ export default function ResetPassword() {
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" className="flex-1">
+              <Button type="submit" variant="tenant-dialog-confirm" className="flex-1">
                 确认重置
               </Button>
-              <Button type="button" variant="claw-outline" onClick={() => navigate("/my-openclaw")}>
+              <Button type="button" variant="tenant-outline" onClick={() => navigate("/my-openclaw")}>
                 取消
               </Button>
             </div>
           </form>
-        </SurfaceConfig>
+        </TenantSection>
       </div>
     </TenantLayout>
   );

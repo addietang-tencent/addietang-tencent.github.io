@@ -684,7 +684,7 @@ export default function GroupView({
             <button
               type="button"
               onClick={() => setLeftCollapsed(true)}
-              className="absolute top-[18px] -right-2 w-6 h-7 flex items-center justify-center rounded-l-md rounded-r-none bg-gray-50 text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors z-10"
+              className="absolute top-[18px] -right-2 w-6 h-7 flex items-center justify-center rounded-l-md rounded-r-none bg-gray-50 text-[#A3A3A3] hover:bg-gray-100 hover:text-[#737373] transition-colors z-10"
               title="收起分组列表"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -733,7 +733,7 @@ export default function GroupView({
               <button
                 type="button"
                 onClick={() => setLeftCollapsed(false)}
-                className="w-6 h-6 flex items-center justify-center rounded-r-md bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 transition-colors border border-l-0 border-gray-200"
+                className="w-6 h-6 flex items-center justify-center rounded-r-md bg-gray-100 text-[#A3A3A3] hover:bg-gray-200 hover:text-[#737373] transition-colors border border-l-0 border-gray-200"
                 title="展开分组列表"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -772,7 +772,7 @@ export default function GroupView({
               isUninitialized={directUninitializedGroupIds.has(selectedGroup.id)}
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 text-sm">
+            <div className="flex items-center justify-center h-full text-[#A3A3A3] text-sm">
               请选择分组
             </div>
           )}
@@ -806,25 +806,25 @@ export default function GroupView({
             <DialogTitle>存量 Agent 实例处理</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-[#334155]">
               该分组的上级分组发生变更，以下用户在该分组中创建了 Agent 实例，请选择如何处理：
             </p>
             <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50 sticky top-0">
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">Agent 实例名称 / ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-[#737373]">分组</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {editGroupAgentDialog?.agents.flatMap((a) =>
                     a.instances.map((inst) => (
                       <tr key={inst.id}>
-                        <td className="px-3 py-2 text-gray-700">{a.userId}</td>
-                        <td className="px-3 py-2 text-gray-700">{inst.name}<span className="text-gray-400 ml-1">({inst.id})</span></td>
-                        <td className="px-3 py-2 text-gray-700">{a.groupName}</td>
+                        <td className="px-3 py-2 text-[#334155]">{a.userId}</td>
+                        <td className="px-3 py-2 text-[#334155]">{inst.name}<span className="text-[#A3A3A3] ml-1">({inst.id})</span></td>
+                        <td className="px-3 py-2 text-[#334155]">{a.groupName}</td>
                       </tr>
                     ))
                   )}
@@ -833,7 +833,7 @@ export default function GroupView({
             </div>
           </div>
           <div className="py-2 space-y-2">
-            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
+            <p className="text-xs font-medium text-[#334155] mb-1">处理方式</p>
             {[
               { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
               { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
@@ -847,8 +847,8 @@ export default function GroupView({
                   {editGroupAgentChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
+                  <p className="text-sm font-medium text-[#0A0A0A]">{opt.title}</p>
+                  <p className="text-xs text-[#737373] mt-0.5">{opt.desc}</p>
                 </div>
               </label>
             ))}

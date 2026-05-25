@@ -32,13 +32,13 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
 
         <div className="space-y-6">
           {/* 说明文字 */}
-          <div className="text-sm text-gray-700">
-            <p>开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取<span className="font-bold text-blue-600">存储费和上传下载流量费</span>。</p>
+          <div className="text-sm text-[#334155]">
+            <p>开启后，将会在您的账号下的 广州 地域创建一个存储桶用于存放上传的 Skill 文件，更安全可控；会根据实际使用收取<span className="font-bold text-[#355EF1]">存储费和上传下载流量费</span>。</p>
           </div>
 
           {/* COS 桶名称 */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-[#0A0A0A] mb-2">
               COS 桶名称
             </label>
             <Input
@@ -47,13 +47,13 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
               placeholder="输入桶名称"
               className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">格式：{bucketName}-appid</p>
+            <p className="text-xs text-[#737373] mt-1">格式：{bucketName}-appid</p>
           </div>
 
           {/* 多 AZ 功能 */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <label className="text-sm font-semibold text-gray-900">多 AZ 特性</label>
+              <label className="text-sm font-semibold text-[#0A0A0A]">多 AZ 特性</label>
               <Switch
                 checked={multiAZ}
                 onCheckedChange={setMultiAZ}
@@ -61,13 +61,13 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
             </div>
 
             {/* 多 AZ 说明 */}
-            <div className="space-y-3 text-xs text-gray-600">
+            <div className="space-y-3 text-xs text-[#737373]">
               <div className="flex gap-2">
-                <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                <Info className="w-4 h-4 text-[#355EF1] shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-gray-900">【说明】</p>
+                  <p className="font-semibold text-[#0A0A0A]">【说明】</p>
                   <p>多 AZ 特性允许用户将数据存储在同地理区域内的不同物理位置，提供同城容灾功能，推荐开启。
-                    <a href="https://cloud.tencent.com/document/product/436/多-az-存储和单-az-存储对比" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                    <a href="https://cloud.tencent.com/document/product/436/多-az-存储和单-az-存储对比" target="_blank" rel="noopener noreferrer" className="text-[#355EF1] underline ml-1">
                       了解更多
                     </a>
                   </p>
@@ -77,9 +77,9 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
               <div className="flex gap-2">
                 <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-gray-900">【计费】</p>
+                  <p className="font-semibold text-[#0A0A0A]">【计费】</p>
                   <p>多 AZ 配置会导致 存储容量费用相比单 AZ 有增加，且目前 暂无多 AZ 资源包，详情请参考该地域的
-                    <a href="https://buy.cloud.tencent.com/price/cos/overview" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                    <a href="https://buy.cloud.tencent.com/price/cos/overview" target="_blank" rel="noopener noreferrer" className="text-[#355EF1] underline ml-1">
                       产品价格
                     </a>
                   </p>
@@ -89,9 +89,9 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
               <div className="flex gap-2">
                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-gray-900">【注意】</p>
+                  <p className="font-semibold text-[#0A0A0A]">【注意】</p>
                   <p>多 AZ 特性 开启后无法关闭，数据将存储为多 AZ 类型。若关闭，将存储为单 AZ 类型，请根据业务需求谨慎选择，避免后续产生迁移成本。多 AZ 和单 AZ 存储的对比请见
-                    <a href="https://cloud.tencent.com/document/product/436/40548#.E5.A4.9A-az-.E7.9A.84.E4.BC.98.E5.8A.BF" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">
+                    <a href="https://cloud.tencent.com/document/product/436/40548#.E5.A4.9A-az-.E7.9A.84.E4.BC.98.E5.8A.BF" target="_blank" rel="noopener noreferrer" className="text-[#355EF1] underline ml-1">
                       文档
                     </a>
                   </p>
@@ -107,7 +107,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
               checked={agreed}
               onCheckedChange={(checked) => setAgreed(checked === true)}
             />
-            <label htmlFor="agree" className="text-sm text-gray-700 cursor-pointer">
+            <label htmlFor="agree" className="text-sm text-[#334155] cursor-pointer">
               我已阅读并同意
             </label>
           </div>

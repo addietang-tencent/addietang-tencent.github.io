@@ -201,7 +201,7 @@ function TokenDepartmentTreeNode({
     <div>
       <div
         className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
-          isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+          isSelected ? "bg-blue-50 text-[#355EF1]" : "text-[#334155] hover:bg-gray-100"
         }`}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(node.id)}
@@ -210,16 +210,16 @@ function TokenDepartmentTreeNode({
           <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
             onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
             {isExpanded
-              ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-              : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+              ? <ChevronDown className="w-3.5 h-3.5 text-[#A3A3A3]" />
+              : <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />}
           </button>
         ) : (
           <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
           </span>
         )}
-        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
-        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-[#355EF1] font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-[#355EF1] flex-shrink-0" />}
       </div>
       {hasChildren && isExpanded && node.children!.map((child) => (
         <TokenDepartmentTreeNode key={child.id} node={child} level={level + 1}
@@ -278,8 +278,8 @@ function TokenDepartmentFilter({
           <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
-            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
-            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部部门</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
           </div>
           {departments.map((dept) => (
             <TokenDepartmentTreeNode key={dept.id} node={dept} level={0}
@@ -289,22 +289,22 @@ function TokenDepartmentFilter({
         <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
-              <span className="text-blue-600 font-medium truncate">全部部门</span>
+              <span className="text-[#355EF1] font-medium truncate">全部部门</span>
             ) : pathParts.length > 0 ? (
               pathParts.map((part, idx) => (
                 <span key={idx} className="flex items-center gap-1 shrink-0">
-                  {idx > 0 && <ChevronRight className="w-3 h-3 text-gray-300 flex-shrink-0" />}
-                  <span className={idx === pathParts.length - 1 ? "text-blue-600 font-medium truncate" : "text-gray-500 truncate"}>
+                  {idx > 0 && <ChevronRight className="w-3 h-3 text-[#A3A3A3] flex-shrink-0" />}
+                  <span className={idx === pathParts.length - 1 ? "text-[#355EF1] font-medium truncate" : "text-[#737373] truncate"}>
                     {part}
                   </span>
                 </span>
               ))
             ) : (
-              <span className="text-gray-400 truncate">未选择</span>
+              <span className="text-[#A3A3A3] truncate">未选择</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+            <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
               variant="dialog-confirm" onClick={handleConfirm}>确认</Button>
@@ -342,12 +342,12 @@ function TokenGroupTreeNode({
     <div>
       {isSection ? (
         <div className="px-2 pt-3 pb-1">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">{node.name}</span>
+          <span className="text-xs font-medium text-[#A3A3A3] uppercase tracking-wide">{node.name}</span>
         </div>
       ) : (
         <div
           className={`flex items-center gap-1 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
-            isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
+            isSelected ? "bg-blue-50 text-[#355EF1]" : "text-[#334155] hover:bg-gray-100"
           }`}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => onSelect(node.id)}
@@ -356,16 +356,16 @@ function TokenGroupTreeNode({
             <button className="w-4 h-4 flex items-center justify-center flex-shrink-0"
               onClick={(e) => { e.stopPropagation(); onToggle(node.id); }}>
               {isExpanded
-                ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-                : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
+                ? <ChevronDown className="w-3.5 h-3.5 text-[#A3A3A3]" />
+                : <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />}
             </button>
           ) : (
             <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
             </span>
           )}
-          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
-          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-[#355EF1] font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-[#355EF1] flex-shrink-0" />}
         </div>
       )}
       {hasChildren && (isExpanded || isSection || (search && childrenMatchSearch)) && node.children!.map((child) => (
@@ -428,15 +428,15 @@ function TokenGroupFilter({
             placeholder="搜索分组"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-8 px-3 text-sm rounded-xl border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+            className="w-full h-8 px-3 text-sm rounded-xl border border-gray-200 bg-white text-[#334155] placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
           />
         </div>
         <div className="max-h-[280px] overflow-y-auto p-2">
           <div className={`flex items-center gap-2 py-1.5 px-2 rounded-xl cursor-pointer transition-colors ${
             tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
           }`} onClick={() => setTempValue("")}>
-            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
-            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
           </div>
           {groups.map((group) => (
             <TokenGroupTreeNode key={group.id} node={group} level={0}
@@ -446,24 +446,24 @@ function TokenGroupFilter({
         <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
-              <span className="text-blue-600 font-medium truncate">全部分组</span>
+              <span className="text-[#355EF1] font-medium truncate">全部分组</span>
             ) : selectedNode?.path ? (
               <span className="flex items-center gap-0.5 truncate">
                 {selectedNode.path.split("/").map((seg, idx, arr) => (
                   <span key={idx} className="flex items-center gap-0.5 shrink-0">
-                    {idx > 0 && <span className="text-gray-300 mx-0.5">›</span>}
-                    <span className={idx === arr.length - 1 ? "text-blue-600 font-medium" : "text-gray-500"}>{seg}</span>
+                    {idx > 0 && <span className="text-[#A3A3A3] mx-0.5">›</span>}
+                    <span className={idx === arr.length - 1 ? "text-[#355EF1] font-medium" : "text-[#737373]"}>{seg}</span>
                   </span>
                 ))}
               </span>
             ) : selectedNode ? (
-              <span className="text-blue-600 font-medium truncate">{selectedNode.name}</span>
+              <span className="text-[#355EF1] font-medium truncate">{selectedNode.name}</span>
             ) : (
-              <span className="text-gray-400 truncate">未选择</span>
+              <span className="text-[#A3A3A3] truncate">未选择</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2"
+            <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2"
               onClick={handleCancel}>取消</Button>
             <Button size="sm" className="text-xs h-7 px-3"
               variant="dialog-confirm" onClick={handleConfirm}>确认</Button>
@@ -1026,12 +1026,12 @@ export default function TokensMonitor() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Tokens 监控</h1>
+            <h1 className="text-2xl font-bold text-[#0A0A0A]">Tokens 监控</h1>
             <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-gray-500">查看企业用户和模型的 Tokens 消耗情况。</p>
+              <p className="text-sm text-[#737373]">查看企业用户和模型的 Tokens 消耗情况。</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
-                  <button className="text-sm text-blue-600 hover:text-blue-700 hover:underline cursor-help transition-colors">
+                  <button className="text-sm text-[#355EF1] hover:text-[#355EF1] hover:underline cursor-help transition-colors">
                     查看tokens统计规则
                   </button>
                 </UITooltipTrigger>
@@ -1052,7 +1052,7 @@ export default function TokensMonitor() {
               value={dateFrom}
               onChange={handleFromChange}
             />
-            <span className="text-gray-400 text-sm">—</span>
+            <span className="text-[#A3A3A3] text-sm">—</span>
             <DatePicker
               value={dateTo}
               onChange={handleToChange}
@@ -1079,7 +1079,7 @@ export default function TokensMonitor() {
                 <path d="M11.1557 0.568474C11.2759 0.547602 11.3997 0.565694 11.5083 0.621208C11.6168 0.676751 11.7039 0.766463 11.7573 0.876091C11.8107 0.985788 11.8275 1.10986 11.8042 1.22961L10.77 6.39172L14.8227 7.91125C14.9089 7.94398 14.9857 7.99716 15.0464 8.06652C15.1071 8.13609 15.1505 8.2197 15.1714 8.30968C15.1922 8.39969 15.1905 8.4939 15.1665 8.58312C15.1425 8.67222 15.0968 8.75406 15.0337 8.8214H15.0366L7.1616 17.2589L7.09421 17.3204C7.0224 17.3757 6.9373 17.4131 6.84714 17.4288L6.7573 17.4366C6.69672 17.4373 6.63627 17.4288 6.57859 17.4103L6.49461 17.3751C6.386 17.3195 6.29798 17.2299 6.24461 17.1202C6.20472 17.0381 6.18625 16.9479 6.18894 16.8575L6.19871 16.7667L7.22996 11.6105L3.17722 10.089C3.11208 10.0646 3.05213 10.0285 3.00046 9.98254L2.95164 9.93273C2.9057 9.8803 2.86992 9.82011 2.84617 9.755L2.82664 9.68859C2.80577 9.59809 2.80709 9.50378 2.83152 9.41418C2.85597 9.32456 2.90234 9.2423 2.96629 9.17492L10.8413 0.737419C10.9247 0.648358 11.0355 0.589437 11.1557 0.568474ZM5.34324 9.09972L9.1655 10.5353L8.63035 13.2111L11.1528 10.5089H11.1401L12.6479 8.89758L8.83445 7.46789L9.37058 4.78527L5.34324 9.09972Z" fill="url(#tm_icon_requests)"/>
                 <defs><radialGradient id="tm_icon_requests" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(2.81201 8.99836) scale(12.3738 747.725)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs>
               </svg>
-              <span className="text-sm text-gray-500">总请求数</span>
+              <span className="text-sm text-[#737373]">总请求数</span>
             </div>
             <StatNumber>{fmt(totalRequests)}</StatNumber>
           </SurfaceCard>
@@ -1090,7 +1090,7 @@ export default function TokensMonitor() {
                 <path d="M5.02805 6.22195C4.86954 6.06344 4.78049 5.84846 4.78049 5.6243C4.78049 5.40013 4.86954 5.18515 5.02805 5.02664C5.18656 4.86813 5.40154 4.77908 5.6257 4.77908C5.84987 4.77908 6.06485 4.86813 6.22336 5.02664L8.15625 6.96094V1.6875C8.15625 1.46372 8.24514 1.24911 8.40338 1.09088C8.56161 0.932645 8.77622 0.84375 9 0.84375C9.22378 0.84375 9.43839 0.932645 9.59662 1.09088C9.75485 1.24911 9.84375 1.46372 9.84375 1.6875V6.96094L11.778 5.02594C11.9366 4.86743 12.1515 4.77838 12.3757 4.77838C12.5999 4.77838 12.8149 4.86743 12.9734 5.02594C13.1319 5.18445 13.2209 5.39943 13.2209 5.62359C13.2209 5.84776 13.1319 6.06274 12.9734 6.22125L9.59836 9.59625C9.51997 9.67491 9.42683 9.73732 9.32427 9.77991C9.22171 9.82249 9.11175 9.84442 9.0007 9.84442C8.88965 9.84442 8.7797 9.82249 8.67714 9.77991C8.57458 9.73732 8.48143 9.67491 8.40305 9.59625L5.02805 6.22195ZM15.75 8.15625H13.2188C12.995 8.15625 12.7804 8.24514 12.6221 8.40338C12.4639 8.56161 12.375 8.77622 12.375 9C12.375 9.22378 12.4639 9.43839 12.6221 9.59662C12.7804 9.75485 12.995 9.84375 13.2188 9.84375H15.4688V13.7812H2.53125V9.84375H4.78125C5.00503 9.84375 5.21964 9.75485 5.37787 9.59662C5.53611 9.43839 5.625 9.22378 5.625 9C5.625 8.77622 5.53611 8.56161 5.37787 8.40338C5.21964 8.24514 5.00503 8.15625 4.78125 8.15625H2.25C1.87704 8.15625 1.51935 8.30441 1.25563 8.56813C0.991908 8.83185 0.84375 9.18954 0.84375 9.5625V14.0625C0.84375 14.4355 0.991908 14.7931 1.25563 15.0569C1.51935 15.3206 1.87704 15.4688 2.25 15.4688H15.75C16.123 15.4688 16.4806 15.3206 16.7444 15.0569C17.0081 14.7931 17.1562 14.4355 17.1562 14.0625V9.5625C17.1563 9.18954 17.0081 8.83185 16.7444 8.56813C16.4806 8.30441 16.123 8.15625 15.75 8.15625ZM14.3438 11.8125C14.3438 11.59 14.2778 11.3725 14.1542 11.1875C14.0305 11.0025 13.8548 10.8583 13.6493 10.7731C13.4437 10.688 13.2175 10.6657 12.9993 10.7091C12.781 10.7525 12.5806 10.8597 12.4233 11.017C12.2659 11.1743 12.1588 11.3748 12.1154 11.593C12.072 11.8113 12.0942 12.0375 12.1794 12.243C12.2645 12.4486 12.4087 12.6243 12.5937 12.7479C12.7787 12.8715 12.9962 12.9375 13.2188 12.9375C13.5171 12.9375 13.8033 12.819 14.0142 12.608C14.2252 12.397 14.3438 12.1109 14.3438 11.8125Z" fill="url(#tm_icon_input)"/>
                 <defs><radialGradient id="tm_icon_input" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.843749 8.15625) scale(16.3125 647.966)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs>
               </svg>
-              <span className="text-sm text-gray-500">输入 Tokens</span>
+              <span className="text-sm text-[#737373]">输入 Tokens</span>
             </div>
             <StatNumber>{fmt(totalInput)}</StatNumber>
           </SurfaceCard>
@@ -1101,7 +1101,7 @@ export default function TokensMonitor() {
                 <path d="M13.8157 10.653C13.9742 10.8116 14.0633 11.0265 14.0633 11.2507C14.0633 11.4749 13.9742 11.6899 13.8157 11.8484C13.6572 12.0069 13.4422 12.0959 13.2181 12.0959C12.9939 12.0959 12.7789 12.0069 12.6204 11.8484L11.8125 11.0391V14.625C11.8125 14.8488 11.7236 15.0634 11.5654 15.2216C11.4071 15.3799 11.1925 15.4688 10.9688 15.4688C10.745 15.4688 10.5304 15.3799 10.3721 15.2216C10.2139 15.0634 10.125 14.8488 10.125 14.625V11.0391L9.31572 11.8491C9.15721 12.0076 8.94222 12.0966 8.71806 12.0966C8.4939 12.0966 8.27891 12.0076 8.1204 11.8491C7.9619 11.6906 7.87285 11.4756 7.87285 11.2514C7.87285 11.0272 7.9619 10.8123 8.1204 10.6538L10.3704 8.40375C10.4488 8.32509 10.5419 8.26268 10.6445 8.22009C10.7471 8.17751 10.857 8.15558 10.9681 8.15558C11.0791 8.15558 11.1891 8.17751 11.2916 8.22009C11.3942 8.26268 11.4873 8.32509 11.5657 8.40375L13.8157 10.653ZM11.25 2.53125C10.0822 2.53181 8.93632 2.84821 7.9337 3.44694C6.93107 4.04567 6.10905 4.90443 5.5547 5.93227C4.9091 5.86465 4.2565 5.9292 3.63666 6.12198C3.01682 6.31477 2.44272 6.63175 1.94937 7.05361C1.45601 7.47547 1.05372 7.99337 0.767018 8.57575C0.480315 9.15814 0.315204 9.7928 0.281746 10.4411C0.248288 11.0893 0.347185 11.7376 0.57241 12.3464C0.797634 12.9552 1.14447 13.5118 1.59178 13.9822C2.03908 14.4526 2.57749 14.827 3.17419 15.0826C3.77089 15.3382 4.41338 15.4695 5.06251 15.4688H7.03126C7.25504 15.4688 7.46965 15.3799 7.62788 15.2216C7.78612 15.0634 7.87501 14.8488 7.87501 14.625C7.87501 14.4012 7.78612 14.1866 7.62788 14.0284C7.46965 13.8701 7.25504 13.7812 7.03126 13.7812H5.06251C4.25632 13.7763 3.4839 13.4569 2.90972 12.8909C2.33554 12.325 2.00496 11.5573 1.98838 10.7512C1.97179 9.94518 2.2705 9.1645 2.82091 8.57542C3.37132 7.98633 4.12994 7.63537 4.93525 7.59727C4.83275 8.0578 4.78111 8.5282 4.78126 9C4.78126 9.22378 4.87016 9.43839 5.02839 9.59662C5.18663 9.75485 5.40124 9.84375 5.62501 9.84375C5.84879 9.84375 6.0634 9.75485 6.22163 9.59662C6.37987 9.43839 6.46876 9.22378 6.46876 9C6.46934 8.30834 6.61998 7.62505 6.91028 6.99726C7.20057 6.36948 7.62362 5.81215 8.15022 5.36373C8.67682 4.91532 9.29445 4.58649 9.96047 4.39995C10.6265 4.2134 11.3251 4.17358 12.008 4.28322C12.6909 4.39287 13.3419 4.64938 13.916 5.03504C14.4902 5.42071 14.9738 5.92635 15.3336 6.51708C15.6933 7.10781 15.9206 7.76956 15.9998 8.45666C16.079 9.14377 16.0082 9.83988 15.7922 10.497C15.7575 10.6022 15.7439 10.7133 15.7522 10.8238C15.7604 10.9343 15.7904 11.0421 15.8403 11.1411C15.8902 11.24 15.9591 11.3282 16.0431 11.4005C16.1271 11.4728 16.2245 11.5279 16.3297 11.5625C16.435 11.5972 16.5461 11.6108 16.6566 11.6026C16.7671 11.5943 16.8749 11.5644 16.9739 11.5145C17.0728 11.4645 17.161 11.3956 17.2333 11.3116C17.3056 11.2277 17.3607 11.1303 17.3953 11.025C17.7147 10.0532 17.7992 9.01945 17.6418 8.00864C17.4845 6.99784 17.0898 6.03872 16.4902 5.20992C15.8905 4.38112 15.103 3.70624 14.1921 3.24063C13.2812 2.77501 12.273 2.5319 11.25 2.53125Z" fill="url(#tm_icon_output)"/>
                 <defs><radialGradient id="tm_icon_output" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.27539 9) scale(17.4435 573.201)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs>
               </svg>
-              <span className="text-sm text-gray-500">输出 Tokens</span>
+              <span className="text-sm text-[#737373]">输出 Tokens</span>
             </div>
             <StatNumber>{fmt(totalOutput)}</StatNumber>
           </SurfaceCard>
@@ -1112,7 +1112,7 @@ export default function TokensMonitor() {
                 <path d="M16.6322 7.68155L12.2953 6.10444L10.7182 1.76757C10.6198 1.49691 10.4405 1.26309 10.2047 1.09786C9.9688 0.932629 9.68779 0.843994 9.39982 0.843994C9.11184 0.843994 8.83084 0.932629 8.59498 1.09786C8.35912 1.26309 8.17983 1.49691 8.08146 1.76757L6.50435 6.10444L2.16747 7.68155C1.89682 7.77992 1.66299 7.95921 1.49776 8.19507C1.33253 8.43093 1.2439 8.71193 1.2439 8.99991C1.2439 9.28789 1.33253 9.56889 1.49776 9.80475C1.66299 10.0406 1.89682 10.2199 2.16747 10.3183L6.50435 11.8954L8.08146 16.2323C8.17983 16.5029 8.35912 16.7367 8.59498 16.902C8.83084 17.0672 9.11184 17.1558 9.39982 17.1558C9.68779 17.1558 9.9688 17.0672 10.2047 16.902C10.4405 16.7367 10.6198 16.5029 10.7182 16.2323L12.2953 11.8954L16.6322 10.3183C16.9028 10.2199 17.1366 10.0406 17.3019 9.80475C17.4671 9.56889 17.5557 9.28789 17.5557 8.99991C17.5557 8.71193 17.4671 8.43093 17.3019 8.19507C17.1366 7.95921 16.9028 7.77992 16.6322 7.68155ZM11.3489 10.4441C11.2329 10.4863 11.1277 10.5533 11.0404 10.6405C10.9532 10.7278 10.8862 10.833 10.844 10.949L9.39982 14.9209L7.9556 10.949C7.91347 10.833 7.84643 10.7278 7.7592 10.6405C7.67198 10.5533 7.56669 10.4863 7.45075 10.4441L3.4788 8.99991L7.45075 7.55569C7.56669 7.51356 7.67198 7.44653 7.7592 7.3593C7.84643 7.27208 7.91347 7.16679 7.9556 7.05085L9.39982 3.0789L10.844 7.05085C10.8862 7.16679 10.9532 7.27208 11.0404 7.3593C11.1277 7.44653 11.2329 7.51356 11.3489 7.55569L15.3208 8.99991L11.3489 10.4441Z" fill="url(#tm_icon_total)"/>
                 <defs><radialGradient id="tm_icon_total" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1.2439 8.99991) scale(16.3118 722.702)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs>
               </svg>
-              <span className="text-sm text-gray-500">总 Tokens</span>
+              <span className="text-sm text-[#737373]">总 Tokens</span>
             </div>
             <StatNumber>{fmt(totalTokens)}</StatNumber>
           </SurfaceCard>
@@ -1124,12 +1124,12 @@ export default function TokensMonitor() {
                 <path d="M12.7085 0.84375C12.9323 0.84375 13.1469 0.932586 13.3052 1.09082C13.4634 1.24905 13.5522 1.46372 13.5522 1.6875V1.96875H14.9585C15.3315 1.96875 15.6889 2.11714 15.9526 2.38086C16.2164 2.64458 16.3647 3.00204 16.3647 3.375V14.625C16.3647 14.998 16.2164 15.3554 15.9526 15.6191C15.6889 15.8829 15.3315 16.0312 14.9585 16.0312H3.7085C3.33554 16.0312 2.97808 15.8829 2.71436 15.6191C2.45063 15.3554 2.30225 14.998 2.30225 14.625V3.375C2.30225 3.00204 2.45063 2.64458 2.71436 2.38086C2.97808 2.11714 3.33554 1.96875 3.7085 1.96875H5.11475V1.6875C5.11475 1.46372 5.20358 1.24905 5.36182 1.09082C5.52005 0.932587 5.73472 0.84375 5.9585 0.84375C6.18227 0.84375 6.39694 0.932587 6.55518 1.09082C6.71341 1.24905 6.80225 1.46372 6.80225 1.6875V1.96875H11.8647V1.6875C11.8647 1.46372 11.9536 1.24905 12.1118 1.09082C12.2701 0.932586 12.4847 0.84375 12.7085 0.84375ZM3.98975 3.65625V14.3438H14.6772V3.65625H13.5522C13.5522 3.88003 13.4634 4.0947 13.3052 4.25293C13.1469 4.41116 12.9323 4.5 12.7085 4.5C12.4847 4.5 12.2701 4.41116 12.1118 4.25293C11.9536 4.0947 11.8647 3.88003 11.8647 3.65625H6.80225C6.80225 3.88003 6.71341 4.0947 6.55518 4.25293C6.39694 4.41116 6.18227 4.5 5.9585 4.5C5.73472 4.5 5.52005 4.41116 5.36182 4.25293C5.20358 4.0947 5.11475 3.88003 5.11475 3.65625H3.98975ZM9.01709 5.70508C9.12582 5.41124 9.54117 5.41124 9.6499 5.70508L10.4731 7.92871L12.6968 8.75195C12.9905 8.86075 12.9906 9.27605 12.6968 9.38477L10.4731 10.208L9.6499 12.4316C9.54784 12.7068 9.1762 12.7242 9.04053 12.4834L9.01709 12.4316L8.19385 10.208L5.97021 9.38477C5.67641 9.27605 5.67647 8.86073 5.97021 8.75195L8.19385 7.92871L9.01709 5.70508Z" fill="url(#tm_icon_quota)"/>
                 <defs><radialGradient id="tm_icon_quota" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(2.30225 8.4375) scale(14.0625 672.888)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs>
               </svg>
-              <span className="text-sm text-gray-500 flex items-center gap-1">
+              <span className="text-sm text-[#737373] flex items-center gap-1">
                 {globalTokenTimeDim === "daily" ? "今日全局配额消耗" : "本月全局配额消耗"}
                 <UITooltip>
                   <UITooltipTrigger asChild>
                     <span className="cursor-default">
-                      <Info className="w-3 h-3 text-gray-300 hover:text-gray-400 transition-colors" />
+                      <Info className="w-3 h-3 text-[#A3A3A3] hover:text-[#A3A3A3] transition-colors" />
                     </span>
                   </UITooltipTrigger>
                   <UITooltipContent side="top" className="max-w-[260px] text-xs">
@@ -1147,9 +1147,9 @@ export default function TokensMonitor() {
             <div className="flex items-center gap-8">
               <StatNumber className="shrink-0">{IS_GLOBAL_BY_GROUP ? "0" : TODAY_GLOBAL_PCT}%</StatNumber>
               {IS_GLOBAL_BY_GROUP ? (
-                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-xl">按分组</span>
+                <span className="text-xs font-semibold text-[#355EF1] bg-blue-100 px-2.5 py-1.5 rounded-xl">按分组</span>
               ) : IS_GLOBAL_UNLIMITED ? (
-                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2.5 py-1.5 rounded-xl">无限制</span>
+                <span className="text-xs font-semibold text-[#355EF1] bg-blue-100 px-2.5 py-1.5 rounded-xl">无限制</span>
               ) : (
                 <ProgressBar
                   value={IS_GLOBAL_BY_GROUP ? 0 : TODAY_TOTAL_TOKENS}
@@ -1165,7 +1165,7 @@ export default function TokensMonitor() {
         {/* Line Chart */}
         <div className="bg-white rounded-xl border border-[#e5e5e5] p-5 mb-6"
          >
-          <p className="text-sm font-medium text-gray-700 mb-4">
+          <p className="text-sm font-medium text-[#334155] mb-4">
             {isSingleDay ? "最近 7 天 Tokens 趋势" : "所选时间段 Tokens 趋势"}
           </p>
           <ResponsiveContainer width="100%" height={220}>
@@ -1204,7 +1204,7 @@ export default function TokensMonitor() {
           {/* 按实例 */}
           <SegmentContent value="instance">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
+              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <Button
@@ -1235,26 +1235,26 @@ export default function TokensMonitor() {
                 </TableHeader>
                 <TableBody>
                   {instancePaged.length === 0 ? (
-                    <TableRow><TableCell colSpan={hasOneid ? 7 : 6} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={hasOneid ? 7 : 6} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                   ) : instancePaged.map((inst) => (
                     <TableRow key={inst.id}>
                       <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="min-w-0">
                           <UITooltip>
                             <UITooltipTrigger asChild>
-                              <div className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{inst.name}</div>
+                              <div className="text-sm font-medium text-[#0A0A0A] truncate max-w-[180px]">{inst.name}</div>
                             </UITooltipTrigger>
                             <UITooltipContent side="top" className="text-xs max-w-xs break-all">{inst.name}</UITooltipContent>
                           </UITooltip>
-                          <div className="text-xs font-mono text-gray-500">{inst.instanceId}</div>
+                          <div className="text-xs font-mono text-[#737373]">{inst.instanceId}</div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-gray-600">{inst.creator || "—"}</TableCell>
-                      {hasOneid && <TableCell className="text-sm text-gray-500">{inst.department || "—"}</TableCell>}
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(inst.requests)}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(inst.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(inst.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(inst.total)}</TableCell>
+                      <TableCell className="text-sm text-[#737373]">{inst.creator || "—"}</TableCell>
+                      {hasOneid && <TableCell className="text-sm text-[#737373]">{inst.department || "—"}</TableCell>}
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(inst.requests)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(inst.inputTokens)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(inst.outputTokens)}</TableCell>
+                      <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(inst.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1268,7 +1268,7 @@ export default function TokensMonitor() {
           {/* 按用户 */}
           <SegmentContent value="member">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
+              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <Button
@@ -1297,21 +1297,21 @@ export default function TokensMonitor() {
                 </TableHeader>
                 <TableBody>
                   {memberPaged.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                   ) : memberPaged.map((m) => (
                     <TableRow key={m.id}>
                       <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <UITooltip>
                           <UITooltipTrigger asChild>
-                            <span className="text-sm text-gray-700 truncate block max-w-[180px]">{m.id}</span>
+                            <span className="text-sm text-[#334155] truncate block max-w-[180px]">{m.id}</span>
                           </UITooltipTrigger>
                           <UITooltipContent side="top" className="text-xs max-w-xs break-all">{m.id}</UITooltipContent>
                         </UITooltip>
                       </TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.requests)}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.requests)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.inputTokens)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(m.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1325,7 +1325,7 @@ export default function TokensMonitor() {
           {/* 按模型 */}
           <SegmentContent value="model">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
+              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <Button
@@ -1354,14 +1354,14 @@ export default function TokensMonitor() {
                 </TableHeader>
                 <TableBody>
                   {modelPaged.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                   ) : modelPaged.map((m) => (
                     <TableRow key={m.name}>
-                      <TableCell className="text-sm font-medium text-gray-900">{m.name}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.requests)}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-gray-600 text-right">{fmt(m.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(m.total)}</TableCell>
+                      <TableCell className="text-sm font-medium text-[#0A0A0A]">{m.name}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.requests)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.inputTokens)}</TableCell>
+                      <TableCell className="text-sm text-[#737373] text-right">{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(m.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1376,7 +1376,7 @@ export default function TokensMonitor() {
           {hasOneid && (
             <SegmentContent value="department">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-gray-400">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
+                <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内各部门的消耗，按总 Tokens 降序排序</p>
                 <div className="flex items-center gap-2">
                   <TokenDepartmentFilter
                     departments={MOCK_DEPARTMENTS}
@@ -1413,15 +1413,15 @@ export default function TokensMonitor() {
                   </TableHeader>
                   <TableBody>
                     {deptPaged.length === 0 ? (
-                      <TableRow><TableCell colSpan={6} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={6} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                     ) : deptPaged.map((d) => (
                       <TableRow key={d.departmentId}>
-                        <TableCell className="text-sm font-medium text-gray-900">{d.departmentName}</TableCell>
-                        <TableCell className="text-sm text-gray-500">{d.path.replace(/\//g, " / ")}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{fmt(d.requests)}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{fmt(d.inputTokens)}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{fmt(d.outputTokens)}</TableCell>
-                        <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(d.totalTokens)}</TableCell>
+                        <TableCell className="text-sm font-medium text-[#0A0A0A]">{d.departmentName}</TableCell>
+                        <TableCell className="text-sm text-[#737373]">{d.path.replace(/\//g, " / ")}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{fmt(d.requests)}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{fmt(d.inputTokens)}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{fmt(d.outputTokens)}</TableCell>
+                        <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(d.totalTokens)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1436,7 +1436,7 @@ export default function TokensMonitor() {
           {/* 按分组 */}
           <SegmentContent value="group">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-gray-400">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
+              <p className="text-xs text-[#A3A3A3]">汇总所选时间范围内各分组的消耗，按总 Tokens 降序排序</p>
               <div className="flex items-center gap-2">
                 <TokenGroupFilter
                   groups={groupTree}
@@ -1475,24 +1475,24 @@ export default function TokensMonitor() {
                 </TableHeader>
                 <TableBody>
                   {groupPaged.length === 0 ? (
-                    <TableRow><TableCell colSpan={IS_GLOBAL_BY_GROUP ? 6 : 5} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={IS_GLOBAL_BY_GROUP ? 6 : 5} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                   ) : groupPaged.map((g) => {
                     const q = IS_GLOBAL_BY_GROUP ? getGroupQuotaInfo(g) : null;
                     return (
                       <TableRow key={g.groupId}>
-                        <TableCell className="text-sm font-medium text-gray-900">{g.groupName}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{fmt(g.requests)}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{fmt(g.inputTokens)}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{fmt(g.outputTokens)}</TableCell>
-                        <TableCell className="text-sm font-medium text-gray-900 text-right">{fmt(g.totalTokens)}</TableCell>
+                        <TableCell className="text-sm font-medium text-[#0A0A0A]">{g.groupName}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{fmt(g.requests)}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{fmt(g.inputTokens)}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{fmt(g.outputTokens)}</TableCell>
+                        <TableCell className="text-sm font-medium text-[#0A0A0A] text-right">{fmt(g.totalTokens)}</TableCell>
                         {IS_GLOBAL_BY_GROUP && q && (
                           <TableCell className="text-sm text-right">
                             {q.unlimited ? (
-                              <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-xl">无限制</span>
+                              <span className="text-xs font-semibold text-[#355EF1] bg-blue-100 px-2 py-1 rounded-xl">无限制</span>
                             ) : (
                               <UITooltip>
                                 <UITooltipTrigger asChild>
-                                  <span className="cursor-default text-gray-900 font-medium tabular-nums">
+                                  <span className="cursor-default text-[#0A0A0A] font-medium tabular-nums">
                                     {q.pct.toFixed(1)}%
                                   </span>
                                 </UITooltipTrigger>
@@ -1549,8 +1549,8 @@ export default function TokensMonitor() {
                           onCheckedChange={(checked) => setClsAgreed(checked === true)}
                           className="mt-1"
                         />
-                        <Label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1 font-normal leading-relaxed">
-                          为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
+                        <Label htmlFor="cls-agreement" className="text-sm text-[#334155] cursor-pointer flex-1 font-normal leading-relaxed">
+                          为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:text-[#355EF1] inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
                         </Label>
                       </div>
                     </div>
@@ -1680,7 +1680,7 @@ export default function TokensMonitor() {
               <div className="flex items-start justify-between mb-6 gap-4">
                 {/* 左侧：Agent 名称筛选 */}
                 <div className="flex-1">
-                  <label className="text-xs font-medium text-gray-700 block mb-2">Agent名称：</label>
+                  <label className="text-xs font-medium text-[#334155] block mb-2">Agent名称：</label>
                   <AgentCombobox
                     value={selectedAgent}
                     onValueChange={setSelectedAgent}
@@ -1692,7 +1692,7 @@ export default function TokensMonitor() {
                   <Button
                     onClick={() => setShowPluginUpgradeDialog(true)}
                     variant="outline"
-                    className="text-xs h-8 px-3 text-blue-600 border-blue-200 hover:bg-blue-50 bg-white"
+                    className="text-xs h-8 px-3 text-[#355EF1] border-blue-200 hover:bg-blue-50 bg-white"
                   >
                     升级CLS采集插件
                   </Button>
@@ -1706,7 +1706,7 @@ export default function TokensMonitor() {
                 </div>
               </div>
               <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-gray-400">全部会话已按tokens排序，点击可查看会话详情</p>
+                <p className="text-xs text-[#A3A3A3]">全部会话已按tokens排序，点击可查看会话详情</p>
                 <UITooltip>
                   <UITooltipTrigger asChild>
                     <Button
@@ -1739,21 +1739,21 @@ export default function TokensMonitor() {
                   </TableHeader>
                   <TableBody>
                     {sessionPaged.length === 0 ? (
-                      <TableRow><TableCell colSpan={9} className="text-center text-sm text-gray-400 py-12">暂无数据</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={9} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                     ) : sessionPaged.map((s) => {
                       return (
                       <TableRow key={s.sessionId} className="cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
                         <TableCell>
-                          <div className="text-sm text-gray-700">{s.sessionName}</div>
-                          <div className="text-xs text-gray-400 font-mono mt-0.5">{s.sessionId}</div>
+                          <div className="text-sm text-[#334155]">{s.sessionName}</div>
+                          <div className="text-xs text-[#A3A3A3] font-mono mt-0.5">{s.sessionId}</div>
                         </TableCell>
-                        <TableCell className="text-sm text-gray-700">{s.channel}</TableCell>
-                        <TableCell className="text-sm text-gray-700">{s.model}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{s.lastActiveTime}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{s.rounds}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right font-mono">${s.cost.toFixed(4)}</TableCell>
-                        <TableCell className="text-sm text-gray-600 text-right">{s.duration}</TableCell>
+                        <TableCell className="text-sm text-[#334155]">{s.channel}</TableCell>
+                        <TableCell className="text-sm text-[#334155]">{s.model}</TableCell>
+                        <TableCell className="text-sm text-[#737373]">{s.lastActiveTime}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{s.rounds}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right font-mono">${s.cost.toFixed(4)}</TableCell>
+                        <TableCell className="text-sm text-[#737373] text-right">{s.duration}</TableCell>
                         <TableCell className="text-center">
                           <Button
                             onClick={(e) => {
@@ -1788,20 +1788,20 @@ export default function TokensMonitor() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             {!isCheckingAuth && !authCompleted && (
-              <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
+              <p className="text-sm text-[#334155]">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             )}
             <div className="space-y-3 flex flex-col items-center min-h-16 justify-center">
               {isCheckingAuth ? (
                 <>
                   {/* 检测中的旋转动画 */}
                   <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                  <p className="text-xs text-gray-500 text-center">检测中...</p>
+                  <p className="text-xs text-[#737373] text-center">检测中...</p>
                 </>
               ) : authCompleted ? (
                 <>
                   {/* 检测完成后显示完成 icon */}
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+                  <p className="text-xs text-[#737373] text-center">检测到已授权</p>
                 </>
               ) : null}
             </div>
@@ -1827,15 +1827,15 @@ export default function TokensMonitor() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
-              <p className="text-sm text-gray-700">
-                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
+              <p className="text-sm text-[#334155]">
+                为您赠送<span className="font-semibold text-[#355EF1]">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-[#355EF1]">3000U</span>），预估可覆盖 <span className="font-semibold text-[#355EF1]">500台</span> Agent 机器<span className="font-semibold text-[#355EF1]">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-[#355EF1]">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     handleGoToCalcDetail();
                   }}
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-[#355EF1] hover:text-[#355EF1] underline"
                 >
                   计费详情
                 </a>
@@ -1847,9 +1847,9 @@ export default function TokensMonitor() {
                 type="checkbox"
                 checked={freeQuotaAgreed}
                 onChange={(e) => setFreeQuotaAgreed(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-gray-300 text-[#355EF1] focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">我已阅读并同意免费额度说明</span>
+              <span className="text-sm text-[#334155]">我已阅读并同意免费额度说明</span>
             </label>
           </div>
           <DialogFooter className="flex gap-2 justify-end">
@@ -1874,17 +1874,17 @@ export default function TokensMonitor() {
             <DialogTitle>确定要关闭 CLS 日志服务吗？</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <p className="text-sm text-gray-600">关闭后以下功能将无法使用：</p>
+            <p className="text-sm text-[#737373]">关闭后以下功能将无法使用：</p>
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
-              <div className="text-xs text-gray-700">
+              <div className="text-xs text-[#334155]">
                 <span className="font-semibold text-red-700">运维观测：</span>
                 <span>支持通过全链路性能监控采集核心运行指标</span>
               </div>
-              <div className="text-xs text-gray-700">
+              <div className="text-xs text-[#334155]">
                 <span className="font-semibold text-red-700">会话管理：</span>
                 <span>支持通过会话总览、会话链下钻还原及渠道模型分布分析</span>
               </div>
-              <div className="text-xs text-gray-700">
+              <div className="text-xs text-[#334155]">
                 <span className="font-semibold text-red-700">Tokens 监控（按会话）：</span>
                 <span>支持从按会话、消息维度查看 tokens、费用使用情况</span>
               </div>
@@ -1900,7 +1900,7 @@ export default function TokensMonitor() {
                   className="mt-1"
                 />
                 <div className="flex-1 space-y-1">
-                  <Label htmlFor="deleteLogTopic" className="text-sm font-medium text-gray-900 cursor-pointer">
+                  <Label htmlFor="deleteLogTopic" className="text-sm font-medium text-[#0A0A0A] cursor-pointer">
                     删除关联的日志主题资源
                   </Label>
                   <div className="space-y-1.5">
@@ -1908,7 +1908,7 @@ export default function TokensMonitor() {
                       <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                       <span>勾选后将永久删除该日志主题及所有日志数据，数据不可恢复。</span>
                     </div>
-                    <div className="flex gap-2 text-xs text-blue-700 bg-blue-50 p-2 rounded">
+                    <div className="flex gap-2 text-xs text-[#355EF1] bg-blue-50 p-2 rounded">
                       <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                       <span>未删除的日志主题资源会持续产生存储费用。</span>
                     </div>
@@ -1943,9 +1943,9 @@ export default function TokensMonitor() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>版本号</th>
-                  <th className="text-left px-3 py-2 font-semibold text-gray-700" style={{ flex: 1 }}>更新内容</th>
-                  <th className="text-center px-3 py-2 font-semibold text-gray-700" style={{ width: '100px' }}>状态</th>
+                  <th className="text-left px-3 py-2 font-semibold text-[#334155]" style={{ width: '100px' }}>版本号</th>
+                  <th className="text-left px-3 py-2 font-semibold text-[#334155]" style={{ flex: 1 }}>更新内容</th>
+                  <th className="text-center px-3 py-2 font-semibold text-[#334155]" style={{ width: '100px' }}>状态</th>
                 </tr>
               </thead>
               <tbody>
@@ -1964,8 +1964,8 @@ export default function TokensMonitor() {
                         : isUpgradeable ? "hover:bg-gray-50" : ""
                     }`}
                   >
-                    <td className="px-3 py-2 font-medium text-gray-900 whitespace-nowrap" style={{ width: '100px' }}>{v.version}</td>
-                    <td className="px-3 py-2 text-gray-600 whitespace-nowrap" style={{ flex: 1 }}>{v.changelog}</td>
+                    <td className="px-3 py-2 font-medium text-[#0A0A0A] whitespace-nowrap" style={{ width: '100px' }}>{v.version}</td>
+                    <td className="px-3 py-2 text-[#737373] whitespace-nowrap" style={{ flex: 1 }}>{v.changelog}</td>
                     <td className="px-3 py-2 text-center" style={{ width: '100px' }}>
                       {v.status === 'current' && (
                               <StatusTag variant="green">当前版本</StatusTag>

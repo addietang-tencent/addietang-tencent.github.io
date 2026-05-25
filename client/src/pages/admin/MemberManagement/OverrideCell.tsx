@@ -65,7 +65,7 @@ const STATUS_META: Record<OverrideStatus, StatusMeta> = {
 };
 
 const TONE_CLASS: Record<StatusMeta["tone"], string> = {
-  neutral: "text-gray-500 bg-gray-50 border border-[#e5e5e5]",
+  neutral: "text-[#737373] bg-gray-50 border border-[#e5e5e5]",
   amber: "text-amber-600 bg-amber-50 border border-amber-100",
   red: "text-red-600 bg-red-50 border border-red-100",
 };
@@ -97,17 +97,17 @@ function EffectiveDetailCard({ user }: { user: UserOrg }) {
   return (
     <div className="w-[420px]">
       <div className="px-4 py-3 border-b border-[#e5e5e5]">
-        <div className="text-sm font-semibold text-gray-900">
+        <div className="text-sm font-semibold text-[#0A0A0A]">
           {user.displayName} · 最终生效配置
         </div>
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-xs text-[#737373] mt-1">
           点击右侧「查看配置」可查看完整溯源
         </div>
       </div>
       <div className="px-4 py-3">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs text-gray-400">
+            <tr className="text-left text-xs text-[#A3A3A3]">
               <th className="py-1.5 font-medium w-16">资源</th>
               <th className="py-1.5 font-medium">最终生效</th>
               <th className="py-1.5 font-medium w-14 text-right">来源</th>
@@ -116,11 +116,11 @@ function EffectiveDetailCard({ user }: { user: UserOrg }) {
           <tbody>
             {rows.map((r) => (
               <tr key={r.label} className="border-t border-gray-50">
-                <td className="py-2 text-gray-500">{r.label}</td>
-                <td className="py-2 text-gray-900 break-all" title={r.value}>
+                <td className="py-2 text-[#737373]">{r.label}</td>
+                <td className="py-2 text-[#0A0A0A] break-all" title={r.value}>
                   {r.value}
                 </td>
-                <td className="py-2 text-xs text-gray-400 text-right">
+                <td className="py-2 text-xs text-[#A3A3A3] text-right">
                   {r.source}
                 </td>
               </tr>
@@ -189,14 +189,14 @@ function ConflictPopover({
         <div className="px-4 py-3 border-b border-[#e5e5e5]">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-red-500" />
-            <div className="text-sm font-semibold text-gray-900">
+            <div className="text-sm font-semibold text-[#0A0A0A]">
               {user.displayName} · {kindText} 冲突
             </div>
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-[#737373] mt-1">
             冲突类型：分组冲突
             {info.isResolved ? (
-              <span className="ml-2 text-blue-600">· 已显式决策</span>
+              <span className="ml-2 text-[#355EF1]">· 已显式决策</span>
             ) : (
               <span className="ml-2 text-amber-600">
                 · 尚未决策，按最新绑定兜底
@@ -205,7 +205,7 @@ function ConflictPopover({
           </div>
         </div>
         <div className="px-4 py-3 space-y-2">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+          <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider mb-1">
             同层候选
           </div>
           {candidates.map((c) => (
@@ -225,12 +225,12 @@ function ConflictPopover({
                 onChange={() => setSelected(c.resourceId)}
               />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900">
+                <div className="text-sm font-medium text-[#0A0A0A]">
                   {c.resourceName}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">
-                  通过 <span className="text-gray-700">{c.via}</span>
-                  <span className="mx-1.5 text-gray-300">·</span>
+                <div className="text-xs text-[#737373] mt-0.5">
+                  通过 <span className="text-[#334155]">{c.via}</span>
+                  <span className="mx-1.5 text-[#A3A3A3]">·</span>
                   最近绑定 {c.latestBindingAt}
                 </div>
               </div>
@@ -238,7 +238,7 @@ function ConflictPopover({
           ))}
         </div>
         <div className="px-4 py-2.5 border-t border-[#e5e5e5] bg-gray-50/50">
-          <div className="text-xs text-gray-500 leading-relaxed">
+          <div className="text-xs text-[#737373] leading-relaxed">
             确定后将为该用户写入一条显式决策记录；winner 被删除时自动失效。
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function OverrideCell({
     return (
       <HoverCard openDelay={200}>
         <HoverCardTrigger asChild>
-          <span className="inline-flex items-center gap-1 text-xs text-gray-500 cursor-default">
+          <span className="inline-flex items-center gap-1 text-xs text-[#737373] cursor-default">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
             <span>按本节点</span>
           </span>
@@ -304,7 +304,7 @@ export default function OverrideCell({
               <div className="flex items-center gap-2">
                 <OverrideBadge status={info.status} />
               </div>
-              <div className="text-xs text-gray-500 mt-2 leading-relaxed">
+              <div className="text-xs text-[#737373] mt-2 leading-relaxed">
                 {meta.desc}
               </div>
             </div>
@@ -326,7 +326,7 @@ export default function OverrideCell({
           className="inline-flex items-center gap-1.5 group"
         >
           <OverrideBadge status={info.status} />
-          <span className="text-xs text-blue-600 group-hover:underline">
+          <span className="text-xs text-[#355EF1] group-hover:underline">
             详情
           </span>
         </button>

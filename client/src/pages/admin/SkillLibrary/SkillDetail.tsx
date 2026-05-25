@@ -562,7 +562,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   if (!skill) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">技能未找到</p>
+        <p className="text-[#737373]">技能未找到</p>
         <Button onClick={onBack} className="mt-4">返回列表</Button>
       </div>
     );
@@ -638,7 +638,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       <StatusTag variant="gray">未检测</StatusTag>
                       <button
                         onClick={() => setSecurityScanDialogOpen(true)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-[#355EF1] bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
                       >
                         <ScanSearch className="w-3 h-3" />
                         检测
@@ -667,7 +667,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                         href={reportUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-0.5 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                        className="inline-flex items-center gap-0.5 text-xs text-[#355EF1] hover:text-[#355EF1] transition-colors"
                       >
                         报告
                         <ExternalLink className="w-3 h-3" />
@@ -936,8 +936,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                             onClick={() => setFileViewMode('preview')}
                             className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                               fileViewMode === 'preview'
-                                ? 'bg-white text-gray-900 shadow-sm font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                                : 'text-[#737373] hover:text-[#334155]'
                             }`}
                           >
                             <Eye className="w-3 h-3" />
@@ -947,8 +947,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                             onClick={() => setFileViewMode('source')}
                             className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                               fileViewMode === 'source'
-                                ? 'bg-white text-gray-900 shadow-sm font-medium'
-                                : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
+                                : 'text-[#737373] hover:text-[#334155]'
                             }`}
                           >
                             <Code className="w-3 h-3" />
@@ -961,7 +961,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                           const content = getFileContent(expandedFile);
                           if (!content) {
                             return (
-                              <div className="flex items-center justify-center h-full text-gray-400">
+                              <div className="flex items-center justify-center h-full text-[#A3A3A3]">
                                 <p className="text-sm">文件内容暂无</p>
                               </div>
                             );
@@ -973,7 +973,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                             registerLanguage(lang);
                             return (
                               <Suspense fallback={
-                                <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
+                                <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
                                   {content}
                                 </pre>
                               }>
@@ -1003,7 +1003,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                           registerLanguage(previewLang);
                           return (
                             <Suspense fallback={
-                              <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
+                              <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">
                                 {content}
                               </pre>
                             }>
@@ -1023,7 +1023,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       </div>
                     </>
                   ) : (
-                    <div className="flex items-center justify-center h-full text-gray-500">
+                    <div className="flex items-center justify-center h-full text-[#737373]">
                       <p className="text-sm">选择一个文件查看内容</p>
                     </div>
                   )}
@@ -1036,14 +1036,14 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
             <SurfaceCard className="p-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-900">下发记录</h3>
+                <h3 className="font-semibold text-[#0A0A0A]">下发记录</h3>
               </div>
             </div>
 
             <div className="space-y-3 mt-4">
               {distributionRecords.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-[4px]">
-                  <p className="text-gray-500">还没有下发记录</p>
+                  <p className="text-[#737373]">还没有下发记录</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1053,13 +1053,13 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                       <div key={record.id} className="border border-gray-200 rounded-[4px] p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-sm font-semibold text-[#0A0A0A]">
                               #{idx + 1} · v{skill.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                              record.status === 'distributing' ? 'bg-blue-50 text-blue-700' :
+                              record.status === 'distributing' ? 'bg-blue-50 text-[#355EF1]' :
                               record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
                               'bg-yellow-50 text-yellow-700'
                             }`}>
@@ -1076,7 +1076,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                                 setDetailSearchQuery('');
                                 setDetailsOpen(true);
                               }}
-                              className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
+                              className="text-[#355EF1] hover:text-[#355EF1] h-auto py-1 px-2"
                             >
                               查看详情
                             </Button>
@@ -1155,7 +1155,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               {/* 筛选器 + 搜索框 */}
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
                   <Input
                     placeholder="搜索实例名称/ID..."
                     value={detailSearchQuery}
@@ -1181,32 +1181,32 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 <table className="w-full text-sm">
                   <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
                     <tr>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700 min-w-[140px]">实例ID</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
-                      <th className="px-4 py-2 text-left font-semibold text-gray-700">失败原因</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">实例名称</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155] min-w-[140px]">实例ID</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">状态</th>
+                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">失败原因</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInstances.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-4 text-center text-gray-500">
+                        <td colSpan={3} className="px-4 py-4 text-center text-[#737373]">
                           没有符合条件的记录
                         </td>
                       </tr>
                     ) : (
                       filteredInstances.map((instance) => (
                         <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="px-4 py-2 text-gray-900">{instance.name}</td>
-                          <td className="px-4 py-2 text-gray-600 font-mono whitespace-nowrap">{instance.id}</td>
+                          <td className="px-4 py-2 text-[#0A0A0A]">{instance.name}</td>
+                          <td className="px-4 py-2 text-[#737373] font-mono whitespace-nowrap">{instance.id}</td>
                           <td className="px-4 py-2">
                             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-gray-500'
+                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-[#737373]'
                             }`}>
                               {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-500">
+                          <td className="px-4 py-2 text-sm text-[#737373]">
                             {instance.failReason || '-'}
                           </td>
 

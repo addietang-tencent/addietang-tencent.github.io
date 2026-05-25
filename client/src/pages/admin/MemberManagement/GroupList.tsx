@@ -4,7 +4,7 @@
  * 视觉规范（流动蓝图）：
  *   - 行高 32~36，每一层左缩进 16px
  *   - 右侧：人数（text-xs gray-400）
- *   - 活跃行：borderLeft: 2px solid #355EF1 + bg-blue-50 text-blue-700
+ *   - 活跃行：borderLeft: 2px solid #355EF1 + bg-blue-50 text-[#355EF1]
  *   - 按来源分桶：组织架构 / 用户组 / 自建分组，段头用一个极简小标题
  *   - 底部固定「未分组」项
  */
@@ -338,7 +338,7 @@ function GroupRow(props: RowProps) {
                   <TooltipTrigger asChild>
                     <div>
                       <DropdownMenuItem
-                        className={`text-xs gap-2 ${hasChildren ? "text-gray-400 cursor-not-allowed" : "text-red-600 focus:text-red-600"}`}
+                        className={`text-xs gap-2 ${hasChildren ? "text-[#A3A3A3] cursor-not-allowed" : "text-red-600 focus:text-red-600"}`}
                         disabled={hasChildren}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -379,11 +379,11 @@ function BucketHeader({
 }) {
   return (
     <div className="flex items-center gap-1.5 px-4 pt-4 pb-1.5">
-      <span className="text-gray-400">{icon}</span>
-      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+      <span className="text-[#A3A3A3]">{icon}</span>
+      <span className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">
         {title}
       </span>
-      <span className="text-xs text-gray-300 tabular-nums">· {count}</span>
+      <span className="text-xs text-[#A3A3A3] tabular-nums">· {count}</span>
     </div>
   );
 }
@@ -515,7 +515,7 @@ export default function GroupList({
     <div className="flex flex-col h-full">
       {/* 第一行：标题"分组" + 新建按钮 */}
       <div className="flex items-center gap-2 px-4 pt-4 pb-2">
-        <span className="text-lg font-semibold text-gray-900">分组</span>
+        <span className="text-lg font-semibold text-[#0A0A0A]">分组</span>
         <button
           type="button"
           className="inline-flex items-center gap-1 px-2.5 h-7 text-sm font-medium text-[#020617] hover:bg-[#f5f5f5] rounded-[4px] transition-colors"
@@ -530,7 +530,7 @@ export default function GroupList({
       <div className="px-3 pb-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
             <input
               type="text"
               placeholder="搜索分组..."
@@ -580,7 +580,7 @@ export default function GroupList({
           {/* 刷新按钮 */}
           <button
             type="button"
-            className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors shrink-0"
+            className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-[#737373] hover:bg-gray-50 hover:text-[#334155] transition-colors shrink-0"
             onClick={() => {
               if (onRefreshSync) {
                 onRefreshSync();
@@ -607,14 +607,14 @@ export default function GroupList({
                   className="flex items-center gap-1.5 px-4 pt-4 pb-1.5 cursor-pointer select-none"
                   onClick={() => setDeptSectionCollapsed(!deptSectionCollapsed)}
                 >
-                  <span className="text-gray-400">
+                  <span className="text-[#A3A3A3]">
                     {deptSectionCollapsed ? (
                       <ChevronRight className="w-3 h-3" />
                     ) : (
                       <ChevronDown className="w-3 h-3" />
                     )}
                   </span>
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">
                     部门
                   </span>
                 </div>
@@ -646,20 +646,20 @@ export default function GroupList({
                   className="flex items-center gap-1.5 px-4 pt-4 pb-1.5 cursor-pointer select-none"
                   onClick={() => setDeptSectionCollapsed(!deptSectionCollapsed)}
                 >
-                  <span className="text-gray-400">
+                  <span className="text-[#A3A3A3]">
                     {deptSectionCollapsed ? (
                       <ChevronRight className="w-3 h-3" />
                     ) : (
                       <ChevronDown className="w-3 h-3" />
                     )}
                   </span>
-                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">
                     部门
                   </span>
                 </div>
                 {!deptSectionCollapsed && (
                   <div className="px-4 py-6 text-center">
-                    <p className="text-xs text-gray-400 mb-3">
+                    <p className="text-xs text-[#A3A3A3] mb-3">
                       尚未同步部门
                     </p>
                     <Button
@@ -690,14 +690,14 @@ export default function GroupList({
               className="flex items-center gap-1.5 px-4 pt-4 pb-1.5 cursor-pointer select-none"
               onClick={() => setOgSectionCollapsed(!ogSectionCollapsed)}
             >
-              <span className="text-gray-400">
+              <span className="text-[#A3A3A3]">
                 {ogSectionCollapsed ? (
                   <ChevronRight className="w-3 h-3" />
                 ) : (
                   <ChevronDown className="w-3 h-3" />
                 )}
               </span>
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">
                 自定义分组
               </span>
             </div>
@@ -730,7 +730,7 @@ export default function GroupList({
                 ))
               ) : (
                 <div className="px-4 py-6 text-center">
-                  <p className="text-xs text-gray-400 mb-3">
+                  <p className="text-xs text-[#A3A3A3] mb-3">
                     暂无自定义分组
                   </p>
                   <Button
@@ -779,7 +779,7 @@ export default function GroupList({
         )}
 
         {groups.length === 0 && deptSynced !== false && (
-          <div className="px-4 py-10 text-center text-xs text-gray-400">
+          <div className="px-4 py-10 text-center text-xs text-[#A3A3A3]">
             暂无分组，可新建自建分组
           </div>
         )}
@@ -792,7 +792,7 @@ export default function GroupList({
           return (
             <div className="px-4 py-10 text-center">
               <Filter className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-[#A3A3A3]">
                 暂无符合筛选条件的分组
               </p>
             </div>

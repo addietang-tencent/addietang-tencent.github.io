@@ -274,7 +274,7 @@ export default function ChannelConfig() {
   return (
     <div className="page-enter">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">通道配置</h1>
       </div>
 
       {/* Tab 切换器（标准 Segment 组件） */}
@@ -294,7 +294,7 @@ export default function ChannelConfig() {
 
       {/* Tab 描述（仅一行） */}
       <div className="flex items-center gap-3 mt-3 mb-6">
-        <p className="text-sm text-gray-500 leading-relaxed">{currentTab.description}</p>
+        <p className="text-sm text-[#737373] leading-relaxed">{currentTab.description}</p>
       </div>
 
       {/* ── 内置通道 Tab ── */}
@@ -308,12 +308,12 @@ export default function ChannelConfig() {
                 <div className="flex items-center gap-4">
                   <img src={CHANNEL_ICON_SRC[ch.id]} alt="" aria-hidden="true" className="h-10 w-10 shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{ch.name}</p>
+                    <p className="text-sm font-medium text-[#0A0A0A]">{ch.name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400">用户可见</span>
+                    <span className="text-xs text-[#A3A3A3]">用户可见</span>
                     <Switch
                       checked={builtinVisibility[ch.id] || false}
                       onCheckedChange={(v) => {
@@ -348,7 +348,7 @@ export default function ChannelConfig() {
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <a
               href="#"
-              className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors"
+              className="inline-flex items-center gap-1 text-xs text-[#355EF1] hover:text-[#355EF1] underline underline-offset-2 transition-colors"
               onClick={(e) => e.preventDefault()}
             >
               自定义通道配置指引
@@ -376,7 +376,7 @@ export default function ChannelConfig() {
                 />
                 <div className="mt-1">
                   <p className="text-sm font-semibold text-[#020617]">暂无自定义通道</p>
-                  <p className="mt-1 text-xs font-normal tracking-[0.015em] text-gray-400">点击「添加通道」配置企业自研 IM 通道</p>
+                  <p className="mt-1 text-xs font-normal tracking-[0.015em] text-[#A3A3A3]">点击「添加通道」配置企业自研 IM 通道</p>
                 </div>
               </div>
             </div>
@@ -390,14 +390,14 @@ export default function ChannelConfig() {
                       <CustomChannelIcon name={ch.name} color={ch.color} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-gray-900 truncate">{ch.name}</p>
-                          <span className="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+                          <p className="text-sm font-medium text-[#0A0A0A] truncate">{ch.name}</p>
+                          <span className="text-xs text-[#A3A3A3] font-mono bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
                             {ch.channelId}
                           </span>
                         </div>
                         {/* 详情展开按钮：放在通道名称下方 */}
                         <button
-                          className="mt-1 text-xs text-gray-400 hover:text-blue-500 flex items-center gap-0.5 transition-colors"
+                          className="mt-1 text-xs text-[#A3A3A3] hover:text-[#355EF1] flex items-center gap-0.5 transition-colors"
                           onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
                           title="查看详情"
                         >
@@ -410,7 +410,7 @@ export default function ChannelConfig() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-4">
-                      <span className="text-xs text-gray-400">用户可见</span>
+                      <span className="text-xs text-[#A3A3A3]">用户可见</span>
                       <Switch
                         checked={ch.visible}
                         onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
@@ -427,7 +427,7 @@ export default function ChannelConfig() {
                       <div className="w-px h-4 bg-gray-200" />
                       {/* 去掉编辑按钮，只保留删除 */}
                       <button
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="text-[#A3A3A3] hover:text-red-500 transition-colors"
                         onClick={() => setDeleteConfirmId(ch.id)}
                         title="删除"
                       >
@@ -442,33 +442,33 @@ export default function ChannelConfig() {
                       <div className="ml-14 space-y-3">
                         {/* IM 服务器地址 */}
                         <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
-                          <p className="text-xs font-medium text-gray-500 mb-2">IM 服务器地址</p>
+                          <p className="text-xs font-medium text-[#737373] mb-2">IM 服务器地址</p>
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2 text-xs">
-                              <span className="text-gray-400 w-24 shrink-0">Server URL</span>
-                              <span className="text-gray-700 font-mono break-all">{ch.serverUrl || "—"}</span>
+                              <span className="text-[#A3A3A3] w-24 shrink-0">Server URL</span>
+                              <span className="text-[#334155] font-mono break-all">{ch.serverUrl || "—"}</span>
                             </div>
                             <div className="flex items-center gap-2 text-xs">
-                              <span className="text-gray-400 w-24 shrink-0">WebSocket URL</span>
-                              <span className="text-gray-700 font-mono break-all">{ch.wsUrl || "—"}</span>
+                              <span className="text-[#A3A3A3] w-24 shrink-0">WebSocket URL</span>
+                              <span className="text-[#334155] font-mono break-all">{ch.wsUrl || "—"}</span>
                             </div>
                           </div>
                         </div>
                         {/* 用户凭证字段 */}
                         <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
-                          <p className="text-xs font-medium text-gray-500 mb-2">用户凭证字段</p>
+                          <p className="text-xs font-medium text-[#737373] mb-2">用户凭证字段</p>
                           {ch.credentialFields.length === 0 ? (
-                            <p className="text-xs text-gray-400">无凭证字段</p>
+                            <p className="text-xs text-[#A3A3A3]">无凭证字段</p>
                           ) : (
                             <div className="flex flex-wrap gap-2">
                               {ch.credentialFields.map((f, idx) => (
                                 <span
                                   key={f.id}
-                                  className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-gray-700 px-2.5 py-1 rounded-full"
+                                  className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-[#334155] px-2.5 py-1 rounded-full"
                                 >
-                                  <span className="text-gray-400">{idx + 1}.</span>
-                                  <span className="font-mono text-gray-500">{f.key}</span>
-                                  <span className="text-gray-300">/</span>
+                                  <span className="text-[#A3A3A3]">{idx + 1}.</span>
+                                  <span className="font-mono text-[#737373]">{f.key}</span>
+                                  <span className="text-[#A3A3A3]">/</span>
                                   {f.label}
                                 </span>
                               ))}

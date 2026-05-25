@@ -236,7 +236,7 @@ function SkillSourceTab() {
                 <Check className="w-3.5 h-3.5" />
                 保存
               </Button>
-              <Button size="sm" variant="ghost" onClick={handleCancel} className="gap-1 text-gray-500">
+              <Button size="sm" variant="ghost" onClick={handleCancel} className="gap-1 text-[#737373]">
                 <X className="w-3.5 h-3.5" />
                 取消
               </Button>
@@ -273,7 +273,7 @@ export default function SkillConfig() {
     <div className="page-enter">
       {/* 页面标题 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">技能配置</h1>
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">技能配置</h1>
       </div>
 
       {/* Tab 切换器 - LineTabs */}

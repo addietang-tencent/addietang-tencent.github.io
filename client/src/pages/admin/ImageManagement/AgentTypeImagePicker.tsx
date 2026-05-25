@@ -34,7 +34,7 @@ import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
 // ─── 状态徽章（紧凑） ─────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { text: string; dot: string; text2: string }> = {
-    available: { text: "可用", dot: "bg-green-500", text2: "text-gray-600" },
+    available: { text: "可用", dot: "bg-green-500", text2: "text-[#737373]" },
     creating: { text: "创建中", dot: "bg-amber-500", text2: "text-amber-600" },
     failed: { text: "异常", dot: "bg-red-500", text2: "text-red-600" },
     error: { text: "异常", dot: "bg-red-500", text2: "text-red-600" },
@@ -349,7 +349,7 @@ function ImageList({
                   </TooltipContent>
                 </Tooltip>
               ) : (
-                <span className="text-[13px] font-medium text-gray-900 whitespace-nowrap">
+                <span className="text-[13px] font-medium text-[#0A0A0A] whitespace-nowrap">
                   v{img.agentVersion}
                 </span>
               )}
@@ -367,19 +367,19 @@ function ImageList({
             {/* 镜像（名称 + ID 副位含状态）—— 占主要空间 */}
             <div className="basis-0 grow-[3] min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[13px] font-medium text-gray-900 truncate">
+                <span className="text-[13px] font-medium text-[#0A0A0A] truncate">
                   {img.name}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
+              <div className="flex items-center gap-2 text-[11px] text-[#A3A3A3] mt-0.5 flex-wrap">
                 <span className="font-mono truncate">{img.id}</span>
-                <span className="text-gray-300">·</span>
+                <span className="text-[#A3A3A3]">·</span>
                 <StatusBadge status={img.status} />
               </div>
             </div>
 
             {/* 导入时间 */}
-            <div className="basis-0 grow shrink-0 min-w-[90px] max-w-[110px] text-[11px] text-gray-500 font-mono tabular-nums whitespace-nowrap">
+            <div className="basis-0 grow shrink-0 min-w-[90px] max-w-[110px] text-[11px] text-[#737373] font-mono tabular-nums whitespace-nowrap">
               {img.createTime ? img.createTime.split(" ")[0] : "—"}
             </div>
 

@@ -65,7 +65,7 @@ export default function AddCategoryDialog({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-[#0A0A0A] mb-2">
               分类名称 <span className="text-red-500">*</span>
             </label>
             <Input
@@ -77,7 +77,7 @@ export default function AddCategoryDialog({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-[#0A0A0A] mb-2">
               描述（非必填）
             </label>
             <Textarea

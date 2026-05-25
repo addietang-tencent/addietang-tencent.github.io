@@ -119,7 +119,7 @@ export default function HistoryTab({ scope = "all" }: Props) {
         </Select>
 
         <div className="flex-1 relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
           <Input
             placeholder="搜索内容、操作人、记录 ID 或命令"
             value={search}
@@ -129,7 +129,7 @@ export default function HistoryTab({ scope = "all" }: Props) {
         </div>
 
         <button
-          className="w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 flex items-center justify-center transition-colors"
+          className="w-9 h-9 rounded-lg border border-gray-200 bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 flex items-center justify-center transition-colors"
           title="刷新列表"
         >
           <RefreshCw className="w-4 h-4" />
@@ -145,27 +145,27 @@ export default function HistoryTab({ scope = "all" }: Props) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                   任务 ID
                 </th>
                 {scope === "all" && (
-                  <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%] min-w-[110px]">
+                  <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%] min-w-[110px]">
                     类型
                   </th>
                 )}
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">
                   运维内容
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[12%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[12%]">
                   执行方
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[14%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
                   执行时间
                 </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[15%]">
                   结果
                 </th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">
+                <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[8%]">
                   操作
                 </th>
               </tr>
@@ -173,7 +173,7 @@ export default function HistoryTab({ scope = "all" }: Props) {
             <tbody className="divide-y divide-gray-50">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={scope === "all" ? 7 : 6} className="px-6 py-16 text-center text-sm text-gray-400">
+                  <td colSpan={scope === "all" ? 7 : 6} className="px-6 py-16 text-center text-sm text-[#A3A3A3]">
                     暂无符合条件的记录
                   </td>
                 </tr>
@@ -199,11 +199,11 @@ export default function HistoryTab({ scope = "all" }: Props) {
 function getActionTagColor(action: HistoryAction): string {
   switch (action) {
     case "agent-upgrade":
-      return "text-blue-700 bg-blue-50";
+      return "text-[#355EF1] bg-blue-50";
     case "command-execute":
       return "text-purple-700 bg-purple-50";
     default:
-      return "text-gray-700 bg-gray-50";
+      return "text-[#334155] bg-gray-50";
   }
 }
 
@@ -214,7 +214,7 @@ function getOverallStatus(record: HistoryRecord): {
 } {
   const { totalInstances, successCount, failedCount } = record;
   const running = totalInstances - successCount - failedCount;
-  if (running > 0) return { label: "进行中", color: "text-blue-600 bg-blue-50" };
+  if (running > 0) return { label: "进行中", color: "text-[#355EF1] bg-blue-50" };
   if (failedCount === 0) return { label: "成功", color: "text-green-600 bg-green-50" };
   if (successCount === 0) return { label: "失败", color: "text-red-600 bg-red-50" };
   return { label: "部分成功", color: "text-amber-700 bg-amber-50" };
@@ -256,22 +256,22 @@ function HistoryRow({
       <td className="px-6 py-4">
         {record.action === "agent-upgrade" && (
           <div className="space-y-0.5">
-            <div className="text-sm text-gray-900 truncate max-w-[280px]">{record.assetName}</div>
+            <div className="text-sm text-[#0A0A0A] truncate max-w-[280px]">{record.assetName}</div>
             {record.fromVersion && record.toVersion ? (
-              <div className="text-xs font-mono text-gray-500 tabular-nums">
-                {record.fromVersion} <span className="text-gray-400">→</span>{" "}
-                <span className="text-gray-700 font-semibold">{record.toVersion}</span>
+              <div className="text-xs font-mono text-[#737373] tabular-nums">
+                {record.fromVersion} <span className="text-[#A3A3A3]">→</span>{" "}
+                <span className="text-[#334155] font-semibold">{record.toVersion}</span>
               </div>
             ) : record.toVersion ? (
-              <div className="text-xs font-mono text-gray-500 tabular-nums">
-                → <span className="text-gray-700 font-semibold">{record.toVersion}</span>
+              <div className="text-xs font-mono text-[#737373] tabular-nums">
+                → <span className="text-[#334155] font-semibold">{record.toVersion}</span>
               </div>
             ) : null}
           </div>
         )}
         {record.action === "command-execute" && (
           <div className="space-y-0.5">
-            <div className="text-sm text-gray-900 truncate max-w-[280px]">
+            <div className="text-sm text-[#0A0A0A] truncate max-w-[280px]">
               {record.assetName}
               {record.commandExtra?.testInstanceId && (
                 <span className="ml-1.5 inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 align-middle">
@@ -281,10 +281,10 @@ function HistoryRow({
               )}
             </div>
             {record.commandExtra?.commandContent && (
-              <code className="text-xs font-mono text-gray-500 truncate block max-w-[280px]">
+              <code className="text-xs font-mono text-[#737373] truncate block max-w-[280px]">
                 {record.commandExtra.commandContent.split("\n")[0]}
                 {record.commandExtra.commandContent.includes("\n") && (
-                  <span className="text-gray-400 ml-1">…</span>
+                  <span className="text-[#A3A3A3] ml-1">…</span>
                 )}
               </code>
             )}
@@ -296,24 +296,24 @@ function HistoryRow({
       <td className="px-6 py-4">
         {record.isAuto ? (
           <div className="inline-flex items-center gap-1.5 text-sm">
-            <Sparkles className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-blue-700">{record.operator}</span>
+            <Sparkles className="w-3.5 h-3.5 text-[#355EF1]" />
+            <span className="text-[#355EF1]">{record.operator}</span>
           </div>
         ) : (
           <div className="inline-flex items-center gap-1.5 text-sm">
-            <User className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-gray-700 truncate max-w-[120px]">{record.operator}</span>
+            <User className="w-3.5 h-3.5 text-[#A3A3A3]" />
+            <span className="text-[#334155] truncate max-w-[120px]">{record.operator}</span>
           </div>
         )}
       </td>
 
       {/* 执行时间 */}
       <td className="px-6 py-4">
-        <div className="text-sm text-gray-500 tabular-nums whitespace-nowrap">
+        <div className="text-sm text-[#737373] tabular-nums whitespace-nowrap">
           {record.operatedAt}
         </div>
         {record.scheduledAt && (
-          <div className="text-[10px] text-gray-400 mt-0.5">
+          <div className="text-[10px] text-[#A3A3A3] mt-0.5">
             计划：{record.scheduledAt}
           </div>
         )}
@@ -338,7 +338,7 @@ function HistoryRow({
                 style={{ width: `${successRate}%` }}
               />
             </div>
-            <span className="text-xs text-gray-700 font-mono tabular-nums shrink-0 whitespace-nowrap">
+            <span className="text-xs text-[#334155] font-mono tabular-nums shrink-0 whitespace-nowrap">
               {record.successCount}/{record.totalInstances}
             </span>
           </div>
@@ -349,7 +349,7 @@ function HistoryRow({
       <td className="px-6 py-4 text-right">
         <button
           onClick={onDetail}
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          className="text-sm text-[#355EF1] hover:text-[#355EF1] font-medium"
         >
           详情
         </button>
@@ -398,7 +398,7 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
           {/* 命令执行专属：命令详情 */}
           {record.action === "command-execute" && record.commandExtra && (
             <div className="rounded-xl border border-gray-100 p-4 space-y-3">
-              <div className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <div className="text-sm font-medium text-[#334155] flex items-center gap-1.5">
                 <Code2 className="w-4 h-4 text-purple-500" />
                 命令详情
               </div>
@@ -409,8 +409,8 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 <Field label="超时时间" value={`${record.commandExtra.timeoutSec} 秒`} small />
               </div>
               <div>
-                <div className="text-xs text-gray-500 mb-1">命令内容</div>
-                <pre className="text-xs font-mono text-gray-700 bg-gray-50 rounded-lg p-3 max-h-[180px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
+                <div className="text-xs text-[#737373] mb-1">命令内容</div>
+                <pre className="text-xs font-mono text-[#334155] bg-gray-50 rounded-lg p-3 max-h-[180px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
                   {record.commandExtra.commandContent}
                 </pre>
               </div>
@@ -439,7 +439,7 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                       {record.commandExtra.testStatus === "success" ? "通过" : "失败"}
                     </div>
                     {record.commandExtra.testMessage && (
-                      <div className="text-gray-600 mt-0.5">{record.commandExtra.testMessage}</div>
+                      <div className="text-[#737373] mt-0.5">{record.commandExtra.testMessage}</div>
                     )}
                   </div>
                 </div>
@@ -450,7 +450,7 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
           {/* 每台 Agent 的结果 */}
           {record.perInstanceResult && record.perInstanceResult.length > 0 && (
             <div>
-              <div className="text-sm font-medium text-gray-700 mb-2">
+              <div className="text-sm font-medium text-[#334155] mb-2">
                 每个 Agent 执行结果（{record.perInstanceResult.length}）
               </div>
               <div
@@ -460,26 +460,26 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">
                         Agent
                       </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide w-[16%]">
+                      <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide w-[16%]">
                         状态
                       </th>
                       {record.action === "command-execute" ? (
                         <>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%]">
                             退出码
                           </th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%]">
                             耗时
                           </th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">
                             输出
                           </th>
                         </>
                       ) : (
-                        <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">
                           备注
                         </th>
                       )}
@@ -489,8 +489,8 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                     {record.perInstanceResult.map((r) => (
                       <tr key={r.instanceId} className="hover:bg-gray-50/50">
                         <td className="px-4 py-3">
-                          <div className="text-sm text-gray-900">{r.instanceName}</div>
-                          <div className="text-xs text-gray-400 font-mono mt-0.5">{r.instanceId}</div>
+                          <div className="text-sm text-[#0A0A0A]">{r.instanceName}</div>
+                          <div className="text-xs text-[#A3A3A3] font-mono mt-0.5">{r.instanceId}</div>
                         </td>
                         <td className="px-4 py-3">
                           {r.status === "success" && (
@@ -504,31 +504,31 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                             </span>
                           )}
                           {r.status === "running" && (
-                            <span className="inline-flex items-center gap-1 text-xs text-blue-600">
+                            <span className="inline-flex items-center gap-1 text-xs text-[#355EF1]">
                               <Loader2 className="w-3.5 h-3.5 animate-spin" /> 进行中
                             </span>
                           )}
                         </td>
                         {record.action === "command-execute" ? (
                           <>
-                            <td className="px-4 py-3 text-sm text-gray-700 font-mono tabular-nums">
+                            <td className="px-4 py-3 text-sm text-[#334155] font-mono tabular-nums">
                               {r.exitCode ?? "—"}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-500 tabular-nums">
+                            <td className="px-4 py-3 text-sm text-[#737373] tabular-nums">
                               {r.durationMs ? `${(r.durationMs / 1000).toFixed(2)}s` : "—"}
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-500">
+                            <td className="px-4 py-3 text-sm text-[#737373]">
                               {r.stderr ? (
                                 <code className="text-xs text-red-600 font-mono break-all">{r.stderr}</code>
                               ) : r.stdout ? (
-                                <code className="text-xs text-gray-700 font-mono break-all">{r.stdout}</code>
+                                <code className="text-xs text-[#334155] font-mono break-all">{r.stdout}</code>
                               ) : (
                                 "—"
                               )}
                             </td>
                           </>
                         ) : (
-                          <td className="px-4 py-3 text-sm text-gray-500">{r.message || "—"}</td>
+                          <td className="px-4 py-3 text-sm text-[#737373]">{r.message || "—"}</td>
                         )}
                       </tr>
                     ))}
@@ -555,10 +555,10 @@ function Field({
   const valueColor =
     highlight === "success" ? "text-green-600"
       : highlight === "error" ? "text-red-600"
-      : "text-gray-900";
+      : "text-[#0A0A0A]";
   return (
     <div>
-      <div className={`${small ? "text-[11px]" : "text-xs"} text-gray-500 mb-1`}>{label}</div>
+      <div className={`${small ? "text-[11px]" : "text-xs"} text-[#737373] mb-1`}>{label}</div>
       <div className={`${small ? "text-xs" : "text-sm"} font-semibold ${valueColor} ${mono ? "font-mono tabular-nums" : ""}`}>
         {value}
       </div>

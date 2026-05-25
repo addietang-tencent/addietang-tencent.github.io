@@ -50,10 +50,10 @@ export default function SyncResultDialog({
             <div>
               <div className="flex items-center gap-2 mb-2.5">
                 <FolderX className="w-4 h-4 text-red-500" />
-                <h4 className="text-sm font-semibold text-gray-900">
+                <h4 className="text-sm font-semibold text-[#0A0A0A]">
                   分组异常
                 </h4>
-                <span className="text-xs text-gray-400 tabular-nums">
+                <span className="text-xs text-[#A3A3A3] tabular-nums">
                   ({result.anomalousGroups.length})
                 </span>
               </div>
@@ -69,13 +69,13 @@ export default function SyncResultDialog({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-[#e5e5e5]">
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
                         分组名称
                       </th>
-                      <th className="text-center px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <th className="text-center px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
                         分组总人数
                       </th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
                         已应用配置
                       </th>
                     </tr>
@@ -86,10 +86,10 @@ export default function SyncResultDialog({
                         key={group.groupId}
                         className="border-b border-gray-50 last:border-b-0"
                       >
-                        <td className="px-4 py-3 text-gray-900 font-medium">
+                        <td className="px-4 py-3 text-[#0A0A0A] font-medium">
                           {group.groupName}
                         </td>
-                        <td className="px-4 py-3 text-center text-gray-600 tabular-nums">
+                        <td className="px-4 py-3 text-center text-[#737373] tabular-nums">
                           {group.memberCount}
                         </td>
                         <td className="px-4 py-3">
@@ -117,10 +117,10 @@ export default function SyncResultDialog({
             <div>
               <div className="flex items-center gap-2 mb-2.5">
                 <Users className="w-4 h-4 text-amber-500" />
-                <h4 className="text-sm font-semibold text-gray-900">
+                <h4 className="text-sm font-semibold text-[#0A0A0A]">
                   用户异常
                 </h4>
-                <span className="text-xs text-gray-400 tabular-nums">
+                <span className="text-xs text-[#A3A3A3] tabular-nums">
                   ({result.anomalousUsers.length})
                 </span>
               </div>
@@ -136,10 +136,10 @@ export default function SyncResultDialog({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-50 border-b border-[#e5e5e5]">
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
                         用户
                       </th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
                         异常原因
                       </th>
                     </tr>
@@ -150,10 +150,10 @@ export default function SyncResultDialog({
                         key={user.userId}
                         className="border-b border-gray-50 last:border-b-0"
                       >
-                        <td className="px-4 py-3 text-gray-900 font-medium">
+                        <td className="px-4 py-3 text-[#0A0A0A] font-medium">
                           {user.displayName}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">
+                        <td className="px-4 py-3 text-[#737373]">
                           {user.reason}
                         </td>
                       </tr>

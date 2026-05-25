@@ -68,8 +68,8 @@ export default function AddToPackageDialog({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3 my-2">
-              <p className="text-sm text-gray-500">
-                将「<span className="font-medium text-gray-800">{skillName}</span>」加入到：
+              <p className="text-sm text-[#737373]">
+                将「<span className="font-medium text-[#0A0A0A]">{skillName}</span>」加入到：
               </p>
               <div className="space-y-2">
                 {packages.length > 0 ? (
@@ -93,7 +93,7 @@ export default function AddToPackageDialog({
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
                           )}
                         </div>
-                        <span className="text-sm font-medium text-gray-800">{pkg.name}</span>
+                        <span className="text-sm font-medium text-[#0A0A0A]">{pkg.name}</span>
                       </div>
                       {pkg.isActive && (
                         <Badge className="text-[10px] bg-green-100 text-green-700 border-green-200 hover:bg-green-100">
@@ -103,7 +103,7 @@ export default function AddToPackageDialog({
                     </button>
                   ))
                 ) : (
-                  <div className="text-center py-6 text-gray-400">
+                  <div className="text-center py-6 text-[#A3A3A3]">
                     <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
                     <p className="text-sm">暂无初始技能包</p>
                     <p className="text-xs mt-1">请先在「技能初始包」Tab 中创建</p>
@@ -130,8 +130,8 @@ export default function AddToPackageDialog({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3 my-2">
-              <p className="text-sm text-gray-600">
-                「{skillName}」已成功加入「<span className="font-medium text-gray-800">{result.packageName}</span>」
+              <p className="text-sm text-[#737373]">
+                「{skillName}」已成功加入「<span className="font-medium text-[#0A0A0A]">{result.packageName}</span>」
               </p>
               {result.isActive ? (
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">

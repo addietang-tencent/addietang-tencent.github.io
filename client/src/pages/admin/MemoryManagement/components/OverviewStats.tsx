@@ -54,7 +54,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
   return (
     <SurfaceCard className="p-5">
       <div className="flex items-center gap-2 mb-4">
-        <h3 className="font-semibold text-gray-900">记忆空间概览</h3>
+        <h3 className="font-semibold text-[#0A0A0A]">记忆空间概览</h3>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -72,20 +72,20 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
                 >
                   <IconComponent className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-sm text-gray-500">{stat.label}</span>
+                <span className="text-sm text-[#737373]">{stat.label}</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900 tabular-nums">
+              <div className="text-2xl font-bold text-[#0A0A0A] tabular-nums">
                 {stat.value}
               </div>
               {stat.subItems && (
                 <div className="flex items-center gap-3 mt-2">
                   {stat.subItems.map((sub) => (
-                    <span key={sub.label} className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <span key={sub.label} className="flex items-center gap-1.5 text-xs text-[#737373]">
                       <span
                         className="inline-block w-1.5 h-1.5 rounded-full"
                         style={{ backgroundColor: sub.color }}
                       />
-                      {sub.label} <span className="font-medium text-gray-700">{sub.value}</span>
+                      {sub.label} <span className="font-medium text-[#334155]">{sub.value}</span>
                     </span>
                   ))}
                 </div>
@@ -98,8 +98,8 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({
       {/* 当全部未开启时，显示引导提示 - 符合设计规范的信息横幅 */}
       {enabledCount === 0 && (
         <div className="mt-4 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-          <Info className="w-4 h-4 text-blue-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-600 leading-relaxed">
+          <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
+          <p className="text-xs text-[#355EF1] leading-relaxed">
             当前暂无实例开启记忆功能。可在各 Agent 的「设置 → Memory」中开启 Free 或 Pro 版本。
           </p>
         </div>

@@ -151,8 +151,8 @@ export const MemoryManagement: React.FC = () => {
     <div className="page-enter">
       {/* 页面头部 */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">记忆管理</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-[#0A0A0A]">记忆管理</h1>
+        <p className="text-sm text-[#737373] mt-1">
           让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持（已支持 OpenClaw、Hermes，其他 Agent 类型敬请期待）。
         </p>
       </div>
@@ -160,8 +160,8 @@ export const MemoryManagement: React.FC = () => {
       {/* 状态提示条 - 初始化中 */}
       {isProActivating && (
         <div className="mb-6 flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-          <Loader2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0 animate-spin" />
-          <p className="text-xs text-blue-600 leading-relaxed">Memory Pro 正在初始化中，预计需要几分钟...</p>
+          <Loader2 className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0 animate-spin" />
+          <p className="text-xs text-[#355EF1] leading-relaxed">Memory Pro 正在初始化中，预计需要几分钟...</p>
         </div>
       )}
 
@@ -188,10 +188,10 @@ export const MemoryManagement: React.FC = () => {
           className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-gray-700">了解 Memory Free 版与 Pro 版的区别</span>
+            <Info className="w-4 h-4 text-[#355EF1]" />
+            <span className="text-sm font-medium text-[#334155]">了解 Memory Free 版与 Pro 版的区别</span>
           </div>
-          <span className="text-sm text-blue-500 flex items-center gap-0.5">
+          <span className="text-sm text-[#355EF1] flex items-center gap-0.5">
             {versionCompareExpanded ? '收起' : '展开'}
             {versionCompareExpanded ? (
               <ChevronUp className="w-4 h-4" />
@@ -216,7 +216,7 @@ export const MemoryManagement: React.FC = () => {
         className="mb-6 bg-white rounded-xl border border-[#e5e5e5]"
       >
         <div className="px-6 py-5 border-b border-gray-50">
-          <h2 className="font-semibold text-gray-900">服务概览</h2>
+          <h2 className="font-semibold text-[#0A0A0A]">服务概览</h2>
         </div>
         <div className="p-5">
           <div className="grid grid-cols-5 gap-4">
@@ -228,7 +228,7 @@ export const MemoryManagement: React.FC = () => {
                 <img src="/assets/admin-memory-management/instance-total.svg" className="shrink-0" />
                 <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">实例总数</span>
               </div>
-              <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.total}</p>
+              <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.total}</p>
             </div>
 
             {/* 未开启 */}
@@ -239,7 +239,7 @@ export const MemoryManagement: React.FC = () => {
                 <img src="/assets/admin-memory-management/instance-disabled.svg" className="shrink-0" />
                 <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">未开启</span>
               </div>
-              <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.noneCount}</p>
+              <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.noneCount}</p>
             </div>
 
             {/* Free 版 */}
@@ -250,7 +250,7 @@ export const MemoryManagement: React.FC = () => {
                 <img src="/assets/admin-memory-management/instance-free.svg" className="shrink-0" />
                 <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">Free 版</span>
               </div>
-              <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.freeCount}</p>
+              <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.freeCount}</p>
             </div>
 
             {/* Pro 版 - 融合配额管理 */}
@@ -291,13 +291,13 @@ export const MemoryManagement: React.FC = () => {
                     // 避免在 Pro 卡片再放一个语义重复的「一键升级」造成认知割裂。
                     <button
                       onClick={(e) => { e.stopPropagation(); setCloseDialogOpen(true); }}
-                      className="whitespace-nowrap text-xs text-gray-500 hover:text-red-600 font-medium hover:underline"
+                      className="whitespace-nowrap text-xs text-[#737373] hover:text-red-600 font-medium hover:underline"
                     >
                       关闭服务
                     </button>
                   )}
                   {isProActivating && (
-                    <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-blue-500">
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-[#355EF1]">
                       <Loader2 className="w-3 h-3 animate-spin" />
                       初始化中
                     </span>
@@ -308,7 +308,7 @@ export const MemoryManagement: React.FC = () => {
               {/* 未开通状态 */}
               {isProInactive && (
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-gray-400 leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>0/0</span>
+                  <span className="text-2xl font-bold text-[#A3A3A3] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>0/0</span>
                 </div>
               )}
 
@@ -324,8 +324,8 @@ export const MemoryManagement: React.FC = () => {
               {isProActive && (
                 <div>
                   <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-2xl font-bold text-blue-600 leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.proCount}/{purchasedSpaces}</span>
-                    <span className="text-xs text-gray-400">已分配 <span className="text-blue-600">{stats.proCount}</span> 个，剩余 <span className="text-blue-600">{purchasedSpaces - stats.proCount}</span> 个可分配</span>
+                    <span className="text-2xl font-bold text-[#355EF1] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.proCount}/{purchasedSpaces}</span>
+                    <span className="text-xs text-[#A3A3A3]">已分配 <span className="text-[#355EF1]">{stats.proCount}</span> 个，剩余 <span className="text-[#355EF1]">{purchasedSpaces - stats.proCount}</span> 个可分配</span>
                   </div>
                   {/* 进度条 */}
                   <div className="mt-2">
@@ -340,7 +340,7 @@ export const MemoryManagement: React.FC = () => {
                       />
                     </div>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-[10px] text-gray-400">{memoryAllocationPercent}% 已用</span>
+                      <span className="text-[10px] text-[#A3A3A3]">{memoryAllocationPercent}% 已用</span>
                       {memoryAllocationPercent >= 80 && (
                         <span className={`text-[10px] ${memoryAllocationPercent >= 100 ? 'text-red-500' : 'text-yellow-500'}`}>
                           {memoryAllocationPercent >= 100 ? '空间已满' : '即将用完'}
@@ -388,16 +388,16 @@ export const MemoryManagement: React.FC = () => {
             <div className="flex-1 min-w-0">
               {/* 能力说明区：chip 作为通用标题 + 本期能力「短期记忆压缩」价值描述 + 使用前提
                   合成为一段，避免多行左对齐问题；后续新增 Pro 能力按同格式在下方追加新段 */}
-              <div className="text-sm text-gray-700 leading-relaxed">
-                <span className="inline-flex items-center px-2 py-0.5 mr-2 rounded-xl border border-blue-200 bg-white/70 text-xs font-semibold text-blue-700 align-middle">
+              <div className="text-sm text-[#334155] leading-relaxed">
+                <span className="inline-flex items-center px-2 py-0.5 mr-2 rounded-xl border border-blue-200 bg-white/70 text-xs font-semibold text-[#355EF1] align-middle">
                   Memory Pro 新能力
                 </span>
-                <span className="font-semibold text-gray-900">短期记忆压缩</span>
-                <span className="text-gray-700">：基于 WideSearch 等数据集测试，长任务可节省 </span>
-                <span className="font-semibold text-blue-600">45%</span>
-                <span className="text-gray-700"> 的 Token 消耗、提高 </span>
-                <span className="font-semibold text-blue-600">20%</span>
-                <span className="text-gray-500"> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）</span>
+                <span className="font-semibold text-[#0A0A0A]">短期记忆压缩</span>
+                <span className="text-[#334155]">：基于 WideSearch 等数据集测试，长任务可节省 </span>
+                <span className="font-semibold text-[#355EF1]">45%</span>
+                <span className="text-[#334155]"> 的 Token 消耗、提高 </span>
+                <span className="font-semibold text-[#355EF1]">20%</span>
+                <span className="text-[#737373]"> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）</span>
               </div>
             </div>
             {(() => {
@@ -421,8 +421,8 @@ export const MemoryManagement: React.FC = () => {
                   title={title}
                   className={`shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-xl border transition-colors whitespace-nowrap ${
                     disabled
-                      ? 'text-gray-400 bg-gray-50 border-gray-200 cursor-not-allowed'
-                      : 'text-blue-700 bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-300'
+                      ? 'text-[#A3A3A3] bg-gray-50 border-gray-200 cursor-not-allowed'
+                      : 'text-[#355EF1] bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-300'
                   }`}
                 >
                   <ArrowUpCircle className="w-3.5 h-3.5" />

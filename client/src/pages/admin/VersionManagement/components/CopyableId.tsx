@@ -36,8 +36,8 @@ export default function CopyableId({ id, primary = false, className = "" }: Prop
   };
 
   const textColor = primary
-    ? "text-blue-600 hover:text-blue-700"
-    : "text-gray-600 hover:text-gray-800";
+    ? "text-[#355EF1] hover:text-[#355EF1]"
+    : "text-[#737373] hover:text-[#0A0A0A]";
 
   return (
     <button

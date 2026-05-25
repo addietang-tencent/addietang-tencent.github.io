@@ -90,8 +90,8 @@ export default function ServerManagement() {
     <>
       <div className="page-enter">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">云服务器管理</h1>
-          <p className="text-sm text-gray-500 mt-1">管理企业版 Agent 所使用的云服务器镜像和安全组策略。</p>
+          <h1 className="text-2xl font-bold text-[#0A0A0A]">云服务器管理</h1>
+          <p className="text-sm text-[#737373] mt-1">管理企业版 Agent 所使用的云服务器镜像和安全组策略。</p>
         </div>
 
         <Tabs defaultValue="images">
@@ -111,7 +111,7 @@ export default function ServerManagement() {
             <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
              >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-                <h2 className="font-semibold text-gray-900">镜像列表</h2>
+                <h2 className="font-semibold text-[#0A0A0A]">镜像列表</h2>
                 <Button size="sm" onClick={() => setShowImportDialog(true)}
                  >
                   <Download className="w-3.5 h-3.5 mr-1.5" />
@@ -121,20 +121,20 @@ export default function ServerManagement() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">镜像 ID / 名称</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">状态</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">硬盘</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作系统</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">创建时间</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">镜像 ID / 名称</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">状态</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">硬盘</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作系统</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">创建时间</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {images.map((img) => (
                     <tr key={img.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-gray-900">{img.name}</p>
-                        <p className="text-xs text-gray-400 font-mono">{img.id}</p>
+                        <p className="text-sm font-medium text-[#0A0A0A]">{img.name}</p>
+                        <p className="text-xs text-[#A3A3A3] font-mono">{img.id}</p>
                       </td>
                       <td className="px-6 py-4">
                         {img.status === "available" ? (
@@ -149,13 +149,13 @@ export default function ServerManagement() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{img.disk}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{img.os}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{img.createTime}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373]">{img.disk}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373]">{img.os}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373]">{img.createTime}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-3">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-400">生效</span>
+                            <span className="text-xs text-[#A3A3A3]">生效</span>
                             <Switch
                               checked={img.active}
                               onCheckedChange={(v) => {
@@ -166,7 +166,7 @@ export default function ServerManagement() {
                           </div>
                           <button
                             onClick={() => { setImages(images.filter((i) => i.id !== img.id)); toast.success("镜像已删除"); }}
-                            className="text-gray-300 hover:text-red-500 transition-colors">
+                            className="text-[#A3A3A3] hover:text-red-500 transition-colors">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -190,7 +190,7 @@ export default function ServerManagement() {
                 <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
                  >
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                    <span className="text-sm font-medium text-gray-700">入站规则</span>
+                    <span className="text-sm font-medium text-[#334155]">入站规则</span>
                     <Button size="sm" variant="outline" onClick={() => openAddRule("inbound")}>
                       <Plus className="w-3.5 h-3.5 mr-1" />
                       添加规则
@@ -199,29 +199,29 @@ export default function ServerManagement() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-50 bg-gray-50/50">
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">来源</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">协议端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">策略</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">备注</th>
-                        <th className="text-right px-6 py-3 text-xs font-medium text-gray-500">操作</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">来源</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">协议端口</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">端口</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">策略</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">备注</th>
+                        <th className="text-right px-6 py-3 text-xs font-medium text-[#737373]">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {inboundRules.map((rule) => (
                         <tr key={rule.id} className="hover:bg-gray-50/50">
-                          <td className="px-6 py-3 text-sm text-gray-700 font-mono">{rule.source}</td>
-                          <td className="px-6 py-3 text-sm text-gray-600">{rule.protocol}</td>
-                          <td className="px-6 py-3 text-sm text-gray-600">{rule.port}</td>
+                          <td className="px-6 py-3 text-sm text-[#334155] font-mono">{rule.source}</td>
+                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.protocol}</td>
+                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.port}</td>
                           <td className="px-6 py-3">
                             <span className={`text-sm font-medium ${rule.policy === "允许" ? "text-green-600" : "text-red-500"}`}>
                               {rule.policy}
                             </span>
                           </td>
-                          <td className="px-6 py-3 text-sm text-gray-400">{rule.remark || "-"}</td>
+                          <td className="px-6 py-3 text-sm text-[#A3A3A3]">{rule.remark || "-"}</td>
                           <td className="px-6 py-3">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditRule(rule, "inbound")} className="text-blue-400 hover:text-blue-600 text-xs">编辑</button>
+                              <button onClick={() => openEditRule(rule, "inbound")} className="text-[#355EF1] hover:text-[#355EF1] text-xs">编辑</button>
                               <button onClick={() => { setInboundRules(inboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}
                                 className="text-red-400 hover:text-red-600 text-xs">删除</button>
                             </div>
@@ -237,7 +237,7 @@ export default function ServerManagement() {
                 <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
                  >
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
-                    <span className="text-sm font-medium text-gray-700">出站规则</span>
+                    <span className="text-sm font-medium text-[#334155]">出站规则</span>
                     <Button size="sm" variant="outline" onClick={() => openAddRule("outbound")}>
                       <Plus className="w-3.5 h-3.5 mr-1" />
                       添加规则
@@ -246,29 +246,29 @@ export default function ServerManagement() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-50 bg-gray-50/50">
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">目标</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">协议端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">策略</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-gray-500">备注</th>
-                        <th className="text-right px-6 py-3 text-xs font-medium text-gray-500">操作</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">目标</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">协议端口</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">端口</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">策略</th>
+                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">备注</th>
+                        <th className="text-right px-6 py-3 text-xs font-medium text-[#737373]">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {outboundRules.map((rule) => (
                         <tr key={rule.id} className="hover:bg-gray-50/50">
-                          <td className="px-6 py-3 text-sm text-gray-700 font-mono">{rule.source}</td>
-                          <td className="px-6 py-3 text-sm text-gray-600">{rule.protocol}</td>
-                          <td className="px-6 py-3 text-sm text-gray-600">{rule.port}</td>
+                          <td className="px-6 py-3 text-sm text-[#334155] font-mono">{rule.source}</td>
+                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.protocol}</td>
+                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.port}</td>
                           <td className="px-6 py-3">
                             <span className={`text-sm font-medium ${rule.policy === "允许" ? "text-green-600" : "text-red-500"}`}>
                               {rule.policy}
                             </span>
                           </td>
-                          <td className="px-6 py-3 text-sm text-gray-400">{rule.remark || "-"}</td>
+                          <td className="px-6 py-3 text-sm text-[#A3A3A3]">{rule.remark || "-"}</td>
                           <td className="px-6 py-3">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditRule(rule, "outbound")} className="text-blue-400 hover:text-blue-600 text-xs">编辑</button>
+                              <button onClick={() => openEditRule(rule, "outbound")} className="text-[#355EF1] hover:text-[#355EF1] text-xs">编辑</button>
                               <button onClick={() => { setOutboundRules(outboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}
                                 className="text-red-400 hover:text-red-600 text-xs">删除</button>
                             </div>

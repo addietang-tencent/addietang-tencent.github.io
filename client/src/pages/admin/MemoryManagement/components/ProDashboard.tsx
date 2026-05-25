@@ -92,7 +92,7 @@ const memoryStatusConfig = {
     label: '未开启', 
     color: 'bg-gray-400', 
     bgColor: 'bg-gray-50', 
-    textColor: 'text-gray-600',
+    textColor: 'text-[#737373]',
     icon: '⚪'
   },
 };
@@ -228,8 +228,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         {isInitializing && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-              <span className="text-sm text-blue-700">
+              <Loader2 className="w-5 h-5 text-[#355EF1] animate-spin" />
+              <span className="text-sm text-[#355EF1]">
                 Memory Pro 正在初始化中，预计需要几分钟...
               </span>
             </div>
@@ -277,19 +277,19 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-bold text-gray-900">记忆管理</h1>
+              <h1 className="text-2xl font-bold text-[#0A0A0A]">记忆管理</h1>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-full text-xs font-semibold">
                 <Brain className="w-3.5 h-3.5" />
                 MEMORY PRO
               </span>
               {isInitializing && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded text-xs">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-[#355EF1] rounded text-xs">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   初始化中
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#737373]">
               基于腾讯云向量数据库的企业级记忆服务，统一管理所有 Agent 的记忆资源。由腾讯云数据库 Agent Memory 服务提供支持。
             </p>
           </div>
@@ -321,8 +321,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
           {/* 初始化遮罩 */}
           {isInitializing && (
             <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+              <div className="flex items-center gap-2 text-sm text-[#737373]">
+                <Loader2 className="w-4 h-4 animate-spin text-[#355EF1]" />
                 <span>数据加载中...</span>
               </div>
             </div>
@@ -331,7 +331,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className="text-xl">📦</span>
-              <span className="font-semibold text-gray-900">Memory 分配情况</span>
+              <span className="font-semibold text-[#0A0A0A]">Memory 分配情况</span>
             </div>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -374,17 +374,17 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
             </>
           ) : (
             <>
-              <div className="text-3xl font-bold text-blue-600 mb-1">
+              <div className="text-3xl font-bold text-[#355EF1] mb-1">
                 {formatNumber(proUsedCount)}/{formatNumber(purchasedSpaces)}
               </div>
-              <div className="text-sm text-gray-500 mb-4">
-                已分配 <strong className="text-gray-700">{formatNumber(proUsedCount)}</strong> 个 Pro 记忆空间，剩余 <strong className="text-gray-700">{formatNumber(purchasedSpaces - proUsedCount)}</strong> 个可分配
+              <div className="text-sm text-[#737373] mb-4">
+                已分配 <strong className="text-[#334155]">{formatNumber(proUsedCount)}</strong> 个 Pro 记忆空间，剩余 <strong className="text-[#334155]">{formatNumber(purchasedSpaces - proUsedCount)}</strong> 个可分配
               </div>
               
               <div className="mb-3">
                 <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-gray-500">Pro 额度使用率</span>
-                  <span className="font-semibold text-blue-600">{memoryAllocationPercent}%</span>
+                  <span className="text-[#737373]">Pro 额度使用率</span>
+                  <span className="font-semibold text-[#355EF1]">{memoryAllocationPercent}%</span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div 
@@ -422,8 +422,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         {/* 初始化遮罩 */}
         {isInitializing && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+            <div className="flex items-center gap-2 text-sm text-[#737373]">
+              <Loader2 className="w-4 h-4 animate-spin text-[#355EF1]" />
               <span>正在加载实例状态...</span>
             </div>
           </div>
@@ -437,8 +437,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                 <Gem className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="font-semibold text-gray-900">实例记忆状态</span>
-                <span className="ml-2 text-xs text-gray-400">（只读）</span>
+                <span className="font-semibold text-[#0A0A0A]">实例记忆状态</span>
+                <span className="ml-2 text-xs text-[#A3A3A3]">（只读）</span>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -449,7 +449,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                 disabled={isInitializing}
               >
                 <SelectTrigger className="w-[140px]">
-                  <Filter className="w-4 h-4 mr-2 text-gray-400" />
+                  <Filter className="w-4 h-4 mr-2 text-[#A3A3A3]" />
                   <SelectValue placeholder="筛选版本" />
                 </SelectTrigger>
                 <SelectContent>
@@ -473,7 +473,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               </Select>
               
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
                 <Input
                   placeholder="搜索 Agent 名称或 ID"
                   value={searchQuery}
@@ -485,7 +485,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
               <button
                 onClick={handleRefresh}
                 disabled={refreshing || isInitializing}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="刷新列表"
               >
                 <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
@@ -498,10 +498,10 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 tracking-wide">实例名称/ID</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Memory 状态</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">记忆空间 ID</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">更新时间</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] tracking-wide">实例名称/ID</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">Memory 状态</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">记忆空间 ID</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">更新时间</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -516,7 +516,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                 </>
               ) : paginatedList.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
                     暂无符合条件的实例
                   </td>
                 </tr>
@@ -538,8 +538,8 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                             {oc.name.charAt(0)}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900">{oc.name}</span>
-                            <span className="font-mono text-xs text-gray-400">{oc.id}</span>
+                            <span className="text-sm font-medium text-[#0A0A0A]">{oc.name}</span>
+                            <span className="font-mono text-xs text-[#A3A3A3]">{oc.id}</span>
                           </div>
                         </div>
                       </td>
@@ -550,10 +550,10 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-mono text-sm text-gray-500">{oc.memoryId}</span>
+                        <span className="font-mono text-sm text-[#737373]">{oc.memoryId}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500">{oc.updatedAt}</span>
+                        <span className="text-sm text-[#737373]">{oc.updatedAt}</span>
                       </td>
                     </tr>
                   );
@@ -575,18 +575,18 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
             </>
           ) : (
             <>
-              <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-4 text-xs text-[#737373]">
                 <span>状态统计：</span>
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-green-500"></span>
                   Pro版已开启 {statusStats.pro} 个
                 </span>
-                <span className="text-gray-300">|</span>
+                <span className="text-[#A3A3A3]">|</span>
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                   Free版已开启 {statusStats.free} 个
                 </span>
-                <span className="text-gray-300">|</span>
+                <span className="text-[#A3A3A3]">|</span>
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-gray-400"></span>
                   未开启 {statusStats.none} 个

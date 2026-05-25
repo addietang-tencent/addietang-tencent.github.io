@@ -268,7 +268,7 @@ function ScopePopover({
                 e.stopPropagation();
                 toggleExpand(node.id);
               }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
             >
               {isExpanded ? (
                 <ChevronDown className="w-3 h-3" />
@@ -292,7 +292,7 @@ function ScopePopover({
             {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
             {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
           </span>
-          <span className="text-xs text-gray-700 truncate">{node.name}</span>
+          <span className="text-xs text-[#334155] truncate">{node.name}</span>
         </button>
         {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
       </div>
@@ -390,7 +390,7 @@ function ScopePopover({
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <button
-            className="self-center text-gray-300 hover:text-blue-500 transition-colors"
+            className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
             title="编辑应用范围"
           >
             <Pencil className="w-3 h-3" />
@@ -422,11 +422,11 @@ function ScopePopover({
                 {!hasGroups ? (
                   /* 无分组空状态 */
                   <div className="text-center py-5 px-2">
-                    <p className="text-xs text-gray-400 leading-relaxed">
+                    <p className="text-xs text-[#A3A3A3] leading-relaxed">
                       暂无分组，请前往
                       <a
                         href="/admin/members"
-                        className="text-blue-500 hover:text-blue-600 hover:underline mx-0.5"
+                        className="text-[#355EF1] hover:text-[#355EF1] hover:underline mx-0.5"
                         onClick={(e) => { e.preventDefault(); setOpen(false); window.location.href = "/admin/members"; }}
                       >
                         用户管理
@@ -443,7 +443,7 @@ function ScopePopover({
                       {selectedTags.map((tag) => (
                         <span
                           key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] rounded-xl border border-blue-100 shrink-0 max-w-[200px]"
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] rounded-xl border border-blue-100 shrink-0 max-w-[200px]"
                         >
                           <span className="truncate">{tag.path}</span>
                           <button
@@ -464,7 +464,7 @@ function ScopePopover({
                               const idsToRemove = targetNode ? new Set(getDescendantIds(targetNode)) : new Set([tag.id]);
                               setDraftGroupIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
                             }}
-                            className="text-blue-400 hover:text-blue-600 shrink-0"
+                            className="text-[#355EF1] hover:text-[#355EF1] shrink-0"
                           >
                             <X className="w-2.5 h-2.5" />
                           </button>
@@ -475,13 +475,13 @@ function ScopePopover({
                         placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-gray-400"
+                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-[#A3A3A3]"
                       />
                       {/* 清除全部按钮：hover 时显示 */}
                       {(selectedTags.length > 0 || searchQuery) && (
                         <button
                           onClick={handleClearSelection}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] opacity-0 group-hover:opacity-100 transition-opacity"
                           title="清除全部"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -498,7 +498,7 @@ function ScopePopover({
                         if (!anyVisible) return null;
                         return (
                           <div key={bucket} className="mb-1">
-                            <div className="px-2 py-1 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                            <div className="px-2 py-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wider">
                               {BUCKET_LABELS[bucket]}
                             </div>
                             {trees.map((root) => renderTreeNode(root, 0))}
@@ -710,7 +710,7 @@ export default function ModelConfig() {
     <>
       <div className="page-enter space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">模型配置</h1>
+          <h1 className="text-2xl font-bold text-[#0A0A0A]">模型配置</h1>
           <Alert variant="operation-info" className="mt-2">
             <AlertOperationInfoIcon />
             <AlertDescription>
@@ -728,7 +728,7 @@ export default function ModelConfig() {
         <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
          >
           <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-            <h2 className="font-semibold text-gray-900">模型列表</h2>
+            <h2 className="font-semibold text-[#0A0A0A]">模型列表</h2>
             <Button size="sm" onClick={openAddDialog}
              >
               <Plus className="w-3.5 h-3.5 mr-1.5" />
@@ -739,18 +739,18 @@ export default function ModelConfig() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[22%]">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">模型 URL</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[13%]">每日 Tokens 上限</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[8%]">用户可见</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">默认配置</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[10%]">
+                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[22%]">模型名称</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">模型 URL</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[13%]">每日 Tokens 上限</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[8%]">用户可见</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[10%]">默认配置</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[10%]">
                   <div className="flex items-center gap-1">
                     应用范围
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="cursor-default">
-                          <Info className="w-3 h-3 text-gray-400" />
+                          <Info className="w-3 h-3 text-[#A3A3A3]" />
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
@@ -759,7 +759,7 @@ export default function ModelConfig() {
                     </Tooltip>
                   </div>
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[5%]">操作</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[5%]">操作</th>
               </tr>
             </thead>
             <tbody>
@@ -767,8 +767,8 @@ export default function ModelConfig() {
                 <tr key={model.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{model.name}</p>
-                      <p className="text-xs text-gray-400">{model.version}</p>
+                      <p className="text-sm font-medium text-[#0A0A0A]">{model.name}</p>
+                      <p className="text-xs text-[#A3A3A3]">{model.version}</p>
                       <div className="mt-1">
                         {model.provider === CUSTOM_PROVIDER_VALUE ? (
                           // 自定义模型：Toggle Tag，点击弹出二次确认
@@ -777,7 +777,7 @@ export default function ModelConfig() {
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={() => setMultimodalConfirm({ model, enable: false })}
-                                  className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100 hover:bg-red-50 hover:text-red-400 hover:border-red-100 transition-colors cursor-pointer"
+                                  className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100 hover:bg-red-50 hover:text-red-400 hover:border-red-100 transition-colors cursor-pointer"
                                 >
                                   <span className="group-hover:hidden">多模态</span>
                                   <span className="hidden group-hover:inline-flex items-center gap-0.5">
@@ -793,7 +793,7 @@ export default function ModelConfig() {
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={() => setMultimodalConfirm({ model, enable: true })}
-                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-gray-400 border border-dashed border-gray-300 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-[#A3A3A3] border border-dashed border-gray-300 hover:text-[#355EF1] hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
                                 >
                                   <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                   多模态
@@ -804,20 +804,20 @@ export default function ModelConfig() {
                           )
                         ) : model.isMultimodal ? (
                           // 非自定义模型：只读 Badge
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-500 border border-blue-100">多模态</span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100">多模态</span>
                         ) : null}
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <span className="text-sm text-gray-600 font-mono whitespace-nowrap">{model.modelUrl}</span>
+                    <span className="text-sm text-[#737373] font-mono whitespace-nowrap">{model.modelUrl}</span>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm text-gray-700">{model.dailyLimit.toLocaleString()}</span>
+                      <span className="text-sm text-[#334155]">{model.dailyLimit.toLocaleString()}</span>
                       <button
                         onClick={() => openEditQuota(model)}
-                        className="text-gray-400 hover:text-blue-500 transition-colors"
+                        className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
                         title="编辑配额"
                       >
                         <Pencil className="w-3 h-3" />
@@ -870,7 +870,7 @@ export default function ModelConfig() {
                   <td className="px-4 py-4 align-middle">
                     <button
                       onClick={() => setDeleteConfirmModel(model)}
-                      className="text-gray-300 hover:text-red-500 transition-colors">
+                      className="text-[#A3A3A3] hover:text-red-500 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </td>

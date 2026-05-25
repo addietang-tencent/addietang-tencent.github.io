@@ -95,12 +95,12 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
       >
         {/* 头部 */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5]">
-          <h3 className="text-lg font-semibold text-gray-900">一键启用</h3>
+          <h3 className="text-lg font-semibold text-[#0A0A0A]">一键启用</h3>
           <button
             onClick={handleClose}
             className="p-1 rounded-xl hover:bg-gray-100 transition-colors"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5 text-[#A3A3A3]" />
           </button>
         </div>
 
@@ -108,9 +108,9 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
           {/* ========== 状态 1：检测中 ========== */}
           {status === 'detecting' && (
             <div className="py-10 flex flex-col items-center justify-center gap-3">
-              <Loader2 className="w-7 h-7 text-blue-500 animate-spin" />
-              <p className="text-sm text-gray-600">正在检测需要升级的 Agent...</p>
-              <p className="text-xs text-gray-400">请稍候</p>
+              <Loader2 className="w-7 h-7 text-[#355EF1] animate-spin" />
+              <p className="text-sm text-[#737373]">正在检测需要升级的 Agent...</p>
+              <p className="text-xs text-[#A3A3A3]">请稍候</p>
             </div>
           )}
 
@@ -120,10 +120,10 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
               <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
                 <CheckCircle2 className="w-7 h-7 text-emerald-500" />
               </div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[#0A0A0A]">
                 当前所有 Agent 的记忆服务均为最新版本
               </p>
-              <p className="text-xs text-gray-500 leading-relaxed max-w-[360px]">
+              <p className="text-xs text-[#737373] leading-relaxed max-w-[360px]">
                 您无需进行任何操作。Pro 版 Agent（OpenClaw 类型）已具备 Pro 版全部最新能力。
               </p>
             </div>
@@ -132,8 +132,8 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
           {/* ========== 状态 3：有可升级 Agent ========== */}
           {status === 'has-upgradable' && (
             <>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                检测到 <span className="font-semibold text-blue-600">{pendingCount}</span> 个 OpenClaw 类型 Pro 版 Agent 可升级至最新版本，升级后即可使用 <span className="font-medium text-gray-900">Pro 版最新能力</span>。
+              <p className="text-sm text-[#737373] leading-relaxed">
+                检测到 <span className="font-semibold text-[#355EF1]">{pendingCount}</span> 个 OpenClaw 类型 Pro 版 Agent 可升级至最新版本，升级后即可使用 <span className="font-medium text-[#0A0A0A]">Pro 版最新能力</span>。
               </p>
 
               {/* 影响说明 —— 只讲操作本身的副作用与边界 */}
@@ -159,7 +159,7 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
             <>
               <button
                 onClick={handleClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[#334155] bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 取消
               </button>
@@ -182,7 +182,7 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
           {status === 'detecting' && (
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[#334155] bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
             >
               取消
             </button>

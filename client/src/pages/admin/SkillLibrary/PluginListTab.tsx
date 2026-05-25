@@ -278,7 +278,7 @@ export default function PluginListTab() {
       {/* 工具栏 */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A3A3A3] w-4 h-4" />
           <Input
             placeholder="搜索插件名称或描述..."
             value={searchQuery}
@@ -307,7 +307,7 @@ export default function PluginListTab() {
       {/* 空状态 */}
       {sortedPlugins.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-500">还没有发布任何插件</p>
+          <p className="text-[#737373]">还没有发布任何插件</p>
           <Button onClick={() => setUploadDialogOpen(true)} className="mt-4">+ 发布插件</Button>
         </div>
       )}
@@ -320,12 +320,12 @@ export default function PluginListTab() {
             return (
               <div key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-semibold text-gray-900 flex-1 truncate">{plugin.name}</h3>
-                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full shrink-0">v{plugin.version}</span>
+                  <h3 className="font-semibold text-[#0A0A0A] flex-1 truncate">{plugin.name}</h3>
+                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full shrink-0">v{plugin.version}</span>
                 </div>
                 <Tooltip delayDuration={1000}>
                   <TooltipTrigger asChild>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4 cursor-default" style={{ minHeight: '2.5rem' }}>{plugin.description || '-'}</p>
+                    <p className="text-sm text-[#737373] line-clamp-2 mb-4 cursor-default" style={{ minHeight: '2.5rem' }}>{plugin.description || '-'}</p>
                   </TooltipTrigger>
                   {plugin.description && plugin.description.length > 40 && (
                     <TooltipContent side="bottom" className="max-w-[320px]">
@@ -354,14 +354,14 @@ export default function PluginListTab() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '18%' }}>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '18%' }}>
                   名称/Slug
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '15%' }}>状态/下发动态</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '7%' }}>版本号</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '30%' }}>描述</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '12%' }}>发布时间</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '18%' }}>操作</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] tracking-wide" style={{ width: '15%' }}>状态/下发动态</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '7%' }}>版本号</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '30%' }}>描述</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '12%' }}>发布时间</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '18%' }}>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -372,21 +372,21 @@ export default function PluginListTab() {
                 const hasDistribution = summary && summary.lastDistributionStatus !== 'not_distributed';
                 let statusLine1 = '正常';
                 let statusLine2 = '未下发';
-                let statusLine1Color = 'text-gray-700';
-                let statusLine2Color = 'text-gray-400';
+                let statusLine1Color = 'text-[#334155]';
+                let statusLine2Color = 'text-[#A3A3A3]';
                 let statusLine2Bg = '';
                 let statusLine2HoverBg = '';
                 if (summary) {
                   if (summary.lastDistributionStatus === 'distributing') {
                     statusLine1 = '下发中';
-                    statusLine1Color = 'text-blue-600';
+                    statusLine1Color = 'text-[#355EF1]';
                     statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                    statusLine2Color = 'text-blue-600';
+                    statusLine2Color = 'text-[#355EF1]';
                     statusLine2Bg = 'bg-blue-50';
                     statusLine2HoverBg = 'hover:bg-blue-100';
                   } else if (hasDistribution) {
                     statusLine1 = '正常';
-                    statusLine1Color = 'text-gray-700';
+                    statusLine1Color = 'text-[#334155]';
                     const total = summary.lastDistributionInstanceCount || 0;
                     const success = summary.lastDistributionSuccessCount ?? total;
                     statusLine2 = `已下发(${success}/${total}成功)`;
@@ -406,8 +406,8 @@ export default function PluginListTab() {
                   <tr key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group">
                     {/* 名称 / Slug */}
                     <td className="px-4 py-3">
-                      <div className="font-medium text-gray-900 truncate">{plugin.name}</div>
-                      <div className="text-xs text-gray-400 font-mono mt-0.5 truncate">{plugin.slug}</div>
+                      <div className="font-medium text-[#0A0A0A] truncate">{plugin.name}</div>
+                      <div className="text-xs text-[#A3A3A3] font-mono mt-0.5 truncate">{plugin.slug}</div>
                     </td>
                     {/* 状态/下发动态 */}
                     <td className="pl-4 pr-2 py-3">
@@ -423,7 +423,7 @@ export default function PluginListTab() {
                     </td>
                     {/* 版本号 */}
                     <td className="px-4 py-3">
-                      <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                      <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
                         v{plugin.version}
                       </span>
                     </td>
@@ -432,7 +432,7 @@ export default function PluginListTab() {
                       <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
                           <span
-                            className="text-sm text-gray-600 cursor-default block"
+                            className="text-sm text-[#737373] cursor-default block"
                             style={{
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
@@ -452,7 +452,7 @@ export default function PluginListTab() {
                     </td>
                     {/* 发布时间 */}
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-[#737373]">
                         {plugin.uploadTime.toLocaleDateString('zh-CN')}
                       </span>
                     </td>

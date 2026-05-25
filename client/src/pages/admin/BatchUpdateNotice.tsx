@@ -286,7 +286,7 @@ export default function BatchUpdateNotice({
                     )}
                   </div>
                   {!push && (
-                    <div className="mt-3 flex items-center justify-end">
+                    <div className="mt-3 flex items-center justify-start">
                       <Button
                         size="sm"
                         variant="outline"

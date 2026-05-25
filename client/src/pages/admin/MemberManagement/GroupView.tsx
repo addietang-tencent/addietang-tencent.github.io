@@ -60,6 +60,12 @@ const ONEID_ALL_DEPT_NODES: Array<{
 interface GroupViewProps {
   /** 是否开启 OneID 模式。OneID：使用 oneid-dept + oneid-group；普通：使用 manual */
   hasOneid: boolean;
+  /**
+   * OneID 中是否存在部门数据。仅在 `hasOneid=true` 时生效；为 false 时：
+   * - 左树隐藏「组织架构/部门」整段
+   * - 右侧成员表隐藏「部门」列与"部门："信息
+   */
+  hasDeptData?: boolean;
   users: UserOrg[];
   overrides: Record<string, UserOverrideInfo>;
   onResolveConflict: (userId: string, winnerResourceId: string) => void;
@@ -73,6 +79,7 @@ interface GroupViewProps {
 
 export default function GroupView({
   hasOneid,
+  hasDeptData = true,
   users,
   overrides,
   onResolveConflict,
@@ -665,7 +672,7 @@ export default function GroupView({
                 users={effectiveUsers}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
-                deptSynced={hasOneid ? deptSynced : undefined}
+                deptSynced={hasOneid && hasDeptData ? deptSynced : undefined}
                 onSyncDepts={handleSyncDepts}
                 isSyncingDepts={isSyncingDepts}
                 hasOneid={hasOneid}
@@ -753,6 +760,7 @@ export default function GroupView({
               nodePath="未分组"
               users={groupUsers}
               hasOneid={hasOneid}
+              hasDeptData={hasDeptData}
               isManualMode={!hasOneid}
             />
           ) : selectedGroup ? (
@@ -765,6 +773,7 @@ export default function GroupView({
               nodePath={selectedNode?.path ?? selectedGroup.name}
               users={groupUsers}
               hasOneid={hasOneid}
+              hasDeptData={hasDeptData}
               isManualMode={!selectedGroup.readonly}
               allUsers={effectiveUsers}
               onAddUsersToGroup={handleAddUsersToGroup}

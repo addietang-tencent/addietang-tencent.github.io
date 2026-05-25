@@ -3,7 +3,10 @@
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side (浅灰背景)
  *
  * 布局：左宽右窄双栏
- *   左侧：6 步分步引导（步骤 1-2 内嵌表单，步骤 3-6 跳转引导）
+ *   左侧：分步引导
+ *     - custom 模式：8 步（步骤 1-2 内嵌表单，步骤 3-8 跳转引导）
+ *     - unified 模式：9 步（在第 3 步「导入企业用户」后插入「设置用户登录方式」作为第 4 步，
+ *                          原第 4-8 步顺延为 5-9）
  *   右侧上：平台基础信息（只读）
  *   右侧下：产品动态时间轴
  */
@@ -27,14 +30,21 @@ import {
   Pencil,
   BookOpen,
   ArrowUpRight,
+  ExternalLink,
 } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/mockData";
+import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
 type TokenLimit = number | "unlimited";
 
 // ─── Mock 完成状态（模拟部分完成、部分未完成） ────────────────────────────────
+//
+// 注：以下 1-8 为「原始业务步骤」编号（custom 模式下即页面所见的角标）。
+// 在 unified 模式下，会在原第 3 步「导入企业用户」之后插入「设置用户登录方式」
+// 作为第 4 步，原第 4-8 步顺延为第 5-9 步（仅角标顺延，业务键 1-8 维持不变）。
+// 新增的「登录方式」步骤完成态用独立的 key `loginMethod` 标识。
 
 const MOCK_STEP_STATUS: Record<number, boolean> = {
   1: true,  // 平台名称与品牌 — 已完成（有默认值）
@@ -46,6 +56,12 @@ const MOCK_STEP_STATUS: Record<number, boolean> = {
   7: true,  // 配置私有网络 — 已完成（默认有预设VPC）
   8: false, // 配置安全组 — 未完成
 };
+
+// unified 模式新增步骤：设置用户登录方式（默认未完成）
+const MOCK_LOGIN_METHOD_DONE = false;
+
+// 腾讯统一身份平台外链（unified 模式下「设置用户登录方式」步骤跳转目标）
+const TENCENT_ONEID_URL = "https://console.cloud.tencent.com/cam/oneid";
 
 // ─── 产品动态 Mock 数据 ───────────────────────────────────────────────────────
 
@@ -314,6 +330,11 @@ function InlineQuotaField({
 
 export default function BasicInfo() {
   const [, navigate] = useLocation();
+  const { isUnified } = useAdminMode();
+
+  // 角标顺延：unified 模式下，原始业务步骤 4-8 在页面上展示为 5-9
+  // （因为新插入的「设置用户登录方式」占据了第 4 位）
+  const displayStep = (origin: number) => (isUnified && origin >= 4 ? origin + 1 : origin);
 
   // ── 步骤 1：平台名称与品牌 ──
   const [siteName, setSiteName] = useState("A公司企业版OpenClaw");
@@ -349,8 +370,10 @@ export default function BasicInfo() {
     }
   };
 
-  // ── 汇总：未完成步骤数 ──
-  const incompleteCount = Object.values(MOCK_STEP_STATUS).filter((v) => !v).length;
+  // ── 汇总：未完成步骤数（unified 模式额外计入「设置用户登录方式」） ──
+  const incompleteCount =
+    Object.values(MOCK_STEP_STATUS).filter((v) => !v).length +
+    (isUnified && !MOCK_LOGIN_METHOD_DONE ? 1 : 0);
 
   return (
     <div className="page-enter">
@@ -371,7 +394,7 @@ export default function BasicInfo() {
 
           {/* 步骤 1：平台名称与品牌 */}
           <StepCard
-            step={1}
+            step={displayStep(1)}
             done={MOCK_STEP_STATUS[1]}
             title="设置平台名称与品牌"
             description="配置展示在用户端的网站名称和 Logo"
@@ -446,7 +469,7 @@ export default function BasicInfo() {
 
           {/* 步骤 2：用户默认配额 */}
           <StepCard
-            step={2}
+            step={displayStep(2)}
             done={MOCK_STEP_STATUS[2]}
             title="配置用户默认配额"
             description="设置新用户创建时自动应用的 Agent 数量上限和每日 Tokens 上限，有效控制企业成本"
@@ -471,7 +494,7 @@ export default function BasicInfo() {
 
           {/* 步骤 3：导入企业用户 */}
           <StepCard
-            step={3}
+            step={displayStep(3)}
             done={MOCK_STEP_STATUS[3]}
             title="导入企业用户"
             description="前往用户管理页添加企业用户，添加后即可使用平台"
@@ -487,9 +510,29 @@ export default function BasicInfo() {
             </Button>
           </StepCard>
 
-          {/* 步骤 4：配置模型 */}
+          {/* 步骤 4（仅 unified 模式）：设置用户登录方式 */}
+          {isUnified && (
+            <StepCard
+              step={4}
+              done={MOCK_LOGIN_METHOD_DONE}
+              title="设置用户登录方式"
+              description="前往腾讯统一身份平台设置当前平台用户的登录方式"
+            >
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => window.open(TENCENT_ONEID_URL, "_blank", "noopener,noreferrer")}
+                className="text-xs flex items-center gap-1.5 text-gray-600"
+              >
+                前往腾讯统一身份
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Button>
+            </StepCard>
+          )}
+
+          {/* 步骤 4 / 5：配置模型 */}
           <StepCard
-            step={4}
+            step={displayStep(4)}
             done={MOCK_STEP_STATUS[4]}
             title="配置至少一个模型"
             description="为用户端配置至少一个全部用户可见的 AI 模型，用户创建 OpenClaw 时将从中选择"
@@ -508,9 +551,9 @@ export default function BasicInfo() {
             </div>
           </StepCard>
 
-          {/* 步骤 5：配置通道 */}
+          {/* 步骤 5 / 6：配置通道 */}
           <StepCard
-            step={5}
+            step={displayStep(5)}
             done={MOCK_STEP_STATUS[5]}
             title="配置至少一个通道"
             description="为用户端配置至少一个全部用户启用的通道，用户创建 OpenClaw 时可选择对话平台"
@@ -529,9 +572,9 @@ export default function BasicInfo() {
             </div>
           </StepCard>
 
-          {/* 步骤 6：配置镜像 */}
+          {/* 步骤 6 / 7：配置镜像 */}
           <StepCard
-            step={6}
+            step={displayStep(6)}
             done={MOCK_STEP_STATUS[6]}
             title="配置至少一个镜像"
             description="为用户端配置至少一个全部用户启用的镜像，系统默认已启用公共镜像"
@@ -550,9 +593,9 @@ export default function BasicInfo() {
             </div>
           </StepCard>
 
-          {/* 步骤 7：配置私有网络 */}
+          {/* 步骤 7 / 8：配置私有网络 */}
           <StepCard
-            step={7}
+            step={displayStep(7)}
             done={MOCK_STEP_STATUS[7]}
             title="配置私有网络"
             description="配置私有网络的预设策略，系统默认已创建一个预设 VPC"
@@ -571,9 +614,9 @@ export default function BasicInfo() {
             </div>
           </StepCard>
 
-          {/* 步骤 8：配置安全组 */}
+          {/* 步骤 8 / 9：配置安全组 */}
           <StepCard
-            step={8}
+            step={displayStep(8)}
             done={MOCK_STEP_STATUS[8]}
             title="配置安全组"
             description="为 OpenClaw 云设备配置安全组规则，确保访问安全"

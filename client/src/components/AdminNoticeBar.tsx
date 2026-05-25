@@ -12,9 +12,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
+import { useAdminMode } from "@/contexts/AdminModeContext";
 
-// ─── 基础配置 6 项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
-const STEP_STATUS: Record<number, { label: string; done: boolean }> = {
+// ─── 基础配置项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
+// 说明：
+//   - custom 模式：8 项（步骤 1-8）
+//   - unified 模式：在原第 3 项「导入企业用户」之后插入「设置用户登录方式」作为第 4 步，
+//                   原第 4-8 项顺延为第 5-9 步，共 9 项。
+const STEP_STATUS_BASE: Record<number, { label: string; done: boolean }> = {
   1: { label: "设置平台名称与品牌", done: true },
   2: { label: "配置用户默认配额", done: true },
   3: { label: "导入企业用户", done: false },
@@ -24,6 +29,28 @@ const STEP_STATUS: Record<number, { label: string; done: boolean }> = {
   7: { label: "配置私有网络", done: true },
   8: { label: "配置安全组", done: false },
 };
+
+// unified 模式下第 4 步：设置用户登录方式
+const UNIFIED_LOGIN_STEP: { label: string; done: boolean } = {
+  label: "设置用户登录方式",
+  done: false,
+};
+
+function buildStepStatus(isUnified: boolean): Record<number, { label: string; done: boolean }> {
+  if (!isUnified) return STEP_STATUS_BASE;
+  // 顺延：1,2,3 保留 → 4 = 新增登录方式 → 5..9 = 原 4..8
+  return {
+    1: STEP_STATUS_BASE[1],
+    2: STEP_STATUS_BASE[2],
+    3: STEP_STATUS_BASE[3],
+    4: UNIFIED_LOGIN_STEP,
+    5: STEP_STATUS_BASE[4],
+    6: STEP_STATUS_BASE[5],
+    7: STEP_STATUS_BASE[6],
+    8: STEP_STATUS_BASE[7],
+    9: STEP_STATUS_BASE[8],
+  };
+}
 
 // ─── 腾讯云配额问题 mock 数据 ─────────────────────────────────────────────────
 const QUOTA_ALERTS = [
@@ -66,11 +93,11 @@ interface NoticeItem {
 }
 
 // ─── 构建通知列表 ─────────────────────────────────────────────────────────────
-function buildNotices(): NoticeItem[] {
+function buildNotices(stepStatus: Record<number, { label: string; done: boolean }>): NoticeItem[] {
   const notices: NoticeItem[] = [];
 
   // 1. 基础配置未完成
-  const incompleteSteps = Object.values(STEP_STATUS).filter((s) => !s.done);
+  const incompleteSteps = Object.values(stepStatus).filter((s) => !s.done);
   if (incompleteSteps.length > 0) {
     const names = incompleteSteps.map((s) => s.label).join("、");
     notices.push({
@@ -114,8 +141,10 @@ function buildNotices(): NoticeItem[] {
 const AUTO_PLAY_INTERVAL = 5000;
 
 export default function AdminNoticeBar() {
+  const { isUnified } = useAdminMode();
   // [004] 每次渲染都重算通知列表，以便存量企业 ack 状态变化时能即时从通知条消失
-  const NOTICES = buildNotices();
+  const STEP_STATUS = buildStepStatus(isUnified);
+  const NOTICES = buildNotices(STEP_STATUS);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 

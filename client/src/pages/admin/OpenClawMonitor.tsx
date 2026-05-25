@@ -2879,7 +2879,7 @@ export default function AgentMonitor() {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <div className="w-full px-3 py-2 text-sm border border-[#e5e5e5] rounded-xl bg-gray-50 text-[#A3A3A3] cursor-not-allowed truncate">
+                  <div className="w-full h-9 px-3 flex items-center text-sm border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-[#A3A3A3] cursor-not-allowed truncate">
                     请先选择标签键
                   </div>
                 )}

@@ -12,6 +12,7 @@ import React, { useMemo, useState, useRef, useEffect, useCallback } from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -532,27 +533,11 @@ export default function NodeContentPanel({
 
       {/* Tab 切换 */}
       <div className="px-6 pt-3">
-        <div className="inline-flex items-center rounded-xl p-1 gap-0.5 bg-white border border-gray-200 h-9">
-          <button
-            type="button"
-            onClick={() => setTab("members")}
-            className={`h-7 px-3 rounded-xl text-xs font-medium transition-all duration-200 ${
-              tab === "members"
-                ? "font-semibold text-gray-900 bg-gray-100"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-            }`}
-          >
+        <SegmentGroup>
+          <SegmentOption active={tab === "members"} onClick={() => setTab("members")}>
             用户列表
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("config")}
-            className={`relative h-7 px-3 rounded-xl text-xs font-medium transition-all duration-200 ${
-              tab === "config"
-                ? "font-semibold text-gray-900 bg-gray-100"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-            }`}
-          >
+          </SegmentOption>
+          <SegmentOption active={tab === "config"} onClick={() => setTab("config")} className="relative">
             配置总览
             {isAnomalous && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
@@ -560,13 +545,11 @@ export default function NodeContentPanel({
             {!isAnomalous && isUninitialized && !networkOutdatedForTab && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
             )}
-            {/* 网络配置待更新（VPC 整删 / 某可用区所有子网删除）：橙色小圆点
-                优先级：异常红点 > 网络待更新橙点 > 初始化未完成橙点 */}
             {!isAnomalous && networkOutdatedForTab && (
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
             )}
-          </button>
-        </div>
+          </SegmentOption>
+        </SegmentGroup>
       </div>
 
       {/* Tab 内容 */}

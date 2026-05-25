@@ -67,19 +67,23 @@ export default function AgentToolLibrary() {
         <h1 className="text-2xl font-bold text-gray-900">Agent 工具库</h1>
       </div>
 
-      {/* Tab 切换器 */}
+      {/* Tab 切换器 - LineTabs */}
       <div className="mb-1">
-        <SegmentGroup>
+        <div className="flex items-center gap-1 border-b border-[#f0f0f0]">
           {TABS.map((tab) => (
-            <SegmentOption
+            <button
               key={tab.id}
-              active={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
+              className={`relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A] -mb-px"
+                  : "text-[#737373] hover:text-[#0A0A0A]"
+              }`}
             >
               {tab.label}
-            </SegmentOption>
+            </button>
           ))}
-        </SegmentGroup>
+        </div>
       </div>
 
       {/* Tab 描述 */}

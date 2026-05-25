@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -120,7 +121,7 @@ function FMGroupFilter({
     return (
       <div>
         <div
-          className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-gray-100"}`}
+          className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-[#f5f5f5]"}`}
           style={{ paddingLeft: `${8 + level * 16}px` }}
           onClick={() => setTempValue(node.id)}
         >
@@ -141,20 +142,20 @@ function FMGroupFilter({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox"
-          className={`w-[140px] justify-between bg-white text-sm font-normal h-9 hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}>
+          className={`w-[140px] justify-between bg-white text-sm font-normal h-9 ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}>
           <span className="truncate">{triggerNode?.name || "全部分组"}</span>
-          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 text-[#737373] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="p-2 border-b border-[#e5e5e5]">
-          <input
-            type="text" placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-[#334155] placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          <Input
+            placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
+            className="h-8 text-sm"
           />
         </div>
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-[#f5f5f5]"}`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部分组</span>
             {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
           </div>
@@ -171,8 +172,8 @@ function FMGroupFilter({
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="sm" className="text-xs text-[#737373] h-7 px-2" onClick={handleCancel}>取消</Button>
-            <Button size="sm" className="text-xs h-7 px-3" onClick={handleConfirm}>确认</Button>
+            <Button variant="outline" size="sm" className="text-xs h-7 px-2" onClick={handleCancel}>取消</Button>
+            <Button variant="dialog-confirm" size="sm" className="text-xs h-7 px-3" onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -1240,7 +1241,7 @@ export default function FileManagement() {
             <tbody className="divide-y divide-gray-50">
               {ENTERPRISE_SPACES.map((item) => (
                 <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
                         <Building className="w-5 h-5 text-white" />
@@ -1248,12 +1249,10 @@ export default function FileManagement() {
                       <span className="text-sm font-medium text-[#0A0A0A]">{item.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <StatusTag variant="blue">
+                  <td className="px-4 py-3 text-[14px] text-[#09090b]">
                       {item.type}
-                    </StatusTag>
                   </td>
-                  <td className="px-6 py-4 text-sm text-[#334155]">
+                  <td className="px-4 py-3 text-sm text-[#334155]">
                     <span className="tabular-nums">
                       {item.used}/{<span className="font-semibold">{item.quota}</span>}
                     </span>
@@ -1261,7 +1260,7 @@ export default function FileManagement() {
                       免费
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-[#334155] tabular-nums">{item.expiry}</td>
+                  <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">{item.expiry}</td>
                 </tr>
               ))}
             </tbody>
@@ -1303,11 +1302,8 @@ export default function FileManagement() {
           />
         </div>
 
-        <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-        >
-          {/* Search Bar and Batch Enable */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+        {/* 工具栏（独立于表格） */}
+        <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Button
                 onClick={handleBatchEnable}
@@ -1327,16 +1323,17 @@ export default function FileManagement() {
               />
               <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
-                <Input 
-                  placeholder="搜索名称、ID或创建人" 
-                  className="pl-9 h-9 bg-white border-gray-300 hover:border-gray-400 focus:border-purple-500 rounded-xl text-sm transition-colors"
+                <Input
+                  placeholder="搜索名称、ID或创建人"
+                  className="pl-9 h-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Button
-                variant="outline"
-                className="h-9 px-4 gap-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                variant="claw-outline"
+                size="claw"
+                className="gap-2"
                 onClick={() => setRecyclebinOpen(true)}
               >
                 <Trash2 className="w-4 h-4" />
@@ -1348,58 +1345,50 @@ export default function FileManagement() {
                 )}
               </Button>
             </div>
-            <div className="flex items-center gap-2 text-xs text-[#737373]">
+            <div className="flex items-center gap-2 text-[14px] text-[#737373]">
               <span>共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
             </div>
-          </div>
+        </div>
+
+        <div
+          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+        >
 
           {/* Flat Table */}
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[6%]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[6%]">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
                       disabled={disabledInstancesCount === 0}
-                      className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
+                      className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none" : ""}
                       aria-label="全选"
                     />
                     <span className={disabledInstancesCount === 0 ? "text-[#A3A3A3]" : ""}>全选</span>
                   </div>
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[20%]">
-                  OpenClaw 实例
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[15%]">
-                  创建人
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[8%]">
-                  类型
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[18%]">
-                  已用/存储容量
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%]">
-                  有效期
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[9%]">
-                  启用网盘
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+                </TableHead>
+                <TableHead className="w-[20%]">OpenClaw 实例</TableHead>
+                <TableHead className="w-[15%]">创建人</TableHead>
+                <TableHead className="w-[8%]">类型</TableHead>
+                <TableHead className="w-[18%]">已用/存储容量</TableHead>
+                <TableHead className="w-[10%]">有效期</TableHead>
+                <TableHead className="w-[9%]">启用网盘</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginatedPersonalSpaces.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
                       <Search className="w-12 h-12 text-[#A3A3A3]" />
                       <p className="text-sm text-[#737373]">未找到匹配的记录</p>
                       <p className="text-xs text-[#A3A3A3]">请尝试其他搜索关键词</p>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 paginatedPersonalSpaces.map((item) => {
                   const isEnabled = instancesEnabled[item.id];
@@ -1411,7 +1400,7 @@ export default function FileManagement() {
                       key={item.id} 
                       className="hover:bg-gray-50/50 transition-colors"
                     >
-                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
@@ -1420,23 +1409,18 @@ export default function FileManagement() {
                           aria-label={`选择 ${item.instanceName}`}
                         />
                       </td>
-                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-[#355EF1] flex items-center justify-center shrink-0">
-                            <Bot className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex flex-col min-w-0 flex-1">
+                      <td className="px-4 py-3" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex flex-col min-w-0">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="text-sm font-medium text-[#0A0A0A] truncate max-w-[140px]">{item.instanceName}</span>
+                                <span className="text-sm font-medium text-[#0A0A0A] truncate max-w-[180px]">{item.instanceName}</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.instanceName}</TooltipContent>
                             </Tooltip>
                             <span className="text-xs font-mono text-[#355EF1]">{item.instanceId}</span>
-                          </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
+                      <td className="px-4 py-3" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="text-sm text-[#0A0A0A] truncate block max-w-[140px]">{item.creator}</span>
@@ -1444,12 +1428,10 @@ export default function FileManagement() {
                           <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.creator}</TooltipContent>
                         </Tooltip>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-xl text-xs font-medium bg-blue-50 text-[#355EF1]">
+                      <td className="px-4 py-3 text-[14px] text-[#09090b]">
                           {item.type}
-                        </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#334155]">
+                      <td className="px-4 py-3 text-sm text-[#334155]">
                         {isEnabled ? (
                           <span className="tabular-nums">
                             {item.used}/{<span className="font-semibold">{item.quota}</span>}
@@ -1480,10 +1462,10 @@ export default function FileManagement() {
                           <span className="text-[#A3A3A3]">未启用</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#334155] tabular-nums">
+                      <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">
                         {isEnabled ? item.expiry : <span className="text-[#A3A3A3]">-</span>}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <Switch 
                           checked={isEnabled}
                           onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
@@ -1493,11 +1475,11 @@ export default function FileManagement() {
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-[#e5e5e5]">
+          <div className="px-4 py-3 border-t border-[#e5e5e5]">
             <Pagination
               total={filteredPersonalSpaces.length}
               current={currentPage}
@@ -1567,7 +1549,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelBatchEnable}>取消</Button>
-            <Button onClick={handleConfirmBatchEnable}>
+            <Button variant="dialog-confirm" onClick={handleConfirmBatchEnable}>
               确认启用
             </Button>
           </DialogFooter>
@@ -1658,7 +1640,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelSingleEnable}>取消</Button>
-            <Button onClick={handleConfirmSingleEnable}>
+            <Button variant="dialog-confirm" onClick={handleConfirmSingleEnable}>
               确认启用
             </Button>
           </DialogFooter>
@@ -1821,11 +1803,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRenew}>取消</Button>
-            <Button 
-              onClick={handleConfirmRenew} 
-              style={{ background: "linear-gradient(135deg, #355EF1, #00C6FF)" }}
-              className="gap-2"
-            >
+            <Button variant="dialog-confirm" onClick={handleConfirmRenew}>
               确认续费
             </Button>
           </DialogFooter>
@@ -1892,11 +1870,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelExpand}>取消</Button>
-            <Button 
-              onClick={handleConfirmExpand} 
-              style={{ background: "linear-gradient(135deg, #A855F7, #EC4899)" }}
-              className="gap-2"
-            >
+            <Button variant="dialog-confirm" onClick={handleConfirmExpand}>
               确认扩容
             </Button>
           </DialogFooter>
@@ -1952,8 +1926,8 @@ export default function FileManagement() {
                             <TooltipTrigger asChild>
                               <Button
                                 size="sm"
-                                variant="outline"
-                                className="h-8 px-3 gap-1.5 border-blue-300 text-[#355EF1] hover:bg-blue-50 hover:border-blue-400"
+                                variant="ghost"
+                                className="h-8 px-2 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#f4f4f5]"
                                 onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
                               >
                                 <RotateCcw className="w-3.5 h-3.5" />
@@ -1970,8 +1944,8 @@ export default function FileManagement() {
                             <TooltipTrigger asChild>
                               <Button
                                 size="sm"
-                                variant="outline"
-                                className="h-8 px-3 gap-1.5 border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400"
+                                variant="ghost"
+                                className="h-8 px-2 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#f4f4f5]"
                                 onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
                               >
                                 <Link className="w-3.5 h-3.5" />
@@ -1988,8 +1962,8 @@ export default function FileManagement() {
                             <TooltipTrigger asChild>
                               <Button
                                 size="sm"
-                                variant="outline"
-                                className="h-8 px-3 gap-1.5 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                                variant="ghost"
+                                className="h-8 px-2 gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={() => {
                                   setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
                                   setRecyclebinDeleteDialogOpen(true);
@@ -2045,12 +2019,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRecyclebinRecover}>取消</Button>
-            <Button 
-              onClick={handleConfirmRecyclebinRecover}
-              style={{ background: "linear-gradient(135deg, #355EF1, #00C6FF)" }}
-              className="gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
+            <Button variant="dialog-confirm" onClick={handleConfirmRecyclebinRecover}>
               确认恢复
             </Button>
           </DialogFooter>
@@ -2086,12 +2055,7 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelPermanentDelete}>取消</Button>
-            <Button 
-              onClick={handleConfirmPermanentDelete}
-              style={{ background: "linear-gradient(135deg, #EF4444, #DC2626)" }}
-              className="gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
+            <Button variant="destructive" onClick={handleConfirmPermanentDelete}>
               永久删除
             </Button>
           </DialogFooter>
@@ -2171,13 +2135,11 @@ export default function FileManagement() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelTransfer}>取消</Button>
-            <Button 
+            <Button
+              variant="dialog-confirm"
               onClick={handleConfirmTransfer}
               disabled={!selectedTargetInstance}
-              style={selectedTargetInstance ? { background: "linear-gradient(135deg, #A855F7, #EC4899)" } : {}}
-              className={`gap-2 ${!selectedTargetInstance ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              <Link className="w-4 h-4" />
               确认转接
             </Button>
           </DialogFooter>

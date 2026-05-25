@@ -6,39 +6,26 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  CircleAlert,
   X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Dialog,
-  DialogContent,
-  DialogBody,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from '@/components/ui/alert-dialog';
-import { Alert, AlertDescription, AlertTitle, AlertOperationInfoIcon } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 // 骨架屏组件
 const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
@@ -183,7 +170,7 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
               <TooltipTrigger asChild>
                 <button
                   className={`relative z-10 flex-1 h-7 text-xs font-medium rounded-full transition-colors
-                    ${isActive ? 'text-white' : 'text-gray-400 cursor-not-allowed'}`}
+                    ${isActive ? 'text-white' : 'text-[#A3A3A3] cursor-not-allowed'}`}
                 >
                   {opt.label}
                 </button>
@@ -204,8 +191,8 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
               ${isActive 
                 ? ((isTransitioning || isLocked) ? 'text-white/80' : 'text-white') 
                 : isDisabled 
-                  ? 'text-gray-400 cursor-not-allowed' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'text-[#A3A3A3] cursor-not-allowed' 
+                  : 'text-[#737373] hover:text-[#0A0A0A]'
               }`}
           >
             {isActive && (isTransitioning || isLocked) ? '' : opt.label}
@@ -566,20 +553,16 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         const count = batchStats.enableFree.length;
         return {
           title: '批量开启 Memory Free',
-          isDestructive: false,
           content: (
-            <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A]">
-                即将为 <span className="font-semibold">{count}</span> 个 Agent 开启 Memory Free 服务。
+            <div className="space-y-3">
+              <p className="text-[14px] text-[#020617] leading-relaxed">
+                即将为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Free 服务。
               </p>
-              <Alert variant="operation-info">
-                <AlertOperationInfoIcon />
-                <AlertDescription>
-                  开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。
-                </AlertDescription>
-              </Alert>
+              <div className="p-3 bg-[#EFF6FF] rounded-lg border border-[#BFDBFE]">
+                <p className="text-[13px] text-[#1447E6] leading-relaxed">开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
+              </div>
               {selectedInstances.length > count && (
-                <p className="text-xs text-[#737373]">
+                <p className="text-[12px] text-[#737373]">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已开启记忆，将被跳过。
                 </p>
               )}
@@ -596,27 +579,24 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         const fromFreeCount = batchStats.enablePro.filter(i => i.memoryStatus === 'free').length;
         return {
           title: '开启 Memory Pro',
-          isDestructive: false,
           content: (
-            <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A]">
-                确认为 <span className="font-semibold">{count}</span> 个 Agent 开启 Memory Pro 服务？
-                {fromFreeCount > 0 && (
-                  <span className="text-[#525252]"> 其中 {fromFreeCount} 个 Agent 将从 Free 版升级，数据将自动迁移。</span>
-                )}
+            <div className="space-y-3">
+              <p className="text-[14px] text-[#020617] leading-relaxed">
+                确认为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Pro 服务？
               </p>
-              <Alert variant="operation-info">
-                <AlertOperationInfoIcon />
-                <AlertDescription>
-                  开启后将重启 Gateway 服务，届时会有短暂的服务中断。
-                </AlertDescription>
-              </Alert>
-              <Alert variant="warning">
-                <CircleAlert />
-                <AlertDescription>开启 Pro 版后不支持回退到 Free 版</AlertDescription>
-              </Alert>
+              {fromFreeCount > 0 && (
+                <p className="text-[14px] text-[#020617] leading-relaxed">
+                  其中 {fromFreeCount} 个 Agent 将从 Free 版升级，数据将自动迁移。
+                </p>
+              )}
+              <p className="text-[14px] text-[#737373] leading-relaxed">
+                开启后将重启 Gateway 服务，届时会有短暂的服务中断。
+              </p>
+              <div className="p-3 bg-[#FFFBEB] rounded-lg border border-[#FDE68A]">
+                <p className="text-[13px] text-[#92400E]">开启 Pro 版后不支持回退到 Free 版</p>
+              </div>
               {selectedInstances.length > count && (
-                <p className="text-xs text-[#737373]">
+                <p className="text-[12px] text-[#737373]">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已是 Pro 版，将被跳过。
                 </p>
               )}
@@ -626,7 +606,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           confirmDisabled: false,
         };
       }
-      
+
       // 批量关闭
       if (dialogType === 'batch-disable') {
         const count = batchStats.disable.length;
@@ -634,45 +614,45 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         const freeCount = count - proCount;
         return {
           title: '批量关闭 Memory 服务',
-          isDestructive: true,
           content: (
-            <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A]">
-                即将关闭 <span className="font-semibold">{count}</span> 个 Agent 的 Memory 服务。
-                {proCount > 0 && freeCount > 0 && (
-                  <span className="text-[#525252]"> 包含 {proCount} 个 Pro 版、{freeCount} 个 Free 版实例。</span>
-                )}
+            <div className="space-y-3">
+              <p className="text-[14px] text-[#020617] leading-relaxed">
+                即将关闭 <span className="font-medium">{count}</span> 个 Agent 的 Memory 服务。
               </p>
-              <Alert variant="info">
-                <AlertOperationInfoIcon />
-                <AlertDescription>
-                  关闭后将重启相关 Gateway 服务，届时会有短暂的服务中断。
-                </AlertDescription>
-              </Alert>
+              {proCount > 0 && freeCount > 0 && (
+                <p className="text-[14px] text-[#737373]">
+                  包含 {proCount} 个 Pro 版、{freeCount} 个 Free 版实例。
+                </p>
+              )}
+              <div className="p-3 bg-[#EFF6FF] rounded-lg border border-[#BFDBFE]">
+                <p className="text-[13px] text-[#1447E6] leading-relaxed">关闭后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
+              </div>
               {hasProInDisable ? (
-                <Alert variant="warning">
-                  <CircleAlert />
-                  <AlertTitle>{proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除</AlertTitle>
-                  <AlertDescription>此操作不可恢复</AlertDescription>
-                </Alert>
+                <div className="p-3 bg-[#FEF2F2] rounded-lg border border-[#FECACA]">
+                  <p className="text-[13px] text-[#DC2626] font-medium">
+                    {proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除，此操作不可恢复
+                  </p>
+                </div>
               ) : (
-                <p className="text-sm text-[#525252]">
+                <p className="text-[14px] text-[#737373] leading-relaxed">
                   Free 版实例的记忆数据将保留在本地，重新开启后可继续使用。
                 </p>
               )}
-              <div className="space-y-2">
-                <Label htmlFor="batchDisableConfirm" className="text-xs font-medium text-[#525252]">
-                  请输入「<span className="text-[#DC2626]">关闭</span>」以确认
-                </Label>
-                <Input
-                  id="batchDisableConfirm"
+              {/* 二次确认输入框 */}
+              <div className="pt-2">
+                <label className="block text-[14px] text-[#020617] mb-2">
+                  请输入「<span className="font-medium text-[#DC2626]">关闭</span>」以确认：
+                </label>
+                <input
+                  type="text"
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
                   placeholder="请输入「关闭」"
+                  className="w-full h-9 px-3 border border-[#E5E5E5] rounded-[4px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1447E6] focus:border-transparent"
                 />
               </div>
               {selectedInstances.length > count && (
-                <p className="text-xs text-[#737373]">
+                <p className="text-[12px] text-[#737373]">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个未开启记忆，将被跳过。
                 </p>
               )}
@@ -685,22 +665,21 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
 
       // 单实例操作
       if (!targetInstance) return null;
-      
+
       const { version } = parseMemoryStatus(targetInstance.memoryStatus);
       const isFromFree = version === 'free';
       const isProVersion = targetInstance.memoryStatus === 'pro';
-      
+
       switch (dialogType) {
         case 'enable-free':
           return {
             title: '开启 Memory Free',
-            isDestructive: false,
             content: (
               <div className="space-y-3">
-                <p className="text-sm text-[#0A0A0A]">
+                <p className="text-[14px] text-[#020617] leading-relaxed">
                   确认为 Agent「<span className="font-medium">{targetInstance.name}</span>」开启 Memory Free 服务？
                 </p>
-                <p className="text-sm text-[#525252]">
+                <p className="text-[14px] text-[#737373] leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
               </div>
@@ -711,24 +690,23 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         case 'enable-pro': {
           return {
             title: '开启 Memory Pro',
-            isDestructive: false,
             content: (
               <div className="space-y-3">
-                <p className="text-sm text-[#0A0A0A]">
+                <p className="text-[14px] text-[#020617] leading-relaxed">
                   确认为 Agent「<span className="font-medium">{targetInstance.name}</span>」开启 Memory Pro 服务？
                 </p>
                 {isFromFree && (
-                  <p className="text-sm text-[#525252]">
+                  <p className="text-[14px] text-[#737373] leading-relaxed">
                     Free 版的记忆数据将自动迁移到 Pro 版。
                   </p>
                 )}
-                <p className="text-sm text-[#525252]">
+                <p className="text-[14px] text-[#737373] leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
-                <Alert variant="warning">
-                  <CircleAlert />
-                  <AlertDescription>开启 Pro 版后不支持回退到 Free 版</AlertDescription>
-                </Alert>
+
+                <div className="p-3 bg-[#FFFBEB] rounded-lg border border-[#FDE68A]">
+                  <p className="text-[13px] text-[#92400E]">开启 Pro 版后不支持回退到 Free 版</p>
+                </div>
               </div>
             ),
             confirmText: '确认开启',
@@ -738,38 +716,34 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         case 'disable': {
           return {
             title: '关闭 Memory 服务',
-            isDestructive: true,
             content: (
-              <div className="space-y-4">
-                <p className="text-sm text-[#0A0A0A]">
+              <div className="space-y-3">
+                <p className="text-[14px] text-[#020617] leading-relaxed">
                   确认关闭 Agent「<span className="font-medium">{targetInstance.name}</span>」的 Memory 服务？
                 </p>
-                <Alert variant="info">
-                  <AlertOperationInfoIcon />
-                  <AlertDescription>
-                    关闭后将重启 Gateway 服务，届时会有短暂的服务中断。
-                  </AlertDescription>
-                </Alert>
+                <p className="text-[14px] text-[#737373] leading-relaxed">
+                  关闭后将重启 Gateway 服务，届时会有短暂的服务中断。
+                </p>
                 {isProVersion ? (
-                  <Alert variant="warning">
-                    <CircleAlert />
-                    <AlertTitle>所有记忆数据将被清除</AlertTitle>
-                    <AlertDescription>此操作不可恢复</AlertDescription>
-                  </Alert>
+                  <div className="p-3 bg-[#FEF2F2] rounded-lg border border-[#FECACA]">
+                    <p className="text-[13px] text-[#DC2626] font-medium">所有记忆数据将被清除，此操作不可恢复</p>
+                  </div>
                 ) : (
-                  <p className="text-sm text-[#525252]">
+                  <p className="text-[14px] text-[#737373] leading-relaxed">
                     记忆数据将保留在本地，重新开启后可继续使用。
                   </p>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="singleDisableConfirm" className="text-xs font-medium text-[#525252]">
-                    请输入「<span className="text-[#DC2626]">关闭</span>」以确认
-                  </Label>
-                  <Input
-                    id="singleDisableConfirm"
+                {/* 二次确认输入框 */}
+                <div className="pt-2">
+                  <label className="block text-[14px] text-[#020617] mb-2">
+                    请输入「<span className="font-medium text-[#DC2626]">关闭</span>」以确认：
+                  </label>
+                  <input
+                    type="text"
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value)}
                     placeholder="请输入「关闭」"
+                    className="w-full h-9 px-3 border border-[#E5E5E5] rounded-[4px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1447E6] focus:border-transparent"
                   />
                 </div>
               </div>
@@ -786,52 +760,27 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
     const config = getDialogConfig();
     if (!config) return null;
 
-    if (config.isDestructive) {
-      return (
-        <AlertDialog open onOpenChange={(o) => !o && closeDialog()}>
-          <AlertDialogContent className="sm:max-w-[560px]">
-            <button
-              type="button"
-              aria-label="关闭"
+    return (
+      <Dialog open={true} onOpenChange={(isOpen) => !isOpen && closeDialog()}>
+        <DialogContent className="max-w-[420px]">
+          <DialogHeader>
+            <DialogTitle className="text-[16px] font-semibold text-[#020617]">
+              {config.title}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-2">
+            {config.content}
+          </div>
+
+          <DialogFooter className="flex gap-3 justify-end pt-2">
+            <Button
+              variant="outline"
               onClick={closeDialog}
               disabled={isProcessing}
-              className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none disabled:opacity-50"
             >
-              <X className="size-5" />
-              <span className="sr-only">关闭</span>
-            </button>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-[#0A0A0A]">{config.title}</AlertDialogTitle>
-              <AlertDialogDescription asChild>
-                {config.content}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={closeDialog} disabled={isProcessing}>取消</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={executeStatusChange}
-                disabled={isProcessing || config.confirmDisabled}
-              >
-                {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
-                {config.confirmText}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      );
-    }
-
-    return (
-      <Dialog open onOpenChange={(o) => !o && closeDialog()}>
-        <DialogContent className="sm:max-w-[560px]">
-          <DialogHeader>
-            <DialogTitle>{config.title}</DialogTitle>
-          </DialogHeader>
-          <DialogBody>
-            {config.content}
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={closeDialog} disabled={isProcessing}>取消</Button>
+              取消
+            </Button>
             <Button
               variant="dialog-confirm"
               onClick={executeStatusChange}
@@ -865,8 +814,8 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
       {/* 加载遮罩 */}
       {loading && (
         <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+          <div className="flex items-center gap-2 text-sm text-[#737373]">
+            <Loader2 className="w-4 h-4 animate-spin text-[#355EF1]" />
             <span>正在加载实例状态...</span>
           </div>
         </div>
@@ -875,7 +824,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
       {/* 工具栏 - 符合设计规范的 header */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
         <div className="flex items-center gap-4">
-          <h2 className="font-semibold text-gray-900">记忆空间列表</h2>
+          <h2 className="font-semibold text-[#0A0A0A]">记忆空间列表</h2>
           {/* 批量操作按钮 - 常驻显示 */}
           <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
             {(() => {
@@ -898,8 +847,8 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         disabled={!hasSelection || !canEnableFree}
                         className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
                           hasSelection && canEnableFree
-                            ? 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-                            : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                            ? 'text-[#355EF1] bg-blue-50 hover:bg-blue-100'
+                            : 'text-[#A3A3A3] bg-gray-100 cursor-not-allowed'
                         }`}
                       >
                         批量开通 Free 版{canEnableFree ? `（${noneCount}）` : ''}
@@ -921,7 +870,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
                           hasSelection && canEnablePro && isProActive
                             ? 'text-purple-600 bg-purple-50 hover:bg-purple-100'
-                            : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                            : 'text-[#A3A3A3] bg-gray-100 cursor-not-allowed'
                         }`}
                       >
                         批量开通 Pro 版{canEnablePro ? `（${noneCount + freeCount}）` : ''}
@@ -945,7 +894,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
                           hasSelection && canDisable
                             ? 'text-red-600 bg-red-50 hover:bg-red-100'
-                            : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                            : 'text-[#A3A3A3] bg-gray-100 cursor-not-allowed'
                         }`}
                       >
                         批量关闭{canDisable ? `（${freeCount + proCount}）` : ''}
@@ -969,7 +918,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           {toolbarRight}
           {/* 搜索框 - 符合设计规范 */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
             <Input
               placeholder="搜索 Agent 名称或 ID"
               value={searchQuery}
@@ -983,7 +932,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           <button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="刷新列表"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -1013,18 +962,18 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   }}
                 />
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 tracking-wide" style={{ width: '30%' }}>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] tracking-wide" style={{ width: '30%' }}>
                 <span>Agent 名称/ID</span>
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '25%' }}>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '25%' }}>
                 创建人
               </th>
               {/* Agent 类型 —— 与管控端 Agent 列表保持一致：纯灰色文本，不使用 Badge / 颜色，避免视觉权重抢戏 */}
-              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 normal-case" style={{ width: '13%' }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] normal-case" style={{ width: '13%' }}>
                 Agent 类型
               </th>
               {/* 记忆管理 - 带筛选 */}
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '32%' }}>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '32%' }}>
                 <div className="flex items-center gap-2 relative z-40">
                   记忆管理
                   <button
@@ -1043,7 +992,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       setShowMemoryFilter(!showMemoryFilter);
                     }}
                   >
-                    <Filter className={`w-3.5 h-3.5 ${selectedMemoryStates.size < 3 ? 'text-blue-500' : 'text-gray-400'}`} />
+                    <Filter className={`w-3.5 h-3.5 ${selectedMemoryStates.size < 3 ? 'text-[#355EF1]' : 'text-[#A3A3A3]'}`} />
                   </button>
                   {showMemoryFilter && memoryFilterPosition && (
                     <>
@@ -1075,9 +1024,9 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                                   }
                                   setTempSelectedMemoryStates(newSet);
                                 }}
-                                className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                                className="w-4 h-4 rounded border-gray-300 text-[#355EF1] focus:ring-blue-500"
                               />
-                              <span className="text-sm text-gray-700 normal-case">
+                              <span className="text-sm text-[#334155] normal-case">
                                 {opt.label}
                               </span>
                             </label>
@@ -1118,21 +1067,21 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                 <td colSpan={5} className="px-0 py-0">
                   <div className="bg-blue-50 border-b border-blue-100 px-6 py-2.5 text-center text-sm">
                     {isSelectAll ? (
-                      <span className="text-blue-700">
+                      <span className="text-[#355EF1]">
                         已选择全部 <strong>{selectedIds.size}</strong> 个 Agent。
                         <button
                           onClick={handleClearSelection}
-                          className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2"
+                          className="ml-2 text-[#355EF1] hover:text-[#1447E6] font-medium underline underline-offset-2"
                         >
                           清除选择
                         </button>
                       </span>
                     ) : (
-                      <span className="text-blue-700">
+                      <span className="text-[#355EF1]">
                         已选择此页 <strong>{selectableInPage.length}</strong> 个实例。
                         <button
                           onClick={handleSelectAllPages}
-                          className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2"
+                          className="ml-2 text-[#355EF1] hover:text-[#1447E6] font-medium underline underline-offset-2"
                         >
                           选择全部 {totalSelectableCount} 个 Agent
                         </button>
@@ -1154,7 +1103,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </>
             ) : paginatedList.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                <td colSpan={5} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
                   暂无符合条件的实例
                 </td>
               </tr>
@@ -1221,29 +1170,29 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       <div className="min-w-0">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="text-sm font-medium text-gray-900 truncate max-w-[180px]">{oc.name}</div>
+                            <div className="text-sm font-medium text-[#0A0A0A] truncate max-w-[180px]">{oc.name}</div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs max-w-xs break-all">{oc.name}</TooltipContent>
                         </Tooltip>
                         {onOpenDetail ? (
                           <button
                             onClick={() => onOpenDetail(oc)}
-                            className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
+                            className="text-xs font-mono cursor-pointer text-[#355EF1] hover:text-[#355EF1] hover:underline"
                           >
                             {oc.id}
                           </button>
                         ) : (
-                          <span className="text-xs font-mono text-blue-500">{oc.id}</span>
+                          <span className="text-xs font-mono text-[#355EF1]">{oc.id}</span>
                         )}
                       </div>
                     </td>
                     {/* 创建人 */}
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-[#737373]">
                       {oc.creator || '—'}
                     </td>
                     {/* Agent 类型 —— 复用 AGENT_TYPE_DISPLAY 映射，未配置或未知值时回退展示原值 */}
                     <td className="px-4 py-4">
-                      <span className="text-xs font-medium text-gray-500">
+                      <span className="text-xs font-medium text-[#737373]">
                         {AGENT_TYPE_DISPLAY[oc.agentType ?? 'openclaw'] ?? (oc.agentType ?? 'OpenClaw')}
                       </span>
                     </td>

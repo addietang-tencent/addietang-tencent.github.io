@@ -35,6 +35,21 @@ description: >
 
 ---
 
+## 🎨 用户端（Tenant）专属规范（强制引用）
+
+**自 2025-05-22 起，用户端与管控端在按钮圆角、Tab 样式、卡片圆角、装饰背景、顶部导航等方面出现差异，用户端页面必须额外遵循：**
+
+📄 **[SKILL-TENANT.md](../../../SKILL-TENANT.md)**（仓库根：`openclaw-enterprise/SKILL-TENANT.md`）
+
+加载与覆盖规则：
+1. **写用户端（Tenant）页面 / 组件**（`client/src/pages/tenant/**`、`client/src/components/tenant/**`、用户端共享组件）→ 必须同时加载本文件 + `SKILL-GLOBAL-COMPONENTS.md` + `SKILL-TENANT.md`，**冲突时以 `SKILL-TENANT.md` 为准**。
+2. **写管控端（Admin）页面 / 组件** → 加载本文件 + `SKILL-GLOBAL-COMPONENTS.md`，**忽略** `SKILL-TENANT.md`。
+3. `SKILL-TENANT.md` 只描述用户端**差异点**（按钮全圆角 / Tab 胶囊 / 卡片 12px 圆角三态 / 移除点阵装饰 / 顶部半透明导航），未列出的内容沿用本文件 §1–§17 + `SKILL-GLOBAL-COMPONENTS.md`。
+4. 共享组件差异化：通过新增 `tenant-*` 变体扩展，**禁止**直接覆盖 `claw-*` 变体或修改默认样式以免破坏管控端。
+5. 触达即同步：修改用户端文件时，按 `SKILL-TENANT.md` §15 的迁移规则顺手同步；用 `// allow-tenant-legacy: <理由>` 注释豁免不能立即迁移的代码。
+
+---
+
 ## 0. 协作机制：触达即同步（Touch-and-Sync）
 
 > **核心约定**：本仓库存量页面规模大，不依赖一次性的全量重构来对齐设计系统；而是约定"**改到哪个文件、就把那个文件按当前 SKILL 同步刷新一遍**"，让规范升级靠日常迭代自然消化。

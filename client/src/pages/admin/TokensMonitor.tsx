@@ -1207,12 +1207,14 @@ export default function TokensMonitor() {
               <p className="text-xs text-gray-400">汇总所选时间范围内每台实例的 Token 消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
-                  <button
+                  <Button
+                    variant="claw-outline"
+                    size="icon"
+                    className="w-9 h-9"
                     onClick={handleExportInstance}
-                    className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </UITooltipTrigger>
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
@@ -1269,12 +1271,14 @@ export default function TokensMonitor() {
               <p className="text-xs text-gray-400">汇总所选时间范围内每个用户使用所有模型的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
-                  <button
+                  <Button
+                    variant="claw-outline"
+                    size="icon"
+                    className="w-9 h-9"
                     onClick={handleExportMember}
-                    className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </UITooltipTrigger>
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
@@ -1324,12 +1328,14 @@ export default function TokensMonitor() {
               <p className="text-xs text-gray-400">汇总所选时间范围内每个模型被所有企业用户使用的消耗，按总 Tokens 降序排序</p>
               <UITooltip>
                 <UITooltipTrigger asChild>
-                  <button
+                  <Button
+                    variant="claw-outline"
+                    size="icon"
+                    className="w-9 h-9"
                     onClick={handleExportModel}
-                    className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </UITooltipTrigger>
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
@@ -1379,12 +1385,14 @@ export default function TokensMonitor() {
                   />
                   <UITooltip>
                     <UITooltipTrigger asChild>
-                      <button
+                      <Button
+                        variant="claw-outline"
+                        size="icon"
+                        className="w-9 h-9"
                         onClick={handleExportDept}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                       >
                         <Download className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </UITooltipTrigger>
                     <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
                   </UITooltip>
@@ -1437,12 +1445,14 @@ export default function TokensMonitor() {
                 />
                 <UITooltip>
                   <UITooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="claw-outline"
+                      size="icon"
+                      className="w-9 h-9"
                       onClick={handleExportGroup}
-                      className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </UITooltipTrigger>
                   <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
                 </UITooltip>
@@ -1699,12 +1709,14 @@ export default function TokensMonitor() {
                 <p className="text-xs text-gray-400">全部会话已按tokens排序，点击可查看会话详情</p>
                 <UITooltip>
                   <UITooltipTrigger asChild>
-                    <button
+                    <Button
+                      variant="claw-outline"
+                      size="icon"
+                      className="w-9 h-9"
                       onClick={handleExportSession}
-                      className="w-8 h-8 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-500 hover:text-blue-600 hover:border-blue-300 transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </UITooltipTrigger>
                   <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
                 </UITooltip>

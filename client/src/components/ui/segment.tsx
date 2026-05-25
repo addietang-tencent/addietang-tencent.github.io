@@ -4,11 +4,18 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "@/lib/utils";
 
 /**
- * Segment 分段选择器
+ * Segment 分段选择器（管理端 4px 方角原版）
  *
- * 对齐 Figma 设计稿：水平分段选择器
+ * 对齐 Figma 设计稿：水平分段选择器（管理端规范，与 claw-* 按钮同档 4px 方角）。
  *
- * 设计令牌：
+ * ⚠️ 端别提示（0523 修订）：
+ *   - 管理端（Admin）：请用 `Segment / SegmentList / SegmentItem / SegmentContent`
+ *     或 `SegmentGroup / SegmentOption`（本文件下半部分），保持 6px 容器 + 4px 滑块
+ *   - 用户端（Tenant）：请用 `TenantSegment / TenantSegmentList / TenantSegmentItem`
+ *     或 `TenantSegmentGroup / TenantSegmentOption`（本文件最下方），全圆角胶囊
+ *   - 不要把管理端组件直接用 `className="rounded-full"` 临时改胶囊——会破坏单一真理源
+ *
+ * 设计令牌（管理端，恢复 0523 之前的原版）：
  *   ┌─────────────────────────────┬───────────────────────────────────────────────────┐
  *   │ Token                       │ Value                                              │
  *   ├─────────────────────────────┼───────────────────────────────────────────────────┤
@@ -45,7 +52,7 @@ import { cn } from "@/lib/utils";
  */
 
 /* ============================================================== */
-/*  基于 Radix Tabs 的受控版本（需要 Segment 包裹）                    */
+/*  管理端｜基于 Radix Tabs 的受控版本（需要 Segment 包裹）            */
 /* ============================================================== */
 
 function Segment({
@@ -111,7 +118,7 @@ function SegmentContent({
 }
 
 /* ============================================================== */
-/*  独立版本（纯样式，不依赖 Radix Tabs Root）                         */
+/*  管理端｜独立版本（纯样式，不依赖 Radix Tabs Root）                 */
 /* ============================================================== */
 
 function SegmentGroup({
@@ -160,4 +167,239 @@ function SegmentOption({
   );
 }
 
-export { Segment, SegmentList, SegmentItem, SegmentContent, SegmentGroup, SegmentOption };
+/* ============================================================== */
+/*  用户端｜TenantSegment 胶囊版（0523 §8.6 修订）                    */
+/*  与上方管理端组件接口完全一致，仅视觉差异：                          */
+/*    - 容器圆角 6px → rounded-full（胶囊）                          */
+/*    - 滑块圆角 4px → rounded-full                                 */
+/*    - 容器底色 #f3f3f4 → var(--muted)（与设计令牌系统对齐）          */
+/*    - 滑块阴影 写死 → var(--shadow-segment)                        */
+/*  仅供 client/src/pages/tenant/** 使用，管理端禁用。               */
+/* ============================================================== */
+
+function TenantSegment({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  return (
+    <TabsPrimitive.Root
+      data-slot="tenant-segment"
+      className={cn("flex flex-col gap-4", className)}
+      {...props}
+    />
+  );
+}
+
+function TenantSegmentList({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.List>) {
+  return (
+    <TabsPrimitive.List
+      data-slot="tenant-segment-list"
+      className={cn(
+        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-full p-[3px]",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TenantSegmentItem({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  return (
+    <TabsPrimitive.Trigger
+      data-slot="tenant-segment-item"
+      className={cn(
+        "text-muted-foreground font-normal inline-flex h-[calc(100%-1px)] items-center justify-center rounded-full border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
+          "data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-[var(--shadow-segment)] " +
+          "hover:text-foreground " +
+          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 focus-visible:outline-none " +
+          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+function TenantSegmentContent({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Content>) {
+  return (
+    <TabsPrimitive.Content
+      data-slot="tenant-segment-content"
+      className={cn("flex-1 outline-none", className)}
+      {...props}
+    />
+  );
+}
+
+function TenantSegmentGroup({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="tenant-segment-group"
+      role="tablist"
+      className={cn(
+        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-full p-[3px]",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+interface TenantSegmentOptionProps extends React.ComponentProps<"button"> {
+  active?: boolean;
+}
+
+function TenantSegmentOption({
+  className,
+  active = false,
+  ...props
+}: TenantSegmentOptionProps) {
+  return (
+    <button
+      data-slot="tenant-segment-option"
+      role="tab"
+      aria-selected={active}
+      data-state={active ? "active" : "inactive"}
+      className={cn(
+        "inline-flex h-[calc(100%-1px)] items-center justify-center rounded-full border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
+          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 focus-visible:outline-none " +
+          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+        active
+          ? "bg-white text-foreground font-semibold shadow-[var(--shadow-segment)]"
+          : "text-muted-foreground font-normal hover:text-foreground",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+/* ============================================================== */
+/*  TextSwitch：纯文字切换器（用户端轻量场景，0523 新增）              */
+/* ============================================================== */
+
+/**
+ * TextSwitch 文字切换器
+ *
+ * 严格对齐 Figma `1077:33980`（用户端「普通 / 多分组」切换）。
+ *
+ * 与 TenantSegmentGroup 的差异：
+ *   ┌────────────┬──────────────────────────────┬────────────────────────────┐
+ *   │            │ TenantSegmentGroup（胶囊版）   │ TextSwitch（文字版）          │
+ *   ├────────────┼──────────────────────────────┼────────────────────────────┤
+ *   │ 容器        │ var(--muted) 圆角胶囊 + h-9   │ 无背景，纯横排                  │
+ *   │ active     │ 白底 + shadow-segment          │ #020617 深字 + 14/400          │
+ *   │ inactive   │ #737373 灰字                  │ #A7A7A7 浅灰 14/400            │
+ *   │ 分隔        │ 无                            │ 中间 `/` 字符 #E2E8F0           │
+ *   │ 字号        │ 14 / inactive 400             │ 14 / 400（active/inactive 同字重）│
+ *   │ 适用场景      │ 强切换（视图模式、分类筛选）       │ 弱切换（次要状态、配套主操作的辅助开关）│
+ *   └────────────┴──────────────────────────────┴────────────────────────────┘
+ *
+ * 用法：
+ *   <TextSwitch>
+ *     <TextSwitchOption active={mode === "a"} onClick={() => setMode("a")}>普通</TextSwitchOption>
+ *     <TextSwitchOption active={mode === "b"} onClick={() => setMode("b")}>多分组</TextSwitchOption>
+ *   </TextSwitch>
+ *
+ * 实现细节：
+ *   - 分隔符 `/` 由组件内部自动在相邻两个 `TextSwitchOption` 之间渲染（aria-hidden="true"）
+ *   - gap 12px = Figma `layout_LE2IPO`
+ *   - active/inactive 字重均为 400（Figma `style_3FUI4B` fontWeight=400），靠颜色拉差异
+ */
+
+function TextSwitch({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
+  // 在相邻 option 之间插入分隔符 `/`，保持 aria 语义干净（分隔符对屏幕阅读器隐藏）
+  const items = React.Children.toArray(children).filter(Boolean);
+  const interleaved: React.ReactNode[] = [];
+  items.forEach((node, idx) => {
+    interleaved.push(node);
+    if (idx < items.length - 1) {
+      interleaved.push(
+        <span
+          key={`sep-${idx}`}
+          aria-hidden="true"
+          className="text-[#E2E8F0] text-sm font-normal leading-none select-none"
+        >
+          /
+        </span>
+      );
+    }
+  });
+
+  return (
+    <div
+      data-slot="text-switch"
+      role="tablist"
+      className={cn("inline-flex items-center gap-3", className)}
+      {...props}
+    >
+      {interleaved}
+    </div>
+  );
+}
+
+interface TextSwitchOptionProps extends React.ComponentProps<"button"> {
+  active?: boolean;
+}
+
+function TextSwitchOption({
+  className,
+  active = false,
+  ...props
+}: TextSwitchOptionProps) {
+  return (
+    <button
+      type="button"
+      data-slot="text-switch-option"
+      role="tab"
+      aria-selected={active}
+      data-state={active ? "active" : "inactive"}
+      className={cn(
+        // 基础排版：14px / 400 / line-height 22px / letter-spacing 0.5%（Figma style_3FUI4B）
+        "text-sm font-normal leading-[22px] tracking-[0.005em] transition-colors " +
+          "focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-[#355EF1]/20 focus-visible:rounded-sm " +
+          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+        active
+          ? "text-[#020617] cursor-default"
+          : "text-[#A7A7A7] hover:text-[#020617] cursor-pointer",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
+export {
+  // 管理端 4px 方角
+  Segment,
+  SegmentList,
+  SegmentItem,
+  SegmentContent,
+  SegmentGroup,
+  SegmentOption,
+  // 用户端胶囊
+  TenantSegment,
+  TenantSegmentList,
+  TenantSegmentItem,
+  TenantSegmentContent,
+  TenantSegmentGroup,
+  TenantSegmentOption,
+  // 用户端文字切换
+  TextSwitch,
+  TextSwitchOption,
+};

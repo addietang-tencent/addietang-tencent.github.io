@@ -55,7 +55,9 @@ export function BellIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-/** 切换管控端（双向箭头） — Figma 363:5053 */
+/** 切换管控端（显示器 + 齿轮 + 切换箭头） — Figma 1077:34989 / 363:5053（更新版）
+ *  设计语义：显示器底部留出"切换"箭头，右下角小齿轮表示"管理/控制"含义。
+ *  viewBox 16×16；stroke 用 currentColor，沿用父级 hover 联动。 */
 export function SwitchAdminIcon({ size = 16, ...rest }: IconProps) {
   return (
     <svg
@@ -67,7 +69,7 @@ export function SwitchAdminIcon({ size = 16, ...rest }: IconProps) {
       {...rest}
     >
       <path
-        d="M14 10.6667H2.66667L6 14M2 5.33333H13.3333L10 2"
+        d="M3.66667 14H8M7 12H1V2H14.3333V6.33333M12.6666 9.00002V8.16669M12.6666 9.00002C11.5621 9.00002 10.6666 9.89542 10.6666 11C10.6666 12.1046 11.5621 13 12.6666 13M12.6666 9.00002C13.7712 9.00002 14.6666 9.89542 14.6666 11C14.6666 12.1046 13.7712 13 12.6666 13M12.6666 13V13.8334M10.9346 10L10.2129 9.58335M14.3987 12L15.1204 12.4167M14.3987 10L15.1204 9.58335M10.9346 12L10.2129 12.4167"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="square"

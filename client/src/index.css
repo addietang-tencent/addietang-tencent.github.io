@@ -32,19 +32,34 @@
 }
 
 @theme inline {
-  /* v2 圆角：仅 2/3/4/full 四档，所有 shadcn 默认圆角都收敛到 ≤ 4px */
-  --radius-sm: 2px;   /* 状态徽章、内嵌活跃元素小尺寸 */
-  --radius-md: 3px;   /* Tab 活跃滑块、Slider 把手 */
-  --radius-lg: 4px;   /* shadcn 默认（Button/Input/Card/Dialog/Popover...） */
-  --radius-xl: 4px;   /* 上限，不再放大 */
+  /* v2 圆角档位（0523 修订）：
+   *   - 控件层（Button/Input/Tab 滑块/Dialog/Popover...）一律收敛到 ≤ 4px
+   *   - 管理端 / 全局卡片：rounded-xl → --radius-xl = 4px（与控件同档，几何感）
+   *   - 用户端业务卡：使用 <TenantCard>，圆角走 --radius-card = 12px（柔和感，对齐 Figma 1077:33986）
+   *   ⚠️ 不要把 rounded-xl 等同于 12px——本项目 --radius-xl 已被压到 4px。
+   *      用户端要 12px 必须用 <TenantCard>（见 SKILL-TENANT.md §5）。
+   */
+  --radius-sm: 2px;    /* 状态徽章、内嵌活跃元素小尺寸 */
+  --radius-md: 3px;    /* Tab 活跃滑块、Slider 把手 */
+  --radius-lg: 4px;    /* shadcn 默认（Button/Input/Dialog/Popover...） */
+  --radius-xl: 4px;    /* 控件层上限 / 管理端 SurfaceCard 圆角 */
+  --radius-card: 12px; /* 用户端业务卡专用（仅 <TenantCard> 消费） */
 
   /* ───────────────────────────────────────────────────────────
-   * v2 阴影系统：5 档语义化（单一真理源 Single Source of Truth）
+   * v2 阴影系统：5 档语义化 + 卡片三态（单一真理源 Single Source of Truth）
    * 业务层禁止再写 inline boxShadow / Tailwind shadow-md/lg/xl/2xl，
    * 统一通过 <SurfaceCard> 等语义组件或 shadow-card / shadow-overlay 工具类。
+   * 修改本组变量即可批量影响全站所有卡片，无需跨文件搜索替换。
    * ─────────────────────────────────────────────────────────── */
-  /* L1 表层卡片：页面主区块、列表卡、统计卡、Agent 卡 */
+  /* L1 表层卡片：页面主区块、列表卡、统计卡（管理端 SurfaceCard 在用） */
   --shadow-card: 0px 1px 4px rgba(0, 0, 0, 0.05), 0px 0px 2px rgba(0, 0, 0, 0.1);
+  /* L1 hover 态：阴影升一档（接近 L4 配置卡），用于 SurfaceCard hover prop 启用时 */
+  --shadow-card-hover: 0px 4px 12px -2px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.06);
+  /* L6 用户端业务卡（TenantCard）阴影：严格对齐 Figma 1077:33987 effect_KNJ2UO
+   *   单层 0px 1px 4px rgba(0, 0, 0, 0.05)，比 --shadow-card 少一层 2px 环形描边阴影。
+   *   2px 环描边在 12px 大圆角卡片上会形成"灰圈感"，与 Figma 不符（Figma 是干净底阴影）。
+   *   active（按下）态也复用本变量，避免按下瞬间出现 2px 描边闪烁。 */
+  --shadow-tenant-card: 0px 1px 4px 0px rgba(0, 0, 0, 0.05);
   /* L2 内嵌卡片：卡片内的子卡 / 表格容器（无阴影、靠浅描边） */
   --shadow-inner: none;
   /* L3 浮层：Dialog / Sheet / Drawer / Popover / DropdownMenu */

@@ -11,7 +11,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
-import { SurfaceCard } from "@/components/ui/Surface";
+import { TenantCard } from "@/components/ui/Surface";
+import { TenantSection } from "@/components/ui/TenantSection";
 import { Alert, AlertDescription, AlertInfoIcon } from "@/components/ui/alert";
 import { Button, SmallIconStateButton } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -493,7 +494,7 @@ function ModelRow({
 }) {
   return (
     <div
-      className="flex items-center justify-between rounded-[4px] px-4 py-3.5"
+      className="flex items-center justify-between rounded-[12px] px-4 py-3.5"
       style={{ background: "#FAFAFA", border: "1px solid #E6E9EF" }}
     >
       <div className="flex items-center gap-2">
@@ -530,7 +531,7 @@ function ModelRow({
 function ChannelRow({ name }: { name: string }) {
   return (
     <div
-      className="flex items-center justify-between rounded-[4px] px-4 py-3.5"
+      className="flex items-center justify-between rounded-[12px] px-4 py-3.5"
       style={{ background: "#FAFAFA", border: "1px solid #E6E9EF" }}
     >
       <div className="flex items-center gap-2">
@@ -673,7 +674,7 @@ function SkillInstallModal({
         {/* 管理员配置提示 */}
         <div className="px-6 pb-3">
           <div
-            className="flex items-start gap-2 p-3 rounded-[4px]"
+            className="flex items-start gap-2 p-3 rounded-[12px]"
             style={{ background: "#EBF5FF", border: "1px solid #BFDBFE" }}
           >
             <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#1447E6" }} />
@@ -695,14 +696,15 @@ function SkillInstallModal({
               style={{ color: "#b0b6c3" }}
             />
             <Input
+              tenant
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="输入 Skill 名称搜索并添加"
-              className="h-9 pl-9 rounded-[4px] text-sm"
+              className="h-9 pl-9 text-sm"
             />
           </div>
           <Select value={sortBy} onValueChange={(v) => setSortBy(v as "default" | "downloads" | "favorites")}>
-            <SelectTrigger className="h-9 w-[120px] rounded-[4px] text-xs shrink-0">
+            <SelectTrigger tenant className="h-9 w-[120px] text-xs shrink-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -717,7 +719,7 @@ function SkillInstallModal({
         <div className="px-6 pb-3">
           <div className="flex flex-wrap gap-2">
             {SKILL_CATEGORIES.map((cat) => (
-              <Button key={cat.id} variant="plain" size="sm" data-state={category === cat.id ? "active" : undefined} onClick={() => setCategory(cat.id)}>
+              <Button key={cat.id} variant="tenant-plain" size="sm" data-state={category === cat.id ? "active" : undefined} onClick={() => setCategory(cat.id)}>
                 {cat.label}
               </Button>
             ))}
@@ -725,7 +727,7 @@ function SkillInstallModal({
         </div>
 
         {/* 技能列表 */}
-        <div className="mx-6 mb-4 max-h-[340px] overflow-y-auto rounded-[4px] border border-[#E5E5E5] bg-white">
+        <div className="mx-6 mb-4 max-h-[340px] overflow-y-auto rounded-[12px] border border-[#E5E5E5] bg-white">
           {filteredSkills.length === 0 ? (
             <div className="px-4 py-10 text-center text-xs text-[#A3A3A3]">
               暂无符合条件的技能
@@ -802,7 +804,7 @@ function SkillInstallModal({
         {/* 底部操作栏（§8.7 无分割线，按钮右对齐） */}
         <DialogFooter className="mx-0 mb-0 px-6 pb-6 pt-4 gap-3">
           <Button
-            variant="claw-outline"
+            variant="tenant-outline"
             onClick={() => onOpenChange(false)}
           >
             取消
@@ -1140,139 +1142,19 @@ export default function OpenClawDetailGuide() {
   // 通道配置卡是否显示：默认展开（与「无备用模型」逻辑保持一致）；点击取消收起
   const [showChannelConfig, setShowChannelConfig] = useState(true);
 
-  // 点阵高度计算（复用"我的 Agent"方案）
-  // 设计意图：点阵从 header 底部横线开始，到底部分隔栏顶部横线结束（下方 75px 区域为深灰背景）
-  const roRef = useRef<ResizeObserver | null>(null);
-  const middleSectionRef = useRef<HTMLDivElement | null>(null);
-  const headerElRef = useRef<HTMLElement | null>(null);
-  const bottomBarElRef = useRef<HTMLDivElement | null>(null);
-  const [dotsTop, setDotsTop] = useState(112);
-  const [dotsBottom, setDotsBottom] = useState(75);
-
-  const recompute = useCallback(() => {
-    const middle = middleSectionRef.current;
-    const header = headerElRef.current;
-    const bottomBar = bottomBarElRef.current;
-    if (!middle) return;
-    // top: header 底部 = 点阵起点
-    if (header) {
-      const middleRect = middle.getBoundingClientRect();
-      const headerRect = header.getBoundingClientRect();
-      setDotsTop(headerRect.bottom - middleRect.top);
-    }
-    // bottom: 底部分隔栏顶部 = 点阵终点
-    if (bottomBar) {
-      const middleRect = middle.getBoundingClientRect();
-      const barRect = bottomBar.getBoundingClientRect();
-      const barTopInMiddle = barRect.top - middleRect.top;
-      setDotsBottom(middle.offsetHeight - barTopInMiddle);
-    }
-  }, []);
-
-  const middleRef = useCallback((node: HTMLDivElement | null) => {
-    middleSectionRef.current = node;
-    recompute();
-  }, [recompute]);
-
-  const headerRef = useCallback((node: HTMLElement | null) => {
-    if (roRef.current) {
-      roRef.current.disconnect();
-      roRef.current = null;
-    }
-    headerElRef.current = node;
-    if (!node) {
-      recompute();
-      return;
-    }
-    recompute();
-    const ro = new ResizeObserver(recompute);
-    ro.observe(node);
-    if (middleSectionRef.current) ro.observe(middleSectionRef.current);
-    if (bottomBarElRef.current) ro.observe(bottomBarElRef.current);
-    roRef.current = ro;
-  }, [recompute]);
-
-  const bottomBarRef = useCallback((node: HTMLDivElement | null) => {
-    bottomBarElRef.current = node;
-    recompute();
-    if (node && roRef.current) {
-      roRef.current.observe(node);
-    }
-  }, [recompute]);
-
-  useEffect(() => {
-    window.addEventListener("resize", recompute);
-    return () => window.removeEventListener("resize", recompute);
-  }, [recompute]);
-
   return (
     <TenantLayout>
-      {/* 用户端通用骨架（§7.4）：min-w-[1200px] + max-w-[1920px] + 80px 占位带
-          min-h-[calc(100vh-64px)] 保证内容少时也能撑满视口，避免底部出现没有点阵/竖线的"裸露背景"区 */}
-      <div className="min-w-[1200px] overflow-x-clip">
-        <div className="max-w-[1920px] mx-auto flex items-stretch page-enter min-h-[calc(100vh-64px)]">
-          {/* 左侧 80px 占位带 */}
-          <div aria-hidden className="shrink-0 w-20 self-stretch" />
-
-          {/* 中间内容区：与 MyOpenClaw 对齐，paddingBottom 75px 留出底部空白 */}
-          <div ref={middleRef} className="flex-1 min-w-0 relative flex flex-col" style={{ paddingBottom: "75px" }}>
-            {/* 左侧点阵装饰层：从 Header 底部横线 ~ 底部分隔栏顶部横线（中间区域） */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                top: `${dotsTop}px`,
-                bottom: `${dotsBottom}px`,
-                left: "calc((100% - 100vw) / 2)",
-                right: "100%",
-                backgroundImage:
-                  "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                backgroundSize: "12px 12px",
-              }}
-            />
-            {/* 右侧点阵装饰层 */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute"
-              style={{
-                top: `${dotsTop}px`,
-                bottom: `${dotsBottom}px`,
-                left: "100%",
-                right: "calc((100% - 100vw) / 2)",
-                backgroundImage:
-                  "radial-gradient(circle, #DFE2E5 1px, transparent 1.1px)",
-                backgroundSize: "12px 12px",
-              }}
-            />
-            {/* 左右贯穿竖线（top-0 到 bottom-0 全高贯穿） */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute top-0 bottom-0 left-0 z-30"
-              style={{ width: "1px", backgroundColor: "#E2E8F0" }}
-            />
-            <div
-              aria-hidden
-              className="pointer-events-none absolute top-0 bottom-0 right-0 z-30"
-              style={{ width: "1px", backgroundColor: "#E2E8F0" }}
-            />
-
+      {/* 用户端单层 120px 骨架（SKILL-TENANT §6.1.1） */}
+      <div className="min-w-[1200px]">
+        <div className="max-w-[1920px] mx-auto page-enter">
+          <div
+            className="relative min-h-[calc(100vh-64px)] flex flex-col"
+            style={{ paddingLeft: 120, paddingRight: 120, paddingBottom: 75 }}
+          >
             {/* 内容主体 —— flex-1 + flex-col 保证不满一屏时底部吸底，超出一屏时跟随 */}
             <div className="relative flex flex-col flex-1">
               {/* ======== Header ======== */}
-              <header ref={headerRef} className="relative flex items-end justify-between gap-6 px-[42px] py-6">
-                {/* Header 底部横线（贯穿全视口） */}
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute"
-                  style={{
-                    left: "calc(50% - 50vw)",
-                    width: "100vw",
-                    bottom: 0,
-                    height: "1px",
-                    backgroundColor: "#E2E8F0",
-                  }}
-                />
-
+              <header className="relative flex items-end justify-between gap-6 py-6">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-3">
                   {/* 返回按钮 */}
@@ -1385,7 +1267,7 @@ export default function OpenClawDetailGuide() {
                 <div className="flex items-center gap-2">
                   {allowSelfUpgrade ? (
                     <Button
-                      variant="claw-outline"
+                      variant="tenant-outline"
                       size="claw"
                       onClick={() => {
                         toast.success("配置已更新至最新版本");
@@ -1399,7 +1281,7 @@ export default function OpenClawDetailGuide() {
                         {/* 用 span 包裹 disabled Button，确保 Tooltip 在禁用态仍可触发 */}
                         <span tabIndex={0}>
                           <Button
-                            variant="claw-outline"
+                            variant="tenant-outline"
                             size="claw"
                             disabled
                             className="cursor-not-allowed opacity-60"
@@ -1414,21 +1296,21 @@ export default function OpenClawDetailGuide() {
                     </Tooltip>
                   )}
                   <Button
-                    variant="claw-outline"
+                    variant="tenant-outline"
                     size="claw"
                     onClick={() => setPanelDialogOpen(true)}
                   >
                     开启Agent面板
                   </Button>
                   <Button
-                    variant="claw-outline"
+                    variant="tenant-outline"
                     size="claw"
                     onClick={() => navigate("/admin/agent-migration")}
                   >
                     Agent 迁移
                   </Button>
                   <Button
-                    variant="claw-primary"
+                    variant="tenant-primary"
                     size="claw"
                     onClick={() => {
                       localStorage.setItem("openclaw_view_mode", "chat");
@@ -1451,11 +1333,10 @@ export default function OpenClawDetailGuide() {
                 </div>
               </header>
 
-              {/* ======== 横向 Segmented Tab（§8.6 规范）======== */}
-              <div className="relative px-[42px] py-4">
+              {/* ======== 横向 Segmented Tab（§8.6 规范，0522 胶囊版）======== */}
+              <div className="relative py-4">
                 <div
-                  className="inline-flex items-center gap-1 p-1 rounded-[4px]"
-                  style={{ background: "#F5F5F5" }}
+                  className="inline-flex items-center gap-1 p-1 rounded-full bg-muted"
                   role="tablist"
                   aria-label="详情页 Tab 切换"
                 >
@@ -1467,12 +1348,11 @@ export default function OpenClawDetailGuide() {
                         role="tab"
                         aria-selected={active}
                         onClick={() => setActiveTab(t.id)}
-                        className={`px-3 py-1.5 text-sm rounded-[3px] transition-all duration-150 ${
+                        className={`px-3 py-1.5 text-sm rounded-full transition-all duration-150 ${
                           active
-                            ? "bg-white text-[#0A0A0A] font-medium"
-                            : "text-[#737373] hover:text-[#0A0A0A] font-normal"
+                            ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)]"
+                            : "text-muted-foreground hover:text-foreground font-normal"
                         }`}
-                        style={active ? { boxShadow: "var(--shadow-segment)" } : undefined}
                       >
                         {t.label}
                       </button>
@@ -1482,11 +1362,11 @@ export default function OpenClawDetailGuide() {
               </div>
 
               {/* ======== 三栏卡片 ======== */}
-              <div className="px-[42px] py-0 flex-1">
+              <div className="py-0 flex-1">
               {activeTab === "basic" && (
                 <div className="grid grid-cols-3 gap-6">
                   {/* ===== 01/ 模型（Models） ===== */}
-                  <SurfaceCard className="flex flex-col p-6 gap-4">
+                  <TenantCard padding="none" className="flex flex-col p-6 gap-4">
                     {/* 标题区 */}
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
@@ -1525,7 +1405,7 @@ export default function OpenClawDetailGuide() {
                           {appliedModels.filter(m => m.primary).map((model) => (
                             <div key={model.id} className="flex flex-col gap-2 mb-2 last:mb-0">
                               <div
-                                className="rounded-[4px] p-3 flex items-center justify-between gap-2"
+                                className="rounded-[12px] p-3 flex items-center justify-between gap-2"
                                 style={{ border: "1px solid #E5E5E5" }}
                               >
                                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
@@ -1556,7 +1436,7 @@ export default function OpenClawDetailGuide() {
 
                               {/* 主模型「修改为」编辑卡 —— 与添加备用模型卡片样式一致 */}
                               {editingPrimaryId === model.id && (
-                                <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-2">
+                                <div className="relative rounded-[12px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-2">
                                   <button
                                     type="button"
                                     onClick={() => setEditingPrimaryId(null)}
@@ -1646,7 +1526,7 @@ export default function OpenClawDetailGuide() {
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Button
-                                      variant="claw-outline"
+                                      variant="tenant-outline"
                                       size="sm"
                                       className="w-full"
                                       onClick={handleConfirmEditPrimary}
@@ -1679,7 +1559,7 @@ export default function OpenClawDetailGuide() {
                         </div>
                         {/* 添加模型操作区（仅由 showAddBackupModel 控制；点击取消即收起） */}
                         {showAddBackupModel && (
-                        <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-3 mb-3">
+                        <div className="relative rounded-[12px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-3 mb-3">
                     <button
                       type="button"
                       onClick={() => {
@@ -1764,7 +1644,7 @@ export default function OpenClawDetailGuide() {
                           {/* 操作按钮（底部均分） */}
                           <div className="flex items-center gap-2">
                             <Button
-                              variant="claw-outline"
+                              variant="tenant-outline"
                               size="sm"
                               className="w-full"
                               onClick={() => { handleApplyModel(); setShowAddBackupModel(false); }}
@@ -1780,7 +1660,7 @@ export default function OpenClawDetailGuide() {
                             {appliedModels.filter(m => !m.primary).map((model) => (
                               <div
                                 key={model.id}
-                                className="rounded-[4px] p-3 flex items-center justify-between"
+                                className="rounded-[12px] p-3 flex items-center justify-between"
                                 style={{ border: "1px solid #E5E5E5" }}
                               >
                                 <div className="flex flex-col gap-0.5">
@@ -1801,10 +1681,10 @@ export default function OpenClawDetailGuide() {
                         )}
                       </div>
                     </div>
-                  </SurfaceCard>
+                  </TenantCard>
 
                   {/* ===== 02/ 通道（Channels） ===== */}
-                  <SurfaceCard className="flex flex-col p-6 gap-3">
+                  <TenantCard padding="none" className="flex flex-col p-6 gap-3">
                     {/* 标题区 */}
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
@@ -1858,7 +1738,7 @@ export default function OpenClawDetailGuide() {
                         )}
                         {/* 添加接入通道配置卡（展开态） */}
                         {showChannelConfig && (
-                          <div className="relative rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
+                          <div className="relative rounded-[12px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
                             {appliedChannels.length > 0 && (
                             <button
                               type="button"
@@ -1878,7 +1758,7 @@ export default function OpenClawDetailGuide() {
                             </div>
                             {/* 通道选择下拉 */}
                             <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); }}>
-                              <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
+                              <SelectTrigger tenant className="w-full border-[#E5E5E5] bg-white">
                                 <SelectValue placeholder="选择通道类型" />
                               </SelectTrigger>
                               <SelectContent>
@@ -1898,11 +1778,12 @@ export default function OpenClawDetailGuide() {
                                     <label className="text-xs font-medium text-[#525252]">{field.label}</label>
                                     <div className="relative">
                                       <Input
+                                        tenant
                                         type={field.secret && !visibleSecrets.has(field.key) ? "password" : "text"}
                                         placeholder={`请输入${field.label}`}
                                         value={channelFields[field.key] || ""}
                                         onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
-                                        className="h-9 rounded-[4px] text-sm pr-9 bg-white border-[#E5E5E5]"
+                                        className="h-9 text-sm pr-9 bg-white border-[#E5E5E5]"
                                       />
                                       {field.secret && (
                                         <button
@@ -1922,7 +1803,7 @@ export default function OpenClawDetailGuide() {
                             {/* 授权添加 按钮 */}
                             <div className="flex items-center gap-2">
                               <Button
-                                variant="claw-outline"
+                                variant="tenant-outline"
                                 size="sm"
                                 className="w-full"
                                 onClick={() => { handleApplyChannel(); setShowChannelConfig(false); }}
@@ -1946,7 +1827,7 @@ export default function OpenClawDetailGuide() {
                           {appliedChannels.map((ch, idx) => (
                             <div
                               key={`${ch.channelValue}-${idx}`}
-                              className="rounded-[4px] border border-[#E5E5E5] overflow-hidden"
+                              className="rounded-[12px] border border-[#E5E5E5] overflow-hidden"
                             >
                               {/* 通道头部 */}
                               <div
@@ -2002,10 +1883,10 @@ export default function OpenClawDetailGuide() {
                         </div>
                         )}
                       </div>
-                  </SurfaceCard>
+                  </TenantCard>
 
                   {/* ===== 03/ 技能（Skills） ===== */}
-                  <SurfaceCard className="flex flex-col p-6 gap-3">
+                  <TenantCard padding="none" className="flex flex-col p-6 gap-3">
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
                       style={{ borderBottom: "1px solid #E5E5E5" }}
@@ -2032,14 +1913,14 @@ export default function OpenClawDetailGuide() {
                       <ConfiguredBadge />
                     </div>
 
-                    {/* 安装技能（白底灰边黑字 二级按钮样式） */}
+                    {/* 安装技能（统一使用 tenant-outline 变体，胶囊圆角） */}
                     <Button
-                      variant="outline"
+                      variant="tenant-outline"
                       size="lg"
-                      className="w-full bg-white border border-[#E5E5E5] text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
+                      className="w-full"
                       onClick={() => setSkillModalOpen(true)}
                     >
-                      <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
+                      <Plus className="w-3.5 h-3.5" />
                       安装技能
                     </Button>
 
@@ -2057,12 +1938,13 @@ export default function OpenClawDetailGuide() {
                           style={{ color: "rgba(0,0,0,0.4)" }}
                         />
                         <Input
+                          tenant
                           placeholder="输入skill名称搜索"
-                          className="h-9 pl-9 rounded-[4px] text-sm"
+                          className="h-9 pl-9 text-sm"
                         />
                       </div>
                       <div
-                        className="rounded-[4px] flex flex-col h-[280px] overflow-y-auto"
+                        className="rounded-[12px] flex flex-col h-[280px] overflow-y-auto"
                         style={{ background: "#FAFAFA", border: "1px solid #E6E9EF" }}
                       >
                         {installedSkills.filter((s) =>
@@ -2108,7 +1990,7 @@ export default function OpenClawDetailGuide() {
                           )}
                         </div>
                         <div
-                          className="rounded-[4px] flex flex-col max-h-[280px] overflow-y-auto"
+                          className="rounded-[12px] flex flex-col max-h-[280px] overflow-y-auto"
                           style={{ background: "#FAFAFA", border: "1px solid #E6E9EF" }}
                         >
                           {pendingSkills.map((s) => (
@@ -2168,7 +2050,7 @@ export default function OpenClawDetailGuide() {
                         </div>
                       </div>
                     )}
-                  </SurfaceCard>
+                  </TenantCard>
                 </div>
               )}
 
@@ -2181,27 +2063,30 @@ export default function OpenClawDetailGuide() {
 
               {/* 记忆管理 tab */}
               {activeTab === "memory" && (
-                <SurfaceCard className="p-0">
-                  <div className="px-6 pt-6 pb-4 border-b border-[#E5E5E5]">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-semibold" style={{ color: "#0A0A0A" }}>Memory Pro 服务</h2>
+                <TenantSection
+                  title={
+                    <span className="flex items-center gap-2">
+                      <span>Memory Pro 服务</span>
                       <Badge variant="secondary" className="bg-[rgba(22,163,74,0.08)] border-0 text-[#16A34A]">已开启</Badge>
-                    </div>
-                    <p className="text-sm mt-1" style={{ color: "#737373", lineHeight: "17px" }}>基于腾讯云向量数据库的企业级记忆服务，实现语义级记忆检索与数据管理。</p>
-                  </div>
-                  <div className="p-6">
-                    <MemoryPreview
-                      memoryStatus={memoryStatus}
-                      proQuotaAvailable={proQuotaAvailable}
-                      showConfidence={false}
-                      isLoading={memoryLoading}
-                      onStatusChange={async (newStatus) => {
-                        await new Promise((resolve) => setTimeout(resolve, 1000));
-                        setMemoryStatus(newStatus);
-                      }}
-                    />
-                  </div>
-                </SurfaceCard>
+                    </span>
+                  }
+                  cardPadding="none"
+                  className="p-6"
+                >
+                  <p className="text-sm -mt-1 mb-4" style={{ color: "#737373", lineHeight: "17px" }}>
+                    基于腾讯云向量数据库的企业级记忆服务，实现语义级记忆检索与数据管理。
+                  </p>
+                  <MemoryPreview
+                    memoryStatus={memoryStatus}
+                    proQuotaAvailable={proQuotaAvailable}
+                    showConfidence={false}
+                    isLoading={memoryLoading}
+                    onStatusChange={async (newStatus) => {
+                      await new Promise((resolve) => setTimeout(resolve, 1000));
+                      setMemoryStatus(newStatus);
+                    }}
+                  />
+                </TenantSection>
               )}
 
               {/* 网盘管理 tab */}
@@ -2223,9 +2108,8 @@ export default function OpenClawDetailGuide() {
               {/* 龙虾医院 tab（仅含「一键修复」卡片，引导页不嵌入龙虾医生对话） */}
               {activeTab === "doctor" && (
                 <div className="flex flex-col gap-5">
-                  <SurfaceCard className="p-6">
-                    <h2 className="text-base font-semibold mb-2" style={{ color: "#0A0A0A" }}>一键修复</h2>
-                    <p className="text-sm mb-4" style={{ color: "#737373" }}>
+                  <TenantSection title="一键修复" cardPadding="none" className="p-6">
+                    <p className="text-sm -mt-1 mb-4" style={{ color: "#737373" }}>
                       适合龙虾配置文件中 API KEY、插件、通道等配置异常导致无法启动等常见问题，系统自动检测并尝试修复。
                     </p>
                     <ul className="space-y-2 mb-6">
@@ -2245,7 +2129,7 @@ export default function OpenClawDetailGuide() {
                     </ul>
                     <div className="pt-4" style={{ borderTop: "1px solid #E5E5E5" }}>
                       {quickFixState === "idle" && (
-                        <Button variant="claw-primary" size="claw-sm" onClick={runQuickFixMock}>
+                        <Button variant="tenant-primary" size="claw-sm" onClick={runQuickFixMock}>
                           一键修复
                         </Button>
                       )}
@@ -2274,45 +2158,31 @@ export default function OpenClawDetailGuide() {
                         </div>
                       )}
                     </div>
-                  </SurfaceCard>
+                  </TenantSection>
 
                   {/* 引导页提示：龙虾医生对话需进入实例详情 */}
-                  <SurfaceCard className="p-6">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h2 className="text-base font-semibold" style={{ color: "#0A0A0A" }}>龙虾医生</h2>
-                      <Badge variant="secondary" className="text-[#737373] bg-[#F5F5F5] border-transparent rounded-[2px] px-1.5 py-0.5 text-[10px] font-medium">
-                        未开启
-                      </Badge>
-                    </div>
-                    <p className="text-sm" style={{ color: "#737373" }}>
+                  <TenantSection
+                    title={
+                      <span className="flex items-center gap-2">
+                        <span>龙虾医生</span>
+                        <Badge variant="secondary" className="text-[#737373] bg-[#F5F5F5] border-transparent rounded-[2px] px-1.5 py-0.5 text-[10px] font-medium">
+                          未开启
+                        </Badge>
+                      </span>
+                    }
+                    cardPadding="none"
+                    className="p-6"
+                  >
+                    <p className="text-sm -mt-1" style={{ color: "#737373" }}>
                       支持自然语言对话式排障，需在管控端开启「允许用户使用龙虾医生」后，
                       进入实例详情页查看完整对话能力。
                     </p>
-                  </SurfaceCard>
+                  </TenantSection>
                 </div>
               )}
               </div>
-
-              {/* 底部分隔栏（对齐 MyOpenClaw 分页栏样式）：自带顶部贯穿全视口横线，
-                  作为点阵装饰层的下边界；下方由父容器 paddingBottom:75px 留出空白 */}
-              <div ref={bottomBarRef} className="relative mt-6 px-6 py-3 h-9">
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute"
-                  style={{
-                    left: "calc(50% - 50vw)",
-                    width: "100vw",
-                    top: 0,
-                    height: "1px",
-                    backgroundColor: "#E2E8F0",
-                  }}
-                />
-              </div>
             </div>
           </div>
-
-          {/* 右侧 80px 占位带 */}
-          <div aria-hidden className="shrink-0 w-20 self-stretch" />
         </div>
       </div>
 
@@ -2332,7 +2202,7 @@ export default function OpenClawDetailGuide() {
                 访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
               </AlertDescription>
             </Alert>
-            <div className="rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+            <div className="rounded-[12px] border border-[#E5E5E5] overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">WebSocket URL</span>
                 <a
@@ -2370,7 +2240,7 @@ export default function OpenClawDetailGuide() {
           </div>
           <DialogFooter className="gap-3">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               onClick={() => setPanelDialogOpen(false)}
             >
               关闭

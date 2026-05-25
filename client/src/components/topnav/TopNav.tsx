@@ -1,11 +1,16 @@
 /**
  * TopNav - 用户端顶部导航壳
  *
- * 设计来源：Figma 公共组件/导航（节点 358:2322 / 297:3719）
- * 视觉规范：
- *   - 容器：高 64px，padding 12px 28px，背景 #FFFFFF（带 95% 半透 + 模糊），
- *           底边 1px solid #E2E8F0
+ * 设计来源：Figma 公共组件/导航（节点 358:2322 / 297:3719），0522 修改点（1141:11612）
+ * 视觉规范（v2 / 0522）：
+ *   - 容器：高 64px，padding 12px 28px
+ *   - 背景：rgba(255,255,255,0.4) + backdrop-blur-md（毛玻璃半透，让下方"流动蓝图"渐变和卡片若隐若现）
+ *   - 底边：1px solid #E2E8F0
  *   - 布局：CSS Grid 三栏（左 Logo / 中 Tabs / 右功能区）
+ *
+ * 与管控端 AdminLayout 顶栏的差异：
+ *   - 管控端使用左侧导航 + 不透明顶栏；用户端使用半透明顶栏，依赖 backdrop-blur 与下方背景产生层次
+ *   - 仅供用户端 (Tenant) 使用，管控端勿引用本组件
  *
  * 适配规则：
  *   - 三栏 Grid：1fr auto 1fr，中间栏 justify-self:center 天然居中
@@ -47,15 +52,17 @@ export default function TopNav({
 }: TopNavProps) {
   return (
     <header
-      className={`sticky top-0 z-50 h-[64px] bg-white/95 backdrop-blur-md ${className}`}
+      className={`sticky top-0 z-50 h-[64px] backdrop-blur-md ${className}`}
       style={{
+        background: "rgba(255, 255, 255, 0.4)",
         borderBottom: "1px solid #E2E8F0",
         minWidth: "1200px",
       }}
     >
-      {/* 三栏 Grid：左 1fr / 中 auto / 右 1fr — 中栏天然页面正中 */}
+      {/* 三栏 Grid：左 1fr / 中 auto / 右 1fr — 中栏天然页面正中
+          [Figma 1077-33929] 顶栏左右 padding = 28px（px-7） */}
       <div
-        className="h-full grid items-center px-10 min-w-[1200px]"
+        className="h-full grid items-center px-7 min-w-[1200px]"
         style={{
           gridTemplateColumns: "1fr auto 1fr",
           gap: "24px",

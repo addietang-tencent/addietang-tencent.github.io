@@ -18,6 +18,20 @@ description: >
 
 ---
 
+## 📚 配套规范（必读）
+
+本文件是**全平台共享**的基础组件规范。在以下场景中必须叠加加载额外规范：
+
+| 场景 | 必读规范 | 冲突优先级 |
+|------|----------|------------|
+| 用户端（Tenant）页面 / 组件 | 📄 [SKILL-TENANT.md](./SKILL-TENANT.md) | **Tenant > 本文件**（仅在用户端） |
+| 管控端（Admin）页面 / 组件 | 📄 [SKILL.md](./SKILL.md) | 本文件 > SKILL.md |
+| 设计语言 / 色彩 / 布局通则 | 📄 [SKILL.md](./SKILL.md) | — |
+
+**用户端共享组件扩展约束**：用户端如需对 Button / Card / Tabs 等共享组件做差异化样式，**必须新增 `tenant-*` 变体**，禁止覆盖现有 `claw-*` 变体或默认样式，避免影响管控端。具体规则见 `SKILL-TENANT.md`。
+
+---
+
 ## 0. Typography 字体组件（用户端基础文字入口）
 
 **文件**: `client/src/components/ui/Typography.tsx`  
@@ -490,7 +504,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ---
 
-## 10.5 Tab 切换卡（筛选标签按钮）
+## 11. Tab 切换卡（筛选标签按钮）
 
 > Figma: node 1086:6426 (ClawPro 项目设计)
 > 用于分类筛选场景（如技能库分类、技能列表分类等）
@@ -538,7 +552,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ---
 
-## 10.6 Alert 提示组件
+## 12. Alert 提示组件
 
 **文件**: `client/src/components/ui/alert.tsx`  
 **Token 定义**: `client/src/index.css`
@@ -668,7 +682,7 @@ import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/a
 
 ---
 
-## 10.7 树结构组件（GroupTree / FileTree）
+## 13. 树结构组件（GroupTree / FileTree）
 
 > 参考: shadcn/ui Collapsible FileTree（https://ui.shadcn.com/docs/components/base/collapsible#file-tree）
 > 实现文件: `client/src/pages/admin/MemberManagement/GroupList.tsx`、`client/src/pages/admin/SkillLibrary/SkillDetail.tsx`
@@ -784,32 +798,36 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 ---
 
-## 11. 其他组件速查
+## 14. Badge 徽标组件
 
-| 组件 | 关键样式 |
-|------|---------|
-| Tabs | 活跃态 `#355EF1` + 底色 `#f3f3f4` |
-| Segment | 活跃态 `#020617 font-semibold` 白底阴影 + 底色 `#f3f3f4` |
-| StatusTag | green `#E9F8EB/#008236` · gray `#F5F5F5/#0A0A0A` · blue `#E8ECFE/#1447E6` |
-| Textarea | 与 Input 一致 |
-| Badge | `rounded-full` + 品牌色 variants |
-| DropdownMenu | `rounded-[8px]` + 三层阴影 + hover `bg-[#f5f5f5]` |
-| AlertDialog | 与 Dialog 一致 |
-| Sheet | 遮罩 45% + 无 shadow |
-| Popover | `rounded-[8px] border-[#e5e5e5]` + 三层阴影 |
-| Separator | `bg-[#e5e5e5]` |
-| Skeleton | `bg-[#f3f3f4] animate-pulse` |
-| Progress | 轨道 `#f3f3f4` + 填充 `#355EF1` |
-| Pagination | 卡片式 `rounded-lg border-[#e5e5e5]` + 激活 `border-[#1447E6] text-[#355EF1]` + hover `bg-[#f5f5f5]` |
-| RadioGroup | 边框 `#d3d6db` + checked 圆点 `#355EF1` |
-| Slider | 轨道 `#f3f3f4` + 填充 `#355EF1` + 把手白色 border |
-| Accordion | `border-[#e5e5e5]` 卡片式 + 无 shadow |
-| Tooltip | `bg-[#020617] text-white rounded-[4px]` |
-| Card | `rounded-xl border-[#E5E5E5]` 无 boxShadow（用 SurfaceCard） |
+**文件**: `client/src/components/ui/badge.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 圆角 | `rounded-full` |
+| padding | `px-2.5 py-0.5` |
+| 字号 | `text-xs` |
+| 图标 | `size-3 gap-1` |
+
+**变体：**
+
+| variant | 背景 | 文字 |
+|---------|------|------|
+| `default` | `#355EF1` | 白色 |
+| `secondary` | `#f3f3f4` | `#020617` |
+| `destructive` | `#d42a1e` | 白色 |
+| `outline` | 白色 + `border-[#E5E5E5]` | `#020617` |
+
+```tsx
+import { Badge } from "@/components/ui/badge";
+<Badge>New</Badge>
+<Badge variant="secondary">Beta</Badge>
+<Badge variant="destructive">错误</Badge>
+```
 
 ---
 
-## 11.1 Table 表格组件规范
+## 15. Table 表格组件规范
 
 **文件**: `client/src/components/ui/table.tsx`
 
@@ -897,7 +915,249 @@ import {
 
 ---
 
-## 11.5 Segment 分段选择器规范
+## 16. StatusTag 状态标签规范
+
+**文件**: `client/src/components/ui/status-tag.tsx`
+
+> 用于表格、卡片、列表中表示状态（运行中/已停止/待处理）或分类属性（管理员/用户/个人）的轻量标签。
+
+**设计令牌：**
+
+| Token | Value |
+|-------|-------|
+| height | `20px` (h-5) |
+| border-radius | `full` (rounded-full) |
+| padding | `px-2 py-[2px]` |
+| font | `text-xs (12px) leading-3 tracking-[0.18px]` |
+| dot size | `6px` (w-1.5 h-1.5 rounded-full) |
+| gap (dot ↔ text) | `4px` (gap-1) |
+
+**变体色板：**
+
+| variant | 背景 | 文字/圆点 | 使用场景 |
+|---------|------|-----------|----------|
+| `green` | `#E9F8EB` | `#008236` | 正常、运行中、已完成、开启 |
+| `gray` | `#F5F5F5` | `#0A0A0A` | 默认、待处理、关闭、用户角色 |
+| `blue` | `#E8ECFE` | `#1447E6` | 管理员、进行中、类型标签 |
+| `red` | `#FEF2F2` | `#DC2626` | 错误、失败、异常 |
+
+**使用方式：**
+
+```tsx
+import { StatusTag } from "@/components/ui/status-tag";
+
+// 带圆点（状态指示）
+<StatusTag variant="green" dot>运行中</StatusTag>
+<StatusTag variant="gray" dot>已停止</StatusTag>
+<StatusTag variant="red" dot>异常</StatusTag>
+
+// 无圆点（分类属性）
+<StatusTag variant="blue">管理员</StatusTag>
+<StatusTag variant="gray">用户</StatusTag>
+<StatusTag variant="blue">个人</StatusTag>
+```
+
+**使用规则：**
+- 表格中状态列必须使用 `StatusTag`，禁止自定义 `<span>` + 颜色 class
+- 开启/关闭状态：`variant="green" dot` / `variant="gray" dot`
+- 角色/类型标签：`variant="blue"` 或 `variant="gray"`（无 dot）
+- 错误/失败状态：`variant="red" dot`
+
+**禁止事项：**
+- 禁止使用自定义的 `bg-blue-50 text-blue-600 rounded-xl` 或 `bg-green-50 text-green-600` 等样式替代 StatusTag
+- 禁止使用红/绿色纯文字（如 `text-green-600` / `text-red-500`）表示开关状态
+- 禁止自定义标签圆角（如 `rounded-xl`），统一使用组件内置的 `rounded-full`
+
+---
+
+## 17. DropdownMenu 下拉菜单规范
+
+**文件**: `client/src/components/ui/dropdown-menu.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 圆角 | `rounded-[8px]` |
+| 最小宽度 | `min-w-[8rem]` |
+| padding (content) | `p-1` |
+| padding (item) | `py-1.5 px-2 text-sm` |
+| hover | `bg-[#f5f5f5]` |
+| 文字 | `#020617` |
+| 图标色 | `#7b818f` |
+| disabled | `#d3d6db` |
+| 分割线 | `bg-[#e5e5e5]` |
+| 阴影 | `0_6px_16px rgba(0,0,0,0.08), 0_3px_6px rgba(0,0,0,0.12), 0_9px_28px rgba(0,0,0,0.05)` |
+
+```tsx
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+```
+
+---
+
+## 18. Tooltip 提示浮层规范
+
+**文件**: `client/src/components/ui/tooltip.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 背景 | `#020617` |
+| 文字 | 白色 |
+| 圆角 | `rounded-[4px]` |
+| padding | `px-3 py-1.5` |
+| 字号 | `text-xs leading-relaxed` |
+
+```tsx
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+<Tooltip>
+  <TooltipTrigger asChild><span>hover me</span></TooltipTrigger>
+  <TooltipContent side="top" className="text-xs">提示文字</TooltipContent>
+</Tooltip>
+```
+
+**禁止事项：**
+- 禁止用 `p-0` 重置 padding 后自定义内部间距
+- 禁止使用过大的 Tooltip（如需展示多行内容，应改用 Popover）
+
+---
+
+## 19. Popover 气泡卡片规范
+
+**文件**: `client/src/components/ui/popover.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 背景 | 白色 |
+| 边框 | `border-[#e5e5e5]` |
+| 圆角 | `rounded-[8px]` |
+| 默认宽度 | `w-72` |
+| padding | `p-4` |
+| 阴影 | 与 DropdownMenu 一致（三层） |
+| sideOffset | `4px` |
+
+```tsx
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+```
+
+---
+
+## 20. Card 卡片规范
+
+**文件**: `client/src/components/ui/card.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 圆角 | `rounded-xl` |
+| 边框 | `border-[#e5e5e5]` |
+| 内间距 | header/content/footer 各 `px-6`，整体 `py-6 gap-6` |
+| 阴影 | 无（如需阴影请使用 `SurfaceCard`） |
+
+**子组件：** `CardHeader` / `CardTitle` / `CardDescription` / `CardContent` / `CardFooter` / `CardAction`
+
+```tsx
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+```
+
+---
+
+## 21. RadioGroup 单选组规范
+
+**文件**: `client/src/components/ui/radio-group.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 尺寸 | `size-4` (16px) |
+| 圆角 | `rounded-full` |
+| 边框默认 | `#E5E5E5` |
+| 边框 hover/checked | `#1447E6` |
+| 圆点填充 | `#355EF1` (size-2) |
+| focus ring | `#355EF1/20` |
+| disabled | `bg-[#f3f3f4] cursor-not-allowed` |
+| 组间距 | `gap-3` |
+
+```tsx
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
+<RadioGroup value={value} onValueChange={setValue}>
+  <div className="flex items-center gap-2">
+    <RadioGroupItem value="a" id="a" />
+    <Label htmlFor="a">选项 A</Label>
+  </div>
+</RadioGroup>
+```
+
+---
+
+## 22. Avatar 头像规范
+
+**文件**: `client/src/components/ui/avatar.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 默认尺寸 | `size-8` (32px) |
+| 圆角 | `rounded-full` |
+| fallback 背景 | `bg-muted` |
+
+```tsx
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
+<Avatar>
+  <AvatarImage src={url} />
+  <AvatarFallback>AB</AvatarFallback>
+</Avatar>
+```
+
+---
+
+## 23. Label 标签规范
+
+**文件**: `client/src/components/ui/label.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 字号 | `text-xs` |
+| 字重 | `font-medium` |
+| 颜色 | `#525252` |
+| 行高 | `leading-none` |
+| disabled | `opacity-50 cursor-not-allowed` |
+
+```tsx
+import { Label } from "@/components/ui/label";
+<Label htmlFor="email">邮箱地址</Label>
+```
+
+---
+
+## 24. Empty 空白页/空状态规范
+
+**文件**: `client/src/components/ui/empty.tsx`
+
+| 属性 | 值 |
+|------|-----|
+| 边框 | `border-dashed border-[#e5e5e5]` |
+| 圆角 | `rounded-[4px]` |
+| padding | `p-6` (移动端) / `md:p-12` (桌面端) |
+| 标题 | `text-lg font-medium` |
+| 描述 | `text-sm text-muted-foreground` |
+| 图标区域 | `size-10 bg-muted rounded-[4px]` + `size-6` 图标 |
+
+```tsx
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
+
+<Empty>
+  <EmptyMedia variant="icon"><InboxIcon /></EmptyMedia>
+  <EmptyHeader>
+    <EmptyTitle>暂无数据</EmptyTitle>
+    <EmptyDescription>当前没有可显示的内容</EmptyDescription>
+  </EmptyHeader>
+</Empty>
+```
+
+**Upload 上传区域**与 Empty 共享相同的 dashed 边框样式，额外约束：边框 `1px`，禁止使用默认 Upload 图标。
+
+---
+
+## 25. Segment 分段选择器规范
 
 文件：`client/src/components/ui/segment.tsx`
 
@@ -941,7 +1201,7 @@ import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/
 
 ---
 
-## 11.6 Pagination 分页器规范
+## 26. Pagination 分页器规范
 
 文件：`client/src/components/ui/pagination.tsx`
 
@@ -1049,7 +1309,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 13. 全局描边颜色规则
+## 27. 全局描边颜色规则
 
 | 用途 | 色值 | 说明 |
 |------|------|------|
@@ -1062,7 +1322,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 14. 强制执行规则
+## 28. 强制执行规则
 
 1. **组件源文件 (`client/src/components/ui/*.tsx`) 只有 addietang 可以修改**
 2. 其他人使用组件时，不允许通过 className 覆盖组件定义的颜色/边框/圆角
@@ -1078,7 +1338,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 15. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
+## 29. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
 
 > **Owner**: miekoyychen  
 > **源文件**: `client/src/components/ui/admin-sidebar.tsx`  

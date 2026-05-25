@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
 /**
  * Button 组件
  *
- * 在 shadcn 默认 variant/size 之外，扩展了一组「ClawPro Figma 按钮规范」变体（前缀 `claw-`），
- * 严格对齐设计稿 Figma ComponentSet 317:1051「按钮」。
+ * 在 shadcn 默认 variant/size 之外，扩展了两组「ClawPro Figma 按钮规范」变体：
+ *   - `claw-*`   ：管控端（Admin）按钮，4px 圆角，对齐 Figma ComponentSet 317:1051
+ *   - `tenant-*` ：用户端（Tenant）按钮，全圆角胶囊，对齐 Figma 0522 修改点 / node 1141:11617~1141:11909
  *
- * 设计令牌（来自 Figma 317:1051）：
+ * 设计令牌（claw-*，来自 Figma 317:1051）：
  *   ┌─────────────────────────┬──────────────────────────────────────────────────────────────┐
  *   │ Token                   │ Value                                                         │
  *   ├─────────────────────────┼──────────────────────────────────────────────────────────────┤
@@ -26,18 +27,27 @@ import { cn } from "@/lib/utils";
  *   │ icon size               │ 16×16（已由基类 [&_svg:not([size-])]:size-4 提供）              │
  *   └─────────────────────────┴──────────────────────────────────────────────────────────────┘
  *
- * 使用示例：
- *   <Button variant="claw-outline" size="claw">  // 36 高 / 24 padding / 8 gap
- *     <Settings /> 详细配置
- *   </Button>
+ * 设计令牌（tenant-*，来自 Figma 0522 修改点）：
+ *   ┌──────────────────────────┬─────────────────────────────────────────────────────────────┐
+ *   │ Token                    │ Value                                                        │
+ *   ├──────────────────────────┼─────────────────────────────────────────────────────────────┤
+ *   │ tenant-* / 圆角           │ rounded-full（全圆角胶囊，覆盖基类 4px）                     │
+ *   │ tenant-primary / bg      │ linear-gradient(90deg, #020617 70%, #1447E6 100%)            │
+ *   │ tenant-primary / hover   │ linear-gradient(90deg, #020617 70%, #0A226F 100%)            │
+ *   │ tenant-outline / bg      │ #FFFFFF + 1px #E5E5E5                                        │
+ *   │ tenant-outline / hover   │ #F5F5F5 + 1px #E3E3E3 + shadow 0 1px 3px rgba(0,0,0,0.08)    │
+ *   │ tenant-destructive / bg  │ #D42A1E → hover #B91C1C                                      │
+ *   │ tenant-ghost / bg        │ transparent → hover #F5F5F5                                  │
+ *   └──────────────────────────┴─────────────────────────────────────────────────────────────┘
  *
- *   <Button variant="claw-outline" size="claw-square">  // 48×36 仅图标
- *     <RefreshCw />
- *   </Button>
+ * 使用示例（管控端）：
+ *   <Button variant="claw-outline" size="claw">详细配置</Button>
+ *   <Button variant="claw-primary" size="claw-lg"><Plus /> 创建 Agent</Button>
  *
- *   <Button variant="claw-primary" size="claw-lg">  // 40 高 / 18 padding / 16 gap
- *     <Plus /> 创建 Agent
- *   </Button>
+ * 使用示例（用户端）：
+ *   <Button variant="tenant-outline" size="claw">详细配置</Button>
+ *   <Button variant="tenant-primary" size="claw-lg"><Plus /> 创建 Agent</Button>
+ *   <Button variant="tenant-destructive" size="claw">删除</Button>
  */
 
 const buttonVariants = cva(
@@ -70,6 +80,17 @@ const buttonVariants = cva(
           "hover:bg-[#f5f5f5] " +
           "active:bg-[#ebebeb] " +
           "disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+        /**
+         * 分类筛选 Tab（管控端 / Admin）
+         * - 形态：4px 方角（沿用基类 rounded-[4px]，对齐管控端规范）
+         * - normal: 白底 + #e4e4e4 边 + #020617 字
+         * - hover : 边色加深至 #020617
+         * - active / data-state=active: 黑底白字（被选中态）
+         * - disabled: 白底 + 灰字
+         * - 使用场景：admin 端分类筛选条
+         *   （SkillListTab / PublicSkillLibraryTab / EditCategoriesDialog）
+         * - 用户端胶囊版本请用 `tenant-plain`
+         */
         plain:
           "bg-white border border-[#e4e4e4] text-[#020617] font-normal " +
           "hover:border-[#020617] " +
@@ -133,6 +154,105 @@ const buttonVariants = cva(
          */
         "dialog-confirm":
           "bg-[#0A0A0A] text-white font-normal border-0 " +
+          "hover:bg-[#404040] " +
+          "active:bg-[#262626] " +
+          "disabled:bg-[#A3A3A3] disabled:text-white disabled:opacity-100",
+
+        /* ============================================================== */
+        /*  用户端（Tenant）按钮变体 — Figma 0522 修改点 / node 1141:11617    */
+        /*  全圆角胶囊（rounded-full），与 claw-* 仅圆角差异，颜色保持一致      */
+        /*  规范来源：SKILL-TENANT.md §3                                    */
+        /* ============================================================== */
+
+        /**
+         * 用户端主按钮（tenant-primary）
+         * - 与 claw-primary 同色（黑→蓝渐变 + 白字）
+         * - 圆角：rounded-full（覆盖基类 4px）
+         * - 用途：用户端业务页 CTA、弹窗确认、表单提交
+         */
+        "tenant-primary":
+          "!rounded-full [background:linear-gradient(90deg,#020617_70%,#1447E6_110%)] text-white font-normal border-0 " +
+          "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
+          "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
+          "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",
+
+        /**
+         * 用户端线性描边按钮（tenant-outline）
+         * - 与 claw-outline 同色（白底 / #E5E5E5 边 / #020617 字）
+         * - 圆角：rounded-full
+         * - hover：#F5F5F5 + 描边 + 轻阴影 0 1px 3px rgba(0,0,0,0.08)
+         * - 用途：用户端业务页次级按钮、弹窗取消、表单重置
+         */
+        "tenant-outline":
+          "!rounded-full bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
+          "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] hover:[box-shadow:0_1px_3px_rgba(0,0,0,0.08)] " +
+          "active:bg-white active:border-[#e3e3e3] active:[box-shadow:none] " +
+          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
+
+        /**
+         * 用户端线性描边按钮（tenant-outline-r20） — [Figma 1077-33986] 卡片底部专用
+         * - 颜色规格与 tenant-outline 一致（白底 / #E5E5E5 边 / #020617 字）
+         * - 唯一差异：圆角 = 20px（rounded-[20px]），覆盖基类 4px
+         * - 用途：AgentCard 底部「设置」/「对话」按钮，对齐 Figma 1077:33986 节点
+         *   规范的 20px 圆角，介于 4px（claw）和 full（tenant）之间
+         */
+        "tenant-outline-r20":
+          "!rounded-[20px] bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
+          "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] hover:[box-shadow:0_1px_3px_rgba(0,0,0,0.08)] " +
+          "active:bg-white active:border-[#e3e3e3] active:[box-shadow:none] " +
+          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
+
+        /**
+         * 用户端危险按钮（tenant-destructive）
+         * - 与 destructive 同色（#D42A1E 底 + 白字）
+         * - 圆角：rounded-full
+         * - 用途：用户端删除、注销、清空等危险操作
+         */
+        "tenant-destructive":
+          "!rounded-full bg-[#d42a1e] text-white font-normal border-0 " +
+          "hover:bg-[#b91c1c] " +
+          "active:bg-[#991b1b] " +
+          "disabled:bg-[#d42a1e]/40 disabled:text-white/60 disabled:opacity-100",
+
+        /**
+         * 用户端幽灵按钮（tenant-ghost）
+         * - 透明底，hover 时浅灰底
+         * - 圆角：rounded-full
+         * - 用途：用户端工具条 / 卡片角操作 / 极弱视觉权重的按钮
+         */
+        "tenant-ghost":
+          "!rounded-full bg-transparent text-[#020617] font-normal border-0 " +
+          "hover:bg-[#f5f5f5] " +
+          "active:bg-[#ebebeb] " +
+          "disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+
+        /**
+         * 用户端分类筛选 Tab（tenant-plain，Pill / Chip 形态）
+         * - 与管控端 `plain` 唯一差异：圆角 = rounded-full（胶囊）
+         * - 颜色 / 状态规范完全一致：白底 + #e4e4e4 边 + #020617 字；
+         *   hover 边加深；active / data-state=active 黑底白字；
+         *   disabled 浅灰底（#f5f5f5）+ 灰字（对齐 Figma 用户端禁用胶囊样式）
+         * - 使用场景：tenant 端「分类筛选条」（SkillSquare / OpenClawDetailGuide 技能分类）
+         * - 为什么用 !rounded-full：size="sm" 写死了 rounded-[4px]，cva 拼接顺序 size 在 variant
+         *   之后，twMerge 后会覆盖 variant 圆角；tenant-* 系列统一用 !important 兜底（与
+         *   tenant-primary / tenant-outline 等同手法）。
+         */
+        "tenant-plain":
+          "!rounded-full bg-white border border-[#e4e4e4] text-[#020617] font-normal " +
+          "hover:border-[#020617] " +
+          "active:bg-[#020617] active:border-[#020617] active:text-white " +
+          "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
+          "disabled:bg-[#f5f5f5] disabled:border-[#e4e4e4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+
+        /**
+         * 用户端纯黑实心按钮（tenant-dialog-confirm）
+         * - 与管控端 `dialog-confirm` 同色（纯黑底 #0A0A0A + 白字，hover #404040）
+         * - 唯一差异：圆角 = rounded-full（胶囊）
+         * - 用途：用户端页面需要纯黑（非渐变）实心按钮的场景，例如
+         *   ToolsMcpPanel「添加 MCP」、用户端弹窗主确认按钮等
+         */
+        "tenant-dialog-confirm":
+          "!rounded-full bg-[#0A0A0A] text-white font-normal border-0 " +
           "hover:bg-[#404040] " +
           "active:bg-[#262626] " +
           "disabled:bg-[#A3A3A3] disabled:text-white disabled:opacity-100",

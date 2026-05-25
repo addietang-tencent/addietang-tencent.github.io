@@ -2,7 +2,12 @@
  * TenantLayout - 租户端布局
  *
  * Design: 「流动蓝图」Fluid Blueprint
- * - 用户端背景：linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%) (v2)
+ * - 用户端背景：纯白 + 左上/右下两团极淡蓝雾（v3.1，对齐 Figma 1077:33419 + 用户参考图 image.e46c601bc5）
+ *   · 基底：#FFFFFF
+ *   · 左上雾团：radial-gradient ellipse 55% 40% at 20% 12%，中心 rgba(220, 234, 248, 0.5) → 透明
+ *   · 右下雾团：radial-gradient ellipse 38% 30% at 75% 80%，中心 rgba(214, 230, 247, 0.55) → 透明
+ *   旧版 v2「白→灰渐变」、v2.5「双团 0.55/0.45 蓝雾叠白灰渐变」均偏暗，已废弃；
+ *   v3 纯白也不准确（实际 Figma 整体有一层淡蓝雾），故采用 v3.1。
  * - 顶部固定导航栏 (64px) — 基于可复用的 TopNav 组合（对照 Figma 358:2322 还原）
  * - 主色 #1447E6
  *
@@ -160,7 +165,19 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
   return (
     <div
       className="min-h-screen"
-      style={{ background: "linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%)" }}
+      style={{
+        // v3.1：白底 + 两团极淡蓝雾（对齐用户参考图 image.e46c601bc5）
+        // - 不再叠加顶白底灰线性渐变（v2 的暗调来源）
+        // - 雾团透明度从 v2.5 的 0.55/0.45 降到 0.50/0.55 但收紧到「ellipse 55%×40% / 38%×30%」局部范围
+        //   保证整体 80% 以上区域仍是 #FFFFFF，仅左上 / 右下角带淡蓝呼吸感
+        backgroundColor: "#FFFFFF",
+        backgroundImage: [
+          "radial-gradient(ellipse 55% 40% at 20% 12%, rgba(220, 234, 248, 0.5) 0%, rgba(220, 234, 248, 0) 70%)",
+          "radial-gradient(ellipse 38% 30% at 75% 80%, rgba(214, 230, 247, 0.55) 0%, rgba(214, 230, 247, 0) 70%)",
+        ].join(", "),
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
     >
       {/* [Figma 358:2322] Top Navigation 64px：左 Logo + 中央 Tab + 右图标 */}
       <TopNav
@@ -192,6 +209,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                       <NavIconButton
                         icon={<SwitchAdminIcon />}
                         label="管控端"
+                        pill
                       />
                     </Link>
                   </TooltipTrigger>
@@ -333,10 +351,10 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
             </div>
           </div>
           <DialogFooter className="gap-3">
-            <Button variant="claw-outline" onClick={() => setResetPwdOpen(false)}>
+            <Button variant="tenant-outline" onClick={() => setResetPwdOpen(false)}>
               取消
             </Button>
-            <Button onClick={handleResetPwd}>
+            <Button variant="tenant-primary" onClick={handleResetPwd}>
               确认重置
             </Button>
           </DialogFooter>

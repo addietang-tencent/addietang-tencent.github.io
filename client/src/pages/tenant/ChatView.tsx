@@ -1934,7 +1934,7 @@ export default function ChatView({
       className={`flex bg-white overflow-hidden transition-all duration-300 ease-in-out ${
         isWorkspaceFullscreen
           ? `fixed inset-0 ${workspaceTopClass} z-40 rounded-none border-none`
-          : "rounded-[4px] border border-[#e5e5e5]"
+          : "rounded-[12px] border border-[#e5e5e5]"
       }`}
       style={
         workspaceMode !== "chat" || (workspaceMode === "chat" && isFullscreen)
@@ -2253,7 +2253,7 @@ export default function ChatView({
                       <p className="text-base font-medium text-gray-900 mb-1">当前 OpenClaw 未在运行中，暂时无法对话</p>
                       <p className="text-xs text-gray-400 mb-4">你可以刷新状态查看最新情况或选择其他 OpenClaw</p>
                       {selectedClaw.status === "loadFail" ? (
-                        <Button onClick={() => onRetry(selectedClaw.id, selectedClaw.name)} variant="claw-outline" size="claw-sm" className="text-xs">
+                        <Button onClick={() => onRetry(selectedClaw.id, selectedClaw.name)} variant="tenant-outline" size="claw-sm" className="text-xs">
                           <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                           重试恢复
                         </Button>
@@ -2328,7 +2328,7 @@ export default function ChatView({
                             {showCommands ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
                           </button>
                           {showCommands && (
-                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-[4px] border border-gray-200 py-1.5 z-50" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
+                            <div className="absolute bottom-full left-0 mb-2 w-48 bg-white rounded-[8px] border border-gray-200 py-1.5 z-50" style={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
                               {COMMAND_LIST.map((item) => (
                                 <button
                                   key={item.command}
@@ -2704,7 +2704,7 @@ export default function ChatView({
 
           <DialogFooter className="justify-center gap-3 pt-1 sm:justify-center sm:space-x-0">
             <Button
-              variant="claw-outline"
+              variant="tenant-outline"
               size="claw-sm"
               onClick={closeBrowserStartupModal}
               className="px-6"
@@ -2714,7 +2714,7 @@ export default function ChatView({
 
             {browserStartupModal.flowStatus === "failed" ? (
               <Button
-                variant="claw-primary"
+                variant="tenant-primary"
                 size="claw-sm"
                 onClick={handleRetryBrowserStartup}
                 className="px-6"
@@ -2723,7 +2723,7 @@ export default function ChatView({
               </Button>
             ) : browserStartupModal.flowStatus === "success" ? (
               <Button
-                variant="claw-primary"
+                variant="tenant-primary"
                 size="claw-sm"
                 onClick={handleConfirmBrowserStartup}
                 className="px-6"
@@ -2732,7 +2732,7 @@ export default function ChatView({
               </Button>
             ) : (
               <Button
-                variant="claw-primary"
+                variant="tenant-primary"
                 size="claw-sm"
                 disabled
                 className="px-6"
@@ -2770,7 +2770,7 @@ export default function ChatView({
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmNewChat}
-              className={buttonVariants({ variant: "claw-primary", size: "claw-sm" })}
+              className={buttonVariants({ variant: "tenant-primary", size: "claw-sm" })}
             >
               确认
             </AlertDialogAction>
@@ -2827,7 +2827,7 @@ export default function ChatView({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDesktopUpgrade}
-              className={buttonVariants({ variant: "claw-primary", size: "claw-sm" })}
+              className={buttonVariants({ variant: "tenant-primary", size: "claw-sm" })}
             >
               确认
             </AlertDialogAction>

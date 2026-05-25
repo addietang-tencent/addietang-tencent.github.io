@@ -1,11 +1,13 @@
 /**
  * HelpDocs - 帮助文档页面
- * Design: 「流动蓝图」Fluid Blueprint
+ * 设计规范：用户端统一规范（标题外置 + TenantCard 内容卡 + 单层 120px 骨架）
  */
 import { useState } from "react";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
-import { SurfaceCard } from "@/components/ui/Surface";
+import { TenantCard } from "@/components/ui/Surface";
+import { TenantSection } from "@/components/ui/TenantSection";
+import { TenantPageTitle } from "@/components/ui/Typography";
 import { FileText, ChevronRight, BookOpen, Rocket, Star, ArrowLeft } from "lucide-react";
 
 const DOC_CATEGORIES = [
@@ -170,104 +172,118 @@ Agent 的核心是 Agent，即 AI 智能助理实例。每个 Agent 都有独立
   },
 ];
 
+/** 用户端单层 120px 骨架包装 */
+function PageShell({ children }: { children: React.ReactNode }) {
+  return (
+    <TenantLayout>
+      <div className="min-w-[1200px]">
+        <div className="max-w-[1920px] mx-auto page-enter">
+          <div
+            className="relative min-h-[calc(100vh-64px)]"
+            style={{ paddingLeft: 120, paddingRight: 120, paddingTop: 32, paddingBottom: 75 }}
+          >
+            {children}
+          </div>
+        </div>
+      </div>
+    </TenantLayout>
+  );
+}
+
 export default function HelpDocs() {
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
 
   const currentDoc = DOC_CATEGORIES.find((d) => d.id === selectedDoc);
 
+  // ── 详情页 ──
   if (currentDoc) {
+    const Icon = currentDoc.icon;
     return (
-      <TenantLayout>
-        {/* SKILL §7.4 用户端通用骨架（以「我的 Agent」为基准）：
-              外层骨架保证两侧留白与「我的 Agent」一致；
-              内层再套一层 max-w-4xl 居中，保持文档正文的阅读宽度。 */}
-        <div className="min-w-[1200px] overflow-x-clip">
-          <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div className="flex-1 min-w-0 px-[42px] py-8">
-              <div className="max-w-4xl mx-auto">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-500 hover:text-gray-900 -ml-2 mb-6"
-                  onClick={() => setSelectedDoc(null)}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-1" />
-                  返回文档列表
-                </Button>
+      <PageShell>
+        <div className="max-w-4xl mx-auto flex flex-col gap-3">
+          {/* 返回按钮：标题上方独立行 */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-500 hover:text-gray-900 -ml-2 self-start"
+            onClick={() => setSelectedDoc(null)}
+          >
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            返回文档列表
+          </Button>
 
-                <SurfaceCard className="p-8">
-                  <div className="flex items-center gap-3 mb-6 pb-6 border-b border-[#e5e5e5]">
-                    <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${currentDoc.color} flex items-center justify-center`}>
-                      <currentDoc.icon className="w-5 h-5 text-white" />
-                    </div>
-                    <h1 className="text-xl font-bold text-gray-900">{currentDoc.title}</h1>
-                  </div>
-                  <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
-                    {currentDoc.content.split("\n").map((line, i) => {
-                      if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold text-gray-900 mb-4">{line.slice(2)}</h1>;
-                      if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-semibold text-gray-900 mt-6 mb-3">{line.slice(3)}</h2>;
-                      if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-gray-800 mt-4 mb-2">{line.slice(4)}</h3>;
-                      if (line.startsWith("- ")) return <li key={i} className="ml-4 text-gray-600 mb-1">{line.slice(2)}</li>;
-                      if (line.startsWith("> ")) return <blockquote key={i} className="border-l-4 border-blue-200 pl-4 text-gray-500 italic my-3">{line.slice(2)}</blockquote>;
-                      if (line.match(/^\d+\./)) return <p key={i} className="ml-4 text-gray-600 mb-1">{line}</p>;
-                      if (line.startsWith("**") && line.endsWith("**")) return <p key={i} className="font-semibold text-gray-800 mb-1">{line.slice(2, -2)}</p>;
-                      if (line === "") return <div key={i} className="h-2" />;
-                      return <p key={i} className="text-gray-600 mb-2">{line}</p>;
-                    })}
-                  </div>
-                </SurfaceCard>
-              </div>
+          {/* 标题（卡片外）+ 正文（一张卡） */}
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${currentDoc.color} flex items-center justify-center shrink-0`}>
+              <Icon className="w-5 h-5 text-white" />
             </div>
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
+            <TenantPageTitle className="flex-1 min-w-0">{currentDoc.title}</TenantPageTitle>
           </div>
+
+          <TenantCard padding="none" className="p-8">
+            <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+              {currentDoc.content.split("\n").map((line, i) => {
+                if (line.startsWith("# ")) return <h1 key={i} className="text-2xl font-bold text-gray-900 mb-4">{line.slice(2)}</h1>;
+                if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-semibold text-gray-900 mt-6 mb-3">{line.slice(3)}</h2>;
+                if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-gray-800 mt-4 mb-2">{line.slice(4)}</h3>;
+                if (line.startsWith("- ")) return <li key={i} className="ml-4 text-gray-600 mb-1">{line.slice(2)}</li>;
+                if (line.startsWith("> ")) return <blockquote key={i} className="border-l-4 border-blue-200 pl-4 text-gray-500 italic my-3">{line.slice(2)}</blockquote>;
+                if (line.match(/^\d+\./)) return <p key={i} className="ml-4 text-gray-600 mb-1">{line}</p>;
+                if (line.startsWith("**") && line.endsWith("**")) return <p key={i} className="font-semibold text-gray-800 mb-1">{line.slice(2, -2)}</p>;
+                if (line === "") return <div key={i} className="h-2" />;
+                return <p key={i} className="text-gray-600 mb-2">{line}</p>;
+              })}
+            </div>
+          </TenantCard>
         </div>
-      </TenantLayout>
+      </PageShell>
     );
   }
 
+  // ── 列表页 ──
   return (
-    <TenantLayout>
-      {/* SKILL §7.4 用户端通用骨架（以「我的 Agent」为基准） */}
-      <div className="min-w-[1200px] overflow-x-clip">
-        <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
-          <div aria-hidden className="shrink-0 w-20 self-stretch" />
-          <div className="flex-1 min-w-0 px-[42px] py-8">
-            <div className="max-w-4xl mx-auto">
-              <div className="mb-8">
-                <h1 className="text-2xl font-bold text-gray-900">帮助文档</h1>
-                <p className="text-sm text-gray-500 mt-1">了解 Agent 的使用方法和最佳实践</p>
-              </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {DOC_CATEGORIES.map((doc) => {
-            const Icon = doc.icon;
-            return (
-              <button
-                key={doc.id}
-                onClick={() => setSelectedDoc(doc.id)}
-                className="bg-white rounded-[4px] p-6 text-left hover:-translate-y-0.5 transition-all duration-200 group"
-                style={{ boxShadow: "var(--shadow-card)" }}
-              >
-                <div className="flex items-start justify-between">
-                  <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${doc.color} flex items-center justify-center mb-4`}>
-                    <Icon className="w-5 h-5 text-white" />
+    <PageShell>
+      <div className="max-w-4xl mx-auto">
+        <TenantSection
+          title="帮助文档"
+          headingLevel="section"
+          bare
+        >
+          <p className="text-sm text-gray-500 -mt-1 mb-2">了解 Agent 的使用方法和最佳实践</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {DOC_CATEGORIES.map((doc) => {
+              const Icon = doc.icon;
+              return (
+                <TenantCard
+                  key={doc.id}
+                  interactive
+                  onClick={() => setSelectedDoc(doc.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setSelectedDoc(doc.id);
+                    }
+                  }}
+                  className="text-left cursor-pointer group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className={`w-10 h-10 rounded-[4px] bg-gradient-to-br ${doc.color} flex items-center justify-center mb-4`}>
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                  {doc.title}
-                </h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{doc.desc}</p>
-              </button>
-            );
-          })}
-              </div>
-            </div>{/* end max-w-4xl */}
-          </div>{/* end 中间内容区 */}
-          <div aria-hidden className="shrink-0 w-20 self-stretch" />
-        </div>{/* end max-w-[1920px] flex */}
-      </div>{/* end min-w-[1200px] overflow-x-clip */}
-    </TenantLayout>
+                  <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    {doc.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{doc.desc}</p>
+                </TenantCard>
+              );
+            })}
+          </div>
+        </TenantSection>
+      </div>
+    </PageShell>
   );
 }

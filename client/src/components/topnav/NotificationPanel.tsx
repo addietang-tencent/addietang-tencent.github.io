@@ -347,11 +347,10 @@ export default function NotificationPanel({
           onValueChange={(v) => setActiveTab(v as TabKey)}
           className="flex flex-col flex-1 min-h-0 gap-0"
         >
-          {/* §8.6 Tab 切换（Segmented Control） */}
+          {/* §8.6 Tab 切换（Segmented Control，0522 胶囊版） */}
           <div className="px-3 pt-3 pb-1">
             <TabsList
-              className="flex items-center gap-1 p-1 h-auto rounded-[4px] w-full"
-              style={{ background: "#F5F5F5" }}
+              className="flex items-center gap-1 p-1 h-auto rounded-full w-full bg-muted"
             >
               {tabs.map((tab) => {
                 const count = tab.key === "all"
@@ -361,11 +360,11 @@ export default function NotificationPanel({
                   <TabsTrigger
                     key={tab.key}
                     value={tab.key}
-                    className="flex-1 rounded-[3px] px-3 py-1 text-xs font-normal whitespace-nowrap text-[#737373] hover:text-[#0A0A0A] data-[state=active]:bg-white data-[state=active]:text-[#0A0A0A] data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
+                    className="flex-1 rounded-full px-3 py-1 text-xs font-normal whitespace-nowrap text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors flex items-center justify-center gap-1"
                   >
                     {tab.label}
                     {count > 0 && (
-                      <span className="text-[#737373]">{count}</span>
+                      <span className="text-muted-foreground">{count}</span>
                     )}
                   </TabsTrigger>
                 );

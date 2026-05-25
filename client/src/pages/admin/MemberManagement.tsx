@@ -1627,11 +1627,10 @@ function DepartmentFilter({
         <Button
           variant="outline"
           role="combobox"
-          className={`w-[120px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${triggerNode ? "text-foreground" : "text-muted-foreground"
-            }`}
+          className={`w-[160px] justify-between bg-white text-sm font-normal ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}
         >
           <span className="truncate">{triggerNode?.name || "全部部门"}</span>
-          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 text-[#737373] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
@@ -2448,16 +2447,12 @@ export default function MemberManagement() {
                 value={roleFilter}
                 onValueChange={(v) => { setRoleFilter(v as "all" | "admin" | "member"); setPage(1); }}
               >
-                <SelectTrigger className={`w-[130px] bg-white border-gray-200 data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 [&_svg:last-child]:transition-transform [&_svg:last-child]:duration-200 data-[state=open]:[&_svg:last-child]:rotate-180 ${roleFilter === "all" ? "text-muted-foreground" : "text-gray-900"}`}>
+                <SelectTrigger className="w-[130px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {["all", "admin", "member"].map((v) => (
-                    <SelectItem
-                      key={v}
-                      value={v}
-                      className="data-[state=checked]:bg-blue-50 data-[state=checked]:text-blue-600 data-[state=checked]:font-medium data-[state=checked]:[&_svg]:!text-blue-600"
-                    >
+                    <SelectItem key={v} value={v}>
                       {v === "all" ? "全部角色" : v === "admin" ? "管理员" : "用户"}
                     </SelectItem>
                   ))}

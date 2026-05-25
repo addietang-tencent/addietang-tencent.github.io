@@ -26,7 +26,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { toast } from "sonner";
 import { Plus, Trash2, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
 import { ScopePopover } from "@/components/ScopePopover";
@@ -277,16 +277,20 @@ export default function ChannelConfig() {
         <h1 className="text-2xl font-bold text-gray-900">通道配置</h1>
       </div>
 
-      {/* Tab 切换器（标准 Tabs 分段组件） */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-1">
-        <TabsList>
+      {/* Tab 切换器（标准 Segment 组件） */}
+      <div className="mb-1">
+        <SegmentGroup>
           {CHANNEL_TABS.map((tab) => (
-            <TabsTrigger key={tab.id} value={tab.id}>
+            <SegmentOption
+              key={tab.id}
+              active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+            >
               {tab.label}
-            </TabsTrigger>
+            </SegmentOption>
           ))}
-        </TabsList>
-      </Tabs>
+        </SegmentGroup>
+      </div>
 
       {/* Tab 描述（仅一行） */}
       <div className="flex items-center gap-3 mt-3 mb-6">

@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Puzzle,
   Pencil,
@@ -119,27 +120,24 @@ function ComingSoonCards({
   cards: { id: string; title: string; description: string; icon: React.ElementType; color: string }[];
 }) {
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
-          <div
-            key={card.id}
-            className="bg-white rounded-xl border border-[#e5e5e5] p-6 transition-shadow"
-          >
-            <div className="flex items-start gap-4">
+          <Card key={card.id} className="py-5 gap-0 hover:border-[#1447E6] transition-colors cursor-pointer">
+            <CardContent className="flex items-start gap-4">
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                className="w-10 h-10 rounded-[8px] flex items-center justify-center flex-shrink-0"
                 style={{ background: card.color }}
               >
-                <Icon className="w-6 h-6 text-white" />
+                <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-gray-900 mb-1">{card.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{card.description}</p>
+                <h3 className="text-[14px] font-semibold text-[#020617] mb-1">{card.title}</h3>
+                <p className="text-[12px] text-[#737373] leading-relaxed">{card.description}</p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>
@@ -247,16 +245,17 @@ function SkillSourceTab() {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-1 rounded-[2px] bg-[#f5f5f5] font-mono text-xs text-[#0a0a0a] leading-5 tracking-[0.18px]">
+            <div className="flex-1 px-3 py-2 rounded-[4px] bg-[#fafafa] font-mono text-[13px] text-[#020617] leading-5">
               {skillhubUrl || <span className="text-[#737373] font-sans">未配置</span>}
             </div>
-            <button
+            <Button
+              variant="link-dark"
+              size="sm"
+              className="h-auto px-0 text-[14px]"
               onClick={handleEdit}
-              className="p-1.5 text-[#737373] hover:text-[#020617] transition-colors"
-              title="编辑"
             >
-              <Pencil className="w-4 h-4" />
-            </button>
+              编辑
+            </Button>
           </div>
         )}
       </div>
@@ -277,24 +276,21 @@ export default function SkillConfig() {
         <h1 className="text-2xl font-bold text-gray-900">技能配置</h1>
       </div>
 
-      {/* Tab 切换器 */}
-      <div className="flex items-center gap-1 mb-1 border-b border-gray-200">
+      {/* Tab 切换器 - LineTabs */}
+      <div className="flex items-center gap-1 mb-1 border-b border-[#f0f0f0]">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+            className={`relative flex items-center gap-1.5 px-4 py-3 text-[14px] transition-colors whitespace-nowrap ${
               activeTab === tab.id
-                ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                : "text-gray-500 hover:text-gray-700"
+                ? "text-[#020617] font-semibold border-b-2 border-[#020617] -mb-px"
+                : "text-[#737373] font-medium hover:text-[#020617]"
             }`}
           >
             {tab.label}
             {tab.comingSoon && (
-              <span
-                className="font-medium text-gray-500 bg-white border border-gray-300 px-1.5 py-0.5 rounded"
-                style={{ fontSize: "10px" }}
-              >
+              <span className="font-medium text-[#737373] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[2px] text-[10px]">
                 即将开放
               </span>
             )}
@@ -302,10 +298,9 @@ export default function SkillConfig() {
         ))}
       </div>
 
-      {/* Tab 描述（仅一行） */}
+      {/* Tab 描述 */}
       <div className="flex items-center gap-3 mt-3 mb-6">
-        <p className="text-sm text-gray-500 leading-relaxed">{currentTab.description}</p>
-
+        <p className="text-[13px] text-[#737373] leading-relaxed">{currentTab.description}</p>
       </div>
 
       {/* Tab 内容 */}

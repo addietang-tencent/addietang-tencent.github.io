@@ -1099,6 +1099,22 @@ export default function ImageManagement() {
           <div className="mb-4">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">Agent 类型</h1>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">
+              通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
+            </p>
+          </div>
+
+          {/* 主体内容 */}
+          <div className="min-w-0">
+          {/* 顶部总览 + 添加自定义类型按钮 */}
+          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <OverviewStats
+                typeCount={views.length}
+                enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
+                imageCount={images.length}
+              />
               {(() => {
                 const hasActivePush = listActivePushes().length > 0;
                 const hasNewVersion = true;
@@ -1108,10 +1124,10 @@ export default function ImageManagement() {
                       <TooltipTrigger asChild>
                         <button
                           onClick={() => setShowAllRecordsDrawer(true)}
-                          className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-xs text-[#0A0A0A] hover:bg-[#F5F5F5] transition-colors shrink-0"
+                          className="relative inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-[#E5E5E5] bg-white text-[13px] text-[#525252] hover:border-[#1447E6] hover:text-[#020617] transition-colors shrink-0"
                         >
-                          <Bell className="w-3 h-3 text-[#1447E6]" />
-                          当前没有版本更新，查看历史更新记录
+                          <Bell className="w-3.5 h-3.5 text-[#737373]" />
+                          查看历史更新记录
                         </button>
                       </TooltipTrigger>
                       <TooltipContent className="text-xs">打开更新记录</TooltipContent>
@@ -1123,15 +1139,20 @@ export default function ImageManagement() {
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => setShowAllRecordsDrawer(true)}
-                        className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] border border-amber-200 bg-amber-50 text-xs font-medium text-amber-800 hover:bg-amber-100/70 transition-colors shrink-0"
+                        className="relative inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-[#E5E5E5] bg-white text-[13px] text-[#525252] hover:border-[#1447E6] hover:text-[#020617] transition-colors shrink-0"
                       >
-                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
-                        <Bell className="w-3 h-3 text-amber-700" />
+                        <Bell className="w-3.5 h-3.5 text-[#737373]" />
                         {(() => {
                           const total = pushable.filter(p => !p.allUpToDate).length;
                           const pushed = listActivePushes().length;
                           const pending = total - pushed;
-                          return <span>有 <span className="font-bold text-amber-950">{pending > 0 ? pending : 0}</span> 个新版本待发布提醒，<span className="font-bold text-amber-950">{pushed}</span> 个版本正在提醒员工更新</span>;
+                          return <span>{pending > 0 ? pending : 0} 个待发布，{pushed} 个更新中</span>;
+                        })()}
+                        {(() => {
+                          const total = pushable.filter(p => !p.allUpToDate).length;
+                          const pushed = listActivePushes().length;
+                          const pending = total - pushed;
+                          return pending > 0 ? <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" /> : null;
                         })()}
                       </button>
                     </TooltipTrigger>
@@ -1140,20 +1161,6 @@ export default function ImageManagement() {
                 );
               })()}
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
-            </p>
-          </div>
-
-          {/* 主体内容 */}
-          <div className="min-w-0">
-          {/* 顶部总览 + 添加自定义类型按钮 */}
-          <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-            <OverviewStats
-              typeCount={views.length}
-              enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
-              imageCount={images.length}
-            />
             <div className="flex items-center gap-2">
             <Button
               variant="claw-outline"

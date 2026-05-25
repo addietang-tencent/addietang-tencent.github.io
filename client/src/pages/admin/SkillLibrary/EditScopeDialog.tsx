@@ -131,7 +131,7 @@ export default function EditScopePopover({
           sideOffset={6}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
+          <div className="px-4 pt-4 pb-3 space-y-3">
             {/* 全部用户 / 按分组 Segment 切换 */}
             <SegmentGroup className="w-full">
               <SegmentOption active={draftScope === 'public'} onClick={() => setDraftScope('public')} className="flex-1">
@@ -144,23 +144,23 @@ export default function EditScopePopover({
 
             {/* 分组列表（仅 private 模式） */}
             {draftScope === 'private' && (
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {/* 搜索框 */}
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#a3a3a3]" />
                   <input
                     type="text"
                     placeholder="搜索分组…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                    className="w-full pl-9 pr-3 h-9 text-[13px] border border-[#E5E5E5] rounded-[4px] bg-white outline-none focus:border-[#1447E6] transition-colors"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#a3a3a3] hover:text-[#525252]"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   )}
                 </div>
@@ -168,7 +168,7 @@ export default function EditScopePopover({
                 {/* 分组 checkbox 列表 */}
                 <div className="max-h-[200px] overflow-y-auto space-y-0.5">
                   {filteredGroups.length === 0 ? (
-                    <p className="text-[11px] text-gray-400 text-center py-3">无匹配分组</p>
+                    <p className="text-[12px] text-[#a3a3a3] text-center py-4">无匹配分组</p>
                   ) : (
                     filteredGroups.map((group) => {
                       const checked = draftGroupIds.includes(group.id);
@@ -176,18 +176,20 @@ export default function EditScopePopover({
                         <button
                           key={group.id}
                           onClick={() => toggleGroup(group.id)}
-                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-[4px] transition-colors text-left ${
+                            checked ? 'bg-[#EBF4FF]' : 'hover:bg-[#fafafa]'
+                          }`}
                         >
                           <span
-                            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+                            className={`w-4 h-4 rounded-[3px] border shrink-0 flex items-center justify-center transition-colors ${
                               checked
-                                ? 'bg-blue-500 border-blue-500'
-                                : 'border-gray-300 bg-white'
+                                ? 'bg-[#1447E6] border-[#1447E6]'
+                                : 'border-[#E5E5E5] bg-white'
                             }`}
                           >
-                            {checked && <Check className="w-2.5 h-2.5 text-white" />}
+                            {checked && <Check className="w-3 h-3 text-white" />}
                           </span>
-                          <span className="text-xs text-gray-700 truncate">{group.name}</span>
+                          <span className="text-[13px] text-[#020617] truncate">{group.name}</span>
                         </button>
                       );
                     })
@@ -195,14 +197,14 @@ export default function EditScopePopover({
                 </div>
 
                 {/* 已选数量 + 清除筛选 */}
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] text-gray-400">
+                <div className="flex items-center justify-between px-1 pt-1">
+                  <span className="text-[12px] text-[#737373]">
                     已选 {draftGroupIds.length} 个分组
-                  </p>
+                  </span>
                   {draftGroupIds.length > 0 && (
                     <button
                       onClick={handleClearSelection}
-                      className="text-[11px] text-blue-500 hover:text-blue-600 hover:underline"
+                      className="text-[12px] text-[#1447E6] hover:text-[#0a226f] transition-colors"
                     >
                       清除筛选
                     </button>
@@ -213,13 +215,14 @@ export default function EditScopePopover({
           </div>
 
           {/* 底部按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5]">
-            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>
+          <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-[#E5E5E5]">
+            <Button size="sm" variant="outline" className="h-8 text-[13px] px-4" onClick={() => setOpen(false)}>
               取消
             </Button>
             <Button
               size="sm"
-              className="h-7 text-xs px-3"
+              variant="dialog-confirm"
+              className="h-8 text-[13px] px-4"
               disabled={isConfirmDisabled}
               onClick={handleConfirm}
             >

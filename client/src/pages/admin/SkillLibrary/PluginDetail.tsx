@@ -594,8 +594,9 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-[#0A0A0A]">下发记录</h3>
                   <Button
+                    variant="claw-primary"
+                    size="claw-sm"
                     onClick={() => setDistributeDialogOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700"
                     disabled={hasInProgress}
                   >
                     {hasInProgress ? '下发中...' : '批量下发'}
@@ -688,7 +689,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
 
       {/* 下发详情对话框 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-3xl max-h-96">
+        <DialogContent className="sm:max-w-[720px] max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>下发详情</DialogTitle>
           </DialogHeader>

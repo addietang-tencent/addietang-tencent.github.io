@@ -204,7 +204,7 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
 
       {/* 确认弹窗 */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>{getConfirmContent().title}</DialogTitle>
             <DialogDescription className="pt-2">

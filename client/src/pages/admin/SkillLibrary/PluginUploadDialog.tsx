@@ -246,7 +246,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[532px]" style={{ height: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>发布新插件</DialogTitle>
         </DialogHeader>
@@ -296,8 +296,8 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                   <p className="text-sm font-medium text-[#0A0A0A]">上传要求</p>
                   <Button
                     type="button"
-                    variant="link"
-                    className="h-auto p-0 text-sm gap-1"
+                    variant="outline"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       const link = document.createElement('a');

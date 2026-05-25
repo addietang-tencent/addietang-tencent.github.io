@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 import { Input } from '@/components/ui/input';
-import { Search, Grid3x3, List, Send, Trash2, Loader } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Trash2, Loader, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
@@ -509,18 +509,30 @@ export default function PluginListTab() {
         instances={MOCK_OPENCLAW_INSTANCES}
       />
 
-      {/* 删除确认弹窗 */}
+      {/* 删除确认弹窗 - 警示弹窗 */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="sm:max-w-[400px]">
+        <AlertDialogContent className="sm:max-w-[560px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteDialogOpen(false)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle>删除插件</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除插件「{deletePlugin?.name}」吗？此操作不可撤销。
+            <AlertDialogTitle className="text-[#0A0A0A]">删除插件</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#0A0A0A]">
+                确定要删除插件「<span className="font-medium">{deletePlugin?.name}</span>」吗？
+                <span className="text-[#DC2626]">此操作不可撤销。</span>
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white" onClick={handleConfirmDelete}>确认删除</AlertDialogAction>
+            <AlertDialogAction onClick={handleConfirmDelete}>确认删除</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -85,13 +85,12 @@ export default function CommandTaskTab() {
               />
             </div>
             <Button
-              size="sm"
+              variant="claw-primary"
+              size="claw-sm"
               onClick={() => {
                 setEditTarget(undefined);
                 setCreateOpen(true);
               }}
-              className="h-9 text-white"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
             >
               <Plus className="w-4 h-4 mr-1" />
               创建命令
@@ -247,7 +246,7 @@ export default function CommandTaskTab() {
 
       {/* 删除确认 */}
       <Dialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-lg leading-none font-semibold">
               删除命令？

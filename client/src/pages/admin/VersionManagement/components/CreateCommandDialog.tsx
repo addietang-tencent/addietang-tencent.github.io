@@ -243,7 +243,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-2xl max-h-[88vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[720px] max-h-[88vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg leading-none font-semibold">
               {isEdit ? "编辑命令" : "创建命令"}
@@ -501,9 +501,8 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={handleSave}
-              className="text-white"
-              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
             >
               {isEdit ? "保存修改" : "创建命令"}
             </Button>
@@ -513,7 +512,7 @@ export default function CreateCommandDialog({ open, onOpenChange, template, onSa
 
       {/* 危险命令二次确认 */}
       <Dialog open={!!showDangerConfirm} onOpenChange={(v) => !v && setShowDangerConfirm(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle className="text-lg leading-none font-semibold text-red-600">
               检测到高危命令

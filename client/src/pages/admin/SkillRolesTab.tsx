@@ -387,8 +387,8 @@ function BatchUpdateDialog({
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
       <DialogContent
-        className="sm:max-w-3xl"
-        style={{ maxHeight: 'min(80vh, 720px)', display: 'flex', flexDirection: 'column' }}
+        className="sm:max-w-[920px]"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
       >
         <DialogHeader>
           <DialogTitle>批量刷新技能版本</DialogTitle>
@@ -661,7 +661,7 @@ function RoleAddPublicSkillDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl" style={{ height: '640px', display: 'flex', flexDirection: 'column' }}>
+      <DialogContent className="!sm:max-w-[920px]" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}>
         <DialogHeader>
           <DialogTitle>从公共技能库添加</DialogTitle>
         </DialogHeader>
@@ -927,7 +927,7 @@ function RoleAddEnterpriseSkillDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
-      <DialogContent className="!max-w-4xl" style={{ height: '640px', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
+      <DialogContent className="!sm:max-w-[920px]" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onOpenAutoFocus={e => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>从企业技能库添加</DialogTitle>
         </DialogHeader>
@@ -1285,8 +1285,8 @@ function RoleEditModal({
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
         <DialogContent
-          className="sm:max-w-lg"
-          style={{ height: 'min(80vh, 720px)', display: 'flex', flexDirection: 'column' }}
+          className="sm:max-w-2xl"
+          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
         >
           <DialogHeader>
             <DialogTitle>
@@ -1959,7 +1959,16 @@ export default function SkillRolesTab() {
       {/* Delete Confirm —— 遵循项目标准警示弹窗规范：
             标题/正文黑色，强调字段告警色，destructive 主按钮，右上角带 X 关闭按钮 */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteTarget(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#0A0A0A]">确认删除角色</AlertDialogTitle>
             <AlertDialogDescription asChild>

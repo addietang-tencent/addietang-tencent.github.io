@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ChevronDown, Check, AlertTriangle } from 'lucide-react';
+import { Search, ChevronDown, Check, AlertTriangle, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP, type SkillScope, type AgentInstance, type Group } from './types';
 
@@ -382,7 +382,10 @@ export default function BatchDistributeDialog({
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent
+        className="sm:max-w-[920px]"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+      >
         <DialogHeader>
           <DialogTitle className="text-[16px] font-semibold text-[#020617]">{title}</DialogTitle>
           <DialogDescription asChild>
@@ -836,7 +839,16 @@ export default function BatchDistributeDialog({
 
     {/* 二次确认弹窗 */}
     <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-      <AlertDialogContent className="sm:max-w-md">
+      <AlertDialogContent className="sm:max-w-[420px]">
+        <button
+          type="button"
+          aria-label="关闭"
+          onClick={() => setConfirmDialogOpen(false)}
+          className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+        >
+          <X className="size-5" />
+          <span className="sr-only">关闭</span>
+        </button>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-amber-500" />
@@ -871,6 +883,7 @@ export default function BatchDistributeDialog({
             取消
           </AlertDialogCancel>
           <Button
+            variant="dialog-confirm"
             onClick={handleConfirmDistribute}
             disabled={confirmInput !== '确认下发'}
           >

@@ -146,7 +146,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
 
         {/* 确认弹窗 — 开启 */}
         <Dialog open={confirmType === 'enable'} onOpenChange={(o) => { if (!o) setConfirmType(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[560px]">
             <DialogHeader>
               <DialogTitle>开启 Memory Free 版</DialogTitle>
               <DialogDescription className="sr-only">确认开启记忆功能</DialogDescription>
@@ -187,7 +187,7 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
 
         {/* 确认弹窗 — 关闭 */}
         <Dialog open={confirmType === 'disable'} onOpenChange={(o) => { if (!o) setConfirmType(null); }}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-[560px]">
             <DialogHeader>
               <DialogTitle>关闭 Memory Free 版</DialogTitle>
               <DialogDescription className="sr-only">确认关闭记忆功能</DialogDescription>
@@ -222,9 +222,9 @@ export const FreeVersionCard: React.FC<FreeVersionCardProps> = ({
                 取消
               </Button>
               <Button
+                variant="destructive"
                 onClick={handleConfirm}
                 disabled={!confirmChecked}
-                className="bg-red-600 hover:bg-red-700 text-white"
               >
                 确认关闭
               </Button>

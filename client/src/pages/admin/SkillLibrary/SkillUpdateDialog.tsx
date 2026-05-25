@@ -382,7 +382,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[640px]" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-2xl" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>更新 Skill</DialogTitle>
         </DialogHeader>
@@ -471,8 +471,8 @@ description: this is a skill creator.
                 </p>
                 <Button
                   type="button"
-                  variant="link"
-                  className="h-auto p-0 text-sm gap-1"
+                  variant="outline"
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     downloadSampleSkillZip();

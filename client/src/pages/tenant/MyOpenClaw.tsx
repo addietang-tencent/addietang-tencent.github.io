@@ -626,7 +626,7 @@ export default function MyOpenClaw() {
             <DialogFooter className="gap-2 pt-2">
               <Button variant="tenant-outline" onClick={() => setRestartConfirm(null)}>取消</Button>
               <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                variant="tenant-destructive"
                 onClick={() => handleRestart(restartConfirm!.id, restartConfirm!.name)}
               >
                 确认重启
@@ -657,7 +657,7 @@ export default function MyOpenClaw() {
             <DialogFooter className="gap-2 pt-2">
               <Button variant="tenant-outline" onClick={() => setReinstallConfirm(null)}>取消</Button>
               <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
+                variant="tenant-destructive"
                 disabled={reinstallConfirmInput !== "重装"}
                 onClick={() => handleReinstall(reinstallConfirm!.id, reinstallConfirm!.name)}
               >
@@ -732,7 +732,7 @@ export default function MyOpenClaw() {
             <DialogFooter className="gap-2 pt-2">
               <Button variant="tenant-outline" onClick={() => setRemoveRoleConfirm(null)}>取消</Button>
               <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                variant="tenant-destructive"
                 onClick={() => handleRemoveRole(removeRoleConfirm!.id, removeRoleConfirm!.name)}
               >
                 确认移除

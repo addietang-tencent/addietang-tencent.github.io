@@ -241,7 +241,7 @@ function DialogPreview() {
               </div>
               <DialogFooter>
                 <Button variant="outline">取消</Button>
-                <Button>确认</Button>
+                <Button variant="dialog-confirm">确认</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

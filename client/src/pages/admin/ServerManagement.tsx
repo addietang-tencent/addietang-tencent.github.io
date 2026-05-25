@@ -286,7 +286,7 @@ export default function ServerManagement() {
 
       {/* Import Image Dialog */}
       <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader><DialogTitle>导入镜像</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -310,7 +310,7 @@ export default function ServerManagement() {
 
       {/* Add/Edit Rule Dialog */}
       <Dialog open={showAddRuleDialog} onOpenChange={setShowAddRuleDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle>{editRule ? "编辑规则" : `添加${ruleType === "inbound" ? "入站" : "出站"}规则`}</DialogTitle>
           </DialogHeader>

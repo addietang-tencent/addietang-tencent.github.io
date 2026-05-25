@@ -37,7 +37,7 @@ export default function SyncResultDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle>
             同步结果
@@ -167,6 +167,7 @@ export default function SyncResultDialog({
 
         <DialogFooter>
           <Button
+            variant="dialog-confirm"
             onClick={() => {
               onConfirm();
               onOpenChange(false);

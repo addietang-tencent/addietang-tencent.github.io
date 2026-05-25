@@ -801,7 +801,7 @@ export default function GroupView({
 
       {/* 编辑分组存量 Agent 实例处理弹窗 */}
       <Dialog open={!!editGroupAgentDialog?.open} onOpenChange={(open) => { if (!open) setEditGroupAgentDialog(null); }}>
-        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-[720px]" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>存量 Agent 实例处理</DialogTitle>
           </DialogHeader>
@@ -856,8 +856,7 @@ export default function GroupView({
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditGroupAgentDialog(null)}>取消</Button>
             <Button
-             
-              className="text-white"
+              variant="dialog-confirm"
               onClick={() => {
                 editGroupAgentDialog?.pendingAction();
                 setEditGroupAgentDialog(null);

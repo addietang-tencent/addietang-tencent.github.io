@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusTag } from '@/components/ui/status-tag';
 import { Badge } from '@/components/ui/badge';
@@ -1145,7 +1145,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
       {/* 分发详情对话框 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-3xl max-h-96">
+        <DialogContent className="sm:max-w-[720px] max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>下发详情</DialogTitle>
           </DialogHeader>
@@ -1221,24 +1221,34 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         </DialogContent>
       </Dialog>
 
-      {/* 安全检测确认弹窗 */}
+      {/* 安全检测确认弹窗 (row 47) - 警示弹窗 */}
       <AlertDialog open={securityScanDialogOpen} onOpenChange={setSecurityScanDialogOpen}>
-        <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogContent className="sm:max-w-md">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setSecurityScanDialogOpen(false)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
+            <AlertDialogTitle className="flex items-center gap-2 text-[#0A0A0A]">
               提交安全检测
-              <Badge variant="secondary" className="rounded-full bg-[#F0F2F8] text-[#1447E6] text-[10px] px-2 py-0.5 border-0">限免</Badge>
+              <StatusTag variant="blue">限免</StatusTag>
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              确认对技能「{skill.name}」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#0A0A0A]">
+                确认对技能「<span className="font-medium">{skill.name}</span>」提交安全检测？检测将由腾讯云 AI Agent 安全进行，通常几分钟内完成。
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
+              variant="dialog-confirm"
               onClick={handleSecurityScan}
-             
-              className="text-white border-0"
             >
               确认检测
             </AlertDialogAction>

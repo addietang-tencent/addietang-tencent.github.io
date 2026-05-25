@@ -89,14 +89,33 @@ function DialogOverlay({
 
 DialogOverlay.displayName = "DialogOverlay";
 
+/**
+ * 弹窗尺寸规范（仅允许以下 4 档，禁止自定义其他宽度）：
+ * - sm (420px): 简单确认、单字段输入、警示弹窗
+ * - md (560px): 表单弹窗（3-6个字段）、发布/编辑（默认）
+ * - lg (720px): 复杂表单、含表格/列表、多列内容、详情面板
+ * - xl (920px): 多列数据表格批量操作、Tabs + 列表管理、命令下发等多阶段弹窗
+ */
+const dialogSizeMap = {
+  sm: "sm:max-w-[420px]",
+  md: "sm:max-w-[560px]",
+  lg: "sm:max-w-[720px]",
+  xl: "sm:max-w-[920px]",
+} as const;
+
+type DialogSize = keyof typeof dialogSizeMap;
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  size,
   onEscapeKeyDown,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
+  /** 弹窗宽度档位：sm(420px) | md(560px) | lg(720px) | xl(920px) */
+  size?: DialogSize;
 }) {
   const { isComposing } = useDialogComposition();
 
@@ -124,7 +143,8 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-[8px] shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)] duration-200 sm:max-w-lg overflow-clip px-6 pb-6 pt-0",
+          "bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-[8px] shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)] duration-200 overflow-clip px-6 pb-6 pt-0",
+          size ? dialogSizeMap[size] : "sm:max-w-[560px]",
           className
         )}
         onEscapeKeyDown={handleEscapeKeyDown}
@@ -188,7 +208,7 @@ function DialogBody({ className, style, ...props }: React.ComponentProps<"div">)
     <div
       data-slot="dialog-body"
       className={cn(
-        "flex-1 min-h-0 overflow-y-auto py-2 -mr-2 pr-2",
+        "flex-1 min-h-0 overflow-y-auto py-2 -mx-6 px-6",
         "[&::-webkit-scrollbar]:w-[6px]",
         "[&::-webkit-scrollbar-thumb]:rounded-full",
         "[&::-webkit-scrollbar-thumb]:bg-transparent",

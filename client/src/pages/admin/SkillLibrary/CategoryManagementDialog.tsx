@@ -11,7 +11,7 @@
  */
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -126,7 +126,10 @@ export default function CategoryManagementDialog({
           else onOpenChange(true);
         }}
       >
-        <DialogContent className="sm:max-w-[960px] max-h-[80vh] flex flex-col">
+        <DialogContent
+          className="sm:max-w-[920px] flex flex-col"
+          style={{ maxHeight: 'min(90vh, 780px)' }}
+        >
           <DialogHeader>
             <DialogTitle>标签分类管理</DialogTitle>
           </DialogHeader>
@@ -214,18 +217,30 @@ export default function CategoryManagementDialog({
 
       {/* 删除确认弹窗 */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <AlertDialogContent className="sm:max-w-md">
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteConfirmOpen(false)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#d42a1e]">删除分类</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除分类「{selectedCategory?.name}」吗？该分类下共有 {selectedCategory ? getSkillCountByCategory(selectedCategory.id) : 0} 个技能，删除此分类后对应 skill 将移除该分类。
+            <AlertDialogTitle className="text-[#0A0A0A]">删除分类</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#0A0A0A]">
+                确定要删除分类「<span className="font-medium">{selectedCategory?.name}</span>」吗？该分类下共有 {selectedCategory ? getSkillCountByCategory(selectedCategory.id) : 0} 个技能，
+                <span className="text-[#DC2626]">删除此分类后对应 skill 将移除该分类</span>
+                。
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteCategory}
-              className={buttonVariants({ variant: 'destructive' })}
             >
               确认删除
             </AlertDialogAction>

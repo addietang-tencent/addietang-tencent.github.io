@@ -322,7 +322,7 @@ export default function AuditLog() {
 
       {/* Detail Dialog */}
       <Dialog open={!!selectedLog} onOpenChange={() => setSelectedLog(null)}>
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent className="sm:max-w-[720px]">
           <DialogHeader>
             <DialogTitle>
               消息详情

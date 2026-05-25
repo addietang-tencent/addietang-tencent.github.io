@@ -134,7 +134,7 @@ export default function DocManagement() {
       </div>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle>添加文档</DialogTitle>
           </DialogHeader>

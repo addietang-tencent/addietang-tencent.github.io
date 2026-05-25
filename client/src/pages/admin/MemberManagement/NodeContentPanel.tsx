@@ -38,6 +38,7 @@ import {
   ChevronRight,
   ChevronLeft,
   AlertTriangle,
+  CircleAlert,
   ExternalLink,
   CheckCircle2,
   Lock,
@@ -229,12 +230,12 @@ function GroupTagSelect({
       <PopoverTrigger asChild>
         <div className="relative w-full min-h-[36px] px-2 py-1.5 rounded-xl border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7">
           {selectedIds.length === 0 ? (
-            <span className="text-xs text-[#A3A3A3] px-1">选择分组…</span>
+            <span className="text-xs text-gray-400 px-1">选择分组…</span>
           ) : (
             selectedIds.map((id) => (
               <span
                 key={id}
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-[#355EF1] text-[11px] max-w-full"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] max-w-full"
               >
                 <span className="truncate">{getPath(id)}</span>
                 <button
@@ -243,7 +244,7 @@ function GroupTagSelect({
                     e.stopPropagation();
                     onChange(selectedIds.filter((x) => x !== id));
                   }}
-                  className="text-[#355EF1] hover:text-[#355EF1] shrink-0"
+                  className="text-blue-400 hover:text-blue-700 shrink-0"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -273,7 +274,7 @@ function GroupTagSelect({
       >
         <div className="p-2.5 border-b border-[#e5e5e5]">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
               type="text"
               placeholder="搜索分组…"
@@ -282,7 +283,7 @@ function GroupTagSelect({
               className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 <X className="w-3 h-3" />
               </button>
             )}
@@ -290,7 +291,7 @@ function GroupTagSelect({
         </div>
         <div className="max-h-[240px] overflow-y-auto p-1.5">
           {filtered.length === 0 ? (
-            <p className="text-[11px] text-[#A3A3A3] text-center py-4">暂无分组</p>
+            <p className="text-[11px] text-gray-400 text-center py-4">暂无分组</p>
           ) : (
             filtered.map((g) => {
               const isSelected = selectedIds.includes(g.id);
@@ -300,7 +301,7 @@ function GroupTagSelect({
                   type="button"
                   onClick={() => toggleGroup(g.id)}
                   className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left text-xs transition-colors ${
-                    isSelected ? "bg-blue-50 text-[#355EF1]" : "hover:bg-gray-50 text-[#334155]"
+                    isSelected ? "bg-blue-50 text-blue-700" : "hover:bg-gray-50 text-gray-700"
                   }`}
                 >
                   <span
@@ -492,12 +493,12 @@ export default function NodeContentPanel({
       <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[#e5e5e5]">
         <div>
           <div className="flex items-center gap-3 mb-1 flex-wrap">
-            <h2 className="text-lg font-semibold text-[#0A0A0A]">{nodeName}</h2>
-            <span className="text-sm text-[#A3A3A3] tabular-nums">
+            <h2 className="text-lg font-semibold text-gray-900">{nodeName}</h2>
+            <span className="text-sm text-gray-400 tabular-nums">
               · {users.length} 人
             </span>
           </div>
-          <div className="text-xs text-[#737373]">分组名称：{nodePath}</div>
+          <div className="text-xs text-gray-500">分组名称：{nodePath}</div>
         </div>
         {nodeId !== "__unassigned__" && (isManualMode || nodeSource !== "oneid-dept") && (() => {
           const totalUserCount = allUsers?.length ?? 0;
@@ -565,25 +566,25 @@ export default function NodeContentPanel({
                 <table className="text-sm" style={{ width: "max-content", minWidth: "100%" }}>
                   <thead>
                     <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
                         用户 ID
                       </th>
                       {hasOneid && (
-                        <th className="text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
+                        <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                           部门
                         </th>
                       )}
-                      <th className="text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
                         分组
                       </th>
-                      <th className="text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         角色
                       </th>
-                      <th className="text-left px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap">
+                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
                         状态
                       </th>
                       {isManualMode && nodeId !== "__unassigned__" && (
-                        <th className="text-center px-3 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
+                        <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
                           {ncpTableCanScrollRight && (
                             <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                           )}
@@ -600,7 +601,7 @@ export default function NodeContentPanel({
                             (hasOneid ? 5 : 4) +
                             (isManualMode && nodeId !== "__unassigned__" ? 1 : 0)
                           }
-                          className="px-6 py-12 text-center text-sm text-[#A3A3A3]"
+                          className="px-6 py-12 text-center text-sm text-gray-400"
                         >
                           暂无用户
                         </td>
@@ -619,7 +620,7 @@ export default function NodeContentPanel({
                           >
                             {/* 用户 ID */}
                             <td className="px-4 py-4 whitespace-nowrap">
-                              <span className="text-sm font-medium text-[#0A0A0A]">
+                              <span className="text-sm font-medium text-gray-900">
                                 {u.userId}
                               </span>
                             </td>
@@ -628,10 +629,10 @@ export default function NodeContentPanel({
                             {hasOneid && (
                               <td className="px-3 py-4">
                                 {deptPaths.length === 0 ? (
-                                  <span className="text-sm text-[#A3A3A3]">—</span>
+                                  <span className="text-sm text-gray-300">—</span>
                                 ) : deptPaths.length === 1 ? (
                                   <span
-                                    className="text-sm text-[#737373] truncate block max-w-[180px]"
+                                    className="text-sm text-gray-600 truncate block max-w-[180px]"
                                     title={deptPaths[0].path}
                                   >
                                     {deptPaths[0].path}
@@ -639,9 +640,9 @@ export default function NodeContentPanel({
                                 ) : (
                                   <Tooltip>
                                     <TooltipTrigger asChild>
-                                      <span className="text-sm text-[#737373] truncate block max-w-[180px] cursor-default">
+                                      <span className="text-sm text-gray-600 truncate block max-w-[180px] cursor-default">
                                         {deptPaths[0].path}
-                                        <span className="text-xs text-[#A3A3A3] ml-1">
+                                        <span className="text-xs text-gray-400 ml-1">
                                           +{deptPaths.length - 1}
                                         </span>
                                       </span>
@@ -664,7 +665,7 @@ export default function NodeContentPanel({
                                               {dp.path}
                                             </span>
                                             {dp.isPrimary && (
-                                              <span className="ml-2 inline-flex items-center text-[10px] font-medium text-[#355EF1] bg-blue-500/20 rounded px-1.5 py-0.5">
+                                              <span className="ml-2 inline-flex items-center text-[10px] font-medium text-blue-400 bg-blue-500/20 rounded px-1.5 py-0.5">
                                                 主部门
                                               </span>
                                             )}
@@ -685,7 +686,7 @@ export default function NodeContentPanel({
                                   ? userGroups.filter((g) => g.source === "oneid-dept" || g.source === "oneid-group")
                                   : manualGroups;
                                 if (displayGroups.length === 0)
-                                  return <span className="text-sm text-[#A3A3A3]">—</span>;
+                                  return <span className="text-sm text-gray-300">—</span>;
 
                                 // 统一使用完整路径（OneID 模式：部门/用户组；普通模式：自建分组层级）
                                 const getDisplayName = (g: UserGroup) =>
@@ -716,7 +717,7 @@ export default function NodeContentPanel({
                                                 <span
                                                   className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
                                                     g.source === "oneid-dept"
-                                                      ? "text-[#355EF1] bg-blue-500/20"
+                                                      ? "text-blue-400 bg-blue-500/20"
                                                       : "text-purple-400 bg-purple-500/20"
                                                   }`}
                                                 >
@@ -740,8 +741,8 @@ export default function NodeContentPanel({
                                 variant="outline"
                                 className={
                                   u.role === "admin"
-                                    ? "border-blue-200 text-[#355EF1] bg-blue-50"
-                                    : "border-gray-200 text-[#737373]"
+                                    ? "border-blue-200 text-blue-600 bg-blue-50"
+                                    : "border-gray-200 text-gray-500"
                                 }
                               >
                                 {u.role === "admin" ? "管理员" : "用户"}
@@ -775,7 +776,7 @@ export default function NodeContentPanel({
                                       <TooltipTrigger asChild>
                                         <button
                                           type="button"
-                                          className="w-7 h-7 flex items-center justify-center rounded text-[#A3A3A3] hover:text-red-500 hover:bg-red-50 transition-colors"
+                                          className="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                                           onClick={() =>
                                             setRemoveDialog({
                                               userId: u.userId,
@@ -802,7 +803,7 @@ export default function NodeContentPanel({
 
               {/* 底部：共 N 名用户 + 分页 */}
               <div className="flex items-center justify-between px-6 py-3 border-t border-gray-50">
-                <span className="text-xs text-[#355EF1]">
+                <span className="text-xs text-blue-600">
                   共 {total} 名用户
                 </span>
                 <Pagination
@@ -843,7 +844,7 @@ export default function NodeContentPanel({
         }}
       >
         <DialogContent
-          className="sm:max-w-lg"
+          className="sm:max-w-[720px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
@@ -860,7 +861,7 @@ export default function NodeContentPanel({
           </Alert>
           <div className="py-2 space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="搜索用户 ID..."
                 value={addSearch}
@@ -871,7 +872,7 @@ export default function NodeContentPanel({
             </div>
             <div className="max-h-[420px] overflow-y-auto border border-[#e5e5e5] rounded-xl divide-y divide-gray-50 bg-white">
               {addFilteredUsers.length === 0 ? (
-                <p className="text-xs text-[#A3A3A3] text-center py-6">
+                <p className="text-xs text-gray-400 text-center py-6">
                   没有可添加的用户
                 </p>
               ) : (
@@ -929,15 +930,15 @@ export default function NodeContentPanel({
                         }}
                       />
                       <div className="flex-1 min-w-0">
-                        <span className="text-sm text-[#0A0A0A] block truncate">
+                        <span className="text-sm text-gray-900 block truncate">
                           {m.userId}
                         </span>
                         {hasOneid && (
-                          <span className="text-xs text-[#A3A3A3] block break-all">
+                          <span className="text-xs text-gray-400 block break-all">
                             部门：{deptPaths.length > 0 ? deptPaths.join("、") : "—"}
                           </span>
                         )}
-                        <span className="text-xs text-[#A3A3A3] block break-all">
+                        <span className="text-xs text-gray-400 block break-all">
                           分组：{groupPaths.length > 0 ? groupPaths.join("、") : "—"}
                         </span>
                       </div>
@@ -946,8 +947,8 @@ export default function NodeContentPanel({
                           variant="outline"
                           className={
                             m.role === "admin"
-                              ? "border-blue-200 text-[#355EF1] bg-blue-50 text-xs"
-                              : "border-gray-200 text-[#737373] text-xs"
+                              ? "border-blue-200 text-blue-600 bg-blue-50 text-xs"
+                              : "border-gray-200 text-gray-500 text-xs"
                           }
                         >
                           {m.role === "admin" ? "管理员" : "用户"}
@@ -979,11 +980,11 @@ export default function NodeContentPanel({
             </div>
             {addSelected.length > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#737373]">
+                <span className="text-xs text-gray-500">
                   已选择 {addSelected.length} 名用户
                 </span>
                 <button
-                  className="text-xs text-[#355EF1] hover:text-[#355EF1] hover:underline"
+                  className="text-xs text-blue-500 hover:text-blue-600 hover:underline"
                   onClick={() => setAddSelected([])}
                 >
                   清除选择
@@ -1004,6 +1005,7 @@ export default function NodeContentPanel({
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={handleAddConfirm}
               disabled={addSelected.length === 0}
             >
@@ -1021,29 +1023,36 @@ export default function NodeContentPanel({
         }}
       >
         <DialogContent
-          className="sm:max-w-md"
+          className="sm:max-w-[560px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle>从分组中移除</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 space-y-2">
+            {/* 警示提示 - Alert 位于内容区最上方 */}
+            <Alert variant="warning">
+              <CircleAlert />
+              <AlertDescription>
+                移除后，该用户在此分组下的可见范围和权限将被收回。用户不会被删除，
+                <span className="font-medium">仅解除与该分组的关联</span>。
+              </AlertDescription>
+            </Alert>
+
+            {/* 信息卡 - 规范样式：白底 #E5E5E5 边 4px 圆角，label #525252 / value #0A0A0A */}
+            <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#737373]">用户 ID</span>
+                <span className="text-xs font-medium text-[#525252]">用户 ID</span>
                 <span className="text-sm font-medium text-[#0A0A0A]">
                   {removeDialog?.userId}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#737373]">分组名称</span>
+                <span className="text-xs font-medium text-[#525252]">分组名称</span>
                 <span className="text-sm font-medium text-[#0A0A0A]">
                   {removeDialog?.groupName}
                 </span>
               </div>
-            </div>
-            <div className="rounded-xl bg-orange-50 border border-orange-100 px-4 py-3 text-sm text-orange-600 leading-relaxed">
-              移除后，该用户在此分组下的可见范围和权限将被收回。用户不会被删除，仅解除与该分组的关联。
             </div>
           </div>
           <DialogFooter>
@@ -1062,29 +1071,29 @@ export default function NodeContentPanel({
 
       {/* 存量 Agent 实例处理弹窗 */}
       <Dialog open={!!agentInstanceDialog?.open} onOpenChange={(open) => { if (!open) setAgentInstanceDialog(null); }}>
-        <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-[720px]" onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle>存量 Agent 实例处理</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-3">
-            <p className="text-sm text-[#334155]">
+            <p className="text-sm text-gray-700">
               用户在该分组下创建了 Agent 实例，用户已从该分组中移除，请选择如何处理存量实例：
             </p>
             <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="text-left px-3 py-2 font-medium text-[#737373]">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-[#737373]">Agent 实例名称 / ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-[#737373]">分组</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">用户 ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">Agent 实例名称 / ID</th>
+                    <th className="text-left px-3 py-2 font-medium text-gray-500">分组</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {agentInstanceDialog?.instances.map((inst) => (
                     <tr key={inst.id}>
-                      <td className="px-3 py-2 text-[#334155]">{agentInstanceDialog.userId}</td>
-                      <td className="px-3 py-2 text-[#334155]">{inst.name}<span className="text-[#A3A3A3] ml-1">({inst.id})</span></td>
-                      <td className="px-3 py-2 text-[#334155]">{agentInstanceDialog.groupName}</td>
+                      <td className="px-3 py-2 text-gray-700">{agentInstanceDialog.userId}</td>
+                      <td className="px-3 py-2 text-gray-700">{inst.name}<span className="text-gray-400 ml-1">({inst.id})</span></td>
+                      <td className="px-3 py-2 text-gray-700">{agentInstanceDialog.groupName}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1092,7 +1101,7 @@ export default function NodeContentPanel({
             </div>
           </div>
           <div className="py-2 space-y-2">
-            <p className="text-xs font-medium text-[#334155] mb-1">处理方式</p>
+            <p className="text-xs font-medium text-gray-700 mb-1">处理方式</p>
             {[
               { value: "keep", title: "保留原配置", desc: "存量 Agent 实例保留在原分组名下，可继续使用原分组的配置和权限，但无法在原分组创建新的 Agent" },
               { value: "delete", title: "删除实例", desc: "确认后将跳转到 Agent 列表页面，系统会帮您自动筛选出这些实例，您可以全选并批量删除" },
@@ -1106,8 +1115,8 @@ export default function NodeContentPanel({
                   {agentInstanceChoice === opt.value && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-[#0A0A0A]">{opt.title}</p>
-                  <p className="text-xs text-[#737373] mt-0.5">{opt.desc}</p>
+                  <p className="text-sm font-medium text-gray-900">{opt.title}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{opt.desc}</p>
                 </div>
               </label>
             ))}
@@ -1115,6 +1124,7 @@ export default function NodeContentPanel({
           <DialogFooter>
             <Button variant="outline" onClick={() => setAgentInstanceDialog(null)}>取消</Button>
             <Button
+              variant="dialog-confirm"
               onClick={() => {
                 if (agentInstanceDialog) {
                   onRemoveFromGroup?.(agentInstanceDialog.userId);
@@ -1143,7 +1153,7 @@ export default function NodeContentPanel({
         }}
       >
         <DialogContent
-          className="sm:max-w-md"
+          className="sm:max-w-[560px]"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
@@ -1152,14 +1162,14 @@ export default function NodeContentPanel({
           <div className="py-2 space-y-4">
             <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#737373]">用户 ID</span>
-                <span className="text-sm font-medium text-[#0A0A0A]">
+                <span className="text-sm text-gray-500">用户 ID</span>
+                <span className="text-sm font-medium text-gray-900">
                   {editUserDialog?.userId}
                 </span>
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#334155]">用户分组</label>
+              <label className="text-xs font-medium text-gray-700">用户分组</label>
               <GroupTagSelect
                 groups={groups}
                 selectedIds={editGroupIds}
@@ -1172,6 +1182,7 @@ export default function NodeContentPanel({
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={() => {
                 if (editUserDialog) {
                   onEditUserGroups?.(editUserDialog.userId, editGroupIds);
@@ -1206,7 +1217,7 @@ function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
   if (source.type === "local") {
     // 本分组 → 蓝色标签
     return (
-      <span className="inline-flex items-center text-[10px] font-medium text-[#355EF1] bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 shrink-0">
+      <span className="inline-flex items-center text-[10px] font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 shrink-0">
         本分组
       </span>
     );
@@ -1214,7 +1225,7 @@ function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
   if (source.type === "platformDefault") {
     // 全部用户 → 灰色标签
     return (
-      <span className="inline-flex items-center text-[10px] font-medium text-[#737373] bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
+      <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
         全部用户
       </span>
     );
@@ -1222,14 +1233,14 @@ function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
   if (source.type === "presetPolicy") {
     // 预设策略 → 灰色标签（与全部用户一致）
     return (
-      <span className="inline-flex items-center text-[10px] font-medium text-[#737373] bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
+      <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
         预设策略
       </span>
     );
   }
   // inherited → 灰色标签
   return (
-    <span className="inline-flex items-center text-[10px] font-medium text-[#737373] bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
+    <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
       继承自 {source.groupName}
     </span>
   );
@@ -1262,17 +1273,17 @@ function ConfigOutdatedHint() {
 /** 公网配置项的特殊展示（三项信息 + 来源标签跟在后面） */
 function PublicNetworkDetail({ meta, source }: { meta: Record<string, string | number | boolean>; source: ConfigEntry["source"] }) {
   return (
-    <div className="flex items-center gap-3 text-xs text-[#737373] flex-wrap">
+    <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
       <span>
         公网 IP：
-        <span className={`font-medium ${meta.allocated ? "text-emerald-600" : "text-[#A3A3A3]"}`}>
+        <span className={`font-medium ${meta.allocated ? "text-emerald-600" : "text-gray-400"}`}>
           {meta.allocated ? "已分配" : "未分配"}
         </span>
       </span>
       <span className="text-gray-200">|</span>
-      <span>计费模式：<span className="font-medium text-[#334155]">{String(meta.billingMode)}</span></span>
+      <span>计费模式：<span className="font-medium text-gray-700">{String(meta.billingMode)}</span></span>
       <span className="text-gray-200">|</span>
-      <span>带宽上限：<span className="font-medium text-[#334155] tabular-nums">{String(meta.bandwidthCap)} Mbps</span></span>
+      <span>带宽上限：<span className="font-medium text-gray-700 tabular-nums">{String(meta.bandwidthCap)} Mbps</span></span>
       <SourceBadge source={source} />
     </div>
   );
@@ -1283,7 +1294,7 @@ function PolicyEntryValue({ entry }: { entry: ConfigEntry }) {
   if (!entry.meta) return null;
   if ("enabled" in entry.meta) {
     return (
-      <span className={`inline-flex items-center gap-1 text-xs font-medium ${entry.meta.enabled ? "text-emerald-600" : "text-[#A3A3A3]"}`}>
+      <span className={`inline-flex items-center gap-1 text-xs font-medium ${entry.meta.enabled ? "text-emerald-600" : "text-gray-400"}`}>
         <span className={`w-1.5 h-1.5 rounded-full ${entry.meta.enabled ? "bg-emerald-500" : "bg-gray-300"}`} />
         {entry.meta.enabled ? "已开启" : "已关闭"}
       </span>
@@ -1292,7 +1303,7 @@ function PolicyEntryValue({ entry }: { entry: ConfigEntry }) {
   if ("value" in entry.meta) {
     const val = entry.meta.value as number;
     return (
-      <span className="text-xs font-medium text-[#334155] tabular-nums">
+      <span className="text-xs font-medium text-gray-700 tabular-nums">
         {val}
       </span>
     );
@@ -1460,10 +1471,10 @@ function ConfigOverviewTab({
                     <span
                       className={`text-xs font-medium transition-colors duration-200 whitespace-nowrap ${
                         isActive
-                          ? "text-[#355EF1]"
+                          ? "text-blue-600"
                           : isPast
-                          ? "text-[#355EF1]"
-                          : "text-[#A3A3A3] group-hover:text-[#737373]"
+                          ? "text-blue-500"
+                          : "text-gray-400 group-hover:text-gray-600"
                       }`}
                     >
                       {CATEGORY_NAV_LABEL[cat]}
@@ -1549,7 +1560,7 @@ function ConfigOverviewTab({
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="relative inline-flex text-sm font-semibold text-[#0A0A0A]">
+                      <span className="relative inline-flex text-sm font-semibold text-gray-900">
                         {catMeta.label}
                         {hasAnomaly && (
                           <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
@@ -1564,12 +1575,12 @@ function ConfigOverviewTab({
                       </span>
                       {/* 仅模型、通道、镜像在标题旁显示数量；技能/Agent工具在子类别显示；其余不显示 */}
                       {(cat === "model" || cat === "channel" || cat === "image") && (
-                        <span className="text-xs text-[#A3A3A3] tabular-nums">
+                        <span className="text-xs text-gray-400 tabular-nums">
                           {entries.length} 个
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-[#A3A3A3] mt-0.5">
+                    <div className="text-[11px] text-gray-400 mt-0.5">
                       {catMeta.description}
                     </div>
                   </div>
@@ -1577,13 +1588,13 @@ function ConfigOverviewTab({
                 <div className="flex items-center gap-2">
                   <Link
                     href={catMeta.path}
-                    className="inline-flex items-center gap-1 text-xs text-[#355EF1] hover:underline"
+                    className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
                     onClick={(e: React.MouseEvent) => e.stopPropagation()}
                   >
                     管理 <ExternalLink className="w-3 h-3" />
                   </Link>
                   <ChevronDown
-                    className={`w-4 h-4 text-[#A3A3A3] transition-transform duration-200 ${
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
                       collapsed.has(cat) ? "-rotate-90" : ""
                     }`}
                   />
@@ -1595,7 +1606,7 @@ function ConfigOverviewTab({
               <div className="divide-y divide-gray-50">
                 {entries.length === 0 ? (
                   <div className="px-6 py-6 text-center">
-                    <span className="text-sm text-[#A3A3A3]">暂未配置</span>
+                    <span className="text-sm text-gray-400">暂未配置</span>
                   </div>
                 ) : (cat === "skill" || cat === "agentTool" || cat === "platformPolicy" || cat === "network") ? (
                   (() => {
@@ -1611,12 +1622,12 @@ function ConfigOverviewTab({
                       <div key={groupLabel}>
                         {/* 大类标题 */}
                         <div className="px-6 py-2 bg-gray-50/80 border-b border-gray-50 flex items-center gap-2">
-                          <span className="text-xs font-semibold text-[#737373] uppercase tracking-wide">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                             {groupLabel}
                           </span>
                           {/* 技能和Agent工具在子类别标题旁显示数量 */}
                           {(cat === "skill" || cat === "agentTool") && (
-                            <span className="text-xs text-[#A3A3A3] tabular-nums">
+                            <span className="text-xs text-gray-400 tabular-nums">
                               {groupEntries.length} 个
                             </span>
                           )}
@@ -1647,8 +1658,8 @@ function ConfigOverviewTab({
                                   const isPreset = entry.source.type === "presetPolicy";
                                   return (
                                     <div className="flex items-center gap-2 flex-wrap">
-                                      <span className="text-xs text-[#737373] shrink-0">私有网络：</span>
-                                      <span className="text-xs font-semibold text-[#334155]">
+                                      <span className="text-xs text-gray-500 shrink-0">私有网络：</span>
+                                      <span className="text-xs font-semibold text-gray-700">
                                         {isPreset ? <>自动分配</> : <>{vpcId}</>}
                                       </span>
                                       <SourceBadge source={entry.source} />
@@ -1670,9 +1681,9 @@ function ConfigOverviewTab({
                                     const zones = Array.isArray(entry.meta.zones) ? (entry.meta.zones as string[]) : [];
                                     return zones.map((zone, idx) => (
                                       <div key={`preset-zone-${zone}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
-                                        <span className="text-xs text-[#737373] shrink-0">子网：</span>
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-[#737373]">{zone}</span>
-                                        <span className="text-xs font-semibold text-[#334155]">自动分配</span>
+                                        <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{zone}</span>
+                                        <span className="text-xs font-semibold text-gray-700">自动分配</span>
                                       </div>
                                     ));
                                   }
@@ -1692,19 +1703,19 @@ function ConfigOverviewTab({
                                     <>
                                       {subnets.map((subnet, idx) => (
                                         <div key={`${subnet.subnetId}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
-                                          <span className="text-xs text-[#737373] shrink-0">子网：</span>
-                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-[#737373]">{subnet.zone}</span>
+                                          <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{subnet.zone}</span>
                                           {/* 与线上保持一致：仅展示 subnetId（不展示子网名 / CIDR） */}
-                                          <span className="text-xs font-semibold text-[#334155]">
+                                          <span className="text-xs font-semibold text-gray-700">
                                             {subnet.subnetId}
                                           </span>
                                         </div>
                                       ))}
                                       {zonesAllDeleted.map((zone, idx) => (
                                         <div key={`zone-empty-${zone}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
-                                          <span className="text-xs text-[#737373] shrink-0">子网：</span>
-                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-[#737373]">{zone}</span>
-                                          <span className="text-xs text-[#A3A3A3]">无可用子网</span>
+                                          <span className="text-xs text-gray-500 shrink-0">子网：</span>
+                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{zone}</span>
+                                          <span className="text-xs text-gray-400">无可用子网</span>
                                           <ConfigOutdatedHint />
                                         </div>
                                       ))}
@@ -1716,7 +1727,7 @@ function ConfigOverviewTab({
                               <div className="flex items-center justify-between gap-3">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-sm font-medium text-[#0A0A0A] truncate">
+                                    <span className="text-sm font-medium text-gray-900 truncate">
                                       {entry.label}
                                     </span>
                                     <SourceBadge source={entry.source} />
@@ -1738,7 +1749,7 @@ function ConfigOverviewTab({
                     <div key={entry.id} className="flex items-center justify-between px-6 py-3 gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-[#0A0A0A] truncate">
+                          <span className="text-sm font-medium text-gray-900 truncate">
                             {entry.label}
                           </span>
                           <SourceBadge source={entry.source} />

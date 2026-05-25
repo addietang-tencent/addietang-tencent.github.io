@@ -3,9 +3,9 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2 } from 'lucide-react';
+import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 import {
@@ -633,7 +633,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       <div className="flex items-center gap-2">
         {/* 搜索框 */}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#A3A3A3] w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
             placeholder="搜索技能名称或描述..."
             value={searchQuery}
@@ -649,7 +649,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#1447E6] transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -658,7 +658,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         ? '全部应用范围'
                         : Array.from(selectedScopes).map(s => s === 'public' ? '全部用户' : MOCK_GROUPS.find(g => g.id === s)?.name || s).join('、')}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[280px]">
@@ -693,7 +693,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               {/* 搜索框 */}
               <div className="px-2 pb-1.5 pt-1">
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                   <input
                     placeholder="搜索..."
                     value={scopeSearchQuery}
@@ -719,7 +719,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     }
                     setScopeSearchQuery('');
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                     isAllSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -733,13 +733,13 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               {/* 全部用户 区域 */}
               {showPublic && (
                 <>
-                  <div className="px-3 pt-2 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
+                  <div className="px-3 pt-2 pb-1 text-xs font-medium text-gray-400 select-none">
                     全部用户
                   </div>
                   <button
                     type="button"
                     onClick={() => toggleScope('public')}
-                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                       selectedScopes.has('public') ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -753,7 +753,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               {/* 按分组 区域 */}
               {showGroupSection && (
                 <>
-                  <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-[#A3A3A3] select-none">
+                  <div className="px-3 pt-2.5 pb-1 text-xs font-medium text-gray-400 select-none">
                     按分组
                   </div>
                   <div className="max-h-44 overflow-y-auto">
@@ -762,7 +762,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         key={group.id}
                         type="button"
                         onClick={() => toggleScope(group.id)}
-                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         <span className={`flex items-center justify-center w-4 h-4 rounded border flex-shrink-0 ${
                           selectedScopes.has(group.id) ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
@@ -773,7 +773,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </button>
                     ))}
                     {filteredGroups.length === 0 && !showPublic && scopeSearchQuery && (
-                      <p className="text-xs text-[#A3A3A3] py-2 text-center">没有匹配的结果</p>
+                      <p className="text-xs text-gray-400 py-2 text-center">没有匹配的结果</p>
                     )}
                   </div>
                 </>
@@ -781,14 +781,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               {/* 底部：已选数量 + 清除筛选 */}
               {selectedScopes.size > 0 && (
                 <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
-                  <span className="text-xs text-[#737373]">已选 {selectedScopes.size} 个应用范围</span>
+                  <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                   <button
                     type="button"
                     onClick={() => {
                       setSelectedScopes(new Set());
                       setScopeSearchQuery('');
                     }}
-                    className="text-xs text-[#355EF1] hover:text-[#355EF1]"
+                    className="text-xs text-blue-500 hover:text-blue-600"
                   >
                     清除
                   </button>
@@ -808,8 +808,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               onClick={() => setViewMode('card')}
               className={`p-2 rounded transition-colors ${
                 viewMode === 'card'
-                  ? 'bg-gray-100 text-[#0A0A0A]'
-                  : 'text-[#737373] hover:bg-gray-50'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50'
               }`}
               title="卡片视图"
             >
@@ -819,8 +819,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               onClick={() => setViewMode('list')}
               className={`p-2 rounded transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-gray-100 text-[#0A0A0A]'
-                  : 'text-[#737373] hover:bg-gray-50'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50'
               }`}
               title="列表视图"
             >
@@ -862,7 +862,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {/* 空状态 */}
       {sortedSkills.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-[#737373]">还没有发布任何 SKILL</p>
+          <p className="text-gray-500">还没有发布任何 SKILL</p>
         </div>
       )}
 
@@ -881,7 +881,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 {/* 名称 + 安全检测图标 + 版本 */}
                 <div className="flex items-center gap-2 mb-2">
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <h3 className="font-semibold text-[#0A0A0A] truncate">{skill.name}</h3>
+                    <h3 className="font-semibold text-gray-900 truncate">{skill.name}</h3>
                     {/* 安全检测小图标 */}
                     {(() => {
                       const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
@@ -890,7 +890,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
                               <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                <ShieldCheck className="w-3.5 h-3.5 text-[#A3A3A3]" />
+                                <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">
@@ -904,7 +904,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
                               <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                <Loader className="w-3.5 h-3.5 text-[#355EF1] animate-spin" />
+                                <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">
@@ -936,7 +936,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       );
                     })()}
                   </div>
-                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full flex-shrink-0">
+                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full flex-shrink-0">
                     v{skill.version}
                   </span>
                 </div>
@@ -953,7 +953,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         {visible.map((catId: string) => (
                           <span
                             key={catId}
-                            className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full whitespace-nowrap"
+                            className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap"
                           >
                             {getCategoryName(catId)}
                           </span>
@@ -961,7 +961,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         {overflow > 0 && (
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
-                              <span className="inline-block px-2 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
+                              <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
                                 +{overflow}
                               </span>
                             </TooltipTrigger>
@@ -989,7 +989,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                             setEditingSkillCategories(skill.categories);
                             setEditCategoryDialogOpen(true);
                           }}
-                          className="p-0.5 text-[#A3A3A3] hover:text-[#0A0A0A] rounded transition-colors"
+                          className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors"
                         >
                           <Edit2 className="w-3 h-3" />
                         </button>
@@ -1003,7 +1003,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 {/* 描述 */}
                 <Tooltip delayDuration={1000}>
                   <TooltipTrigger asChild>
-                    <p className="text-sm text-[#737373] line-clamp-2 mb-2 cursor-default">{skill.description || '-'}</p>
+                    <p className="text-sm text-gray-600 line-clamp-2 mb-2 cursor-default">{skill.description || '-'}</p>
                   </TooltipTrigger>
                   {skill.description && skill.description.length > 60 && (
                     <TooltipContent side="bottom" className="max-w-[320px]">
@@ -1014,7 +1014,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
                 {/* 应用范围 — 使用 Popover 编辑 */}
                 <div className="flex items-center gap-1 mb-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
-                  <span className="text-xs text-[#A3A3A3]">应用范围：</span>
+                  <span className="text-xs text-gray-400">应用范围：</span>
                   <EditScopePopover
                     groups={MOCK_GROUPS}
                     currentScope={skill.scope || 'public'}
@@ -1093,7 +1093,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide bg-gray-50 sticky left-0 z-10 relative"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10 relative"
                     style={{ width: '180px', minWidth: '180px' }}
                   >
                     名称/Slug
@@ -1104,14 +1104,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </>
                     )}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '370px', minWidth: '370px' }}>描述</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>应用范围</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '370px', minWidth: '370px' }}>描述</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>应用范围</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide bg-gray-50 sticky right-0 z-20 relative"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-20 relative"
                     style={{ width: '220px', minWidth: '220px' }}
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
@@ -1129,8 +1129,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   const hasDistribution = summary && summary.lastDistributionStatus !== 'not_distributed';
                   let statusLine1 = '正常'; // 第一行：状态
                   let statusLine2 = '未下发'; // 第二行：下发进度
-                  let statusLine1Color = 'text-[#334155]';
-                  let statusLine2Color = 'text-[#A3A3A3]';
+                  let statusLine1Color = 'text-gray-700';
+                  let statusLine2Color = 'text-gray-400';
                   let statusLine2Bg = ''; // 底色
                   let statusLine2HoverBg = ''; // hover 加深底色
                   if (summary) {
@@ -1143,14 +1143,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       statusLine2HoverBg = 'hover:bg-red-100';
                     } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
-                      statusLine1Color = 'text-[#355EF1]';
+                      statusLine1Color = 'text-blue-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-[#355EF1]';
+                      statusLine2Color = 'text-blue-600';
                       statusLine2Bg = 'bg-blue-50';
                       statusLine2HoverBg = 'hover:bg-blue-100';
                     } else if (hasDistribution) {
                       statusLine1 = '正常';
-                      statusLine1Color = 'text-[#334155]';
+                      statusLine1Color = 'text-gray-700';
                       const total = summary.lastDistributionInstanceCount || 0;
                       const success = summary.lastDistributionSuccessCount ?? total;
                       statusLine2 = `已下发（${success}/${total}成功）`;
@@ -1185,7 +1185,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         )}
                         <div className="flex items-center gap-1.5">
                           <OverflowTooltip content={skill.name}>
-                            <div className="font-medium text-[#0A0A0A] truncate max-w-[200px]">{skill.name}</div>
+                            <div className="font-medium text-gray-900 truncate max-w-[200px]">{skill.name}</div>
                           </OverflowTooltip>
                           {/* 安全检测小图标：所有状态都显示 */}
                           {(() => {
@@ -1195,7 +1195,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                                 <Tooltip delayDuration={300}>
                                   <TooltipTrigger asChild>
                                     <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                      <ShieldCheck className="w-3.5 h-3.5 text-[#A3A3A3]" />
+                                      <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
                                     </span>
                                   </TooltipTrigger>
                                   <TooltipContent side="top">
@@ -1209,7 +1209,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                                 <Tooltip delayDuration={300}>
                                   <TooltipTrigger asChild>
                                     <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                      <Loader className="w-3.5 h-3.5 text-[#355EF1] animate-spin" />
+                                      <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
                                     </span>
                                   </TooltipTrigger>
                                   <TooltipContent side="top">
@@ -1242,7 +1242,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           })()}
                         </div>
                         <OverflowTooltip content={skill.slug}>
-                          <div className="text-xs text-[#A3A3A3] font-mono mt-0.5 truncate max-w-[220px]">{skill.slug}</div>
+                          <div className="text-xs text-gray-400 font-mono mt-0.5 truncate max-w-[220px]">{skill.slug}</div>
                         </OverflowTooltip>
                       </td>
                       {/* 状态/最近下发进度 */}
@@ -1266,7 +1266,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </td>
                       {/* 版本号 */}
                       <td className="px-4 py-3" style={{ minWidth: '80px' }}>
-                        <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
+                        <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                           v{skill.version}
                         </span>
                       </td>
@@ -1275,7 +1275,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         <Tooltip delayDuration={1000}>
                           <TooltipTrigger asChild>
                             <span
-                              className="text-sm text-[#737373] cursor-default block"
+                              className="text-sm text-gray-600 cursor-default block"
                               style={{
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
@@ -1303,14 +1303,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           return (
                             <div className="flex items-center gap-1 flex-wrap" style={{ maxHeight: '52px', overflow: 'hidden' }}>
                               {visible.map((catId: string) => (
-                                <span key={catId} className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full whitespace-nowrap">
+                                <span key={catId} className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap">
                                   {getCategoryName(catId)}
                                 </span>
                               ))}
                               {overflow > 0 && (
                                 <Tooltip delayDuration={300}>
                                     <TooltipTrigger asChild>
-                                      <span className="inline-block px-2 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
+                                      <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
                                         +{overflow}
                                       </span>
                                     </TooltipTrigger>
@@ -1331,7 +1331,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                                         setEditingSkillCategories(skill.categories);
                                         setEditCategoryDialogOpen(true);
                                       }}
-                                      className="p-0.5 text-[#A3A3A3] hover:text-[#0A0A0A] rounded transition-colors flex-shrink-0"
+                                      className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
                                     >
                                       <Edit2 className="w-3 h-3" />
                                     </button>
@@ -1362,7 +1362,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </td>
                       {/* 最后更新时间 */}
                       <td className="px-4 py-3" style={{ minWidth: '120px' }}>
-                        <span className="text-sm text-[#737373]">
+                        <span className="text-sm text-gray-500">
                           {skill.uploadTime.toLocaleDateString('zh-CN')}
                         </span>
                       </td>
@@ -1572,7 +1572,16 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 安全检测确认弹窗 */}
       <AlertDialog open={securityScanDialogOpen} onOpenChange={setSecurityScanDialogOpen}>
-        <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setSecurityScanDialogOpen(false)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               提交安全检测
@@ -1600,43 +1609,54 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* 安全检测服务 — 申请开通弹窗 */}
+      {/* 安全检测服务 — 申请开通弹窗 (row 49) - 普通弹窗 */}
       <Dialog open={securityApplyDialogOpen} onOpenChange={setSecurityApplyDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+        >
           <DialogHeader>
-            <DialogTitle className="text-base">申请免费试用（Skills 风险检测 API）</DialogTitle>
+            <DialogTitle>申请免费试用（Skills 风险检测 API）</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="grid grid-cols-[5rem_1fr] gap-y-3 text-sm">
-              <span className="text-[#737373]">试用有效期</span>
-              <span className="text-[#0A0A0A]">有效期至 2026年6月30日</span>
-              <span className="text-[#737373]">调用额度</span>
-              <span className="text-[#0A0A0A]">1000次<span className="text-[#A3A3A3] text-xs ml-1">（有效期到期后，剩余未使用的调用额度将清空）</span></span>
-              <span className="text-[#737373]">操作指引</span>
-              <a
-                href="https://cloud.tencent.com/document/api/664/131590"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#355EF1] hover:text-[#355EF1] flex items-center gap-1"
-              >
-                说明文档
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+          <DialogBody className="flex-1">
+            <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3 space-y-2.5 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#525252]">试用有效期</span>
+                <span className="text-sm text-[#0A0A0A]">有效期至 2026 年 6 月 30 日</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#525252]">调用额度</span>
+                <div className="text-right">
+                  <span className="text-sm text-[#0A0A0A]">1000 次</span>
+                  <p className="text-xs text-[#737373]">有效期到期后，剩余未使用的额度将清空</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-[#525252]">操作指引</span>
+                <a
+                  href="https://cloud.tencent.com/document/api/664/131590"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1447E6] hover:underline flex items-center gap-1 text-sm"
+                >
+                  说明文档
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
-          </div>
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => setSecurityApplyDialogOpen(false)} className="text-sm">
+          </DialogBody>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSecurityApplyDialogOpen(false)}>
               取消
             </Button>
             <Button
+              variant="dialog-confirm"
               onClick={() => {
                 setSecurityServiceActive(true);
                 localStorage.setItem('skill_security_service_active', 'true');
                 setSecurityApplyDialogOpen(false);
                 setSecuritySuccessDialogOpen(true);
               }}
-              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
-              className="text-white text-sm"
             >
               立即领取
             </Button>
@@ -1646,7 +1666,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 安全检测服务 — 开通成功弹窗 */}
       <Dialog open={securitySuccessDialogOpen} onOpenChange={setSecuritySuccessDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
               <span className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
@@ -1660,14 +1680,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <p className="text-sm font-medium text-[#0A0A0A] mb-1">使用 API</p>
-              <p className="text-sm text-[#737373]">
+              <p className="text-sm font-medium text-gray-900 mb-1">使用 API</p>
+              <p className="text-sm text-gray-600">
                 您可以前往查看{' '}
                 <a
                   href="https://cloud.tencent.com/document/api/664/131590"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#355EF1] hover:text-[#355EF1] inline-flex items-center gap-0.5"
+                  className="text-blue-500 hover:text-blue-600 inline-flex items-center gap-0.5"
                 >
                   说明文档
                   <ExternalLink className="w-3 h-3" />
@@ -1678,9 +1698,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           </div>
           <DialogFooter>
             <Button
+              variant="dialog-confirm"
               onClick={() => setSecuritySuccessDialogOpen(false)}
-              style={{ background: 'linear-gradient(135deg, #007AFF, #5856D6)' }}
-              className="text-white text-sm"
             >
               我知道了
             </Button>

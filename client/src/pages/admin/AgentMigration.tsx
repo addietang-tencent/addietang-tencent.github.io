@@ -470,7 +470,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <SecretInput value={srcSk} onChange={setSrcSk} placeholder="源端 SecretKey" />
               </div>
               <div className="flex-shrink-0">
-                <Button size="sm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading}>
+                <Button variant="dialog-confirm" onClick={fetchInstances} disabled={!srcAk || !srcSk || srcLoading}>
                   {srcLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : <Search className="w-3.5 h-3.5 mr-1" />}
                   获取实例
                 </Button>
@@ -752,7 +752,7 @@ rm -f /tmp/openclaw-state.tgz`;
             </Collapsible>
 
             <div className="flex items-center gap-3">
-              <Button variant="claw-primary" onClick={startMigration} disabled={validRows.length === 0} className="px-6">
+              <Button variant="dialog-confirm" onClick={startMigration} disabled={validRows.length === 0} className="px-6">
                 <Play className="w-4 h-4 mr-1.5" />
                 开始迁移（{validRows.length} 台）
               </Button>

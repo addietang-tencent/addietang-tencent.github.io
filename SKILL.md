@@ -548,11 +548,35 @@ CSS 定义：
 | Alert 位置 | Alert 提示必须放在内容区（DialogBody）**最上方** |
 | 表单组件 | 下拉框和 Input 必须引用项目规范组件（`@/components/ui/select`、`@/components/ui/input`），禁止自行编造样式 |
 
-**尺寸规范**：
-- 小确认框：`sm:max-w-sm`
-- 中表单：`sm:max-w-md` / `sm:max-w-[532px]`
-- 大表单：`sm:max-w-lg` / `sm:max-w-[640px]`
-- 详情查看：`sm:max-w-2xl`
+**文字层级规范**：
+
+| 层级 | 样式 | 用途 |
+|------|------|------|
+| 弹窗标题 | `text-base font-semibold text-[#0A0A0A]` | DialogTitle |
+| 小标题 | `text-sm font-medium text-[#0A0A0A]` | 内容区分组标题（如"用户配额"、"上传要求"） |
+| 表单 Label | `text-xs font-medium text-[#525252]` | 表单字段标签 |
+| 正文 | `text-sm text-[#525252]` | 说明/描述文字 |
+| 辅助文字 | `text-xs text-[#737373]` | 次要信息、提示 |
+| 强调正文（红色） | `text-sm text-[#DC2626]` | 警示信息（不可撤销等） |
+| 禁用文字 | `text-[#A3A3A3]` | disabled 状态 |
+
+**尺寸规范**（仅允许以下 4 档，根据内容自动匹配，禁止出现内容截断）：
+
+| 档位 | 宽度 | 适用场景 |
+|------|------|----------|
+| S 小 | `sm:max-w-[420px]` | 简单确认、单字段输入、警示弹窗 |
+| M 中 | `sm:max-w-[560px]` | 表单弹窗（3-6个字段）、发布/编辑、信息卡片组 |
+| L 大 | `sm:max-w-[720px]` | 复杂表单、含表格/列表、多列内容、详情面板 |
+| XL 加大 | `sm:max-w-[920px]` | 含多列数据表格的批量操作弹窗、Tabs + 列表的管理弹窗、命令下发等多阶段弹窗 |
+
+**选档原则**：
+- 内容宽度能在 S 内完整展示 → 用 S
+- 有多字段表单或长文本标签 → 用 M
+- 含表格、多列数据、长分组名称 → 用 L
+- 含 5 列以上数据表格、Tabs + 列表管理、批量操作 + 多筛选项 → 用 XL
+- **禁止内容被截断或水平溢出**，如当前档位放不下则升档
+- **禁止使用上述 4 档之外的宽度值**（如 `max-w-md`、`max-w-2xl`、`max-w-3xl`、`max-w-10xl`、`max-w-[xxxpx]` 自定义值），统一收敛到 S/M/L/XL
+- 全屏级数据浏览（10+ 列表格、运维数据大盘）应使用 Drawer/Sheet 组件，不再使用 Dialog
 
 **关键约束**：
 - 不加 Header/Footer 分割线
@@ -587,6 +611,22 @@ CSS 定义：
      ```
    - 关闭按钮与底部「取消」按钮的行为一致（关闭弹窗，不提交任何数据）
    - 关闭按钮**位于标题左侧时不允许**（如返回箭头）；返回操作请通过底部「上一步」按钮承载
+10. **弹窗主按钮必须显式声明 `variant`**，禁止使用 `<Button>` 默认变体或自行编造样式：
+
+    | 场景 | variant | 颜色 |
+    |---|---|---|
+    | 管控端普通弹窗主按钮 | `dialog-confirm` | 纯黑底 `#0A0A0A` |
+    | 管控端警示弹窗主按钮（`AlertDialogAction`） | 组件已内置 `destructive`，**无需声明** | 红底 `#d42a1e` |
+    | 普通 `Dialog` 内的危险按钮（删除/关闭等） | `destructive` | 红底 `#d42a1e` |
+    | 用户端普通弹窗主按钮 | `tenant-primary` | 黑→蓝渐变（圆角胶囊） |
+    | 用户端危险弹窗主按钮 | `tenant-destructive` | 红底（圆角胶囊） |
+    | 取消按钮（管控端 / 用户端） | `outline` / `tenant-outline` | 白底 |
+
+    **禁止**的写法：
+    - ❌ `<Button onClick={...}>确认</Button>` — 不写 variant，渲染为默认渐变 CTA，违反规范
+    - ❌ `<Button className="bg-blue-600 ...">` / `style={{ background: "linear-gradient(...)" }}` — 自行编造样式
+    - ❌ `<Button className="bg-orange-500 ...">` — 自行用警告色作为危险确认（应用 `destructive` / `tenant-destructive`）
+    - ❌ `<AlertDialogAction className="bg-[#d42a1e] ...">` — 警示主按钮已是红色，覆盖会被 `background:` 简写吃掉
 
 ---
 
@@ -596,6 +636,35 @@ CSS 定义：
 - 默认：`bg-[#0A0A0A] text-white`
 - hover：`bg-[#404040]`
 - disabled：`bg-[#A3A3A3] text-white`
+
+##### 🚨 严禁省略 variant（高频踩坑点）
+
+**禁止**：在 `DialogFooter` 内的主按钮上**省略 variant**。
+
+**原因**：`<Button>` 不写 variant 默认走 `default` 变体，渲染为**黑→蓝渐变**（管控端 CTA 色），与"普通弹窗主按钮纯黑"的规范不符。同样地，**禁止**用 inline `style={{ background: "linear-gradient(...)" }}` 或 `className="bg-blue-600 ..."` 等方式自行编造主按钮样式。
+
+```jsx
+// ❌ 错误：会渲染成蓝黑渐变
+<Button onClick={handleConfirm}>确认启用</Button>
+
+// ❌ 错误：自行编造蓝色渐变
+<Button onClick={handleConfirm} style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}>
+  立即下发
+</Button>
+
+// ❌ 错误：自行编造蓝色实色
+<Button onClick={handleConfirm} className="bg-blue-600 hover:bg-blue-700">
+  创建 MCP
+</Button>
+
+// ✅ 正确：管控端普通弹窗
+<Button variant="dialog-confirm" onClick={handleConfirm}>确认启用</Button>
+
+// ✅ 正确：用户端普通弹窗
+<Button variant="tenant-primary" onClick={handleConfirm}>立即访问</Button>
+```
+
+##### 标准代码示例
 
 ```jsx
 <Dialog>
@@ -621,21 +690,45 @@ CSS 定义：
 
 #### 8.7.3 警示弹窗
 
-用于删除、危险操作等场景。关键调整：
-- 主按钮使用 **`variant="destructive"`**（红色底白字：`bg-[#d42a1e]`）
-- 右上角**必须有关闭按钮**
-- 标题保持黑色（不用红色）
-- 警示文字用 `text-[#DC2626]` 红色强调
+用于删除、禁用、解绑、重置、关机等危险操作。关键调整：
+- 使用 `AlertDialog` 而非 `Dialog`
+- 主按钮使用 `<AlertDialogAction>` —— **组件已内置 `destructive` variant**（红底白字 `bg-[#d42a1e]`），**无需任何 className 覆盖颜色**
+- 右上角**必须有关闭按钮**（`AlertDialog` 不像 `Dialog` 那样默认带关闭按钮，必须手动添加）
+- 标题保持黑色（不用红色），警示文字用 `text-[#DC2626]` 红色强调
+
+##### 🚨 严禁覆盖主按钮颜色（高频踩坑点）
+
+**禁止**：用 `className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white"` 覆盖 `<AlertDialogAction>` 的颜色。
+
+**原因**：`<Button>` 默认 variant 使用 CSS `background:` 简写属性（含黑→蓝渐变），它的优先级**高于** `bg-[#d42a1e]` 这种 `background-color`，会导致红色被吃掉，渲染成蓝黑渐变按钮。
+
+```jsx
+// ❌ 错误：会渲染成蓝黑渐变（颜色被吃掉）
+<AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white">
+  确认删除
+</AlertDialogAction>
+
+// ✅ 正确：直接用，已是红色
+<AlertDialogAction>确认删除</AlertDialogAction>
+
+// ✅ 普通 Dialog 内的危险按钮 → 用 Button + variant="destructive"
+<Button variant="destructive">删除</Button>
+```
+
+##### 标准代码示例
 
 ```jsx
 <AlertDialog>
-  <AlertDialogContent className="sm:max-w-sm">
-    {/* 右上角关闭按钮 */}
+  <AlertDialogContent className="sm:max-w-[420px]">
+    {/* 右上角关闭按钮（必须手动添加） */}
     <button
-      className="absolute top-5 right-5 size-5 rounded-sm text-[#737373] hover:text-[#0A0A0A]"
+      type="button"
+      aria-label="关闭"
+      className="absolute top-5 right-5 size-5 rounded-sm text-[#737373] hover:text-[#0A0A0A] focus:outline-none"
       onClick={onClose}
     >
       <X className="size-5" />
+      <span className="sr-only">关闭</span>
     </button>
     <AlertDialogHeader>
       <AlertDialogTitle className="text-[#0A0A0A]">
@@ -649,7 +742,8 @@ CSS 定义：
     </AlertDialogHeader>
     <AlertDialogFooter>
       <AlertDialogCancel>取消</AlertDialogCancel>
-      <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white">
+      {/* ✅ 不写 className，自动红色 */}
+      <AlertDialogAction onClick={handleConfirm}>
         确认删除
       </AlertDialogAction>
     </AlertDialogFooter>
@@ -777,11 +871,17 @@ CSS 定义：
 ### 10.4 危险操作确认
 
 使用 `AlertDialog`（非 `Dialog`），参见 **8.7.3 警示弹窗** 规范：
-- 主按钮使用 `variant="destructive"`（`bg-[#d42a1e]`）
-- 右上角必须有关闭按钮
+- 主按钮直接使用 `<AlertDialogAction>` —— 组件已内置红色样式，**禁止用 className 覆盖颜色**
+- 右上角必须有关闭按钮（手动添加）
 - 警示文字用 `text-[#DC2626]`
 
 ```jsx
+{/* ✅ 正确 —— 不写任何颜色 className */}
+<AlertDialogAction onClick={handleConfirm}>
+  确认删除
+</AlertDialogAction>
+
+{/* ❌ 错误 —— bg-[#d42a1e] 会被 background 简写覆盖，渲染成蓝黑渐变 */}
 <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c] text-white">
   确认删除
 </AlertDialogAction>

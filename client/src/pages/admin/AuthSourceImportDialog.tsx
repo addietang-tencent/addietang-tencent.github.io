@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -907,19 +908,24 @@ export default function AuthSourceImportDialog({
         if (!o) onOpenChange(false);
       }}
     >
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-on-hover">
+      <DialogContent
+        className="sm:max-w-[720px]"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+      >
         <DialogHeader>
           <DialogTitle className="text-[#0A0A0A]">数据源导入</DialogTitle>
         </DialogHeader>
 
-        {/* 步骤条 */}
-        {renderStepBar()}
+        <DialogBody className="flex-1">
+          {/* 步骤条 */}
+          {renderStepBar()}
 
-        {/* 步骤内容 */}
-        {step === 1 && renderStep1()}
-        {step === 2 && renderStep2()}
-        {step === 3 && renderStep3()}
-        {step === 4 && renderStep4()}
+          {/* 步骤内容 */}
+          {step === 1 && renderStep1()}
+          {step === 2 && renderStep2()}
+          {step === 3 && renderStep3()}
+          {step === 4 && renderStep4()}
+        </DialogBody>
 
         {/* 底部按钮 */}
         <DialogFooter>

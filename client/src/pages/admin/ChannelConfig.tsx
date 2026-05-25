@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogBody,
@@ -28,7 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { toast } from "sonner";
-import { Plus, Trash2, ChevronDown, ChevronRight, AlertCircle } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronRight, AlertCircle, X } from "lucide-react";
 import { ScopePopover } from "@/components/ScopePopover";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
@@ -277,7 +279,7 @@ export default function ChannelConfig() {
         <h1 className="text-2xl font-bold text-[#0A0A0A]">通道配置</h1>
       </div>
 
-      {/* Tab 切换器（标准 Segment 组件） */}
+      {/* Tab 切换器（与 Agent 工具库同款 SegmentGroup） */}
       <div className="mb-1">
         <SegmentGroup>
           {CHANNEL_TABS.map((tab) => (
@@ -487,7 +489,7 @@ export default function ChannelConfig() {
 
       {/* ── 新增自定义通道弹窗 ── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg flex flex-col max-h-[min(640px,90vh)]">
+        <DialogContent className="sm:max-w-[720px] flex flex-col max-h-[min(640px,90vh)]">
           <DialogHeader className="shrink-0 border-b border-[#F5F5F5]">
             <DialogTitle>添加自定义通道</DialogTitle>
             <DialogDescription>
@@ -495,71 +497,72 @@ export default function ChannelConfig() {
             </DialogDescription>
           </DialogHeader>
 
-          <DialogBody className="space-y-5">
+          <DialogBody className="space-y-4">
             {/* 顶部提醒条 */}
-            <div className="flex items-start gap-2 rounded-[4px] border border-[#FCD28C] bg-[#FFFBED] px-3 py-2">
-              <AlertCircle className="w-4 h-4 text-[#FCA004] mt-0.5 shrink-0" />
-              <p className="text-xs text-[#0A0A0A] leading-5">
-                使用自定义通道前，企业需先开发与 Agent 适配的 IM 插件，并前往<span className="font-medium">镜像管理</span>页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
-              </p>
-            </div>
+            <Alert variant="warning">
+              <AlertCircle />
+              <AlertDescription>
+                使用自定义通道前，企业需先开发与 Agent 适配的 IM 插件，并前往
+                <span className="font-medium">镜像管理</span>
+                页面，导入内置该插件的自定义镜像并将其设为生效版本，方可正常使用。
+              </AlertDescription>
+            </Alert>
 
             {/* ── 第一部分：通道基础信息 ── */}
             <section className="space-y-3">
-              <h3 className="text-sm font-semibold text-[#0A0A0A]">通道基础信息</h3>
-              <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-[#525252]">
-                    通道名称 <span className="text-red-500">*</span>
-                  </label>
+              <h3 className="text-sm font-medium text-[#0A0A0A]">通道基础信息</h3>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-[#525252]">
+                    通道名称 <span className="text-[#DC2626]">*</span>
+                  </Label>
                   <Input
                     placeholder="展示给用户的通道名字，如「内部 IM」"
                     value={form.name}
                     onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-[#525252]">
-                    Channel ID <span className="text-red-500">*</span>
-                  </label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-[#525252]">
+                    Channel ID <span className="text-[#DC2626]">*</span>
+                  </Label>
                   <Input
                     placeholder="写入 agent.json 的 key，需与插件名一致"
                     value={form.channelId}
                     onChange={(e) => setForm(f => ({ ...f, channelId: e.target.value }))}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white font-mono"
+                    className="font-mono"
                   />
-                  <p className="text-xs text-[#737373] mt-1">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
+                  <p className="text-xs text-[#737373]">仅支持英文字母、数字和下划线，需与对应插件名保持一致</p>
                 </div>
               </div>
             </section>
 
             {/* ── 第二部分：IM 服务器地址 ── */}
             <section className="space-y-3">
-              <h3 className="text-sm font-semibold text-[#0A0A0A]">IM 服务器地址</h3>
-              <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-[#525252]">
-                    Server URL <span className="text-red-500">*</span>
-                  </label>
+              <h3 className="text-sm font-medium text-[#0A0A0A]">IM 服务器地址</h3>
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-[#525252]">
+                    Server URL <span className="text-[#DC2626]">*</span>
+                  </Label>
                   <Input
                     placeholder="自定义 IM 的 HTTP API 地址"
                     value={form.serverUrl}
                     onChange={(e) => setForm(f => ({ ...f, serverUrl: e.target.value }))}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white font-mono"
+                    className="font-mono"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-[#525252]">
-                    WebSocket URL <span className="text-red-500">*</span>
-                  </label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-[#525252]">
+                    WebSocket URL <span className="text-[#DC2626]">*</span>
+                  </Label>
                   <Input
                     placeholder="自定义 IM 的长连接地址，可与 Server URL 相同"
                     value={form.wsUrl}
                     onChange={(e) => setForm(f => ({ ...f, wsUrl: e.target.value }))}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white font-mono"
+                    className="font-mono"
                   />
-                  <p className="text-xs text-[#737373] mt-1">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
+                  <p className="text-xs text-[#737373]">WebSocket 地址可与 Server URL 相同，系统会自动处理协议转换</p>
                 </div>
               </div>
             </section>
@@ -567,11 +570,11 @@ export default function ChannelConfig() {
             {/* ── 第三部分：用户凭证字段 ── */}
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-[#0A0A0A]">用户凭证字段</h3>
+                <h3 className="text-sm font-medium text-[#0A0A0A]">用户凭证字段</h3>
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 px-2.5 text-xs flex items-center gap-1 rounded-[4px] border-[#E5E5E5]"
+                  className="h-7 px-2.5 text-xs flex items-center gap-1"
                   onClick={addCredentialField}
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -581,11 +584,11 @@ export default function ChannelConfig() {
 
               <div className="space-y-2">
                 {form.credentialFields.length === 0 ? (
-                  <div className="rounded-[4px] bg-[#FAFAFA] border border-dashed border-[#E5E5E5] px-4 py-3 text-center">
+                  <div className="rounded-[4px] border border-dashed border-[#E5E5E5] px-4 py-3 text-center">
                     <p className="text-xs text-[#737373]">暂未添加凭证字段</p>
                   </div>
                 ) : (
-                  <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-2">
+                  <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-3 space-y-2">
                     {/* 表头 */}
                     <div className="flex items-center gap-2">
                       <span className="w-5 shrink-0" />
@@ -610,13 +613,13 @@ export default function ChannelConfig() {
                             placeholder={`如 ${FIELD_PLACEHOLDERS[idx % FIELD_PLACEHOLDERS.length]}`}
                             value={field.key}
                             onChange={(e) => updateCredentialFieldKey(field.id, e.target.value)}
-                            className="flex-1 rounded-[4px] border-[#E5E5E5] bg-white font-mono"
+                            className="flex-1 font-mono"
                           />
                           <Input
                             placeholder={idx % 2 === 0 ? "如 机器人的AccessKey" : "如 机器人的SecretKey"}
                             value={field.label}
                             onChange={(e) => updateCredentialFieldLabel(field.id, e.target.value)}
-                            className="flex-1 rounded-[4px] border-[#E5E5E5] bg-white"
+                            className="flex-1"
                           />
                         </div>
                         <button
@@ -648,23 +651,34 @@ export default function ChannelConfig() {
         </DialogContent>
       </Dialog>
 
-      {/* ── 删除确认弹窗（危险操作改用 AlertDialog） ── */}
+      {/* ── 删除确认弹窗（警示弹窗） ── */}
       <AlertDialog
         open={!!deleteConfirmId}
         onOpenChange={(open) => !open && setDeleteConfirmId(null)}
       >
-        <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogContent className="sm:max-w-md">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteConfirmId(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 Agent 配置不受影响。此操作不可撤销。
+            <AlertDialogTitle className="text-[#0A0A0A]">确认删除</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#0A0A0A]">
+                删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 Agent 配置不受影响。
+                <span className="text-[#DC2626]">此操作不可撤销。</span>
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteConfirmId && handleDelete(deleteConfirmId)}
-              className="bg-destructive text-white hover:bg-destructive/90"
             >
               确认删除
             </AlertDialogAction>

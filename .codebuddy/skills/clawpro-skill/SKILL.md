@@ -1153,6 +1153,77 @@ import { SurfaceCard } from "@/components/ui/Surface";
 - 详情查看：`sm:max-w-2xl`
 - 长表单加：`max-h-[90vh] overflow-y-auto`
 
+#### 弹窗内 Info 图标的悬浮交互（强约束）
+
+> **铁律**：弹窗（`<Dialog>` / `<AlertDialog>` / `<Sheet>` / 任何浮层 Content）内部的 `<Info>` 信息图标，**hover 后只能用 `<HoverCard>` 展开说明，禁止用 `<Tooltip>`**。如果交互定位为"用户主动点击展开补充信息"，则用 `<Popover>`（点击触发）。任何情况下都不能用 Tooltip 承载弹窗内 Info 图标的说明文字。
+
+**为什么不用 Tooltip**：
+1. **可读性**：Tooltip 是黑底单行短提示（适合 ≤ 12 字、强烈装饰性的标签缩写释义）；弹窗里 Info 图标承载的是**正文级补充说明**（"该字段为唯一标识不可修改"、"配额上限计算规则"等），动辄一两句话，Tooltip 会被截断或溢出。
+2. **触发稳定性**：弹窗本身是浮层 (z-50)，Tooltip 也是浮层 (z-50)。两层浮层叠加时，Radix Tooltip 在 Dialog 内部会出现 **focus trap 抢焦点 → tooltip 闪烁 / 不消失 / 被 dialog 关闭事件吞掉** 等已知问题。HoverCard / Popover 走 Portal + 受控 open 状态，行为稳定。
+3. **可访问性**：HoverCard / Popover 是可聚焦区域，键盘 Tab 可以进入，里面的链接/操作可以点；Tooltip 鼠标移开就消失，里面如果带"前往配置"链接根本点不到。
+4. **持久阅读**：弹窗里用户经常需要"读完说明再决定怎么填"。HoverCard 默认 open delay 700ms / close delay 300ms，鼠标移动到内容上不会立即消失；Popover 点开后保持打开（点外部才关）；Tooltip 是 hover 即关，强制用户精准悬停在 4×4 图标上读完两行字，反人类。
+
+**正确写法（hover 触发，最常用）**：
+
+```jsx
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Info } from "lucide-react";
+
+<Label className="flex items-center gap-1.5 text-sm font-medium text-[#0A0A0A]">
+  用户 ID
+  <HoverCard openDelay={150} closeDelay={150}>
+    <HoverCardTrigger asChild>
+      <button type="button" className="inline-flex cursor-help text-[#A3A3A3] hover:text-[#737373] transition-colors">
+        <Info className="w-3.5 h-3.5" />
+      </button>
+    </HoverCardTrigger>
+    <HoverCardContent side="top" className="w-auto max-w-[280px] text-xs leading-relaxed text-[#334155] px-3 py-2">
+      用户 ID 为唯一标识，不可修改
+    </HoverCardContent>
+  </HoverCard>
+</Label>
+```
+
+**正确写法（click 触发，仅当内容里有交互/链接时用）**：
+
+```jsx
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+<Popover>
+  <PopoverTrigger asChild>
+    <button type="button" className="inline-flex cursor-pointer text-[#A3A3A3] hover:text-[#737373]">
+      <Info className="w-3.5 h-3.5" />
+    </button>
+  </PopoverTrigger>
+  <PopoverContent side="top" className="w-auto max-w-[320px] text-xs leading-relaxed text-[#334155] px-3 py-2">
+    配额上限根据您的订阅档位计算，<a href="/admin/billing" className="text-[#1447E6] underline">前往套餐管理</a>升级。
+  </PopoverContent>
+</Popover>
+```
+
+**错误写法（CI / Code Review 拦截）**：
+
+```jsx
+// ❌ 弹窗内 Info 图标禁止用 Tooltip
+<Tooltip>
+  <TooltipTrigger asChild>
+    <span><Info className="w-3.5 h-3.5" /></span>
+  </TooltipTrigger>
+  <TooltipContent>用户 ID 为唯一标识，不可修改</TooltipContent>
+</Tooltip>
+```
+
+**Tooltip 仍然可以用的场景**（弹窗内）：
+- 状态徽章悬浮释义（≤ 8 字，单行）：`<StatusTag>限免</StatusTag>` hover 出"限时免费试用中"
+- 截断文本悬浮显示完整内容（如分组名 max-w-[120px] truncate，hover 出全名）
+- 禁用控件的禁用原因（≤ 12 字，例如禁用行 hover 出"该项不可编辑"）
+
+> 判定原则：**只要带 Info(ⓘ) 图标，目的是让用户读"为什么这个字段这样设计"的补充说明 — 一律 HoverCard（hover）或 Popover（click）**。Tooltip 只用于"裝飾性 + 一行内 + 不需要交互"的场景。
+
+#### 触达即同步（Touch-and-Sync）
+
+修弹窗时，如发现 `<DialogContent>` / `<AlertDialogContent>` 范围内有 `<Tooltip>` 包着 `<Info>` 图标的写法，必须**在同一次提交中**改成 `<HoverCard>`（默认）或 `<Popover>`（带交互时）。本节规则于 v2026.05 新增，存量违规靠日常迭代消化。
+
 ### 8.13 提示横幅
 
 ```jsx

@@ -21,8 +21,8 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CircleAlert, X } from 'lucide-react';
 
 interface DeleteSkillDialogProps {
   open: boolean;
@@ -44,35 +44,45 @@ export default function DeleteSkillDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="sm:max-w-sm">
+      <AlertDialogContent className="sm:max-w-[420px]">
+        <button
+          type="button"
+          aria-label="关闭"
+          onClick={() => onOpenChange(false)}
+          className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+        >
+          <X className="size-5" />
+          <span className="sr-only">关闭</span>
+        </button>
         <AlertDialogHeader>
           <AlertDialogTitle className="text-[#0A0A0A]">确认删除</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-3">
               {hasReferences ? (
                 <>
-                  <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-yellow-800">
-                      <p className="font-medium mb-1">该 Skill 被以下技能包引用：</p>
-                      <ul className="list-disc list-inside space-y-0.5">
+                  <p className="text-sm text-[#0A0A0A]">
+                    确定要删除 Skill「<span className="font-medium">{skillName}</span>」吗？
+                  </p>
+                  <Alert variant="warning">
+                    <CircleAlert />
+                    <AlertTitle>该 Skill 被以下技能包引用</AlertTitle>
+                    <AlertDescription>
+                      <ul className="list-disc pl-4 space-y-0.5">
                         {referencedPackages.map((name) => (
                           <li key={name}>{name}</li>
                         ))}
                       </ul>
-                    </div>
-                  </div>
+                    </AlertDescription>
+                  </Alert>
                   <p className="text-sm text-[#0A0A0A]">
-                    删除后将自动从上述技能包中移除该技能。
+                    删除后将自动从上述技能包中移除该技能，<span className="text-[#DC2626]">此操作不可撤销</span>。
                   </p>
                 </>
               ) : (
-                <>
-                  <p className="text-sm text-[#0A0A0A]">
-                    确定要删除 Skill「<span className="font-medium text-[#d42a1e]">{skillName}</span>」吗？
-                  </p>
-                  <p className="text-sm font-medium text-[#d42a1e]">此操作不可撤销。</p>
-                </>
+                <p className="text-sm text-[#0A0A0A]">
+                  确定要删除 Skill「<span className="font-medium">{skillName}</span>」吗？
+                  <span className="text-[#DC2626]">此操作不可撤销。</span>
+                </p>
               )}
             </div>
           </AlertDialogDescription>
@@ -81,7 +91,6 @@ export default function DeleteSkillDialog({
           <AlertDialogCancel>取消</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className={buttonVariants({ variant: 'destructive' })}
           >
             确认删除
           </AlertDialogAction>

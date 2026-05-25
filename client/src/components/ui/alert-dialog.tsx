@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { XIcon } from "lucide-react";
+import type { VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -132,13 +133,25 @@ function AlertDialogDescription({
   );
 }
 
+/**
+ * AlertDialogAction - 警示弹窗主按钮
+ *
+ * 默认 variant 为 "destructive"（红底白字），符合警示弹窗规范：
+ * - 删除/解绑/重置/禁用等危险操作 → 默认即红色，无需手动覆盖
+ *
+ * 注意：禁止通过 className 用 bg-* 覆盖颜色 —— Button default 使用
+ * background 简写（含渐变），会覆盖单纯的 background-color。
+ * 如需切换样式，请使用 variant prop。
+ */
 function AlertDialogAction({
   className,
+  variant = "destructive",
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Action> &
+  Pick<VariantProps<typeof buttonVariants>, "variant">) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), className)}
+      className={cn(buttonVariants({ variant }), className)}
       {...props}
     />
   );

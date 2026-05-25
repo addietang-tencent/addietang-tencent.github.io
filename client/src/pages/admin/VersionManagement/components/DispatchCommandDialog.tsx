@@ -18,16 +18,19 @@
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
-  AlertTriangle, FlaskConical, Server, Code2, Search, ChevronRight,
+  FlaskConical, Server, Code2, Search, ChevronRight,
   Loader2, CheckCircle2, XCircle, ArrowRight, X as XIcon,
+  CircleAlert, Info,
 } from "lucide-react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+  Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -320,10 +323,13 @@ export default function DispatchCommandDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[88vh] overflow-y-auto">
+      <DialogContent
+        className="sm:max-w-[920px]"
+        style={{ maxHeight: "min(90vh, 780px)", display: "flex", flexDirection: "column" }}
+      >
         <DialogHeader>
-          <DialogTitle className="text-lg leading-none font-semibold">
-            {phase === "testing" && "测试机执行中…"}
+          <DialogTitle>
+            {phase === "testing" && "测试机执行中"}
             {phase === "review" && "测试机执行结果"}
             {(phase === "prepare" || phase === "submitting") && (
               pickedCommand ? `下发命令：${pickedCommand.name}` : "命令下发"
@@ -339,110 +345,113 @@ export default function DispatchCommandDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <DialogBody className="flex-1">
+
         {/* ── prepare 阶段：完整表单 ───────────────────────── */}
         {phase === "prepare" && (
-          <>
-            {/* 命令选择/预览 */}
-            {!pickedCommand ? (
-              <div className="rounded-xl border border-gray-100 bg-gray-50/40 p-4 space-y-3">
-                <Label className="text-sm font-medium text-[#334155] flex items-center gap-1">
-                  <Code2 className="w-3.5 h-3.5" />
-                  选择命令 <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
-                  <Input
-                    value={commandSearch}
-                    onChange={(e) => setCommandSearch(e.target.value)}
-                    placeholder="搜索命令名称、ID、内容"
-                    className="h-9 pl-9 bg-white"
-                  />
-                </div>
-                <div className="rounded-lg border border-gray-100 bg-white max-h-[260px] overflow-y-auto divide-y divide-gray-50">
-                  {commandCandidates.length === 0 ? (
-                    <div className="py-10 text-center text-xs text-[#A3A3A3]">
-                      没有匹配的命令；请前往「命令下发」页面创建新命令。
-                    </div>
-                  ) : (
-                    commandCandidates.map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setPickedCommand(t)}
-                        className="w-full text-left px-3 py-2.5 hover:bg-blue-50/60 transition-colors flex items-start gap-3 group"
-                      >
-                        <Code2 className="w-3.5 h-3.5 text-purple-500 mt-1 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-[#0A0A0A] truncate">{t.name}</span>
-                            <span className="text-[10px] font-mono text-[#A3A3A3]">{t.id}</span>
-                          </div>
-                          <code className="text-xs font-mono text-[#737373] truncate block mt-0.5">
-                            {t.content.split("\n")[0]}
-                            {t.content.includes("\n") && <span className="text-[#A3A3A3] ml-1">…</span>}
-                          </code>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-[#A3A3A3] group-hover:text-[#355EF1] mt-1 shrink-0" />
-                      </button>
-                    ))
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-gray-100 bg-gray-50/60 p-4 space-y-2">
-                <div className="flex items-center gap-3 text-xs text-[#737373]">
-                  <span>类型：<span className="font-medium text-[#334155]">SHELL</span></span>
-                  <span>·</span>
-                  <span>执行用户：<span className="font-mono text-[#334155]">{pickedCommand.runAsUser}</span></span>
-                  <span>·</span>
-                  <span>路径：<span className="font-mono text-[#334155]">{pickedCommand.workingDir}</span></span>
-                  <span>·</span>
-                  <span>超时：<span className="tabular-nums text-[#334155]">{pickedCommand.timeoutSec}</span> 秒</span>
-                  {!command && (
-                    <button
-                      type="button"
-                      onClick={() => setPickedCommand(null)}
-                      className="ml-auto text-[#355EF1] hover:text-[#355EF1] text-xs"
-                    >
-                      切换命令
-                    </button>
-                  )}
-                </div>
-                <pre className="text-xs font-mono text-[#334155] bg-white rounded p-2 max-h-[100px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
-                  {pickedCommand.content}
-                </pre>
-              </div>
-            )}
-
-            {/* 危险命令告警 */}
+          <div className="space-y-4">
+            {/* 危险命令告警（Alert 必须放在内容区最上方） */}
             {danger.dangerous && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 flex gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <div className="text-xs text-red-700">
-                  <div className="font-medium mb-0.5">检测到高危命令：</div>
-                  <ul className="list-disc pl-4 space-y-0.5">
+              <Alert variant="destructive">
+                <CircleAlert />
+                <AlertTitle>检测到高危命令</AlertTitle>
+                <AlertDescription>
+                  <ul className="list-disc pl-4 space-y-1">
                     {danger.reasons.map((r, i) => (
                       <li key={i}>{r}</li>
                     ))}
                   </ul>
-                  <div className="mt-1 text-red-600 font-medium">强烈建议先开启「测试机优先」验证后再下发。</div>
-                </div>
-              </div>
+                  <p className="mt-2 font-medium">强烈建议先开启「测试机优先」验证后再下发。</p>
+                </AlertDescription>
+              </Alert>
             )}
 
-            {/* 执行对象选择 */}
-            <div>
-              <Label className="text-sm font-medium text-[#334155] mb-2 flex items-center gap-1">
-                <Server className="w-3.5 h-3.5" />
-                选择执行对象 <span className="text-red-500">*</span>
-                {selected.size > 0 && (
-                  <span className="ml-1 text-xs text-[#355EF1] tabular-nums">
-                    · 已选 {selected.size} 台
-                  </span>
-                )}
-              </Label>
+            {/* 命令选择/预览 */}
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium text-[#0A0A0A] flex items-center gap-1.5">
+                <Code2 className="w-4 h-4 text-[#737373]" />
+                选择命令
+                <span className="text-[#DC2626]">*</span>
+              </h3>
+              {!pickedCommand ? (
+                <div className="space-y-3">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373]" />
+                    <Input
+                      value={commandSearch}
+                      onChange={(e) => setCommandSearch(e.target.value)}
+                      placeholder="搜索命令名称、ID、内容"
+                      className="h-9 pl-9"
+                    />
+                  </div>
+                  <div className="rounded-xl border border-[#E5E5E5] bg-white max-h-[260px] overflow-y-auto divide-y divide-[#F5F5F5]">
+                    {commandCandidates.length === 0 ? (
+                      <div className="py-10 text-center text-sm text-[#A3A3A3]">
+                        没有匹配的命令；请前往「命令下发」页面创建新命令。
+                      </div>
+                    ) : (
+                      commandCandidates.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setPickedCommand(t)}
+                          className="w-full text-left px-3 py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-start gap-3 group"
+                        >
+                          <Code2 className="w-3.5 h-3.5 text-[#737373] mt-1 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-[#0A0A0A] truncate">{t.name}</span>
+                              <span className="text-[10px] font-mono text-[#A3A3A3]">{t.id}</span>
+                            </div>
+                            <code className="text-xs font-mono text-[#737373] truncate block mt-0.5">
+                              {t.content.split("\n")[0]}
+                              {t.content.includes("\n") && <span className="text-[#A3A3A3] ml-1">…</span>}
+                            </code>
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-[#A3A3A3] group-hover:text-[#0A0A0A] mt-1 shrink-0" />
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-[#E5E5E5] bg-white p-4 space-y-3">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#525252]">
+                    <span>类型：<span className="font-medium text-[#0A0A0A]">SHELL</span></span>
+                    <span>执行用户：<span className="font-mono text-[#0A0A0A]">{pickedCommand.runAsUser}</span></span>
+                    <span>路径：<span className="font-mono text-[#0A0A0A]">{pickedCommand.workingDir}</span></span>
+                    <span>超时：<span className="tabular-nums text-[#0A0A0A]">{pickedCommand.timeoutSec}</span> 秒</span>
+                    {!command && (
+                      <button
+                        type="button"
+                        onClick={() => setPickedCommand(null)}
+                        className="ml-auto text-[#1447E6] hover:text-[#0A0A0A] text-xs"
+                      >
+                        切换命令
+                      </button>
+                    )}
+                  </div>
+                  <pre className="text-xs font-mono text-[#0A0A0A] bg-[#FAFAFA] rounded-lg p-3 max-h-[120px] overflow-auto whitespace-pre-wrap break-all border border-[#E5E5E5]">
+                    {pickedCommand.content}
+                  </pre>
+                </div>
+              )}
+            </section>
 
-              <div className="flex items-center gap-2 mb-2">
+            {/* 执行对象选择 */}
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium text-[#0A0A0A] flex items-center gap-1.5">
+                <Server className="w-4 h-4 text-[#737373]" />
+                选择执行对象
+                <span className="text-[#DC2626]">*</span>
+                {selected.size > 0 && (
+                  <StatusTag variant="blue" className="ml-1 text-[10px] h-4 px-1.5">
+                    已选 {selected.size} 台
+                  </StatusTag>
+                )}
+              </h3>
+
+              <div className="flex items-center gap-2">
                 <Select value={agentTypeFilter} onValueChange={(v) => setAgentTypeFilter(v as AgentTypeKey | "all")}>
                   <SelectTrigger className="h-9 w-[160px] text-sm">
                     <SelectValue />
@@ -464,27 +473,27 @@ export default function DispatchCommandDialog({
                 />
               </div>
 
-              <div className="rounded-lg border border-gray-100 overflow-hidden max-h-[260px] overflow-y-auto scrollbar-on-hover">
+              <div className="rounded-xl border border-[#E5E5E5] overflow-hidden max-h-[280px] overflow-y-auto scrollbar-on-hover">
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-gray-50 z-10">
-                    <tr className="border-b border-gray-100">
-                      <th className="px-3 py-2 w-[1%]">
+                  <thead className="sticky top-0 bg-[#FAFAFA] z-10">
+                    <tr className="border-b border-[#E5E5E5]">
+                      <th className="px-3 py-2.5 w-[1%]">
                         <Checkbox
                           checked={allChecked ? true : partialChecked ? "indeterminate" : false}
                           onCheckedChange={(v) => toggleAll(!!v)}
                           className="size-4"
                         />
                       </th>
-                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium">实例</th>
-                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium w-[16%]">类型</th>
-                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium w-[16%]">版本</th>
-                      <th className="text-left px-3 py-2 text-xs text-[#737373] font-medium w-[20%]">创建人</th>
+                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium">实例</th>
+                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium w-[16%]">类型</th>
+                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium w-[16%]">版本</th>
+                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium w-[20%]">创建人</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-[#F5F5F5]">
                     {candidateInstances.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center py-10 text-xs text-[#A3A3A3]">
+                        <td colSpan={5} className="text-center py-10 text-sm text-[#A3A3A3]">
                           没有符合条件的实例
                         </td>
                       </tr>
@@ -492,25 +501,25 @@ export default function DispatchCommandDialog({
                       candidateInstances.map((i) => {
                         const checked = selected.has(i.instanceId);
                         return (
-                          <tr key={i.instanceId} className={checked ? "bg-blue-50/40" : "hover:bg-gray-50/50"}>
-                            <td className="px-3 py-2">
+                          <tr key={i.instanceId} className={checked ? "bg-[#E8ECFE]/40" : "hover:bg-[#FAFAFA]"}>
+                            <td className="px-3 py-2.5">
                               <Checkbox
                                 checked={checked}
                                 onCheckedChange={() => toggle(i.instanceId)}
                                 className="size-4"
                               />
                             </td>
-                            <td className="px-3 py-2">
+                            <td className="px-3 py-2.5">
                               <div className="text-sm text-[#0A0A0A]">{i.name}</div>
                               <div className="text-[11px] text-[#A3A3A3] font-mono">{i.instanceId}</div>
                             </td>
-                            <td className="px-3 py-2 text-xs text-[#737373]">
+                            <td className="px-3 py-2.5 text-xs text-[#525252]">
                               {AGENT_TYPE_LABEL[i.agentType]}
                             </td>
-                            <td className="px-3 py-2 text-xs text-[#737373] font-mono tabular-nums">
+                            <td className="px-3 py-2.5 text-xs text-[#525252] font-mono tabular-nums">
                               {i.agentVersion}
                             </td>
-                            <td className="px-3 py-2 text-xs text-[#737373] truncate max-w-[140px]">
+                            <td className="px-3 py-2.5 text-xs text-[#737373] truncate max-w-[140px]">
                               {i.owner}
                             </td>
                           </tr>
@@ -520,30 +529,30 @@ export default function DispatchCommandDialog({
                   </tbody>
                 </table>
               </div>
-            </div>
+            </section>
 
             {/* 测试机优先 */}
-            <div className="rounded-xl border border-gray-100 p-4 space-y-3">
-              <label className="flex items-start gap-2 cursor-pointer">
+            <section className="rounded-xl border border-[#E5E5E5] bg-white p-4">
+              <label className="flex items-start gap-3 cursor-pointer">
                 <Checkbox
                   checked={useTestRun}
                   onCheckedChange={(v) => setUseTestRun(v === true)}
                   className="mt-0.5"
                 />
-                <div className="flex-1">
-                  <div className="text-sm text-[#0A0A0A] inline-flex items-center gap-1 font-medium">
-                    <FlaskConical className="w-3.5 h-3.5 text-amber-500" />
+                <div className="flex-1 space-y-2">
+                  <div className="text-sm font-medium text-[#0A0A0A] inline-flex items-center gap-1.5">
+                    <FlaskConical className="w-4 h-4 text-[#F59E0B]" />
                     测试机优先（推荐）
                   </div>
-                  <p className="text-xs text-[#737373] mt-0.5">
+                  <p className="text-sm text-[#525252]">
                     先在 1 台测试机上执行，确认输出正常后再下发到剩余实例；过程中你可随时终止。
                   </p>
                 </div>
               </label>
 
               {useTestRun && (
-                <div className="ml-6 pl-1">
-                  <Label className="text-xs text-[#737373] mb-1.5 block">从已选实例中选择测试机</Label>
+                <div className="mt-3 ml-7 space-y-2">
+                  <Label className="text-xs font-medium text-[#525252] block">从已选实例中选择测试机</Label>
                   <Select
                     value={testInstanceId ?? ""}
                     onValueChange={(v) => setTestInstanceId(v)}
@@ -565,46 +574,21 @@ export default function DispatchCommandDialog({
                   </Select>
                 </div>
               )}
-            </div>
-
-            <DialogFooter>
-              <div className="flex-1 text-xs text-[#737373]">
-                {useTestRun && testInstanceId && selected.size > 1 && (
-                  <>先在 <span className="font-medium text-[#334155]">{testInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
-                )}
-                {useTestRun && testInstanceId && selected.size === 1 && (
-                  <>仅 1 台实例，将作为测试机执行</>
-                )}
-                {!useTestRun && selected.size > 0 && (
-                  <>将立即下发到 <span className="font-medium text-[#334155] tabular-nums">{selected.size}</span> 台实例</>
-                )}
-              </div>
-              <Button variant="outline" onClick={() => onOpenChange(false)}>
-                取消
-              </Button>
-              <Button
-                onClick={handleStart}
-                disabled={!canStart}
-                className="text-white disabled:bg-gray-200 disabled:text-[#A3A3A3]"
-                style={canStart ? { background: "linear-gradient(135deg, #007AFF, #5856D6)" } : {}}
-              >
-                {useTestRun ? "在测试机上执行" : "立即下发"}
-              </Button>
-            </DialogFooter>
-          </>
+            </section>
+          </div>
         )}
 
         {/* ── testing 阶段：执行中态 ──────────────────────── */}
         {phase === "testing" && (
-          <div className="py-10 flex flex-col items-center text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center">
-              <Loader2 className="w-7 h-7 text-amber-500 animate-spin" />
+          <div className="py-12 flex flex-col items-center text-center space-y-3">
+            <div className="w-14 h-14 rounded-full bg-[#FEF3C7] flex items-center justify-center">
+              <Loader2 className="w-7 h-7 text-[#F59E0B] animate-spin" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="text-sm font-medium text-[#0A0A0A]">
-                正在 <span className="text-amber-700">{testInstanceName}</span> 上执行
+                正在 <span className="text-[#B45309]">{testInstanceName}</span> 上执行
               </div>
-              <div className="text-xs text-[#737373]">
+              <div className="text-sm text-[#525252]">
                 超时 {pickedCommand?.timeoutSec ?? 60} 秒，请勿关闭弹窗
               </div>
             </div>
@@ -613,43 +597,35 @@ export default function DispatchCommandDialog({
 
         {/* ── review 阶段：测试结果 ───────────────────────── */}
         {phase === "review" && testResult && (
-          <>
+          <div className="space-y-4">
+            {/* 决策提示放在最上方（Alert 规范） */}
+            <Alert variant="info">
+              <Info />
+              <AlertDescription>
+                {testResult.status === "success"
+                  ? `请确认输出无异常。点击「继续下发」会向剩余 ${selected.size - 1} 台实例发送同样的命令。`
+                  : "测试机执行失败，建议检查命令后重新提交；剩余实例不会被执行。"}
+              </AlertDescription>
+            </Alert>
+
             {/* 测试机结果横幅 */}
-            <div
-              className={`rounded-xl border p-4 ${
-                testResult.status === "success"
-                  ? "border-green-200 bg-green-50"
-                  : "border-red-200 bg-red-50"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                {testResult.status === "success" ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className={`text-sm font-medium ${
-                    testResult.status === "success" ? "text-green-800" : "text-red-800"
-                  }`}>
-                    测试机
-                    <span className="font-mono mx-1">{testInstanceName}</span>
-                    {testResult.status === "success" ? "执行成功" : "执行失败"}
-                  </div>
-                  <div className="text-xs text-[#737373] mt-1 flex items-center gap-3">
-                    <span>退出码：<span className="font-mono tabular-nums">{testResult.exitCode}</span></span>
-                    <span>·</span>
-                    <span>耗时：<span className="font-mono tabular-nums">{testResult.durationMs}ms</span></span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <Alert variant={testResult.status === "success" ? "operation-info" : "destructive"}>
+              {testResult.status === "success" ? <CheckCircle2 /> : <XCircle />}
+              <AlertTitle>
+                测试机 <span className="font-mono">{testInstanceName}</span> {testResult.status === "success" ? "执行成功" : "执行失败"}
+              </AlertTitle>
+              <AlertDescription>
+                <span>退出码：<span className="font-mono tabular-nums">{testResult.exitCode}</span></span>
+                <span className="mx-2">·</span>
+                <span>耗时：<span className="font-mono tabular-nums">{testResult.durationMs}ms</span></span>
+              </AlertDescription>
+            </Alert>
 
             {/* stdout */}
             {testResult.stdout && (
-              <div>
-                <Label className="text-xs text-[#737373] mb-1 block">执行结果 (stdout)</Label>
-                <pre className="text-xs font-mono text-[#334155] bg-gray-50 border border-gray-100 rounded p-3 max-h-[160px] overflow-auto whitespace-pre-wrap break-all">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-[#525252] block">执行结果 (stdout)</Label>
+                <pre className="text-xs font-mono text-[#0A0A0A] bg-[#FAFAFA] border border-[#E5E5E5] rounded-xl p-3 max-h-[160px] overflow-auto whitespace-pre-wrap break-all">
                   {testResult.stdout}
                 </pre>
               </div>
@@ -657,47 +633,68 @@ export default function DispatchCommandDialog({
 
             {/* stderr */}
             {testResult.stderr && (
-              <div>
-                <Label className="text-xs text-red-500 mb-1 block">错误输出 (stderr)</Label>
-                <pre className="text-xs font-mono text-red-700 bg-red-50/50 border border-red-100 rounded p-3 max-h-[160px] overflow-auto whitespace-pre-wrap break-all">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-[#DC2626] block">错误输出 (stderr)</Label>
+                <pre className="text-xs font-mono text-[#DC2626] bg-[#FEF2F2] border border-[#FCA5A5] rounded-xl p-3 max-h-[160px] overflow-auto whitespace-pre-wrap break-all">
                   {testResult.stderr}
                 </pre>
               </div>
             )}
+          </div>
+        )}
+        </DialogBody>
 
-            {/* 决策提示 */}
-            <div className="rounded-lg bg-blue-50/60 border border-blue-100 px-3 py-2 text-xs text-[#1447E6]">
-              {testResult.status === "success"
-                ? `请确认输出无异常。点击「继续下发」会向剩余 ${selected.size - 1} 台实例发送同样的命令。`
-                : "测试机执行失败，建议检查命令后重新提交；剩余实例不会被执行。"}
+        {/* ── Footer：根据阶段渲染不同按钮（testing 阶段无 footer） ── */}
+        {phase === "prepare" && (
+          <DialogFooter>
+            <div className="flex-1 text-xs text-[#525252] self-center">
+              {useTestRun && testInstanceId && selected.size > 1 && (
+                <>先在 <span className="font-medium text-[#0A0A0A]">{testInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
+              )}
+              {useTestRun && testInstanceId && selected.size === 1 && (
+                <>仅 1 台实例，将作为测试机执行</>
+              )}
+              {!useTestRun && selected.size > 0 && (
+                <>将立即下发到 <span className="font-medium text-[#0A0A0A] tabular-nums">{selected.size}</span> 台实例</>
+              )}
             </div>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              取消
+            </Button>
+            <Button
+              variant="dialog-confirm"
+              onClick={handleStart}
+              disabled={!canStart}
+            >
+              {useTestRun ? "在测试机上执行" : "立即下发"}
+            </Button>
+          </DialogFooter>
+        )}
 
-            <DialogFooter>
-              <Button variant="outline" onClick={abortAfterTest}>
-                <XIcon className="w-3.5 h-3.5 mr-1" />
-                终止下发
+        {phase === "review" && testResult && (
+          <DialogFooter>
+            <Button variant="outline" onClick={abortAfterTest}>
+              <XIcon className="w-3.5 h-3.5 mr-1" />
+              终止下发
+            </Button>
+            {testResult.status === "success" && selected.size > 1 && (
+              <Button
+                variant="dialog-confirm"
+                onClick={proceedAfterTest}
+              >
+                继续下发剩余 {selected.size - 1} 台
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </Button>
-              {testResult.status === "success" && selected.size > 1 && (
-                <Button
-                  onClick={proceedAfterTest}
-                  className="text-white"
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                >
-                  继续下发剩余 {selected.size - 1} 台
-                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              )}
-              {testResult.status === "success" && selected.size === 1 && (
-                <Button
-                  onClick={proceedAfterTest}
-                  className="text-white"
-                  style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
-                >
-                  完成
-                </Button>
-              )}
-            </DialogFooter>
-          </>
+            )}
+            {testResult.status === "success" && selected.size === 1 && (
+              <Button
+                variant="dialog-confirm"
+                onClick={proceedAfterTest}
+              >
+                完成
+              </Button>
+            )}
+          </DialogFooter>
         )}
       </DialogContent>
     </Dialog>

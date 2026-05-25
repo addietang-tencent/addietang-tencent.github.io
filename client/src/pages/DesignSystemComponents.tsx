@@ -1055,7 +1055,7 @@ function AlertDialogPreview() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction className="bg-[#d42a1e] hover:bg-[#b91c1c]">确认删除</AlertDialogAction>
+            <AlertDialogAction>确认删除</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

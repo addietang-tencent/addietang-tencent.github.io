@@ -3042,7 +3042,12 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </Button>
             <Button
               size="sm"
-              variant="default"
+              variant={
+                modelConfirmDialog.type === "delete" ||
+                modelConfirmDialog.type === "delete-backup"
+                  ? "tenant-destructive"
+                  : "tenant-primary"
+              }
               onClick={() => {
                 const { type, modelId } = modelConfirmDialog;
                 setModelConfirmDialog(prev => ({ ...prev, open: false }));

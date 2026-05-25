@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogContent,
@@ -552,24 +552,27 @@ function EditQuotaDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent
+        className="sm:max-w-md"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+      >
         <DialogHeader>
           <DialogTitle>编辑配额 — {model.name}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <DialogBody className="flex-1">
           <div className="space-y-2">
-            <Label>每日 Tokens 数量上限</Label>
+            <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限</Label>
             <Input
               type="number"
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-white"
             />
           </div>
-        </div>
+        </DialogBody>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>取消</Button>
           <Button
+            variant="dialog-confirm"
             onClick={() => { onSave(model.id, limit); onClose(); }}
           >
             保存
@@ -887,7 +890,7 @@ export default function ModelConfig() {
 
       {/* Add Model Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-[720px]">
           <DialogHeader>
             <DialogTitle>添加模型</DialogTitle>
           </DialogHeader>
@@ -1027,7 +1030,16 @@ export default function ModelConfig() {
             - 右上角带关闭按钮
        */}
       <AlertDialog open={!!deleteConfirmModel} onOpenChange={(open) => { if (!open) setDeleteConfirmModel(null); }}>
-        <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setDeleteConfirmModel(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#0A0A0A]">
               确认删除模型？
@@ -1071,7 +1083,7 @@ export default function ModelConfig() {
 
       {/* 多模态切换二次确认弹窗 */}
       <Dialog open={!!multimodalConfirm} onOpenChange={(open) => { if (!open) setMultimodalConfirm(null); }}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0A0A0A]">
               {multimodalConfirm?.enable ? "开启多模态" : "关闭多模态"}

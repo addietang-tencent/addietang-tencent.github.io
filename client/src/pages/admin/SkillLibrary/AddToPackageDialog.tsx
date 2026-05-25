@@ -59,7 +59,7 @@ export default function AddToPackageDialog({
 
   return (
     <Dialog open={open} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-[420px]">
         {!result ? (
           <>
             <DialogHeader>
@@ -152,7 +152,7 @@ export default function AddToPackageDialog({
             </div>
             <DialogFooter className="flex gap-2">
               <Button variant="outline" onClick={handleClose}>关闭</Button>
-              <Button onClick={handleGoToPackage}>
+              <Button variant="dialog-confirm" onClick={handleGoToPackage}>
                 {result.isActive ? '去发布' : '去查看'}
               </Button>
             </DialogFooter>

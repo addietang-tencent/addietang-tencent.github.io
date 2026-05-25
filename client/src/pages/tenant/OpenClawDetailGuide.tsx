@@ -809,7 +809,7 @@ function SkillInstallModal({
           >
             取消
           </Button>
-          <Button onClick={handleInstall}>
+          <Button variant="tenant-primary" onClick={handleInstall}>
             开始安装
           </Button>
         </DialogFooter>
@@ -2246,6 +2246,7 @@ export default function OpenClawDetailGuide() {
               关闭
             </Button>
             <Button
+              variant="tenant-primary"
               onClick={() => { window.open("http://43.139.137.45:38341/knmnz8?token=8512b8ef93cdfd393ad6af5efa42c1e54981f3cb69f381eb", "_blank"); }}
             >
               立即访问

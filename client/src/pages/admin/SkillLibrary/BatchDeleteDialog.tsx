@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Search, AlertTriangle, ChevronDown, Check } from 'lucide-react';
+import { Search, AlertTriangle, ChevronDown, Check, X } from 'lucide-react';
 import type { Group } from './types';
 
 /** 卸载状态筛选选项 */
@@ -206,7 +206,7 @@ export default function BatchDeleteDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-[920px]">
           <DialogHeader>
             <DialogTitle>
               批量卸载实例
@@ -569,7 +569,16 @@ export default function BatchDeleteDialog({
 
       {/* 二次确认弹窗 */}
       <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-        <AlertDialogContent className="sm:max-w-sm">
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setConfirmDialogOpen(false)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-red-500" />

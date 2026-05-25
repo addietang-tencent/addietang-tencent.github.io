@@ -58,7 +58,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
   if (hasActiveInstances) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[480px]">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle className="text-[#0A0A0A]">
               无法关闭服务
@@ -85,7 +85,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
             <Button variant="outline" onClick={handleClose}>
               我知道了
             </Button>
-            <Button onClick={handleGoToInstanceList}>
+            <Button variant="dialog-confirm" onClick={handleGoToInstanceList}>
               前往实例列表
             </Button>
           </DialogFooter>
@@ -97,7 +97,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
   // 没有已开通的实例，允许关闭服务
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle className="text-[#0A0A0A]">
             关闭 Memory Pro 服务

@@ -21,6 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -573,11 +576,9 @@ function ImageScopePopover({
 function OverviewStats({
   typeCount,
   enabledTypeCount,
-  imageCount,
 }: {
   typeCount: number;
   enabledTypeCount: number;
-  imageCount: number;
 }) {
   return (
     <div className="h-8 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
@@ -589,11 +590,6 @@ function OverviewStats({
       <div className="flex items-center gap-2">
         <span className="text-xs text-[#737373]">已对用户可见</span>
         <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
-      </div>
-      <span className="w-px h-3 bg-[#E5E5E5]" />
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-[#737373]">镜像总数</span>
-        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{imageCount}</span>
       </div>
     </div>
   );
@@ -1113,7 +1109,6 @@ export default function ImageManagement() {
               <OverviewStats
                 typeCount={views.length}
                 enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
-                imageCount={images.length}
               />
               {(() => {
                 const hasActivePush = listActivePushes().length > 0;
@@ -1221,7 +1216,10 @@ export default function ImageManagement() {
 
       {/* ─── 导入自定义镜像弹窗 ─── */}
       <Dialog open={showImportDialog} onOpenChange={handleDialogOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+        >
           <DialogHeader>
             <DialogTitle>
               导入自定义镜像
@@ -1418,7 +1416,10 @@ export default function ImageManagement() {
 
       {/* ─── 编辑镜像信息弹窗 ─── */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md"
+          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+        >
           <DialogHeader>
             <DialogTitle>编辑镜像信息</DialogTitle>
             <DialogDescription className="text-xs text-[#737373]">
@@ -1478,7 +1479,10 @@ export default function ImageManagement() {
 
       {/* ─── 添加自定义 Agent 类型弹窗 ─── */}
       <Dialog open={showCreateCustomDialog} onOpenChange={(o) => { if (!o) resetCreateDialog(); setShowCreateCustomDialog(o); }}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogContent
+          className="sm:max-w-md overflow-y-auto"
+          style={{ maxHeight: 'min(90vh, 780px)' }}
+        >
           <DialogHeader>
             <DialogTitle>添加自定义 Agent 类型</DialogTitle>
             <DialogDescription className="text-xs text-[#737373]">
@@ -1508,40 +1512,51 @@ export default function ImageManagement() {
             {/* 兼容内核 */}
             <div>
               <Label className="text-xs">兼容内核 <span className="text-red-400">*</span></Label>
-              <div className="mt-2 space-y-2">
+              <RadioGroup
+                value={newKernelBase ?? ""}
+                onValueChange={(v) => {
+                  setNewKernelBase(v as KernelBase);
+                  if (v !== "native") setNativeAck(false);
+                }}
+                className="mt-2 gap-2"
+              >
                 {KERNEL_OPTIONS.map((opt) => {
                   const isSelected = newKernelBase === opt.value;
                   const isNative = opt.value === "native";
+                  const inputId = `kernel-opt-${opt.value}`;
                   return (
-                    <button
+                    <Label
                       key={opt.value}
-                      type="button"
-                      onClick={() => { setNewKernelBase(opt.value); if (!isNative) setNativeAck(false); }}
-                      className={`w-full text-left rounded-[4px] border-2 p-3 transition-all ${
-                        isSelected
-                          ? (isNative ? "border-orange-400 bg-orange-50/60" : "border-[#1447E6] bg-[#1447E6]/5")
-                          : "border-[#E5E5E5] hover:border-[#1447E6]/40 bg-white"
-                      }`}
+                      htmlFor={inputId}
+                      className="block cursor-pointer"
                     >
-                      <div className="flex items-start gap-2.5">
-                        <div
-                          className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            isSelected
-                              ? (isNative ? "border-orange-500 bg-orange-500" : "border-[#1447E6] bg-[#1447E6]")
-                              : "border-[#A3A3A3]"
-                          }`}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
+                      <Card
+                        className={cn(
+                          "flex-row items-start gap-2.5 rounded-[4px] border-2 p-3 py-3 gap-y-0 transition-colors",
+                          isSelected
+                            ? isNative
+                              ? "border-orange-400 bg-orange-50/60"
+                              : "border-[#1447E6] bg-[#1447E6]/5"
+                            : "border-[#E5E5E5] hover:border-[#1447E6]/40 bg-white",
+                        )}
+                      >
+                        <RadioGroupItem
+                          id={inputId}
+                          value={opt.value}
+                          className={cn(
+                            "mt-0.5",
+                            isSelected && isNative && "border-orange-500 data-[state=checked]:border-orange-500 [&_svg]:fill-orange-500 [&_svg]:text-orange-500",
+                          )}
+                        />
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-[#0A0A0A] mb-0.5">{opt.title}</div>
                           <p className="text-xs text-[#737373] leading-relaxed">{opt.description}</p>
                         </div>
-                      </div>
-                    </button>
+                      </Card>
+                    </Label>
                   );
                 })}
-              </div>
+              </RadioGroup>
             </div>
 
             {/* 兼容内核：温馨提示 */}
@@ -1599,7 +1614,7 @@ export default function ImageManagement() {
 
       {/* ─── 删除自定义类型 二次确认 ─── */}
       <Dialog open={!!removeCustomConfirm} onOpenChange={(o) => { if (!o) setRemoveCustomConfirm(null); }}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>删除自定义 Agent 类型</DialogTitle>
           </DialogHeader>
@@ -1614,7 +1629,7 @@ export default function ImageManagement() {
           </Alert>
           <DialogFooter>
             <Button variant="claw-outline" size="claw-sm" onClick={() => setRemoveCustomConfirm(null)}>取消</Button>
-            <Button size="claw-sm" onClick={confirmRemoveCustomType} className="bg-red-500 hover:bg-red-600 text-white">
+            <Button variant="destructive" size="claw-sm" onClick={confirmRemoveCustomType}>
               确认删除
             </Button>
           </DialogFooter>

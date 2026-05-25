@@ -25,7 +25,7 @@ export default function EnableCOSDialog({ open, onOpenChange, onConfirm }: Enabl
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle>开启服务</DialogTitle>
         </DialogHeader>

@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Category } from './types';
 
@@ -58,41 +59,46 @@ export default function AddCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+      >
         <DialogHeader>
           <DialogTitle>新增分类</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold text-[#0A0A0A] mb-2">
-              分类名称 <span className="text-red-500">*</span>
-            </label>
-            <Input
-              placeholder="请输入分类名称"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full"
-            />
-          </div>
+        <DialogBody className="flex-1">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-[#525252]">
+                分类名称<span className="text-[#DC2626] ml-0.5">*</span>
+              </Label>
+              <Input
+                placeholder="请输入分类名称"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-[#0A0A0A] mb-2">
-              描述（非必填）
-            </label>
-            <Textarea
-              placeholder="请输入分类定位或覆盖范围"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full"
-              rows={3}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-[#525252]">
+                描述<span className="text-[#737373] font-normal ml-1">（非必填）</span>
+              </Label>
+              <Textarea
+                placeholder="请输入分类定位或覆盖范围"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full"
+                rows={3}
+              />
+            </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
-        </div>
+            {error && (
+              <p className="text-sm text-[#DC2626]">{error}</p>
+            )}
+          </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleClose}>

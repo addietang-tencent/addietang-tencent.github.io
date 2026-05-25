@@ -122,7 +122,7 @@ export default function DistributeDialog({
             <Button variant="outline" onClick={handleConfirm}>
               确认
             </Button>
-            <Button onClick={onViewProgress}>
+            <Button variant="dialog-confirm" onClick={onViewProgress}>
               查看进度
             </Button>
           </DialogFooter>
@@ -133,7 +133,7 @@ export default function DistributeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle>下发 {skillName}</DialogTitle>
           <DialogDescription>

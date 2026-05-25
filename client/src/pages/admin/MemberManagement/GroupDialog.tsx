@@ -13,16 +13,35 @@ import {
   RefreshCw,
   Search,
   X,
-  ChevronsUpDown,
 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BodyMedium } from "@/components/ui/Typography";
+import { CircleAlert } from "lucide-react";
 import type { UserGroup } from "./types";
 import {
   buildGroupTree,
@@ -54,7 +73,6 @@ function ParentDropdownSelector({
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [expanded, setExpanded] = useState<Set<string>>(() => {
@@ -68,18 +86,6 @@ function ParentDropdownSelector({
     walk(tree);
     return s;
   });
-
-  // 点击外部关闭下拉
-  useEffect(() => {
-    if (!dropdownOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [dropdownOpen]);
 
   // 打开时聚焦搜索框并清空搜索
   useEffect(() => {
@@ -139,10 +145,10 @@ function ParentDropdownSelector({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-1.5 h-8 px-2 rounded-xl cursor-pointer text-sm transition-colors ${
+          className={`flex items-center gap-1.5 h-8 px-2 rounded-[6px] cursor-pointer text-sm transition-colors ${
             isSelected
-              ? "bg-blue-50 text-[#355EF1]"
-              : "text-[#334155] hover:bg-gray-50"
+              ? "text-[#1447E6] font-medium bg-[#FAFAFA]"
+              : "text-[#0A0A0A] hover:bg-[#FAFAFA]"
           }`}
           style={{ paddingLeft: 8 + node.depth * 16 }}
           onClick={() => {
@@ -157,7 +163,7 @@ function ParentDropdownSelector({
                 e.stopPropagation();
                 toggle(node.id);
               }}
-              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#0A0A0A] shrink-0"
             >
               {(shouldShow) ? (
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -176,77 +182,87 @@ function ParentDropdownSelector({
   };
 
   return (
-    <div className="relative" ref={containerRef}>
-      {/* 触发器 */}
-      <div
-        className={`w-full h-9 px-3 flex items-center gap-2 text-sm bg-white border rounded-xl cursor-pointer transition-colors ${dropdownOpen ? "border-blue-300 ring-2 ring-blue-50" : "border-gray-200"} ${disabled ? "opacity-50 pointer-events-none bg-gray-50" : ""}`}
-        onClick={() => !disabled && setDropdownOpen(!dropdownOpen)}
+    <Popover open={dropdownOpen} onOpenChange={setDropdownOpen}>
+      <PopoverTrigger asChild>
+        {/*
+          视觉对齐 SelectTrigger（rounded-[4px]、#E5E5E5 边、hover/open 蓝边、ChevronDown 旋转）。
+          移除原先的 X 清除按钮——用户在面板内再次点击当前项即可取消选择，与 SelectItem 行为一致。
+        */}
+        <button
+          type="button"
+          disabled={disabled}
+          aria-haspopup="listbox"
+          aria-expanded={dropdownOpen}
+          data-state={dropdownOpen ? "open" : "closed"}
+          className={
+            "flex w-full items-center justify-between gap-2 h-9 px-3 text-sm font-normal whitespace-nowrap " +
+            "bg-white border border-[#E5E5E5] rounded-[4px] transition-colors outline-none " +
+            "hover:border-[#1447E6] data-[state=open]:border-[#1447E6] " +
+            "disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:text-[#A3A3A3]"
+          }
+        >
+          {selectedFullPath ? (
+            <span className="truncate text-[#0A0A0A] flex-1 text-left">
+              {selectedFullPath}
+            </span>
+          ) : (
+            <span className="flex-1 text-left text-[#A3A3A3]">
+              选填，不选则为一级分组
+            </span>
+          )}
+          <ChevronDown className="size-4 shrink-0 text-[#737373] transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={4}
+        className={
+          "w-[var(--radix-popover-trigger-width)] " +
+          // 与 SelectContent 同款：4px 圆角 + 双层阴影；override popover 默认的 rounded-[8px]/p-4
+          "rounded-[4px] p-0 border border-[#E5E5E5] " +
+          "shadow-[0px_0px_2px_0px_rgba(0,0,0,0.1),0px_4px_16px_0px_rgba(0,0,0,0.12)] " +
+          // 让面板被可视区高度约束 + 内部 flex 列布局，列表区可滚动
+          "max-h-[var(--radix-popover-content-available-height)] flex flex-col overflow-hidden"
+        }
       >
-        {selectedFullPath ? (
-          <span className="flex items-center gap-1 flex-1 min-w-0">
-            <span className="truncate text-[#0A0A0A]">{selectedFullPath}</span>
-            {!disabled && (
+        {/* 搜索框 */}
+        <div className="shrink-0 px-2 pt-2 pb-1.5 border-b border-[#E5E5E5]">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#A3A3A3] pointer-events-none" />
+            <Input
+              ref={searchInputRef}
+              placeholder="搜索分组"
+              className="h-8 pl-7 pr-7 text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
               <button
                 type="button"
-                className="w-4 h-4 flex items-center justify-center rounded-full text-[#A3A3A3] hover:text-[#737373] hover:bg-gray-100 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(null);
-                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#0A0A0A] transition-colors"
+                onClick={() => setSearchQuery("")}
               >
                 <X className="w-3 h-3" />
               </button>
             )}
-          </span>
-        ) : (
-          <span className="flex-1 text-[#A3A3A3]">选填，不选则为一级分组</span>
-        )}
-        <ChevronsUpDown className="w-3.5 h-3.5 text-[#A3A3A3] shrink-0" />
-      </div>
-
-      {/* 下拉面板 */}
-      {dropdownOpen && (
-        <div className="absolute z-50 top-[calc(100%+4px)] left-0 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-          {/* 搜索框 */}
-          <div className="px-2 pt-2 pb-1.5 border-b border-[#e5e5e5]">
-            <div className="flex items-center gap-1.5 h-8 px-2 bg-gray-50 border border-gray-200 rounded-xl">
-              <Search className="w-3.5 h-3.5 text-[#A3A3A3] shrink-0" />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="搜索分组"
-                className="flex-1 text-sm bg-transparent outline-none placeholder:text-[#A3A3A3]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  className="w-3.5 h-3.5 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373]"
-                  onClick={() => setSearchQuery("")}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              )}
-            </div>
-          </div>
-          {/* 树形列表 */}
-          <div className="max-h-[180px] overflow-y-auto p-1.5">
-            {tree.length === 0 ? (
-              <div className="text-xs text-[#A3A3A3] text-center py-3">
-                暂无可选分组
-              </div>
-            ) : matchedIds && matchedIds.size === 0 ? (
-              <div className="text-xs text-[#A3A3A3] text-center py-3">
-                未找到匹配分组
-              </div>
-            ) : (
-              tree.map(renderNode)
-            )}
           </div>
         </div>
-      )}
-    </div>
+        {/* 树形列表 — 内容溢出时此区域滚动，面板整体高度受可视区约束 */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-1.5">
+          {tree.length === 0 ? (
+            <div className="text-xs text-[#A3A3A3] text-center py-3">
+              暂无可选分组
+            </div>
+          ) : matchedIds && matchedIds.size === 0 ? (
+            <div className="text-xs text-[#A3A3A3] text-center py-3">
+              未找到匹配分组
+            </div>
+          ) : (
+            tree.map(renderNode)
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -359,72 +375,80 @@ export function GroupFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-sm"
+        className="sm:max-w-md"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <div className="py-2 space-y-4">
-          {/* 上级分组（在前） */}
-          <div>
-            <label className="text-sm font-medium text-[#0A0A0A] mb-1.5 block">
-              上级分组
-            </label>
-            {parentLocked && lockedParentName ? (
-              <div className="h-9 flex items-center px-3 text-sm text-[#737373] bg-gray-50 border border-gray-200 rounded-xl">
-                {lockedParentName}
-              </div>
-            ) : (
-              <ParentDropdownSelector
-                groups={groups}
-                value={parentId}
-                onChange={setParentId}
-                excludeIds={excludeIds}
-              />
-            )}
-          </div>
-
-          {/* 分组名称（在后） */}
-          <div>
-            <label className="text-sm font-medium text-[#0A0A0A] mb-1.5 block">
-              分组名称<span className="text-red-500 ml-0.5">*</span>
-            </label>
-            <div
-              className="w-full flex items-center h-9 bg-white border border-gray-200 rounded-xl transition-colors focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-50 cursor-text"
-              onClick={() => nameInputRef.current?.focus()}
-            >
-              {pathPrefix && (
-                <span className="pl-3 text-sm text-[#737373] whitespace-nowrap shrink-0 pointer-events-none select-none">
-                  {pathPrefix}
-                </span>
+        <DialogBody className="flex-1">
+          <div className="space-y-4">
+            {/* 上级分组 */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-[#525252]">
+                上级分组
+              </Label>
+              {parentLocked && lockedParentName ? (
+                <Input
+                  value={lockedParentName}
+                  disabled
+                  readOnly
+                />
+              ) : (
+                <ParentDropdownSelector
+                  groups={groups}
+                  value={parentId}
+                  onChange={setParentId}
+                  excludeIds={excludeIds}
+                />
               )}
-              <input
-                ref={nameInputRef}
-                type="text"
-                placeholder="请输入分组名称"
-                className="flex-1 h-full px-3 text-sm bg-transparent outline-none placeholder:text-[#A3A3A3]"
-                style={{ paddingLeft: pathPrefix ? "0" : undefined }}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
             </div>
-            {isDuplicate && name.trim() && (
-              <p className="text-xs text-red-500 mt-1">分组名称已存在</p>
-            )}
-            <p className="text-xs text-[#A3A3A3] mt-1.5">
-              分组名称为唯一标识，不能与已有分组重名，创建后支持修改
-            </p>
+
+            {/* 分组名称 */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-[#525252]">
+                分组名称<span className="text-[#DC2626] ml-0.5">*</span>
+              </Label>
+              <div
+                className={`w-full flex items-center h-9 bg-white border rounded-[4px] transition-colors cursor-text ${
+                  isDuplicate && name.trim() ? 'border-[#d42a1e]' : 'border-[#d3d6db] focus-within:border-[#355EF1]'
+                }`}
+                onClick={() => nameInputRef.current?.focus()}
+              >
+                {pathPrefix && (
+                  <span className="pl-3 text-sm text-[#525252] whitespace-nowrap shrink-0 pointer-events-none select-none">
+                    {pathPrefix}
+                  </span>
+                )}
+                <Input
+                  ref={nameInputRef}
+                  type="text"
+                  placeholder="请输入分组名称"
+                  className="flex-1 h-full border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-0 px-3 text-sm text-[#020617] placeholder:text-[#b0b6c3]"
+                  style={{ paddingLeft: pathPrefix ? "0" : undefined }}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              {isDuplicate && name.trim() && (
+                <p className="text-xs text-[#DC2626]">分组名称已存在</p>
+              )}
+              <p className="text-xs text-[#737373]">
+                分组名称为唯一标识，不能与已有分组重名，创建后支持修改
+              </p>
+            </div>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>
           <Button
+            variant="dialog-confirm"
             disabled={!isValid}
             onClick={() => {
               if (!isValid) return;
@@ -516,126 +540,131 @@ export function DeleteGroupDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent
         className="sm:max-w-md"
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
       >
-        <DialogHeader>
-          <DialogTitle>删除分组</DialogTitle>
-        </DialogHeader>
+        <button
+          type="button"
+          aria-label="关闭"
+          onClick={() => onOpenChange(false)}
+          className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+        >
+          <X className="size-5" />
+          <span className="sr-only">关闭</span>
+        </button>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="text-[#0A0A0A]">删除分组</AlertDialogTitle>
+        </AlertDialogHeader>
 
-        <div className="py-2 space-y-3">
-          <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-[#737373]">分组名称</span>
-            <span className="text-sm font-medium text-[#0A0A0A]">
-              {group?.name}
-            </span>
-          </div>
-          <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-            <span className="text-sm text-[#737373]">分组内用户数</span>
-            <span className="text-sm font-semibold text-[#0A0A0A]">
-              {memberCount} 人
-            </span>
-          </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-3">
+            {/* 状态提示（统一使用黄色 warning Alert） */}
+            <Alert variant="warning">
+              <CircleAlert />
+              {canDelete ? (
+                <AlertDescription>
+                  该分组无关联配置且无 Agent 实例，可安全删除。删除后组内用户不会被删除，仅解除分组关联。
+                </AlertDescription>
+              ) : (
+                <>
+                  <AlertTitle>无法删除该分组</AlertTitle>
+                  <AlertDescription>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {hasRelatedConfigs && (
+                        <li>以上配置的应用范围包含该分组，请先前往对应配置页面移除该分组后再执行删除。</li>
+                      )}
+                      {hasAgentInstances && (
+                        <li>该分组下仍有 Agent 实例，请先删除实例后再执行删除。</li>
+                      )}
+                    </ul>
+                  </AlertDescription>
+                </>
+              )}
+            </Alert>
 
-          {/* 分组专属配置 */}
-          <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-[#737373]">分组专属配置</span>
-              <button
-                className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
-                title="刷新"
-                onClick={() => {
-                  setConfigRefreshing(true);
-                  setTimeout(() => setConfigRefreshing(false), 1200);
-                }}
-              >
-                {configRefreshing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-            {hasRelatedConfigs ? (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                {configKinds.map((kind) => (
-                  <span key={kind} className="badge-shutdown">
-                    {kindLabel[kind] ?? kind}
-                  </span>
-                ))}
+            {/* 分组信息卡片（合并为单一卡片，所有内容右对齐统一正文样式） */}
+            <div className="rounded-[4px] border border-[#E5E5E5] bg-white divide-y divide-[#F0F0F0]">
+              {/* 分组名称 */}
+              <div className="px-4 py-3 flex items-center justify-between gap-4">
+                <Label className="text-xs font-medium text-[#525252]">分组名称</Label>
+                <BodyMedium className="text-right">{group?.name}</BodyMedium>
               </div>
-            ) : (
-              <span className="text-sm text-green-600">无关联配置</span>
-            )}
-          </div>
 
-          {/* Agent 实例数 */}
-          <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-[#737373]">分组下 Agent 实例</span>
-              <button
-                className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
-                title="刷新"
-                onClick={() => {
-                  setAgentRefreshing(true);
-                  setTimeout(() => setAgentRefreshing(false), 1200);
-                }}
-              >
-                {agentRefreshing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-            {hasAgentInstances ? (
-              <span className="text-sm font-semibold text-[#0A0A0A]">
-                {agentStats.instanceCount} 个实例
-              </span>
-            ) : (
-              <span className="text-sm text-green-600">无 Agent 实例</span>
-            )}
-          </div>
+              {/* 分组内用户数 */}
+              <div className="px-4 py-3 flex items-center justify-between gap-4">
+                <Label className="text-xs font-medium text-[#525252]">分组内用户数</Label>
+                <BodyMedium className="text-right">{memberCount} 人</BodyMedium>
+              </div>
 
-          {/* 状态提示 */}
-          {canDelete ? (
-            <div className="rounded-xl bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700">
-              该分组无关联配置且无 Agent 实例，可安全删除。删除后组内用户不会被删除，仅解除分组关联。
+              {/* 分组专属配置 */}
+              <div className="px-4 py-3 flex items-center justify-between gap-4">
+                <Label className="text-xs font-medium text-[#525252]">分组专属配置</Label>
+                <div className="flex items-center gap-2 min-w-0">
+                  <BodyMedium className="text-right truncate">
+                    {hasRelatedConfigs
+                      ? configKinds.map((kind) => kindLabel[kind] ?? kind).join('、')
+                      : '无关联配置'}
+                  </BodyMedium>
+                  <button
+                    className="text-[#737373] hover:text-[#0A0A0A] transition-colors shrink-0"
+                    title="刷新"
+                    onClick={() => {
+                      setConfigRefreshing(true);
+                      setTimeout(() => setConfigRefreshing(false), 1200);
+                    }}
+                  >
+                    {configRefreshing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Agent 实例数 */}
+              <div className="px-4 py-3 flex items-center justify-between gap-4">
+                <Label className="text-xs font-medium text-[#525252]">分组下 Agent 实例</Label>
+                <div className="flex items-center gap-2 min-w-0">
+                  <BodyMedium className="text-right truncate">
+                    {hasAgentInstances ? `${agentStats.instanceCount} 个实例` : '无 Agent 实例'}
+                  </BodyMedium>
+                  <button
+                    className="text-[#737373] hover:text-[#0A0A0A] transition-colors shrink-0"
+                    title="刷新"
+                    onClick={() => {
+                      setAgentRefreshing(true);
+                      setTimeout(() => setAgentRefreshing(false), 1200);
+                    }}
+                  >
+                    {agentRefreshing ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-2">
-              {hasRelatedConfigs && (
-                <p className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
-                  以上配置的应用范围包含该分组，请先前往对应配置页面移除该分组后再执行删除。
-                </p>
-              )}
-              {hasAgentInstances && (
-                <p className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0 mt-1.5" />
-                  该分组下仍有 Agent 实例，请先删除实例后再执行删除。
-                </p>
-              )}
-            </div>
-          )}
+          </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => onOpenChange(false)}>
             取消
-          </Button>
+          </AlertDialogCancel>
           {canDelete && (
-            <Button
+            <AlertDialogAction
               variant="destructive"
               onClick={() => group && onConfirm(group.id)}
             >
               确认删除
-            </Button>
+            </AlertDialogAction>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

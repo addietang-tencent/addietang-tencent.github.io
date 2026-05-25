@@ -378,7 +378,7 @@ function GroupTagSelector({
     const hasChildren = node.children.length > 0;
     const isDisabled = disabledSet.has(node.id);
 
-    const nameSpan = <span className="text-xs text-[#334155] truncate">{node.name}</span>;
+    const nameSpan = <span className="text-xs text-gray-700 truncate">{node.name}</span>;
 
     return (
       <div key={node.id}>
@@ -392,7 +392,7 @@ function GroupTagSelector({
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
+              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -434,14 +434,14 @@ function GroupTagSelector({
           className="relative w-full h-9 px-2.5 py-1 rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
         >
           {selectedIds.length === 0 ? (
-            <span className="text-xs text-[#A3A3A3] px-1">选择分组…</span>
+            <span className="text-xs text-gray-400 px-1">选择分组…</span>
           ) : (
             selectedIds.map((id) => {
               const path = getGroupPath(id, ALL_GROUPS);
               return (
                 <span
                   key={id}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-[#355EF1] text-[11px] max-w-full"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] max-w-full"
                 >
                   <span className="truncate">{path}</span>
                   <button
@@ -450,7 +450,7 @@ function GroupTagSelector({
                       e.stopPropagation();
                       onChange(selectedIds.filter((x) => x !== id));
                     }}
-                    className="text-[#355EF1] hover:text-[#355EF1] shrink-0"
+                    className="text-blue-400 hover:text-blue-700 shrink-0"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -481,7 +481,7 @@ function GroupTagSelector({
       >
         <div className="p-2.5 border-b border-[#e5e5e5]">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3] pointer-events-none" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
             <Input
               type="text"
               placeholder="搜索分组…"
@@ -490,7 +490,7 @@ function GroupTagSelector({
               className="h-8 pl-8 pr-7 text-xs"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                 <X className="w-3 h-3" />
               </button>
             )}
@@ -498,7 +498,7 @@ function GroupTagSelector({
         </div>
         <div className="max-h-[280px] overflow-y-auto p-1.5">
           {activeSources.length === 0 ? (
-            <p className="text-[11px] text-[#A3A3A3] text-center py-4">暂无分组</p>
+            <p className="text-[11px] text-gray-400 text-center py-4">暂无分组</p>
           ) : (
             activeSources.map((source) => {
               const trees = treesMap[source] || [];
@@ -506,7 +506,7 @@ function GroupTagSelector({
               if (!hasVisibleTrees) return null;
               return (
                 <div key={source} className="mb-1.5 last:mb-0">
-                  <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
+                  <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
                   {trees.map((root) => renderNode(root, 0))}
                 </div>
               );
@@ -597,7 +597,7 @@ function GroupBadges({ groupIds }: { groupIds: string[] }) {
     return () => observer.disconnect();
   }, [paths, groupIds.length]);
 
-  if (groupIds.length === 0) return <span className="text-xs text-[#737373] font-medium">预设策略</span>;
+  if (groupIds.length === 0) return <span className="text-xs text-gray-500 font-medium">预设策略</span>;
 
   const omitted = paths.length - visibleCount;
 
@@ -613,14 +613,14 @@ function GroupBadges({ groupIds }: { groupIds: string[] }) {
             <span
               key={i}
               ref={(el) => { tagRefs.current[i] = el; }}
-              className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-[#355EF1] text-[11px] whitespace-nowrap shrink-0"
+              className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap shrink-0"
             >
               {p}
             </span>
           ))}
           {/* 折叠提示 */}
           {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap shrink-0">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">
               …共 {paths.length} 个分组
             </span>
           )}
@@ -630,14 +630,14 @@ function GroupBadges({ groupIds }: { groupIds: string[] }) {
               <span
                 key={`m-${i}`}
                 ref={(el) => { tagRefs.current[i] = el; }}
-                className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-[#355EF1] text-[11px] whitespace-nowrap"
+                className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap"
               >
                 {p}
               </span>
             ))}
             <span
               ref={moreRef}
-              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap"
+              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap"
             />
           </div>
         </div>
@@ -692,7 +692,7 @@ function LabeledOptionIndicator<T extends string>({
 
   return (
     <div className="flex items-center gap-2 text-xs">
-      <span className="text-[#A3A3A3]">{label}</span>
+      <span className="text-gray-400">{label}</span>
       <StatusTag variant="gray">{currentLabel}</StatusTag>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
@@ -720,7 +720,7 @@ function LabeledOptionIndicator<T extends string>({
         </PopoverContent>
       </Popover>
       <Tooltip>
-        <TooltipTrigger asChild><span className="cursor-default"><Info className="w-3 h-3 text-[#A3A3A3]" /></span></TooltipTrigger>
+        <TooltipTrigger asChild><span className="cursor-default"><Info className="w-3 h-3 text-gray-400" /></span></TooltipTrigger>
         <TooltipContent side="top" className="text-xs max-w-[320px] leading-relaxed">
           {tooltipContent}
         </TooltipContent>
@@ -1086,7 +1086,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   );
   // 行内 loading 文字
   const renderLoading = () => (
-    <span className="inline-flex items-center gap-1.5 text-xs text-[#355EF1] font-medium whitespace-nowrap">
+    <span className="inline-flex items-center gap-1.5 text-xs text-blue-500 font-medium whitespace-nowrap">
       <Loader2 className="w-3.5 h-3.5 animate-spin" />配置中，请勿关闭
     </span>
   );
@@ -1199,7 +1199,16 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
 
       {/* 兜底值切换二次确认弹窗 */}
       <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setConfirmFallbackDraft(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle>切换后将清空分组策略</AlertDialogTitle>
             <AlertDialogDescription>
@@ -1481,8 +1490,8 @@ export default function PlatformPolicy() {
     <div className="page-enter space-y-8">
       {/* 页面标题 */}
       <div>
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">平台策略</h1>
-        <p className="text-sm text-[#737373] mt-1">管理平台默认配额、全局限制和功能权限开关，支持按分组设置不同策略</p>
+        <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
+        <p className="text-sm text-gray-500 mt-1">管理平台默认配额、全局限制和功能权限开关，支持按分组设置不同策略</p>
       </div>
 
       {/* 优先级说明信息条 */}
@@ -1575,12 +1584,12 @@ export default function PlatformPolicy() {
                 />
                 {panelPort && (
                   <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
-                    <span className="text-xs text-[#355EF1] leading-relaxed">
+                    <span className="text-xs text-blue-700 leading-relaxed">
                       {panelSgRuleId
                         ? `已为您分配随机端口 ${panelPort} 并自动为默认安全组添加该端口放通规则，`
                         : `已为您分配随机端口 ${panelPort}，`}
                       如用户端仍无法访问面板，请在网络管理的
-                      <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-[#0A0A0A] transition-colors mx-0.5">安全组规则</button>
+                      <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
                       处检查是否生效
                     </span>
                   </div>
@@ -1599,9 +1608,9 @@ export default function PlatformPolicy() {
             extraContent={
               isCloudBrowserEnabled(cloudBrowserRules) && cloudBrowserSgRuleId ? (
                 <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
-                  <span className="text-xs text-[#355EF1] leading-relaxed">
+                  <span className="text-xs text-blue-700 leading-relaxed">
                     已为您当前的安全组添加该功能所需的 6080 端口放通规则，如用户端仍无法访问，请在网络管理的
-                    <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-[#0A0A0A] transition-colors mx-0.5">安全组规则</button>
+                    <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
                     处检查是否生效
                   </span>
                 </div>
@@ -1618,9 +1627,9 @@ export default function PlatformPolicy() {
             extraContent={
               lobsterDoctorRules.some((r) => r.value) ? (
                 <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
-                  <p className="text-xs text-[#355EF1] leading-relaxed">
+                  <p className="text-xs text-blue-700 leading-relaxed">
                     龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
-                    <button onClick={() => setShowLobsterDoctorDialog(true)} className="inline-flex items-center text-[#355EF1] hover:opacity-70 transition-opacity" title="查看详情"><HelpCircle className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setShowLobsterDoctorDialog(true)} className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity" title="查看详情"><HelpCircle className="w-3.5 h-3.5" /></button>
                   </p>
                 </div>
               ) : undefined
@@ -1632,10 +1641,10 @@ export default function PlatformPolicy() {
 
       {/* 龙虾医生详情弹窗 */}
       <Dialog open={showLobsterDoctorDialog} onOpenChange={setShowLobsterDoctorDialog}>
-        <DialogContent className="sm:max-w-md">
-          <div className="py-1 space-y-4 text-sm text-[#737373] leading-relaxed">
+        <DialogContent className="sm:max-w-[560px]">
+          <div className="py-1 space-y-4 text-sm text-gray-600 leading-relaxed">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-[#0A0A0A]">工作原理</p>
+              <p className="text-sm font-medium text-gray-900">工作原理</p>
               <p>当用户点击「开始诊断」后，ClawPro 平台将完成以下步骤：</p>
               <ol className="space-y-1.5 pl-5 list-decimal">
                 <li>创建一个临时按量计费的龙虾医生 Agent 节点</li>
@@ -1644,11 +1653,11 @@ export default function PlatformPolicy() {
               </ol>
             </div>
             <div className="pt-3 space-y-2">
-              <p className="text-sm font-medium text-[#0A0A0A]">说明</p>
-              <ol className="space-y-1.5 pl-5 list-decimal text-[#737373]">
-                <li><span className="font-medium text-[#334155]">资源费用</span>：底层云资源费用可在 <a href="https://console.cloud.tencent.com/expense" target="_blank" rel="noopener noreferrer" className="text-[#355EF1] hover:text-[#1447E6] underline underline-offset-2 transition-colors">腾讯云费用中心</a> 查看</li>
-                <li><span className="font-medium text-[#334155]">Token 消耗</span>：诊断消耗的 Token 计入对应用户的 Token 消耗，可在 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }} className="text-[#355EF1] hover:text-[#1447E6] underline underline-offset-2 transition-colors">Tokens 监控</button> 查看</li>
-                <li><span className="font-medium text-[#334155]">诊断模型</span>：诊断所用模型将按照当前已启用的模型顺序使用，可前往 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/model-config"); }} className="text-[#355EF1] hover:text-[#1447E6] underline underline-offset-2 transition-colors">模型配置</button> 调整</li>
+              <p className="text-sm font-medium text-gray-900">说明</p>
+              <ol className="space-y-1.5 pl-5 list-decimal text-gray-600">
+                <li><span className="font-medium text-gray-700">资源费用</span>：底层云资源费用可在 <a href="https://console.cloud.tencent.com/expense" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">腾讯云费用中心</a> 查看</li>
+                <li><span className="font-medium text-gray-700">Token 消耗</span>：诊断消耗的 Token 计入对应用户的 Token 消耗，可在 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }} className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">Tokens 监控</button> 查看</li>
+                <li><span className="font-medium text-gray-700">诊断模型</span>：诊断所用模型将按照当前已启用的模型顺序使用，可前往 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/model-config"); }} className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">模型配置</button> 调整</li>
               </ol>
             </div>
           </div>

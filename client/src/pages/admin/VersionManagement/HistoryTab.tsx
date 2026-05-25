@@ -365,7 +365,7 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
   if (!record) return null;
   return (
     <Dialog open={!!record} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[920px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-lg leading-none font-semibold flex items-center gap-2 flex-wrap">
             <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap ${getActionTagColor(record.action)}`}>

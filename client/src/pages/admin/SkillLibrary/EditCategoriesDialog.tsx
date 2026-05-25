@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
 import { Category } from './types';
@@ -48,7 +48,10 @@ export default function EditCategoriesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleCancel}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md"
+        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+      >
         <DialogHeader>
           <DialogTitle>修改分类</DialogTitle>
           {skillName && (
@@ -56,19 +59,21 @@ export default function EditCategoriesDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => {
-              const isSelected = selected.includes(cat.id);
-              return (
-                <Button key={cat.id} variant="plain" size="sm" data-state={isSelected ? "active" : undefined} onClick={() => handleToggleCategory(cat.id)}>
-                  {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={2.5} />}
-                  {cat.name}
-                </Button>
-              );
-            })}
+        <DialogBody className="flex-1">
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {categories.map((cat) => {
+                const isSelected = selected.includes(cat.id);
+                return (
+                  <Button key={cat.id} variant="plain" size="sm" data-state={isSelected ? "active" : undefined} onClick={() => handleToggleCategory(cat.id)}>
+                    {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={2.5} />}
+                    {cat.name}
+                  </Button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>

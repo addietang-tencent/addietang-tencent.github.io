@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import {
   Puzzle,
   Pencil,
@@ -276,26 +276,28 @@ export default function SkillConfig() {
         <h1 className="text-2xl font-bold text-[#0A0A0A]">技能配置</h1>
       </div>
 
-      {/* Tab 切换器 - LineTabs */}
-      <div className="flex items-center gap-1 mb-1 border-b border-[#f0f0f0]">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`relative flex items-center gap-1.5 px-4 py-3 text-[14px] transition-colors whitespace-nowrap ${
-              activeTab === tab.id
-                ? "text-[#020617] font-semibold border-b-2 border-[#020617] -mb-px"
-                : "text-[#737373] font-medium hover:text-[#020617]"
-            }`}
-          >
-            {tab.label}
-            {tab.comingSoon && (
-              <span className="font-medium text-[#737373] bg-[#f5f5f5] px-1.5 py-0.5 rounded-[2px] text-[10px]">
-                即将开放
-              </span>
-            )}
-          </button>
-        ))}
+      {/* Tab 切换器（与 Agent 工具库同款 SegmentGroup） */}
+      <div className="mb-1">
+        <SegmentGroup>
+          {TABS.map((tab) => (
+            <SegmentOption
+              key={tab.id}
+              active={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="gap-1.5"
+            >
+              {tab.label}
+              {tab.comingSoon && (
+                <span
+                  className="font-medium text-gray-500 bg-white border border-gray-300 px-1.5 py-0.5 rounded"
+                  style={{ fontSize: "10px" }}
+                >
+                  即将开放
+                </span>
+              )}
+            </SegmentOption>
+          ))}
+        </SegmentGroup>
       </div>
 
       {/* Tab 描述 */}

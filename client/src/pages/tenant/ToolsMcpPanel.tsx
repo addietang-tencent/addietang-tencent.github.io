@@ -931,6 +931,7 @@ export default function ToolsMcpPanel() {
               取消
             </Button>
             <Button
+              variant="tenant-primary"
               onClick={() => {
                 if (!paramTemplate) return;
                 const allFilled = paramTemplate.userRequiredParams.every(
@@ -1005,6 +1006,7 @@ export default function ToolsMcpPanel() {
               保存但不重启
             </Button>
             <Button
+              variant="tenant-primary"
               onClick={() => handleSaveSource(true)}
             >
               保存并重启实例
@@ -1059,6 +1061,7 @@ export default function ToolsMcpPanel() {
               暂不重启
             </Button>
             <Button
+              variant="tenant-primary"
               onClick={handleRestartNow}
               size="sm"
             >

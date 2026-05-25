@@ -193,7 +193,7 @@ export default function AgentToolLibrary() {
 
       {/* 安全检测服务 — 申请开通弹窗 */}
       <Dialog open={securityApplyDialogOpen} onOpenChange={setSecurityApplyDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle>申请免费试用（Skills 风险检测 API）</DialogTitle>
           </DialogHeader>
@@ -236,7 +236,7 @@ export default function AgentToolLibrary() {
 
       {/* 安全检测服务 — 开通成功弹窗 */}
       <Dialog open={securitySuccessDialogOpen} onOpenChange={setSecuritySuccessDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>
               试用额度已开通

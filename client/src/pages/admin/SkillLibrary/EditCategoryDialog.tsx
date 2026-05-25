@@ -43,7 +43,7 @@ export default function EditCategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>编辑分类</DialogTitle>
         </DialogHeader>

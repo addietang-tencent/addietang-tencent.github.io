@@ -552,6 +552,52 @@ import { SmallIconStateButton } from "@/components/ui/button";
 
 ---
 
+## 11.5 LineTabs（线性标签页 / 下划线式）
+
+> 使用场景：**仅限**页面标题下方的一级导航 Tab，用于切换同一页面内的不同内容区域。
+> 不可用于卡片内部、弹窗内部或表格工具栏（那些场景用 §11 Tab 切换卡）。
+
+### 视觉参数
+
+| 属性 | 值 |
+|------|-----|
+| 容器 | `flex items-center gap-1 border-b border-[#f0f0f0]` |
+| 单项 padding | `px-4 py-3` |
+| 字号 | `text-[14px] font-medium` |
+| 选中态 | `text-[#0A0A0A] border-b-2 border-[#0A0A0A] -mb-px` |
+| 默认态 | `text-[#737373]` |
+| Hover | `hover:text-[#0A0A0A]` |
+
+### 代码示例
+
+```jsx
+<div className="flex items-center gap-1 border-b border-[#f0f0f0]">
+  {TABS.map((tab) => (
+    <button
+      key={tab.id}
+      onClick={() => setActiveTab(tab.id)}
+      className={`relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ${
+        activeTab === tab.id
+          ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A] -mb-px"
+          : "text-[#737373] hover:text-[#0A0A0A]"
+      }`}
+    >
+      {tab.label}
+    </button>
+  ))}
+</div>
+```
+
+### 使用场景约束
+
+| 场景 | 使用 |
+|------|------|
+| 页面标题下方一级导航 | ✅ 使用本组件 |
+| 弹窗/卡片内切换 | ❌ 用 §11 Tab 切换卡（黑底白字按钮式） |
+| 表格工具栏筛选 | ❌ 用 §11 Tab 切换卡 |
+
+---
+
 ## 12. Alert 提示组件
 
 **文件**: `client/src/components/ui/alert.tsx`  

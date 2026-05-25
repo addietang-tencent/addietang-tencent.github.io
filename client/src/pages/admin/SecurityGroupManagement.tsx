@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from "react";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { createPortal } from "react-dom";
 import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -3284,15 +3285,15 @@ export default function SecurityGroupManagement() {
         </div>
 
         {/* Tab 切换器 */}
-        <div className="flex items-center gap-1 mb-1 border-b border-gray-200">
+        <div className="flex items-center gap-1 mb-1 border-b border-[#f0f0f0]">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`relative flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+              className={`relative flex items-center gap-1.5 px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A] -mb-px"
+                  : "text-[#737373] hover:text-[#0A0A0A]"
               }`}
             >
               {tab.label}
@@ -3459,21 +3460,14 @@ export default function SecurityGroupManagement() {
           <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
             {/* 规则 Tab + 添加按钮 */}
             <div className="flex items-center justify-between border-b border-[#E5E5E5] px-6" style={{ minHeight: "48px" }}>
-              <div className="flex items-center gap-6">
-                {(["outbound", "inbound"] as const).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setSecurityTab(t)}
-                    className={`relative pb-3 pt-3 text-sm font-medium transition-colors whitespace-nowrap ${
-                      securityTab === t
-                        ? "text-[#1447E6] border-b-2 border-[#1447E6] -mb-[1px]"
-                        : "text-[#737373] hover:text-[#334155]"
-                    }`}
-                  >
-                    {t === "outbound" ? "出站规则" : "入站规则"}
-                  </button>
-                ))}
-              </div>
+              <SegmentGroup>
+                <SegmentOption active={securityTab === "outbound"} onClick={() => setSecurityTab("outbound")}>
+                  出站规则
+                </SegmentOption>
+                <SegmentOption active={securityTab === "inbound"} onClick={() => setSecurityTab("inbound")}>
+                  入站规则
+                </SegmentOption>
+              </SegmentGroup>
               {currentSg ? (
                 <Button
                   variant="claw-outline"

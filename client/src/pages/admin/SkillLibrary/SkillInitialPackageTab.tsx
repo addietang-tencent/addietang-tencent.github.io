@@ -1737,7 +1737,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
             return (
               <div
                 key={pkg.id}
-                className="bg-white rounded-xl border border-[#e5e5e5] p-4 transition-all cursor-pointer group"
+                className="bg-white rounded-xl border border-[#e5e5e5] hover:border-[#1447E6] p-4 transition-all cursor-pointer group"
                
                 onClick={() => setSelectedPackageId(pkg.id)}
               >

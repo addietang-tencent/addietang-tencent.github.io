@@ -871,19 +871,19 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
       {/* 预设策略区域 */}
       <div className="px-5 pb-4">
         {editingId === fallbackRule.id ? (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
             <div className="flex-1 flex items-center justify-end gap-2">{renderValueEditor()}</div>
             <div className="flex items-center gap-2 shrink-0">
-              <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-              <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
+              <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
+              <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit(fallbackRule.id)}><Check className="w-4 h-4" /></Button>
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
             <span className="flex-1 text-right text-[20px] font-bold text-[#020617] font-din tabular-nums">{displayValue(fallbackRule.value)}</span>
-            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)}>编辑</Button>
+            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0 text-[14px]" onClick={() => startEdit(fallbackRule)}>编辑</Button>
           </div>
         )}
       </div>
@@ -913,8 +913,8 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                     </div>
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
                     <div className="w-32 flex items-center justify-end gap-2 h-9">
-                      <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                      <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
+                      <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit(rule.id)}><Check className="w-4 h-4" /></Button>
                     </div>
                   </div>
                 ) : (
@@ -922,7 +922,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                     <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
                     <span className={`${valueColClass} text-right text-[14px] text-[#020617] font-medium tabular-nums`}>{displayValue(rule.value)}</span>
                     <div className="w-16 flex items-center justify-end gap-3">
-                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => startEdit(rule)}>编辑</Button>
+                      <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => startEdit(rule)}>编辑</Button>
                       <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => deleteRule(rule.id)}>删除</Button>
                     </div>
                   </div>
@@ -942,8 +942,8 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
                 </div>
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
                 <div className="w-32 flex items-center justify-end gap-2 h-9">
-                  <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                  <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
+                  <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit()}><Check className="w-4 h-4" /></Button>
                 </div>
               </div>
             )}
@@ -1104,19 +1104,19 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
       {/* 预设策略区域 */}
       <div className="px-5 pb-4">
         {editingId === fallbackRule.id ? (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
             <span className="flex-1" />
             {renderFallbackValueEditor()}
           </div>
         ) : (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 py-3">
+          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
             <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
             <span className="flex-1" />
             {loadingRuleId === fallbackRule.id
               ? renderLoading()
               : <StatusTag variant={fallbackRule.value ? "green" : "gray"} dot>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
-            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
+            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0 text-[14px]" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
           </div>
         )}
       </div>
@@ -1145,8 +1145,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                     </div>
                     <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
                     <div className="w-32 flex items-center justify-end gap-2 h-9">
-                      <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                      <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit(rule.id)}>保存</Button>
+                      <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit(rule.id)}><Check className="w-4 h-4" /></Button>
                     </div>
                   </div>
                 ) : (
@@ -1158,7 +1158,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                         : <StatusTag variant={rule.value ? "green" : "gray"} dot>{rule.value ? "开启" : "关闭"}</StatusTag>}
                     </div>
                     <div className="w-16 flex items-center justify-end gap-3">
-                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => startEdit(rule)} disabled={!!loadingRuleId}>编辑</Button>
+                      <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => startEdit(rule)} disabled={!!loadingRuleId}>编辑</Button>
                       <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => deleteRule(rule.id)} disabled={!!loadingRuleId}>删除</Button>
                     </div>
                   </div>
@@ -1178,8 +1178,8 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                 </div>
                 <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
                 <div className="w-32 flex items-center justify-end gap-2 h-9">
-                  <Button variant="outline" size="sm" className="h-9 px-3 text-xs" onClick={cancelEdit}>取消</Button>
-                  <Button variant="dialog-confirm" size="sm" className="h-9 px-3 text-xs" onClick={() => saveEdit()}>保存</Button>
+                  <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit()}><Check className="w-4 h-4" /></Button>
                 </div>
               </div>
             )}
@@ -1478,7 +1478,7 @@ export default function PlatformPolicy() {
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
   return (
-    <div className="space-y-8">
+    <div className="page-enter space-y-8">
       {/* 页面标题 */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>

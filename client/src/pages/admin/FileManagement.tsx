@@ -53,6 +53,7 @@ import {
   Pencil,
   X,
   Check,
+  Clock,
 } from "lucide-react";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
@@ -1291,12 +1292,7 @@ export default function FileManagement() {
                 onClick={handleBatchEnable}
                 disabled={selectedInstances.size === 0}
               >
-                批量启用网盘服务
-                {selectedInstances.size > 0 && (
-                  <span className="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">
-                    {selectedInstances.size}
-                  </span>
-                )}
+                批量启用网盘服务{selectedInstances.size > 0 && `(${selectedInstances.size})`}
               </Button>
               <FMGroupFilter
                 groups={MOCK_GROUP_TREE_MANUAL}
@@ -1319,12 +1315,7 @@ export default function FileManagement() {
                 onClick={() => setRecyclebinOpen(true)}
               >
                 <Trash2 className="w-4 h-4" />
-                回收站
-                {getRecyclebinInstances().length > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-xs font-medium">
-                    {getRecyclebinInstances().length}
-                  </span>
-                )}
+                回收站{getRecyclebinInstances().length > 0 && `(${getRecyclebinInstances().length})`}
               </Button>
             </div>
             <div className="flex items-center gap-2 text-[14px] text-[#737373]">
@@ -1340,8 +1331,8 @@ export default function FileManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[6%]">
-                  <div className="flex items-center gap-2 whitespace-nowrap">
+                <TableHead style={{ width: '56px', minWidth: '56px' }}>
+                  <div className="flex items-center">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
@@ -1349,15 +1340,14 @@ export default function FileManagement() {
                       className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none" : ""}
                       aria-label="全选"
                     />
-                    <span className={disabledInstancesCount === 0 ? "text-[#A3A3A3]" : ""}>全选</span>
                   </div>
                 </TableHead>
-                <TableHead className="w-[20%]">OpenClaw 实例</TableHead>
-                <TableHead className="w-[15%]">创建人</TableHead>
-                <TableHead className="w-[8%]">类型</TableHead>
-                <TableHead className="w-[18%]">已用/存储容量</TableHead>
-                <TableHead className="w-[10%]">有效期</TableHead>
-                <TableHead className="w-[9%]">启用网盘</TableHead>
+                <TableHead style={{ width: '220px', minWidth: '220px' }}>OpenClaw 实例</TableHead>
+                <TableHead style={{ width: '160px', minWidth: '160px' }}>创建人</TableHead>
+                <TableHead style={{ minWidth: '80px' }}>类型</TableHead>
+                <TableHead style={{ minWidth: '200px' }}>已用/存储容量</TableHead>
+                <TableHead style={{ minWidth: '120px' }}>有效期</TableHead>
+                <TableHead style={{ minWidth: '100px' }}>启用网盘</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -1382,16 +1372,18 @@ export default function FileManagement() {
                       key={item.id} 
                       className="hover:bg-[#fafafa]/50 transition-colors"
                     >
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <Checkbox
-                          checked={isSelected}
-                          onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
-                          disabled={isEnabled || isDeleted}
-                          className={(isEnabled || isDeleted) ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
-                          aria-label={`选择 ${item.instanceName}`}
-                        />
+                      <td className="px-4 py-3 align-middle" style={{ width: '56px', minWidth: '56px' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
+                            disabled={isEnabled || isDeleted}
+                            className={(isEnabled || isDeleted) ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
+                            aria-label={`选择 ${item.instanceName}`}
+                          />
+                        </div>
                       </td>
-                      <td className="px-4 py-3" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                      <td className="px-4 py-3" style={{ width: '220px', minWidth: '220px' }}>
                         <div className="flex flex-col min-w-0">
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -1402,7 +1394,7 @@ export default function FileManagement() {
                             <span className="text-xs font-mono text-[#355EF1]">{item.instanceId}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
+                      <td className="px-4 py-3" style={{ width: '160px', minWidth: '160px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="text-sm text-[#0A0A0A] truncate block max-w-[140px]">{item.creator}</span>
@@ -1861,112 +1853,159 @@ export default function FileManagement() {
 
       {/* Recycle Bin Dialog */}
       <Dialog open={recyclebinOpen} onOpenChange={setRecyclebinOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
-              <Trash2 className="w-5 h-5 text-[#737373]" />
-              回收站
-            </DialogTitle>
+        <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-hidden flex flex-col gap-0 p-0">
+          {/* Header */}
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#E5E5E5]">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-[4px] bg-[#F5F5F5] flex items-center justify-center shrink-0">
+                <Trash2 className="w-4 h-4 text-[#737373]" strokeWidth={1.75} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-base font-semibold text-[#0A0A0A] leading-tight">
+                  回收站
+                </DialogTitle>
+                <p className="text-xs text-[#737373] mt-1 leading-relaxed">
+                  {getRecyclebinInstances().length > 0 ? (
+                    <>共 <span className="text-[#020617] font-medium tabular-nums">{getRecyclebinInstances().length}</span> 个网盘空间待处理 · 关闭后保留 15 天，逾期自动永久删除</>
+                  ) : (
+                    <>关闭后的网盘空间将在此保留 15 天，逾期自动永久删除</>
+                  )}
+                </p>
+              </div>
+            </div>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto py-4">
+
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 bg-[#FAFAFA]">
             {getRecyclebinInstances().length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-[#A3A3A3]">
-                <Trash2 className="w-16 h-16 mb-4 opacity-30" />
-                <p className="text-sm">回收站为空</p>
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-16 h-16 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center mb-4">
+                  <Trash2 className="w-7 h-7 text-[#A3A3A3]" strokeWidth={1.5} />
+                </div>
+                <p className="text-sm font-medium text-[#334155]">回收站为空</p>
+                <p className="text-xs text-[#A3A3A3] mt-1">没有待恢复的网盘空间</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {getRecyclebinInstances().map((instance) => (
-                  <div
-                    key={instance.id}
-                    className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] p-4 hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-                          {instance.avatar}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h4 className="text-sm font-semibold text-[#0A0A0A] truncate">
-                              {instance.instanceName}
-                            </h4>
-                            <StatusTag mode="fill" variant="red">{instance.remainingDays} 天后永久删除</StatusTag>
+              <div className="space-y-2.5">
+                {getRecyclebinInstances().map((instance) => {
+                  const days = instance.remainingDays;
+                  // 紧迫度色阶：≤3天 红色 / ≤7天 橙色 / >7天 中性灰
+                  const urgency =
+                    days <= 3
+                      ? { bg: "bg-[#FEF2F2]", text: "text-[#DC2626]", iconColor: "text-[#DC2626]" }
+                      : days <= 7
+                      ? { bg: "bg-[#FFF7ED]", text: "text-[#C2410C]", iconColor: "text-[#EA580C]" }
+                      : { bg: "bg-[#F1F5F9]", text: "text-[#475569]", iconColor: "text-[#64748B]" };
+
+                  return (
+                    <div
+                      key={instance.id}
+                      className="group bg-white border border-[#E5E5E5] rounded-[4px] px-4 py-3.5 hover:border-[#1447E6]/30 transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          {/* 头像 */}
+                          <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                            {instance.avatar}
                           </div>
-                          <div className="flex items-center gap-4 text-xs text-[#737373]">
-                            <span>创建人: {instance.creator}</span>
-                            <span>容量: {instance.used}/{instance.quota}</span>
-                            <span>实例ID: {instance.instanceId}</span>
+                          {/* 主信息 */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-sm font-medium text-[#0A0A0A] truncate">
+                                {instance.instanceName}
+                              </h4>
+                              <span
+                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[2px] text-[11px] font-medium tabular-nums shrink-0 ${urgency.bg} ${urgency.text}`}
+                              >
+                                <Clock className={`w-3 h-3 ${urgency.iconColor}`} strokeWidth={2} />
+                                {days === 0 ? "今日永久删除" : `${days} 天后永久删除`}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-xs text-[#737373]">
+                              <span className="truncate">{instance.creator}</span>
+                              <span className="mx-2 text-[#D4D4D4]">·</span>
+                              <span className="tabular-nums whitespace-nowrap">{instance.used} / {instance.quota}</span>
+                              <span className="mx-2 text-[#D4D4D4]">·</span>
+                              <span className="font-mono text-[11px] truncate">{instance.instanceId}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 px-2 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#f4f4f5]"
-                                onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
-                              >
-                                <RotateCcw className="w-3.5 h-3.5" />
-                                恢复
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>恢复此网盘空间</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 px-2 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#f4f4f5]"
-                                onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
-                              >
-                                <Link className="w-3.5 h-3.5" />
-                                转接
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>将此网盘转接给其他实例</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-8 px-2 gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                onClick={() => {
-                                  setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
-                                  setRecyclebinDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                永久删除
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>永久删除此网盘空间（不可恢复）</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+
+                        {/* 操作按钮区 */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 px-2.5 gap-1.5 text-[#334155] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
+                                  onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5" />
+                                  恢复
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>恢复此网盘空间</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <div className="w-px h-4 bg-[#E5E5E5]" />
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 px-2.5 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#F5F5F5]"
+                                  onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
+                                >
+                                  <Link className="w-3.5 h-3.5" />
+                                  转接
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>将此网盘转接给其他实例</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          <div className="w-px h-4 bg-[#E5E5E5]" />
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 px-2.5 gap-1.5 text-[#737373] hover:text-[#DC2626] hover:bg-[#FEF2F2]"
+                                  onClick={() => {
+                                    setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
+                                    setRecyclebinDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  永久删除
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>永久删除此网盘空间（不可恢复）</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRecyclebinOpen(false)}>关闭</Button>
+
+          {/* Footer */}
+          <DialogFooter className="px-6 py-4 border-t border-[#E5E5E5] bg-white">
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setRecyclebinOpen(false)}>
+              关闭
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

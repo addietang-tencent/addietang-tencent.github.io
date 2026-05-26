@@ -1,141 +1,156 @@
 import React from 'react';
-import { Sparkles, Shield, Zap, Crown, Check, Database, Lock, Minus } from 'lucide-react';
+import { Sparkles, Shield, Crown, Check, Database, Lock, Minus, Zap } from 'lucide-react';
+import { SurfaceCard, SurfaceInner } from '@/components/ui/Surface';
+import { StatusTag } from '@/components/ui/status-tag';
 
 interface ComparisonTableProps {
-  // Pro 服务是否已开通
+  /** Pro 服务是否已开通（开通后 Pro 卡显示「已开通」绿色徽标） */
   isProActive?: boolean;
 }
 
 /**
  * 版本对比展示：Free 版 → Pro 版
  *
- * 方案 B：仅做功能对比展示，开通入口集中在服务概览区域
- * 折叠交互由外层容器统一承担（避免触发器重复、视觉重叠），
- * 本组件只负责"展开后"的对比内容渲染。
+ * 设计原则：
+ * - 左右两栏对比：Free（中性、弱化）vs Pro（品牌色、推荐）
+ * - 左栏 Free：中性灰图标容器、灰勾/灰减号区分能力开闭
+ * - 右栏 Pro：品牌蓝渐变图标容器 + 「推荐」品牌色边框 + 已开通态绿色 StatusTag
+ * - 企业级特性 Grid：用 SurfaceInner 内嵌卡（4px 圆角、浅描边）+ 单色 icon + StatusTag 标签
  *
- * 遵循 Agent Enterprise 设计规范：
- * - 品牌渐变：linear-gradient(90deg, #020617 70%, #355EF1 100%)
- * - 卡片圆角：rounded-xl (16px)
- * - 统一阴影：通过 inline style 设置
- * - 图标：仅使用 lucide-react，禁止 emoji
+ * 全局组件：<SurfaceCard> / <SurfaceInner> / <StatusTag>
+ * 设计令牌：v2 主色 #1447E6 / 4px 圆角 / 文字色阶 #0A0A0A → #334155 → #737373 → #A3A3A3
  */
 export const ComparisonTable: React.FC<ComparisonTableProps> = ({
   isProActive = false,
 }) => {
   return (
-    <div>
-      <div className="grid grid-cols-[1fr_1.5fr] gap-5">
-        {/* Free 版卡片 */}
-        <div 
-          className="bg-white rounded-xl border border-gray-200 p-5 transition-all duration-200 flex flex-col"
-        >
-          {/* 头部 */}
-          <div className="flex items-center gap-3 mb-5">
-            <div 
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#355EF1' }}
-            >
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Free 版</h3>
-              <span className="text-xs text-[#737373]">入门方案</span>
-            </div>
+    <div className="grid grid-cols-[1fr_1.5fr] gap-4">
+      {/* ─────────── Free 版（弱化展示） ─────────── */}
+      <SurfaceCard className="p-5 flex flex-col">
+        {/* 头部 */}
+        <div className="flex items-center gap-3 mb-5">
+          {/* Free 图标容器：中性灰渐变（与 Pro 区分层级） */}
+          <div
+            className="w-10 h-10 rounded-[4px] flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #94A3B8, #64748B)' }}
+          >
+            <Zap className="w-5 h-5 text-white" />
           </div>
-
-          {/* 能力列表 */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-[#334155]">本地文件持久化</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Minus className="w-3 h-3 text-[#A3A3A3]" />
-              </div>
-              <span className="text-sm text-[#737373]">仅关键词检索</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Minus className="w-3 h-3 text-[#A3A3A3]" />
-              </div>
-              <span className="text-sm text-[#737373]">小于 1 万条记忆数据</span>
-            </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-[#0A0A0A] leading-tight">Free 版</h3>
+            <span className="text-xs text-[#737373]">入门方案</span>
           </div>
         </div>
 
-        {/* Pro 版卡片 */}
-        <div 
-          className="bg-white rounded-xl border border-blue-200 p-5 transition-all duration-200 flex flex-col"
+        {/* 能力列表 */}
+        <ul className="space-y-3">
+          <FeatureItem enabled label="本地文件持久化" />
+          <FeatureItem label="仅关键词检索" />
+          <FeatureItem label="小于 1 万条记忆数据" />
+        </ul>
+      </SurfaceCard>
+
+      {/* ─────────── Pro 版（推荐方案） ─────────── */}
+      <SurfaceCard
+        className="p-5 flex flex-col relative"
+        style={{ borderColor: '#1447E6', borderWidth: '1px', borderStyle: 'solid' }}
+      >
+        {/* 右上角「推荐」角标：品牌色斜角带 */}
+        <div
+          className="absolute top-0 right-0 inline-flex items-center px-2.5 py-0.5 rounded-bl-[4px] rounded-tr-[4px] text-[10px] font-medium text-white leading-relaxed"
+          style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
         >
-          {/* 头部 */}
-          <div className="flex items-center gap-3 mb-5">
-            <div 
-              className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#355EF1' }}
-            >
-              <Crown className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Pro 版</h3>
-              <span className="text-xs text-[#355EF1] font-medium">企业级方案</span>
-            </div>
-            {/* 已开通状态标签 */}
-            {isProActive && (
-              <div className="inline-flex items-center gap-1 px-2 py-1 rounded-xl bg-green-100 text-green-700 text-xs font-medium">
-                <Check className="w-3 h-3" />
-                已开通
-              </div>
-            )}
-          </div>
-
-          {/* 核心能力列表 */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-[#334155]">腾讯云向量数据库 (VDB)</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-[#334155]">语义 + 关键词双路检索</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-blue-500">
-                <Check className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-[#334155]">支持百万级记忆数据</span>
-            </div>
-          </div>
-
-          {/* 企业级特性 Grid */}
-          <div className="grid grid-cols-2 gap-2.5 mt-4">
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Sparkles className="w-4 h-4 text-[#737373] flex-shrink-0" />
-              <span className="text-sm text-[#737373]">短期记忆压缩，Token 节省 50%+</span>
-              <span className="px-1.5 py-0.5 bg-emerald-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">New</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Shield className="w-4 h-4 text-[#737373] flex-shrink-0" />
-              <span className="text-sm text-[#737373]">全链路加密，保障数据安全</span>
-              <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[10px] font-medium rounded ml-auto flex-shrink-0">即将上线</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Database className="w-4 h-4 text-[#737373] flex-shrink-0" />
-              <span className="text-sm text-[#737373]">数据备份，可靠性更高</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-              <Lock className="w-4 h-4 text-[#737373] flex-shrink-0" />
-              <span className="text-sm text-[#737373]">租户权限隔离，访问更安全</span>
-            </div>
-          </div>
+          推荐
         </div>
-      </div>
+
+        {/* 头部 */}
+        <div className="flex items-center gap-3 mb-5">
+          {/* Pro 图标容器：品牌蓝渐变（强化主推） */}
+          <div
+            className="w-10 h-10 rounded-[4px] flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #1447E6, #2563EB)' }}
+          >
+            <Crown className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-[#0A0A0A] leading-tight">Pro 版</h3>
+            <span className="text-xs text-[#1447E6] font-medium">企业级方案</span>
+          </div>
+          {/* 已开通状态：绿色 StatusTag（全局组件） */}
+          {isProActive && (
+            <StatusTag variant="green" dot className="mr-12">
+              已开通
+            </StatusTag>
+          )}
+        </div>
+
+        {/* 核心能力列表 */}
+        <ul className="space-y-3">
+          <FeatureItem enabled label="腾讯云向量数据库 (VDB)" />
+          <FeatureItem enabled label="语义 + 关键词双路检索" />
+          <FeatureItem enabled label="支持百万级记忆数据" />
+        </ul>
+
+        {/* 企业级特性 Grid（2×2，使用 SurfaceInner 内嵌卡） */}
+        <div className="grid grid-cols-2 gap-2.5 mt-4">
+          <ProFeatureChip icon={Sparkles} label="短期记忆压缩，Token 节省 50%+" badge="new" />
+          <ProFeatureChip icon={Shield} label="全链路加密，保障数据安全" badge="upcoming" />
+          <ProFeatureChip icon={Database} label="数据备份，可靠性更高" />
+          <ProFeatureChip icon={Lock} label="租户权限隔离，访问更安全" />
+        </div>
+      </SurfaceCard>
     </div>
   );
 };
+
+// ─── 子组件：能力列表项（已启用 / 未启用） ───
+function FeatureItem({ enabled, label }: { enabled?: boolean; label: string }) {
+  return (
+    <li className="flex items-center gap-2.5">
+      <span
+        className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+          enabled ? 'bg-[#1447E6]' : 'bg-[#F5F5F5]'
+        }`}
+      >
+        {enabled ? (
+          <Check className="w-3 h-3 text-white" />
+        ) : (
+          <Minus className="w-3 h-3 text-[#A3A3A3]" />
+        )}
+      </span>
+      <span className={`text-sm ${enabled ? 'text-[#334155]' : 'text-[#A3A3A3]'}`}>
+        {label}
+      </span>
+    </li>
+  );
+}
+
+// ─── 子组件：Pro 企业级特性卡片项 ───
+type ProFeatureBadge = 'new' | 'upcoming';
+
+function ProFeatureChip({
+  icon: Icon,
+  label,
+  badge,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  badge?: ProFeatureBadge;
+}) {
+  return (
+    <SurfaceInner className="flex items-center gap-2 px-3 py-2.5 bg-[#FAFAFA]">
+      <Icon className="w-4 h-4 text-[#737373] shrink-0" />
+      <span className="text-xs text-[#334155] flex-1 leading-relaxed">{label}</span>
+      {badge === 'new' && (
+        <StatusTag variant="green" className="shrink-0 h-4 text-[10px] px-1.5">
+          New
+        </StatusTag>
+      )}
+      {badge === 'upcoming' && (
+        <StatusTag variant="blue" className="shrink-0 h-4 text-[10px] px-1.5">
+          即将上线
+        </StatusTag>
+      )}
+    </SurfaceInner>
+  );
+}

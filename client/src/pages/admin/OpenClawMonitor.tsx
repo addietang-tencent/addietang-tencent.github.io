@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { SurfaceCard, SurfaceOverlay } from "@/components/ui/Surface";
 import {
   Tooltip,
@@ -742,14 +742,11 @@ export default function AgentMonitor() {
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [filterPosition, setFilterPosition] = useState<{ top: number; left: number } | null>(null);
 
-  // 表格横向滚动检测
+  // 表格横向滚动 — 仅保留祖先 flex 容器 min-width:0 兜底，固定列/阴影由全局 Table 组件提供
   const tableScrollRef = useRef<HTMLDivElement>(null);
-  const [isTableScrolled, setIsTableScrolled] = useState(false);
   useEffect(() => {
     const el = tableScrollRef.current;
     if (!el) return;
-    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
-    el.addEventListener('scroll', onScroll, { passive: true });
     // 给 flex 父容器加 min-width:0 防止 table 撑开页面
     let parent = el.parentElement;
     while (parent) {
@@ -768,7 +765,6 @@ export default function AgentMonitor() {
       }
       parent = parent.parentElement;
     }
-    return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
   // 操作对话框
@@ -2026,21 +2022,22 @@ export default function AgentMonitor() {
           <Table
             containerRef={tableScrollRef}
             className="text-sm"
-            style={{ width: 'max-content', minWidth: '100%' }}
+            scrollX="max-content"
           >
             <TableHeader>
               <TableRow>
-                {/* 复选框列 - sticky left */}
-                <TableHead className="whitespace-nowrap px-4" style={{ width: '120px', minWidth: '120px' }}>
-                  <div className="flex items-center gap-2">
+                {/* 复选框列 - 固定左侧（多列同侧固定的第一列，不显示阴影） */}
+                <TableHead fixed="left" fixedShadow={false} className="whitespace-nowrap px-4" style={{ width: '56px', minWidth: '56px' }}>
+                  <div className="flex items-center">
                     <Checkbox
                       checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
                       onCheckedChange={(v) => handleSelectAll(!!v)}
+                      aria-label="全选"
                     />
-                    <span className="whitespace-nowrap">全选</span>
                   </div>
                 </TableHead>
-                <TableHead className="whitespace-nowrap px-4" style={{ minWidth: '240px' }}>名称 / ID</TableHead>
+                {/* 名称 / ID 列 - 固定左侧（边界列，显示阴影），偏移 56px 错开复选框列 */}
+                <TableHead fixed="left" className="whitespace-nowrap px-4" style={{ left: 56, minWidth: '240px' }}>名称 / ID</TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
@@ -2190,7 +2187,7 @@ export default function AgentMonitor() {
                 </TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
-                <TableHead className="whitespace-nowrap" style={{ width: '240px', minWidth: '240px' }}>
+                <TableHead fixed="right" className="whitespace-nowrap" style={{ width: '240px', minWidth: '240px' }}>
                   操作
                 </TableHead>
               </TableRow>
@@ -2214,15 +2211,15 @@ export default function AgentMonitor() {
 
                   return (
                     <TableRow key={claw.id} className="group hover:bg-[#f5f5f5]/50 transition-colors">
-                      {/* 复选框 */}
-                      <TableCell className="py-4 px-4 whitespace-nowrap" style={{ width: '120px', minWidth: '120px' }}>
+                      {/* 复选框 - 固定左侧（非边界列） */}
+                      <TableCell fixed="left" fixedShadow={false} className="py-4 px-4 whitespace-nowrap" style={{ width: '56px', minWidth: '56px' }}>
                         <Checkbox
                           checked={selectedIds.has(claw.id)}
                           onCheckedChange={(v) => handleSelectOne(claw.id, !!v)}
                         />
                       </TableCell>
-                      {/* 名称/ID */}
-                      <TableCell className="px-4 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                      {/* 名称/ID - 固定左侧（边界列），偏移 56px */}
+                      <TableCell fixed="left" className="px-4 py-4" style={{ left: 56, width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="min-w-0 flex-1">
                             <Tooltip>
@@ -2401,50 +2398,49 @@ export default function AgentMonitor() {
                           <Tag className="w-4 h-4 text-gray-200" />
                         )}
                       </TableCell>
-                      {/* 操作 */}
-                      <TableCell className="px-4" style={{ minWidth: '240px' }}>
-                        <div className="flex items-center gap-3 h-5 whitespace-nowrap">
+                      {/* 操作 - 全局 TableActionCell 内部按钮强制 link 蓝色样式（详见 SKILL §15 操作列规则） */}
+                      <TableActionCell fixed="right" style={{ minWidth: '240px' }} actionsClassName="h-5">
                           {/* 终端 */}
                           {!isRunning ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="text-[14px] text-[rgba(2,6,23,0.3)] cursor-not-allowed whitespace-nowrap">终端</span>
+                                <span className="text-[14px] text-[rgba(20,71,230,0.4)] cursor-not-allowed whitespace-nowrap">终端</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs">
                                 仅运行中的实例可进入终端
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => handleOpenTerminal(claw)}>
+                            <Button variant="link" onClick={() => handleOpenTerminal(claw)}>
                               终端
                             </Button>
                           )}
 
                           {/* 关机/开机 */}
                           {claw.status === "running" ? (
-                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => setShutdownTarget(claw.id)}>
+                            <Button variant="link" onClick={() => setShutdownTarget(claw.id)}>
                               关机
                             </Button>
                           ) : claw.status === "shutdown" ? (
-                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => setShutdownTarget(claw.id)}>
+                            <Button variant="link" onClick={() => setShutdownTarget(claw.id)}>
                               开机
                             </Button>
                           ) : (
-                            <span className="text-[14px] text-[rgba(2,6,23,0.3)] whitespace-nowrap">开机</span>
+                            <span className="text-[14px] text-[rgba(20,71,230,0.4)] whitespace-nowrap">开机</span>
                           )}
 
                           {/* 删除 */}
                           {["creating", "loading", "pending"].includes(claw.status) ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="text-[14px] text-[rgba(2,6,23,0.3)] cursor-not-allowed whitespace-nowrap">删除</span>
+                                <span className="text-[14px] text-[rgba(20,71,230,0.4)] cursor-not-allowed whitespace-nowrap">删除</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs">
                                 当前状态不可删除
                               </TooltipContent>
                             </Tooltip>
                           ) : (
-                            <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => handleDeleteClick(claw)}>
+                            <Button variant="link" onClick={() => handleDeleteClick(claw)}>
                               删除
                             </Button>
                           )}
@@ -2452,7 +2448,7 @@ export default function AgentMonitor() {
                           {/* 更多操作 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]">
+                              <Button variant="link">
                                 更多
                               </Button>
                             </DropdownMenuTrigger>
@@ -2482,8 +2478,7 @@ export default function AgentMonitor() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                        </div>
-                      </TableCell>
+                      </TableActionCell>
                     </TableRow>
                   );
                 })

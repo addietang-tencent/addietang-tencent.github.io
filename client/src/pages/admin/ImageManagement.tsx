@@ -25,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { RadioCard } from "@/components/ui/radio-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Dialog,
   DialogBody,
@@ -48,7 +49,6 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { StatusTag } from "@/components/ui/status-tag";
 import {
   Info,
   RefreshCw,
@@ -400,7 +400,7 @@ function ImageScopePopover({
     return effectiveIds.map((gid) => getGroupPath(gid, groups));
   }, [groups, scopeData.visibilityGroupIds, activeBuckets, treesMap]);
 
-  const renderBadges = () => {
+  const renderScopeText = () => {
     if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
       return (
         <StatusTag mode="fill" variant="blue">
@@ -434,7 +434,7 @@ function ImageScopePopover({
 
   return (
     <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[160px]">
-      {renderBadges()}
+      {renderScopeText()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <button className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors" title="编辑应用范围">
@@ -584,13 +584,13 @@ function OverviewStats({
   return (
     <div className="h-8 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
       <div className="flex items-center gap-2">
-        <span className="text-xs text-[#737373]">Agent 类型</span>
-        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
+        <span className="text-[13px] text-[#737373]">Agent 类型</span>
+        <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
       </div>
       <span className="w-px h-3 bg-[#E5E5E5]" />
       <div className="flex items-center gap-2">
-        <span className="text-xs text-[#737373]">已对用户可见</span>
-        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
+        <span className="text-[13px] text-[#737373]">已对用户可见</span>
+        <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
       </div>
     </div>
   );

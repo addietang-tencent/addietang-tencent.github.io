@@ -2,14 +2,42 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+/* ────────────────────────────────────────────────────────────────────
+ * Table 组件
+ *
+ * 能力：
+ *   1) 密度 density（default | compact）
+ *      Table 组件只负责表格结构与密度；分页器不属于 Table 内部能力。
+ *      约定上，页面级标准表格通常搭配 Pagination 默认尺寸 `size="default"`；
+ *      `size="small"` 更适合 Dialog / Drawer 等空间受限浮层中的表格分页。
+ *
+ *   2) 固定列 / Fixed Columns（参考 Ant Design）
+ *      https://ant.design/components/table-cn#table-demo-fixed-header
+ *      严格使用项目自身的颜色 / 字号 / 交互规范（见 SKILL-GLOBAL-COMPONENTS.md §15）。
+ *
+ *      API：
+ *        - <Table scrollX={1500}> 或 <Table scrollX="max-content">
+ *          → 给容器加最小内宽，超出宽度自动出现横向滚动条；不需要固定列时也可使用。
+ *        - <TableHead fixed="left"> / <TableHead fixed="right">
+ *        - <TableCell fixed="left"> / <TableCell fixed="right">
+ *          → sticky 定位 + 阴影分隔线；
+ *          → 当 row 处于 hover / selected 时，固定单元格底色自动跟随，避免出现"hover 错位"问题。
+ *
+ *      注：
+ *        - 固定列内部默认仍使用项目规范色（白底单元格 / bg-gray-50 表头），
+ *          hover/selected 通过 CSS 群组选择器 (group-hover / group-data-[state=selected]) 实现底色同步。
+ *        - 阴影分隔线根据横向滚动状态显示：最左隐藏 left shadow，最右隐藏 right shadow，无横滚全部隐藏。
+ * ──────────────────────────────────────────────────────────────────── */
+
 type TableDensity = "default" | "compact";
 
-/**
- * Table 组件只负责表格结构与密度。
- * 分页器不属于 Table 内部能力。
- * 约定上，页面级标准表格通常搭配 Pagination 默认尺寸 `size="default"`；
- * `size="small"` 更适合 Dialog / Drawer 等空间受限浮层中的表格分页。
- */
+type FixedSide = "left" | "right";
+
+type TableScrollState = {
+  scrollableX: boolean;
+  scrollLeft: boolean;
+  scrollRight: boolean;
+};
 
 const TableDensityContext = React.createContext<TableDensity>("default");
 
@@ -17,11 +45,27 @@ function useTableDensity() {
   return React.useContext(TableDensityContext);
 }
 
+function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
+  if (!ref) return;
+  if (typeof ref === "function") {
+    ref(value);
+    return;
+  }
+  ref.current = value;
+}
+
 type TableProps = React.ComponentProps<"table"> & {
   containerClassName?: string;
   containerRef?: React.Ref<HTMLDivElement>;
   containerStyle?: React.CSSProperties;
   density?: TableDensity;
+  /**
+   * 与 Ant Design Table 的 scroll.x 一致：
+   *   - 数字：表格最小宽度（px）；超出容器宽度即出现横向滚动条
+   *   - 字符串：直接作为 min-width，例如 "max-content" / "1200px"
+   *   - 不传：表格按原生宽度渲染（默认）
+   */
+  scrollX?: number | string;
 };
 
 function Table({
@@ -30,15 +74,82 @@ function Table({
   containerRef,
   containerStyle,
   density = "default",
+  scrollX,
   ...props
 }: TableProps) {
+  const tableMinWidth =
+    typeof scrollX === "number" ? `${scrollX}px` : scrollX ?? undefined;
+  const containerNodeRef = React.useRef<HTMLDivElement | null>(null);
+  const [scrollState, setScrollState] = React.useState<TableScrollState>({
+    scrollableX: false,
+    scrollLeft: false,
+    scrollRight: false,
+  });
+
+  const setContainerNode = React.useCallback((node: HTMLDivElement | null) => {
+    containerNodeRef.current = node;
+    assignRef(containerRef, node);
+  }, [containerRef]);
+
+  React.useEffect(() => {
+    const el = containerNodeRef.current;
+    if (!el) return;
+
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const maxScrollLeft = Math.max(0, el.scrollWidth - el.clientWidth);
+      const next: TableScrollState = {
+        scrollableX: maxScrollLeft > 1,
+        scrollLeft: el.scrollLeft > 1,
+        scrollRight: el.scrollLeft < maxScrollLeft - 1,
+      };
+
+      setScrollState((prev) => (
+        prev.scrollableX === next.scrollableX &&
+        prev.scrollLeft === next.scrollLeft &&
+        prev.scrollRight === next.scrollRight
+          ? prev
+          : next
+      ));
+    };
+
+    const requestMeasure = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(measure);
+    };
+
+    requestMeasure();
+    el.addEventListener("scroll", requestMeasure, { passive: true });
+    window.addEventListener("resize", requestMeasure);
+
+    const ro = new ResizeObserver(requestMeasure);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      el.removeEventListener("scroll", requestMeasure);
+      window.removeEventListener("resize", requestMeasure);
+      ro.disconnect();
+    };
+  }, [tableMinWidth]);
+
   return (
     <TableDensityContext.Provider value={density}>
       <div
-        ref={containerRef}
+        ref={setContainerNode}
         data-density={density}
         data-slot="table-container"
-        className={cn("relative w-full overflow-x-auto", containerClassName)}
+        data-scrollable-x={scrollState.scrollableX ? "true" : "false"}
+        data-scroll-left={scrollState.scrollLeft ? "true" : "false"}
+        data-scroll-right={scrollState.scrollRight ? "true" : "false"}
+        className={cn(
+          "relative w-full overflow-x-auto",
+          // 横向滚动模式下：滚动条默认隐藏，hover 表格区域或正在滚动时才出现（复用全局 .scrollbar-on-hover 工具类）
+          tableMinWidth && "scrollbar-on-hover",
+          containerClassName
+        )}
         style={containerStyle}
       >
         <table
@@ -47,8 +158,11 @@ function Table({
           className={cn(
             "w-full caption-bottom font-sans leading-[1.5] text-gray-900",
             density === "compact" ? "text-xs" : "text-sm",
+            // 固定列要求 table 不能使用 collapse，否则 sticky 单元格的边框/背景会出现间隙
+            tableMinWidth ? "border-separate border-spacing-0" : "",
             className
           )}
+          style={tableMinWidth ? { minWidth: tableMinWidth } : undefined}
           {...props}
         />
       </div>
@@ -92,12 +206,17 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   );
 }
 
+/* ────────────────────────────────────────────────────────────────────
+ * TableRow
+ * 加 `group` class 是为了让固定单元格通过 group-hover / group-data-[state=selected]
+ * 同步行的 hover / selected 背景色，避免固定列出现"白条不变色"问题。
+ * ──────────────────────────────────────────────────────────────────── */
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "border-b border-gray-200 transition-colors hover:bg-gray-50 data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)]",
+        "group border-b border-gray-200 transition-colors hover:bg-gray-50 data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)]",
         className
       )}
       {...props}
@@ -105,32 +224,97 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
+/* ────────────────────────────────────────────────────────────────────
+ * 固定列样式 token
+ *   - left:  z-index 较高、靠左 sticky；右侧加竖向分隔阴影
+ *   - right: 同上对称；左侧加分隔阴影
+ *
+ *  分隔与阴影使用与 SKILL §15 一致的 token：
+ *    after  → 1px 内嵌分割线 #f0f0f0（仅在对应方向需要 sticky 分隔时显示）
+ *    before → 6px 渐变滚动阴影（仅边界列：fixedShadow !== false，且仅在对应方向需要 sticky 分隔时显示）
+ *
+ *  注：分隔线与阴影根据横向滚动状态显示（left 仅在已向右滚动时出现；right 仅在右侧仍有内容时出现）。
+ *      表头（FIXED_*_CLS）与 body 单元格（FIXED_*_CELL_CLS）的 before/after
+ *      写法必须**完全一致**，否则会出现表头有线、body 有阴影的视觉割裂。
+ *
+ *  多列固定（如复选框列 + 名称列同时 fixed="left"）：
+ *      只在最右侧那个左固定列（或最左侧那个右固定列）保留阴影。
+ *      通过 `fixedShadow={false}` 关闭中间列的阴影。
+ * ──────────────────────────────────────────────────────────────────── */
+const FIXED_BASE = "sticky";
+// 表头固定列：z-50 必须高于业务表头里常见的 `relative z-40`（如带筛选 Popover 的列）以及任何 body cell
+const FIXED_LEFT_CLS = "left-0 z-50 bg-gray-50";
+const FIXED_RIGHT_CLS = "right-0 z-50 bg-gray-50";
+// 边界列的 1px 分隔线 + 6px 滚动阴影（仅 fixedShadow !== false 时附加）
+const FIXED_LEFT_SHADOW_CLS =
+  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100 " +
+  "before:content-[''] before:absolute before:top-0 before:bottom-0 before:right-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_right,rgba(0,0,0,0.06),transparent)] [[data-scroll-left=true]_&]:before:opacity-100";
+const FIXED_RIGHT_SHADOW_CLS =
+  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:left-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100 " +
+  "before:content-[''] before:absolute before:top-0 before:bottom-0 before:left-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_left,rgba(0,0,0,0.06),transparent)] [[data-scroll-right=true]_&]:before:opacity-100";
+
+// body 单元格的固定列样式：白底 + 跟随行 hover/selected
+// z-20 高于普通 body cell（z auto），避免横向滚动时被相邻列内容穿透
+const FIXED_LEFT_CELL_CLS =
+  "left-0 z-20 bg-white " +
+  "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
+const FIXED_RIGHT_CELL_CLS =
+  "right-0 z-20 bg-white " +
+  "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
+// body 边界列的 1px 分隔线 + 6px 滚动阴影
+const FIXED_LEFT_CELL_SHADOW_CLS =
+  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100 " +
+  "before:content-[''] before:absolute before:top-0 before:bottom-[-1px] before:right-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_right,rgba(0,0,0,0.06),transparent)] [[data-scroll-left=true]_&]:before:opacity-100";
+const FIXED_RIGHT_CELL_SHADOW_CLS =
+  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:left-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100 " +
+  "before:content-[''] before:absolute before:top-0 before:bottom-[-1px] before:left-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_left,rgba(0,0,0,0.06),transparent)] [[data-scroll-right=true]_&]:before:opacity-100";
+
 /**
- * TableHead - 表头单元格（强制样式，与 audit-log 页面视觉一致）
+ * TableHead - 表头单元格（强制样式）
  *
  * 强制规范：
  * - 背景色：继承 TableHeader 的 bg-gray-50（#FAFAFA）
  * - 标准版表头：对齐 Typography BodyMedium（14px / Medium / #171717）
  * - 紧凑版表头：对齐 Typography MetaMedium（12px / Medium / #737373）
- * - 标准版行高：h-12；紧凑版行高：h-10
+ * - 表头高度固定：标准版 54px；紧凑版 40px
+ * - 内容行用 table-cell height 作为最小视觉高度：标准版 54px；紧凑版 40px，并保留垂直 padding，复杂内容可自然撑高
  * - 标准版与紧凑版横向内边距统一：px-4（16px）
- * - 紧凑版只收缩纵向空间，不收缩左右贴边安全距离
+ * - 紧凑版只收缩字号与纵向 padding，不收缩左右贴边安全距离
  * - 默认对齐：text-left align-middle，可按列通过 className 覆盖 text-right
  * - 不换行：whitespace-nowrap
  *
- * className 主要用于控制宽度（w-[xx%]）、sticky 定位和必要的列对齐。
+ * 新增：
+ *   - fixed?: "left" | "right"  ── 固定该列；必须配合 <Table scrollX={...}> 使用
+ *   - fixedShadow?: boolean      ── 是否允许边界分隔线 + 滚动阴影，默认 true
+ *     多列同侧固定时（如复选框列 + 名称列同时 fixed="left"），
+ *     仅在最右侧的左固定列（或最左侧的右固定列）保留 true，其余列设 false。
+ *
+ * className 主要用于控制宽度（w-[xx%]）、sticky 偏移和必要的列对齐。
+ * 每列标题和内容必须统一左对齐。
  */
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+type TableHeadProps = React.ComponentProps<"th"> & {
+  fixed?: FixedSide;
+  fixedShadow?: boolean;
+};
+
+function TableHead({ className, fixed, fixedShadow = true, ...props }: TableHeadProps) {
   const density = useTableDensity();
 
   return (
     <th
       data-slot="table-head"
+      data-fixed={fixed}
       className={cn(
         "text-left align-middle font-sans whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         density === "compact"
-          ? "h-10 px-4 text-xs font-medium leading-[1.5] text-gray-500"
-          : "h-12 px-4 text-sm font-medium leading-[1.5] text-gray-900",
+          ? "h-10 px-4 py-0 text-xs font-medium leading-[1.5] text-gray-500"
+          : "h-[54px] px-4 py-0 text-sm font-medium leading-[1.5] text-gray-900",
+        // separate 模式下 <tr> border-b 会失效，由单元格自身补一条下分隔线（仅在 separate 模式下生效）
+        "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
+        fixed === "left" && [FIXED_BASE, FIXED_LEFT_CLS],
+        fixed === "right" && [FIXED_BASE, FIXED_RIGHT_CLS],
+        fixed === "left" && fixedShadow && FIXED_LEFT_SHADOW_CLS,
+        fixed === "right" && fixedShadow && FIXED_RIGHT_SHADOW_CLS,
         className
       )}
       {...props}
@@ -138,15 +322,27 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   );
 }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+type TableCellProps = React.ComponentProps<"td"> & {
+  fixed?: FixedSide;
+  fixedShadow?: boolean;
+};
+
+function TableCell({ className, fixed, fixedShadow = true, ...props }: TableCellProps) {
   const density = useTableDensity();
 
   return (
     <td
       data-slot="table-cell"
+      data-fixed={fixed}
       className={cn(
         "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        density === "compact" ? "px-4 py-[9px] text-xs" : "px-4 py-3 text-sm",
+        density === "compact" ? "h-10 px-4 py-2 text-xs" : "h-[54px] px-4 py-3 text-sm",
+        // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
+        "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
+        fixed === "left" && [FIXED_BASE, FIXED_LEFT_CELL_CLS],
+        fixed === "right" && [FIXED_BASE, FIXED_RIGHT_CELL_CLS],
+        fixed === "left" && fixedShadow && FIXED_LEFT_CELL_SHADOW_CLS,
+        fixed === "right" && fixedShadow && FIXED_RIGHT_CELL_SHADOW_CLS,
         className
       )}
       {...props}
@@ -156,26 +352,76 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
 
 /**
  * TableActionCell - 表格操作列专用单元格
- * 内部按钮强制使用 link-dark 样式（黑色文字按钮）
- * 用法：<TableActionCell>操作按钮...</TableActionCell>
+ *
+ * 业务侧的按钮**必须**显式声明 `variant="link"`（品牌蓝文字按钮）：
+ *   - 因为 Button 默认 variant 是 claw-primary（黑→蓝实心渐变），不显式声明会得到实心按钮
+ *   - 全局 TableActionCell 无法仅通过 className 选择器强制覆盖 Button 自带的 default variant 样式
+ *     （CVA 生成的 class specificity 相同，被业务侧 Button 自带样式胜出）
+ *
+ * 操作列规范（v2026.05）：所有操作按钮（含「删除」等危险操作）统一使用 `variant="link"` 蓝色，
+ *   不再用红色 / 黑色区分语义；语义差异由文案 + 二次确认 Dialog 承载。
+ *   ❌ 禁止再加 `text-red-600` / `text-red-700` / `disabled:text-red-300` 等覆盖。
+ *
+ * 布局：
+ *   - children 自动包裹在 `<div class="flex items-center gap-6">` 中（项间距固定 24px，对齐 Figma 操作列规范）
+ *   - 单元格 padding `px-4`，与 `TableHead` 一致，确保按钮组与表头标题左对齐
+ *   - 若业务有特殊布局需求（如多行、自定义 wrapper），可设 `rawChildren` 关闭自动 flex 容器
+ *
+ * 新增：fixed?: "left" | "right" + fixedShadow?: boolean（同 TableCell）
+ *   - 横向滚动表格中操作列必须 fixed="right"
+ *
+ * 用法：
+ *   <TableActionCell>
+ *     <Button variant="link" onClick={onEdit}>编辑</Button>
+ *     <Button variant="link" onClick={onDelete}>删除</Button>
+ *   </TableActionCell>
  */
-function TableActionCell({ className, ...props }: React.ComponentProps<"td">) {
+type TableActionCellProps = React.ComponentProps<"td"> & {
+  fixed?: FixedSide;
+  fixedShadow?: boolean;
+  /** 关闭内置 flex wrapper，直接渲染 children（默认 false） */
+  rawChildren?: boolean;
+  /** 内置 flex wrapper 的额外 className（如 h-5 / whitespace-nowrap） */
+  actionsClassName?: string;
+};
+
+function TableActionCell({
+  className,
+  fixed,
+  fixedShadow = true,
+  rawChildren = false,
+  actionsClassName,
+  children,
+  ...props
+}: TableActionCellProps) {
   const density = useTableDensity();
 
   return (
     <td
       data-slot="table-action-cell"
+      data-fixed={fixed}
       className={cn(
         "align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0",
-        density === "compact" ? "px-4 py-[9px] text-xs" : "px-4 py-3 text-sm",
-        "[&_[data-slot=button]]:text-[#020617] [&_[data-slot=button]]:font-normal [&_[data-slot=button]]:underline-offset-4 [&_[data-slot=button]]:bg-transparent [&_[data-slot=button]]:border-0 [&_[data-slot=button]]:shadow-none [&_[data-slot=button]]:p-0 [&_[data-slot=button]]:h-auto",
-        "[&_[data-slot=button]:hover]:text-[#525252] [&_[data-slot=button]:hover]:bg-transparent",
-        "[&_[data-slot=button]:active]:text-[#020617] [&_[data-slot=button]:active]:underline",
-        "[&_[data-slot=button]:disabled]:text-[rgba(2,6,23,0.3)] [&_[data-slot=button]:disabled]:no-underline",
+        density === "compact" ? "h-10 px-4 py-2 text-xs" : "h-[54px] px-4 py-3 text-sm",
+        // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
+        "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
+        fixed === "left" && [FIXED_BASE, FIXED_LEFT_CELL_CLS],
+        fixed === "right" && [FIXED_BASE, FIXED_RIGHT_CELL_CLS],
+        fixed === "left" && fixedShadow && FIXED_LEFT_CELL_SHADOW_CLS,
+        fixed === "right" && fixedShadow && FIXED_RIGHT_CELL_SHADOW_CLS,
         className
       )}
       {...props}
-    />
+    >
+      {rawChildren ? (
+        children
+      ) : (
+        // 内置 flex 容器：项间距固定 24px (gap-6)，与 Figma 操作列规范对齐
+        <div className={cn("flex items-center gap-6 whitespace-nowrap", actionsClassName)}>
+          {children}
+        </div>
+      )}
+    </td>
   );
 }
 

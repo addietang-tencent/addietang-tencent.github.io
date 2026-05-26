@@ -98,7 +98,8 @@ const buttonVariants = cva(
           "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
           "disabled:bg-white disabled:border-[#e4e4e4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
         link:
-          "text-[#355EF1] font-normal underline-offset-4 " +
+          // link 形态：无 padding 无高度，直接作为内联文字渲染（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
+          "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-[#355EF1] font-normal underline-offset-4 " +
           "hover:underline " +
           "active:text-[#0a226f] " +
           "disabled:text-[rgba(20,71,230,0.4)] disabled:opacity-100 disabled:no-underline",
@@ -111,7 +112,8 @@ const buttonVariants = cva(
          * - disabled: rgba(2,6,23,0.3) 字色
          */
         "link-dark":
-          "text-[#020617] font-normal underline-offset-4 " +
+          // link 形态：无 padding 无高度（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
+          "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-[#020617] font-normal underline-offset-4 " +
           "hover:text-[#525252] " +
           "active:text-[#020617] active:underline " +
           "disabled:text-[rgba(2,6,23,0.3)] disabled:no-underline disabled:opacity-100",

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 
 import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -174,17 +175,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   const scopeDropdownRef = useRef<HTMLDivElement>(null);
   // 保存编辑弹窗打开前的滚动位置（含表格水平滚动），关闭后恢复
   const scrollPositionRef = useRef<{ x: number; y: number; tableScrollLeft?: number } | null>(null);
-  // 表格水平滚动容器 ref
+  // 表格水平滚动容器 ref（用于保存/恢复滚动位置）
   const tableScrollRef = useRef<HTMLDivElement>(null);
-  // 名称列右侧投影：仅在横向滚动 > 0 时显示
-  const [isTableScrolled, setIsTableScrolled] = useState(false);
-  useEffect(() => {
-    const el = tableScrollRef.current;
-    if (!el) return;
-    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [viewMode]);
 
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
@@ -1087,40 +1079,25 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky left-0 z-10 relative"
-                    style={{ width: '180px', minWidth: '180px' }}
-                  >
-                    名称/Slug
-                    {isTableScrolled && (
-                      <>
-                        <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-                        <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
-                      </>
-                    )}
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 tracking-wide" style={{ width: '150px', minWidth: '150px' }}>状态/下发动态</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '80px', minWidth: '80px' }}>版本号</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '370px', minWidth: '370px' }}>描述</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>分类</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '200px', minWidth: '200px' }}>应用范围</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" style={{ width: '120px', minWidth: '120px' }}>最后更新</th>
-                  <th
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide bg-gray-50 sticky right-0 z-20 relative"
-                    style={{ width: '220px', minWidth: '220px' }}
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
-                    <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
-                    操作
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+        <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+          <Table containerRef={tableScrollRef} scrollX={1500}>
+            <TableHeader>
+              <TableRow>
+                <TableHead fixed="left" className="w-[260px]" style={{ width: 260 }}>
+                  技能信息
+                </TableHead>
+                <TableHead className="w-[170px]" style={{ width: 170 }}>状态 / 下发</TableHead>
+                <TableHead className="w-[110px]" style={{ width: 110 }}>版本</TableHead>
+                <TableHead className="w-[360px]" style={{ width: 360 }}>描述</TableHead>
+                <TableHead className="w-[210px]" style={{ width: 210 }}>分类</TableHead>
+                <TableHead className="w-[190px]" style={{ width: 190 }}>应用范围</TableHead>
+                <TableHead className="w-[130px]" style={{ width: 130 }}>最后更新</TableHead>
+                <TableHead fixed="right" className="w-[210px]" style={{ width: 210 }}>
+                  操作
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
                 {sortedSkills.map(skill => {
                   const summary = distributionSummaries[skill.id];
                   const distributing = isDistributing(skill.id);
@@ -1167,115 +1144,105 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   }
 
                   return (
-                    <tr
+                    <TableRow
                       key={skill.id}
                       onClick={() => handleViewDetail(skill.id)}
-                      className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group"
+                      className="hover:bg-[#FAFAFA] cursor-pointer transition-colors group"
                     >
-                      {/* 名称 / Slug — 固定左侧 */}
-                      <td
-                        className="px-4 py-3 bg-white sticky left-0 z-10 group-hover:bg-gray-50 transition-colors relative"
-                        style={{ minWidth: '180px', maxWidth: '260px' }}
+                      {/* 技能信息 — 固定左侧 */}
+                      <TableCell
+                        fixed="left"
+                        className="align-top"
+                        style={{ width: 260 }}
                       >
-                        {isTableScrolled && (
-                          <>
-                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
-                          </>
-                        )}
-                        <div className="flex items-center gap-1.5">
-                          <OverflowTooltip content={skill.name}>
-                            <div className="font-medium text-gray-900 truncate max-w-[200px]">{skill.name}</div>
-                          </OverflowTooltip>
-                          {/* 安全检测小图标：所有状态都显示 */}
-                          {(() => {
-                            const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-                            if (secStatus === 'not_scanned') {
+                        <div className="space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <OverflowTooltip content={skill.name}>
+                                <div className="font-medium text-[#0A0A0A] truncate max-w-[180px]">{skill.name}</div>
+                              </OverflowTooltip>
+                              <OverflowTooltip content={skill.slug}>
+                                <div className="text-xs text-[#737373] font-mono mt-0.5 truncate max-w-[190px]">{skill.slug}</div>
+                              </OverflowTooltip>
+                            </div>
+                            {(() => {
+                              const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                              const statusMeta = secStatus === 'not_scanned'
+                                ? { label: '未检测', Icon: ShieldCheck, className: 'bg-[#F5F5F5] text-[#737373]' }
+                                : secStatus === 'scanning'
+                                  ? { label: '检测中', Icon: Loader, className: 'bg-blue-50 text-[#355EF1]' }
+                                  : {
+                                      label: SECURITY_STATUS_MAP[secStatus].label,
+                                      Icon: secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX,
+                                      className: secStatus === 'safe'
+                                        ? 'bg-green-50 text-green-600'
+                                        : secStatus === 'suspicious'
+                                          ? 'bg-yellow-50 text-yellow-600'
+                                          : 'bg-red-50 text-red-600',
+                                    };
+                              const IconComp = statusMeta.Icon;
                               return (
                                 <Tooltip delayDuration={300}>
                                   <TooltipTrigger asChild>
-                                    <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                      <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
-                                    </span>
+                                    <button
+                                      type="button"
+                                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${statusMeta.className}`}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDefaultTabForDetail('overview');
+                                        setSelectedSkillId(skill.id);
+                                      }}
+                                    >
+                                      <IconComp className={`w-3 h-3 ${secStatus === 'scanning' ? 'animate-spin' : ''}`} />
+                                      {statusMeta.label}
+                                    </button>
                                   </TooltipTrigger>
                                   <TooltipContent side="top">
-                                    <span className="text-xs">未检测</span>
+                                    <span className="text-xs">安全检测：{statusMeta.label}</span>
                                   </TooltipContent>
                                 </Tooltip>
                               );
-                            }
-                            if (secStatus === 'scanning') {
-                              return (
-                                <Tooltip delayDuration={300}>
-                                  <TooltipTrigger asChild>
-                                    <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                      <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">
-                                    <span className="text-xs">安全检测中</span>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            }
-                            const statusInfo = SECURITY_STATUS_MAP[secStatus];
-                            const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                            return (
-                              <Tooltip delayDuration={300}>
-                                <TooltipTrigger asChild>
-                                  <span
-                                    className="inline-flex flex-shrink-0 cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setDefaultTabForDetail('overview');
-                                      setSelectedSkillId(skill.id);
-                                    }}
-                                  >
-                                    <IconComp className={`w-3.5 h-3.5 ${statusInfo.color}`} />
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                  <span className="text-xs">安全检测：{statusInfo.label}</span>
-                                </TooltipContent>
-                              </Tooltip>
-                            );
-                          })()}
+                            })()}
+                          </div>
                         </div>
-                        <OverflowTooltip content={skill.slug}>
-                          <div className="text-xs text-gray-400 font-mono mt-0.5 truncate max-w-[220px]">{skill.slug}</div>
-                        </OverflowTooltip>
-                      </td>
+                      </TableCell>
                       {/* 状态/最近下发进度 */}
-                      <td className="px-4 py-3" style={{ minWidth: '150px' }}>
-                        <div className={`text-sm font-medium ${statusLine1Color}`}>{statusLine1}</div>
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (hasDistribution) {
-                              setDefaultTabForDetail('distribution');
-                              setSelectedSkillId(skill.id);
+                      <TableCell className="align-top">
+                        <div className="space-y-1.5">
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusLine1Color} bg-[#F5F5F5]`}>
+                            {statusLine1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (hasDistribution) {
+                                setDefaultTabForDetail('distribution');
+                                setSelectedSkillId(skill.id);
+                              }
+                            }}
+                            className={hasDistribution
+                              ? `block max-w-[150px] truncate rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
+                              : `block text-xs ${statusLine2Color}`
                             }
-                          }}
-                          className={hasDistribution
-                            ? `inline-flex items-center px-1.5 py-0.5 mt-0.5 rounded-full text-xs font-medium cursor-pointer transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
-                            : `text-xs mt-0.5 ${statusLine2Color}`
-                          }
-                        >
-                          {statusLine2}
+                            title={statusLine2}
+                          >
+                            {statusLine2}
+                          </button>
                         </div>
-                      </td>
+                      </TableCell>
                       {/* 版本号 */}
-                      <td className="px-4 py-3" style={{ minWidth: '80px' }}>
-                        <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                      <TableCell className="align-top">
+                        <span className="inline-flex items-center rounded-full bg-[#F5F5F5] px-2.5 py-0.5 text-xs font-medium text-[#334155] font-mono">
                           v{skill.version}
                         </span>
-                      </td>
+                      </TableCell>
                       {/* 描述 */}
-                      <td className="px-4 py-3" style={{ minWidth: '370px', maxWidth: '370px', overflow: 'hidden' }}>
+                      <TableCell className="align-top" style={{ width: 360, overflow: 'hidden' }}>
                         <Tooltip delayDuration={1000}>
                           <TooltipTrigger asChild>
                             <span
-                              className="text-sm text-gray-600 cursor-default block"
+                              className="block cursor-default text-sm leading-relaxed text-[#334155]"
                               style={{
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
@@ -1292,9 +1259,9 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                             </TooltipContent>
                           )}
                         </Tooltip>
-                      </td>
+                      </TableCell>
                       {/* 分类 — 灰色胶囊标签，最多两行，超出 +N，hover显示全部 */}
-                      <td className="px-4 py-3" style={{ minWidth: '200px' }} onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
                         {(() => {
                           const maxVisible = 3;
                           const total = skill.categories.length;
@@ -1303,14 +1270,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           return (
                             <div className="flex items-center gap-1 flex-wrap" style={{ maxHeight: '52px', overflow: 'hidden' }}>
                               {visible.map((catId: string) => (
-                                <span key={catId} className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap">
+                                <span key={catId} className="inline-flex items-center rounded-[2px] bg-[#F5F5F5] px-2 py-0.5 text-xs text-[#334155] whitespace-nowrap">
                                   {getCategoryName(catId)}
                                 </span>
                               ))}
                               {overflow > 0 && (
                                 <Tooltip delayDuration={300}>
                                     <TooltipTrigger asChild>
-                                      <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
+                                      <span className="inline-flex items-center rounded-[2px] bg-[#F5F5F5] px-2 py-0.5 text-xs text-[#737373] cursor-default hover:bg-[#E5E5E5] transition-colors whitespace-nowrap">
                                         +{overflow}
                                       </span>
                                     </TooltipTrigger>
@@ -1343,9 +1310,9 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                             </div>
                           );
                         })()}
-                      </td>
+                      </TableCell>
                       {/* 应用范围 — 使用 Popover 编辑 */}
-                      <td className="px-4 py-3" style={{ minWidth: '140px' }} onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
                         <EditScopePopover
                           groups={MOCK_GROUPS}
                           currentScope={skill.scope || 'public'}
@@ -1359,48 +1326,47 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                             toast.success('应用范围修改成功');
                           }}
                         />
-                      </td>
+                      </TableCell>
                       {/* 最后更新时间 */}
-                      <td className="px-4 py-3" style={{ minWidth: '120px' }}>
-                        <span className="text-sm text-gray-500">
+                      <TableCell className="align-top">
+                        <span className="text-sm text-[#737373] tabular-nums">
                           {skill.uploadTime.toLocaleDateString('zh-CN')}
                         </span>
-                      </td>
+                      </TableCell>
                       {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
-                      <td
-                        className="px-4 py-3 bg-white sticky right-0 z-20 group-hover:bg-gray-50 transition-colors relative"
-                        style={{ minWidth: '220px' }}
+                      <TableCell
+                        fixed="right"
+                        className="align-top"
+                        style={{ width: 210 }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
-                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-1">
                           {/* 下发按钮 */}
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant="claw-outline"
+                            size="claw-sm"
                             onClick={() => handleDistribute(skill.id)}
                             disabled={distributing}
-                            className={`h-7 text-xs min-w-[62px] ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`h-7 min-w-[62px] px-3 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
-                            <Send className="w-3 h-3 mr-1" />
+                            <Send className="w-3 h-3" />
                             {distributing ? (summary?.lastDistributionStatus === ('deleting' as any) ? '卸载中' : '下发中') : '下发'}
                           </Button>
                           {/* 更新按钮 */}
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant="claw-outline"
+                            size="claw-sm"
                             onClick={() => handleUpdate(skill.id)}
                             disabled={distributing}
-                            className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`h-7 px-3 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
                           >
-                            <Pencil className="w-3 h-3 mr-1" />
+                            <Pencil className="w-3 h-3" />
                             更新
                           </Button>
                           {/* 更多下拉：安全检测 / 下载 / 删除 */}
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" className="h-7 w-7 p-0">
+                              <Button variant="claw-outline" size="claw-square" className="h-7 w-7 p-0" aria-label="更多操作">
                                 <MoreHorizontal className="w-3.5 h-3.5" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -1437,13 +1403,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
         </div>
       )}
 

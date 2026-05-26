@@ -7,7 +7,7 @@
  *   - 「镜像」列复合：镜像类型标签 + 名称 + 切换按钮（h-6 icon+「切换」，与「版本更新记录」同尺寸）+ ID + 导入时间 + 状态徽章
  *   - 「Agent 版本」列：版本号 + 维护方标签；公共版本带 📜 版本更新记录入口
  *   - 「应用范围」列：每类型一个 Popover，决定该类型的镜像对哪些用户可见
- *   - 「操作」列：「推送新版本 / 设为首选 / 删除」三枚文字按钮（link-dark）；不可执行时禁用并 Tooltip 提示原因
+ *   - 「操作」列：「推送新版本 / 设为首选 / 删除」三枚文字按钮（link 蓝色文字）；不可执行时禁用并 Tooltip 提示原因
  *     · 推送新版本：未选择镜像 / 用户不可见 / 全员已最新 → 禁用
  *     · 设为首选：已是首选 / 尚未选择镜像 → 禁用
  *     · 删除：系统预设类型 → 禁用
@@ -20,7 +20,7 @@
  *  - TableHeader bg-[#fafafa]、TableHead h-[54px] 14px/semibold/#09090b
  *  - TableRow 内置 hover:bg-[#fafafa] 和 border-b border-[#f0f0f0]
  *  - 「切换」与「版本更新记录」同款入口：h-6 圆角白底灰边 + icon + 文字
- *  - 「设为首选 / 删除」使用 Button variant="link-dark"（文字按钮，删除态用红色）
+ *  - 操作列使用 Button variant="link"（统一品牌蓝文字按钮，删除不再用红色覆盖）
  *
  * 注意：本表已剔除「配置功能脚本」相关入口，自研内核（native）类型不再有该按钮
  */
@@ -110,17 +110,17 @@ export default function AgentTypesTable({
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-      <Table className="table-auto">
+      <Table className="table-auto" scrollX={1280}>
         <TableHeader>
           <TableRow>
-            <TableHead style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
+            <TableHead fixed="left" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
               Agent 类型
             </TableHead>
             <TableHead style={{ minWidth: 220 }}>镜像</TableHead>
             <TableHead style={{ minWidth: 170 }}>版本</TableHead>
             <TableHead style={{ minWidth: 160 }}>应用范围</TableHead>
             <TableHead style={{ minWidth: 100 }}>用户可见</TableHead>
-            <TableHead style={{ minWidth: 220, width: "1%" }}>操作</TableHead>
+            <TableHead fixed="right" style={{ minWidth: 220, width: "1%" }}>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -209,6 +209,7 @@ function AgentTypeRow({
     >
       {/* 1. Agent 类型 */}
       <TableCell
+        fixed="left"
         className="py-4 align-top whitespace-normal"
         style={{ width: 300, minWidth: 300, maxWidth: 300 }}
       >
@@ -327,7 +328,7 @@ function AgentTypeRow({
       </TableCell>
 
       {/* 6. 操作：「推送新版本 / 设为首选 / 删除」三枚文字按钮（条件不满足时禁用） */}
-      <TableActionCell className="py-4 align-top">
+      <TableActionCell fixed="right" className="py-4 align-top" rawChildren>
         <div className="flex items-center gap-4">
           {/* 推送新版本 — 未启用镜像 / 全员已是最新 时禁用并提示 */}
           <span className="inline-flex shrink-0 justify-start">
@@ -345,7 +346,7 @@ function AgentTypeRow({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex">
-                      <Button variant="link-dark" size="sm" disabled className="!px-0 justify-start w-auto">
+                      <Button variant="link" size="sm" disabled className="!px-0 justify-start w-auto">
                         推送新版本
                       </Button>
                     </span>
@@ -360,7 +361,7 @@ function AgentTypeRow({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="link-dark"
+                    variant="link"
                     size="sm"
                     onClick={onPushUpgrade}
                     className="!px-0 justify-start w-auto"
@@ -391,7 +392,7 @@ function AgentTypeRow({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex">
-                      <Button variant="link-dark" size="sm" disabled>
+                      <Button variant="link" size="sm" disabled>
                         设为首选
                       </Button>
                     </span>
@@ -404,7 +405,7 @@ function AgentTypeRow({
             }
             return (
               <Button
-                variant="link-dark"
+                variant="link"
                 size="sm"
                 onClick={onSetDefaultType}
               >
@@ -418,10 +419,10 @@ function AgentTypeRow({
           <span className="inline-flex shrink-0">
           {isCustom ? (
             <Button
-              variant="link-dark"
+              variant="link"
               size="sm"
               onClick={onRemoveCustomType}
-              className="text-red-600 hover:text-red-700"
+              
             >
               删除
             </Button>
@@ -430,10 +431,10 @@ function AgentTypeRow({
               <TooltipTrigger asChild>
                 <span className="inline-flex">
                   <Button
-                    variant="link-dark"
+                    variant="link"
                     size="sm"
                     disabled
-                    className="disabled:text-red-300"
+                    
                   >
                     删除
                   </Button>

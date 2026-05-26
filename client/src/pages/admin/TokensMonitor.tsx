@@ -1726,10 +1726,10 @@ export default function TokensMonitor() {
               </div>
               <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
                >
-                <Table>
+                <Table scrollX={1400}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>会话</TableHead>
+                      <TableHead fixed="left">会话</TableHead>
                       <TableHead>渠道</TableHead>
                       <TableHead>模型</TableHead>
                       <TableHead>最后活动时间</TableHead>
@@ -1737,7 +1737,7 @@ export default function TokensMonitor() {
                       <TableHead>TOKENS</TableHead>
                       <TableHead>成本</TableHead>
                       <TableHead>耗时</TableHead>
-                      <TableHead>操作</TableHead>
+                      <TableHead fixed="right">操作</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1746,7 +1746,7 @@ export default function TokensMonitor() {
                     ) : sessionPaged.map((s) => {
                       return (
                       <TableRow key={s.sessionId} className="cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
-                        <TableCell>
+                        <TableCell fixed="left">
                           <div className="text-sm text-[#525252]">{s.sessionName}</div>
                           <div className="text-xs text-[#A3A3A3] font-mono mt-0.5">{s.sessionId}</div>
                         </TableCell>
@@ -1757,7 +1757,7 @@ export default function TokensMonitor() {
                         <TableCell className="text-sm text-[#737373] font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
                         <TableCell className="text-sm text-[#737373] font-mono">${s.cost.toFixed(4)}</TableCell>
                         <TableCell className="text-sm text-[#737373]">{s.duration}</TableCell>
-                        <TableCell>
+                        <TableCell fixed="right">
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();

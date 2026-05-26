@@ -71,6 +71,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { StatusTag } from "@/components/ui/status-tag";
+import { AllUsersTag } from "@/components/ui/all-users-tag";
 import {
   MOCK_ROLES,
 } from "@/lib/mockData";
@@ -737,7 +738,7 @@ function RoleAddEnterpriseSkillDialog({
           {!isAlreadyAdded && (
             <div className="flex items-center gap-1 shrink-0">
               {isPublicScope ? (
-                <StatusTag mode="fill" variant="blue">全部用户</StatusTag>
+                <AllUsersTag />
               ) : (
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>

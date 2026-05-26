@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { StatusTag } from '@/components/ui/status-tag';
+import { AllUsersTag } from '@/components/ui/all-users-tag';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -319,7 +320,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           {/* 应用范围标签 - 右上角 */}
           <div className="flex items-center gap-1 shrink-0">
             {isPublicScope ? (
-              <StatusTag mode="fill" variant="blue">全部用户</StatusTag>
+              <AllUsersTag />
             ) : (
               <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>

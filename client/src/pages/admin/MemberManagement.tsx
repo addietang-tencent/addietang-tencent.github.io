@@ -3656,21 +3656,29 @@ export default function MemberManagement() {
             <DialogTitle>启用用户</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-[#737373]">用户 ID</span>
-              <span className="text-sm font-medium text-[#09090b]">{enableConfirmDialog?.memberId}</span>
-            </div>
-            <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
-              <span className="text-sm text-[#737373]">名下 Agent 数量</span>
-              <span className="text-sm font-semibold text-gray-800">{enableConfirmDialog?.clawCount ?? 0} 个</span>
-            </div>
-            <div className="rounded-[4px] bg-green-50 border border-green-300 px-4 py-3 text-sm text-green-700 space-y-2">
-              <p className="font-medium">启用后将产生以下影响：</p>
-              <ul className="space-y-1 list-disc list-inside">
-                <li>该用户可以<span className="font-semibold">继续登录</span>用户端</li>
-                <li>名下所有 Agent 云服务器将<span className="font-semibold">开机</span>，恢复运行</li>
-                <li>用户可以<span className="font-semibold">恢复与 Agent 机器人对话</span></li>
-              </ul>
+            {/* 启用影响说明 — 蓝色 Alert（放在卡片上方） */}
+            <Alert variant="info">
+              <AlertInfoIcon />
+              <AlertTitle>启用后将产生以下影响</AlertTitle>
+              <AlertDescription>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>该用户可以<span className="font-semibold">继续登录</span>用户端</li>
+                  <li>名下所有 Agent 云服务器将<span className="font-semibold">开机</span>，恢复运行</li>
+                  <li>用户可以<span className="font-semibold">恢复与 Agent 机器人对话</span></li>
+                </ul>
+              </AlertDescription>
+            </Alert>
+
+            {/* 用户 ID + 名下 Agent 数量 — 合并为一张卡片，内部用分隔线区分 */}
+            <div className="rounded-[4px] bg-white border border-[#e5e5e5] divide-y divide-[#e5e5e5]">
+              <div className="px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-[#737373]">用户 ID</span>
+                <span className="text-sm font-medium text-[#09090b]">{enableConfirmDialog?.memberId}</span>
+              </div>
+              <div className="px-4 py-3 flex items-center justify-between">
+                <span className="text-sm text-[#737373]">名下 Agent 数量</span>
+                <span className="text-sm font-semibold text-gray-800">{enableConfirmDialog?.clawCount ?? 0} 个</span>
+              </div>
             </div>
           </div>
           <DialogFooter>

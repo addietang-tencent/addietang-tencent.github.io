@@ -31,7 +31,7 @@ import {
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { toast } from "sonner";
 import { Plus, Trash2, ChevronDown, ChevronRight, AlertCircle, X } from "lucide-react";
-import { ScopePopover } from "@/components/ScopePopover";
+import { ScopeEditPopover } from "@/components/ScopeEditPopover";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import {
@@ -327,11 +327,11 @@ export default function ChannelConfig() {
                     />
                   </div>
                   <div className="w-px h-4 bg-gray-200" />
-                  <ScopePopover
-                    visibilityScope={builtinScopes[ch.id]?.scope || "all"}
-                    visibilityGroupIds={builtinScopes[ch.id]?.groupIds || []}
+                  <ScopeEditPopover
+                    scope={builtinScopes[ch.id]?.scope || "all"}
+                    selectedGroupIds={builtinScopes[ch.id]?.groupIds || []}
                     groups={ALL_GROUPS}
-                    onSave={(scope, groupIds) => {
+                    onConfirm={(scope, groupIds) => {
                       setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
                     }}
                   />
@@ -418,11 +418,11 @@ export default function ChannelConfig() {
                         onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
                       />
                       <div className="w-px h-4 bg-gray-200" />
-                      <ScopePopover
-                        visibilityScope={customScopes[ch.id]?.scope || "all"}
-                        visibilityGroupIds={customScopes[ch.id]?.groupIds || []}
+                      <ScopeEditPopover
+                        scope={customScopes[ch.id]?.scope || "all"}
+                        selectedGroupIds={customScopes[ch.id]?.groupIds || []}
                         groups={ALL_GROUPS}
-                        onSave={(scope, groupIds) => {
+                        onConfirm={(scope, groupIds) => {
                           setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
                         }}
                       />
@@ -640,7 +640,7 @@ export default function ChannelConfig() {
             </section>
           </DialogBody>
 
-          <DialogFooter>
+          <DialogFooter className="items-center">
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               取消
             </Button>

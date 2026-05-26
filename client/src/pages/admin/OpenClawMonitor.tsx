@@ -59,7 +59,7 @@ import {
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
   MessageCircle, RotateCw, Check, ArrowLeftRight, CircleArrowUp, Tag, Info,
-  Pencil, Plus, Bell, CircleAlert,
+  Pencil, Plus, Minus, CircleAlert,
   TerminalSquare, ListChecks, History as HistoryIcon,
 } from "lucide-react";
 import {
@@ -80,10 +80,7 @@ import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
-import BatchUpdateNotice, {
-  useOutdatedTypes,
-  HasOutdatedIndicator,
-} from "./BatchUpdateNotice";
+import NewVersionPushNotice from "./ImageManagement/NewVersionPushNotice";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -773,6 +770,8 @@ export default function AgentMonitor() {
   const [reinstallTarget, setReinstallTarget] = useState<string | null>(null);
   const [reinstallInput, setReinstallInput] = useState("");
   const [deleteInput, setDeleteInput] = useState("");
+  const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false);
+  const [batchDeleteInput, setBatchDeleteInput] = useState("");
 
   // 批量更新
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -789,7 +788,7 @@ export default function AgentMonitor() {
   // 配置默认标签
   interface TencentTag { key: string; value: string; }
   // 标签键 -> 可选值列表（模拟腾讯云标签库）
-  const DEMO_TAG_KEY_VALUES: Record<string, string[]> = {
+  const tagKeyValues: Record<string, string[]> = {
     'qcs:tag:thpc:node:creator':      ['alice', 'bob', 'charlie'],
     'qcs:tag:thpc:node:clusterId':    ['cluster-001', 'cluster-002'],
     'qcs:tag:thpc:node:nodeId':       ['node-a1', 'node-b2', 'node-c3'],
@@ -803,18 +802,16 @@ export default function AgentMonitor() {
     '负责人':                          ['alice', 'bob', 'charlie'],
     '业务线':                          ['AI', 'Platform', 'Infra'],
   };
-  const DEMO_TAG_KEYS = Object.keys(DEMO_TAG_KEY_VALUES);
+  const tagKeys = Object.keys(tagKeyValues);
   const [showTagConfigDialog, setShowTagConfigDialog] = useState(false);
   // 已确认的标签列表（key-value 对）
   const [selectedTags, setSelectedTags] = useState<TencentTag[]>([]);
-  // 弹窗内临时状态
-  const [pendingTags, setPendingTags] = useState<TencentTag[]>([]);
-  // 添加标签行的临时选择
-  const [addingKey, setAddingKey] = useState('');
-  const [addingValue, setAddingValue] = useState('');
-  const [keySearchText, setKeySearchText] = useState('');
-  const [keyDropdownOpen, setKeyDropdownOpen] = useState(false);
-  const [valueDropdownOpen, setValueDropdownOpen] = useState(false);
+  // 弹窗内编辑行（每行 key/value 可独立设置）
+  const [editingTagRows, setEditingTagRows] = useState<TencentTag[]>([{ key: '', value: '' }]);
+  // 各行下拉框搜索/开关状态（key 为行索引）
+  const [tagKeySearchByRow, setTagKeySearchByRow] = useState<Record<number, string>>({});
+  const [tagKeyDropdownOpenByRow, setTagKeyDropdownOpenByRow] = useState<Record<number, boolean>>({});
+  const [tagValueDropdownOpenByRow, setTagValueDropdownOpenByRow] = useState<Record<number, boolean>>({});
 
 
   // 版本列筛选
@@ -1768,7 +1765,7 @@ export default function AgentMonitor() {
         </div>
 
         {/* 状态统计卡片 */}
-        <div className="grid grid-cols-4 gap-5 mb-16">
+        <div className="grid grid-cols-4 gap-5 mb-6">
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
@@ -1896,12 +1893,8 @@ export default function AgentMonitor() {
                   <Button
                     onClick={() => {
                       if (selectedCount > 0 && !batchDeleteDisabled) {
-                        const names = selectedClaws.map(c => c.name).join("、");
-                        if (window.confirm(`确认删除选中的 ${selectedCount} 个实例？\n\n${names}\n\n删除后无法恢复。`)) {
-                          setClaws(prev => prev.filter(c => !selectedIds.has(c.id)));
-                          setSelectedIds(new Set());
-                          toast.success(`已删除 ${selectedCount} 个实例`);
-                        }
+                        setBatchDeleteInput("");
+                        setShowBatchDeleteDialog(true);
                       }
                     }}
                     disabled={batchDeleteDisabled}
@@ -2002,7 +1995,14 @@ export default function AgentMonitor() {
             <Button
               variant="claw-outline"
               size="claw"
-              onClick={() => { setPendingTags([...selectedTags]); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setShowTagConfigDialog(true); }}
+              onClick={() => {
+                // 已有标签 → 加载为编辑行；无标签 → 一行空白
+                setEditingTagRows(selectedTags.length > 0 ? [...selectedTags] : [{ key: '', value: '' }]);
+                setTagKeySearchByRow({});
+                setTagKeyDropdownOpenByRow({});
+                setTagValueDropdownOpenByRow({});
+                setShowTagConfigDialog(true);
+              }}
               className="px-3 gap-1.5"
             >
               <Tag className="w-3.5 h-3.5" />
@@ -2503,91 +2503,272 @@ export default function AgentMonitor() {
       </div>
 
       {/* 关机/开机确认弹窗 */}
-      <Dialog open={!!shutdownTarget} onOpenChange={() => setShutdownTarget(null)}>
-        <DialogContent className="sm:max-w-[360px]">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-[#0A0A0A]">
-              {claws.find(c => c.id === shutdownTarget)?.status === "running" ? "确认关机" : "确认开机"}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-[#737373] leading-relaxed">
-            {claws.find(c => c.id === shutdownTarget)?.status === "running"
-              ? <>关机后该 Agent「{claws.find(c => c.id === shutdownTarget)?.name}」将无法使用，直到重新开机。确认关机吗？</>
-              : <>开机后该 Agent「{claws.find(c => c.id === shutdownTarget)?.name}」将重新运行。确认开机吗？</>}
-          </p>
-          <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => setShutdownTarget(null)}>取消</Button>
-            {claws.find(c => c.id === shutdownTarget)?.status === "running"
-              ? <Button variant="dialog-confirm" onClick={confirmShutdown}>确认关机</Button>
-              : <Button variant="dialog-confirm" onClick={confirmShutdown}>确认开机</Button>}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {(() => {
+        const target = claws.find(c => c.id === shutdownTarget);
+        const isRunning = target?.status === "running";
 
-      {/* 重新安装确认弹窗 */}
-      <Dialog open={!!reinstallTarget} onOpenChange={() => setReinstallTarget(null)}>
-        <DialogContent className="sm:max-w-[360px]">
-          <DialogHeader>
-            <DialogTitle className="text-base font-bold text-[#0A0A0A]">确认重新安装</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-[#737373] leading-relaxed">
-            将使用最新镜像重新安装「{claws.find(c => c.id === reinstallTarget)?.name}」，清除当前所有配置且无法恢复，安装完成后需重新配置模型和通道。
-          </p>
-          <div>
-            <label className="text-sm font-medium text-[#334155]">请输入「重装」以确认</label>
+        // 关机 → 警示弹窗（AlertDialog）
+        if (isRunning) {
+          return (
+            <AlertDialog open={!!shutdownTarget} onOpenChange={() => setShutdownTarget(null)}>
+              <AlertDialogContent className="sm:max-w-[420px]">
+                <button
+                  type="button"
+                  aria-label="关闭"
+                  onClick={() => setShutdownTarget(null)}
+                  className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+                >
+                  <X className="size-5" />
+                  <span className="sr-only">关闭</span>
+                </button>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-[#0A0A0A]">确认关机</AlertDialogTitle>
+                  <AlertDialogDescription asChild>
+                    <p className="text-sm text-[#525252]">
+                      关机后该 Agent「{target?.name}」
+                      <span className="text-[#DC2626] font-medium">将无法使用，直到重新开机</span>
+                      。确认关机吗？
+                    </p>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setShutdownTarget(null)}>取消</AlertDialogCancel>
+                  <AlertDialogAction onClick={confirmShutdown}>确认关机</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          );
+        }
+
+        // 开机 → 普通弹窗
+        return (
+          <Dialog open={!!shutdownTarget} onOpenChange={() => setShutdownTarget(null)}>
+            <DialogContent className="sm:max-w-[360px]">
+              <DialogHeader>
+                <DialogTitle className="text-base font-bold text-[#0A0A0A]">
+                  确认开机
+                </DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-[#737373] leading-relaxed">
+                开机后该 Agent「{target?.name}」将重新运行。确认开机吗？
+              </p>
+              <DialogFooter className="gap-2 pt-2">
+                <Button variant="outline" onClick={() => setShutdownTarget(null)}>取消</Button>
+                <Button variant="dialog-confirm" onClick={confirmShutdown}>确认开机</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
+
+      {/* 重新安装确认弹窗（警示弹窗） */}
+      <AlertDialog open={!!reinstallTarget} onOpenChange={() => setReinstallTarget(null)}>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setReinstallTarget(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#0A0A0A]">重新安装 Agent</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#525252]">
+                将使用最新镜像重新安装「{claws.find(c => c.id === reinstallTarget)?.name}」，清除当前所有配置且无法恢复，
+                <span className="text-[#DC2626] font-medium">
+                  安装完成后需重新配置模型和通道。
+                </span>
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-[14px] font-medium text-[#0A0A0A]">请输入「重装」以确认</label>
             <Input
               value={reinstallInput}
               onChange={(e) => setReinstallInput(e.target.value)}
               placeholder="输入「重装」"
-              className="mt-2"
             />
           </div>
-          <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => setReinstallTarget(null)}>取消</Button>
-            <Button
-              variant="dialog-confirm"
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setReinstallTarget(null)}>取消</AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmReinstall}
               disabled={reinstallInput !== "重装"}
             >
               确认重新安装
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      {/* 删除确认弹窗 */}
-      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <DialogContent className="rounded-[4px] sm:max-w-[360px]">
-          <DialogHeader>
-            <DialogTitle className="text-[16px] font-semibold text-[#0A0A0A]">确认删除</DialogTitle>
-            <DialogDescription className="text-[14px] leading-[1.6] text-[#737373]">
-              {claws.find(c => c.id === deleteTarget)?.status === "createFail"
-                ? `此操作将移除「${claws.find(c => c.id === deleteTarget)?.name}」该创建失败的记录，底层资源将由系统自动回收。`
-                : `此操作不可撤销。「${claws.find(c => c.id === deleteTarget)?.name}」实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复。`}
-            </DialogDescription>
-          </DialogHeader>
-          {claws.find(c => c.id === deleteTarget)?.status === "running" && (
-            <div className="space-y-2">
+      {/* 删除确认弹窗（警示弹窗） */}
+      {(() => {
+        const deleteTargetClaw = claws.find(c => c.id === deleteTarget);
+        const isCreateFail = deleteTargetClaw?.status === "createFail";
+        const isRunning = deleteTargetClaw?.status === "running";
+        return (
+          <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+            <AlertDialogContent className="sm:max-w-[420px]">
+              <button
+                type="button"
+                aria-label="关闭"
+                onClick={() => setDeleteTarget(null)}
+                className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+              >
+                <X className="size-5" />
+                <span className="sr-only">关闭</span>
+              </button>
+              <AlertDialogHeader>
+                <AlertDialogTitle className="text-[#0A0A0A]">确认删除</AlertDialogTitle>
+                <AlertDialogDescription asChild>
+                  {isCreateFail ? (
+                    <p className="text-sm text-[#525252]">
+                      此操作将移除「{deleteTargetClaw?.name}」该创建失败的记录，底层资源将由系统自动回收。
+                    </p>
+                  ) : (
+                    <p className="text-sm text-[#525252]">
+                      此操作不可撤销。「{deleteTargetClaw?.name}」
+                      <span className="text-[#DC2626] font-medium">
+                        实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复。
+                      </span>
+                    </p>
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              {isRunning && (
+                <div className="space-y-2">
+                  <label className="text-[14px] font-medium text-[#0A0A0A]">请输入「删除」以确认</label>
+                  <Input
+                    value={deleteInput}
+                    onChange={(e) => setDeleteInput(e.target.value)}
+                    placeholder="输入「删除」"
+                  />
+                </div>
+              )}
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDeleteTarget(null)}>取消</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={confirmDelete}
+                  disabled={isRunning && deleteInput !== "删除"}
+                >
+                  确认删除
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        );
+      })()}
+
+      {/* 批量删除确认弹窗（警示弹窗） */}
+      <AlertDialog
+        open={showBatchDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowBatchDeleteDialog(false);
+            setBatchDeleteInput("");
+          }
+        }}
+      >
+        <AlertDialogContent className="sm:max-w-[560px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => {
+              setShowBatchDeleteDialog(false);
+              setBatchDeleteInput("");
+            }}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#0A0A0A]">批量删除</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <p className="text-sm text-[#525252]">
+                此操作不可撤销。共 <span className="font-semibold text-[#0A0A0A] tabular-nums">{selectedCount}</span> 个
+                <span className="text-[#DC2626] font-medium">
+                  实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复
+                </span>
+                。
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4">
+            {selectedCount > 0 && (
+              <div className="space-y-3">
+                <label className="text-[14px] font-medium text-[#0A0A0A]">
+                  待删除实例（<span className="tabular-nums">{selectedCount}</span> 个）
+                </label>
+                <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+                  <div className="max-h-[260px] overflow-y-auto scrollbar-on-hover">
+                    <Table density="compact">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[60%]">名称 / ID</TableHead>
+                          <TableHead className="w-[40%]">Agent 类型</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedClaws.map((c) => (
+                          <TableRow key={c.id}>
+                            <TableCell className="whitespace-normal align-top">
+                              <div className="min-w-0">
+                                <div className="text-sm text-[#0A0A0A] break-words">{c.name}</div>
+                                <div className="font-mono text-xs text-[#A3A3A3] break-all">{c.instanceId}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell className="whitespace-normal align-top">
+                              <span className="text-xs text-[#334155] break-words">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div className="space-y-3">
               <label className="text-[14px] font-medium text-[#0A0A0A]">请输入「删除」以确认</label>
               <Input
-                value={deleteInput}
-                onChange={(e) => setDeleteInput(e.target.value)}
+                value={batchDeleteInput}
+                onChange={(e) => setBatchDeleteInput(e.target.value)}
                 placeholder="输入「删除」"
+                autoFocus
               />
             </div>
-          )}
-          <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>取消</Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={claws.find(c => c.id === deleteTarget)?.status === "running" && deleteInput !== "删除"}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowBatchDeleteDialog(false);
+                setBatchDeleteInput("");
+              }}
+            >
+              取消
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              disabled={batchDeleteInput !== "删除" || selectedCount === 0}
+              onClick={() => {
+                setClaws((prev) => prev.filter((c) => !selectedIds.has(c.id)));
+                const removed = selectedCount;
+                setSelectedIds(new Set());
+                setShowBatchDeleteDialog(false);
+                setBatchDeleteInput("");
+                toast.success(`已删除 ${removed} 个实例`);
+              }}
             >
               确认删除
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* 批量更新确认弹窗 */}
       <Dialog open={showBatchUpgradeDialog} onOpenChange={setShowBatchUpgradeDialog}>
@@ -2595,7 +2776,7 @@ export default function AgentMonitor() {
           <DialogHeader className="pb-5">
             <DialogTitle className="text-[16px] font-semibold text-[#0A0A0A]">批量更新</DialogTitle>
             <DialogDescription className="text-xs leading-[1.5] text-[#737373]">
-              将 <span className="font-din font-bold tabular-nums text-[#020617]">{selectedIds.size}</span> 个实例更新至当前生效镜像版本。
+              将 <span className="font-din font-bold tabular-nums text-[#020617]">{selectedIds.size}</span> 个实例更新至当前用户可见镜像版本。
             </DialogDescription>
           </DialogHeader>
           <Alert variant="warning" className="border-0 bg-[#FFF7ED] px-4 py-3">
@@ -2725,7 +2906,17 @@ export default function AgentMonitor() {
       </Dialog>
 
       {/* 配置默认标签弹窗 */}
-      <Dialog open={showTagConfigDialog} onOpenChange={(open) => { if (!open) { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); setValueDropdownOpen(false); } }}>
+      <Dialog
+        open={showTagConfigDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowTagConfigDialog(false);
+            setTagKeySearchByRow({});
+            setTagKeyDropdownOpenByRow({});
+            setTagValueDropdownOpenByRow({});
+          }
+        }}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -2744,180 +2935,226 @@ export default function AgentMonitor() {
             </AlertDescription>
           </Alert>
 
-          {/* 已选标签 Tag 列表 */}
-          {pendingTags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {pendingTags.map((tag) => (
-                <Tooltip key={tag.key + ':' + tag.value}>
-                  <TooltipTrigger asChild>
-                    <span
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#eff4ff] border border-[#355EF1] rounded-full text-xs text-[#355EF1] font-medium max-w-[200px]"
-                    >
-                      <span className="truncate">{tag.key}：{tag.value}</span>
-                      <button
-                        className="ml-0.5 text-[#355EF1] hover:text-[#355EF1] transition-colors flex-shrink-0"
-                        onClick={() => setPendingTags(prev => prev.filter(t => !(t.key === tag.key && t.value === tag.value)))}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <span>{tag.key}：{tag.value}</span>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          )}
+          {/* 多行标签编辑 */}
+          <div className="space-y-2 mt-4">
+            <div className="text-sm font-medium text-[#020617]">标签列表</div>
+            {editingTagRows.map((row, rowIdx) => {
+              const isLastRow = rowIdx === editingTagRows.length - 1;
+              const minusDisabled = editingTagRows.length <= 1;
+              const keySearch = tagKeySearchByRow[rowIdx] ?? '';
+              const keyOpen = tagKeyDropdownOpenByRow[rowIdx] ?? false;
+              const valueOpen = tagValueDropdownOpenByRow[rowIdx] ?? false;
 
-          {/* 添加标签区域 */}
-          <div className="border border-[#e5e5e5] rounded-[4px] p-4 space-y-3 mt-4">
-            <div className="text-sm font-medium text-[#020617]">添加标签</div>
-            <div className="flex items-center gap-2">
-              {/* 标签键下拉 */}
-              <div className="relative flex-1 min-w-0">
-                <Popover open={keyDropdownOpen} onOpenChange={setKeyDropdownOpen}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+              const setRowKey = (k: string) => {
+                setEditingTagRows((prev) => prev.map((r, i) => (i === rowIdx ? { key: k, value: '' } : r)));
+                setTagKeySearchByRow((prev) => ({ ...prev, [rowIdx]: '' }));
+                setTagKeyDropdownOpenByRow((prev) => ({ ...prev, [rowIdx]: false }));
+              };
+              const setRowValue = (v: string) => {
+                setEditingTagRows((prev) => prev.map((r, i) => (i === rowIdx ? { ...r, value: v } : r)));
+                setTagValueDropdownOpenByRow((prev) => ({ ...prev, [rowIdx]: false }));
+              };
+
+              return (
+                <div key={rowIdx} className="flex items-center gap-2">
+                  {/* 标签键下拉 */}
+                  <div className="relative flex-1 min-w-0">
+                    <Popover
+                      open={keyOpen}
+                      onOpenChange={(o) => setTagKeyDropdownOpenByRow((prev) => ({ ...prev, [rowIdx]: o }))}
+                    >
                       <PopoverTrigger asChild>
                         <button
                           className="w-full min-w-0 flex items-center justify-between h-9 px-3 text-sm border border-[#E5E5E5] rounded-[4px] bg-white hover:border-[#1447E6] transition-colors overflow-hidden"
-                          onClick={() => { setKeyDropdownOpen(v => !v); setValueDropdownOpen(false); }}
+                          onClick={() => setTagKeyDropdownOpenByRow((prev) => ({ ...prev, [rowIdx]: !keyOpen }))}
                         >
-                          <span className={`truncate min-w-0 flex-1 text-left ${addingKey ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>{addingKey || '选择标签键'}</span>
+                          <span className={`truncate min-w-0 flex-1 text-left ${row.key ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>{row.key || '选择标签键'}</span>
+                          {row.key && (
+                            <span
+                              role="button"
+                              aria-label="清除标签键"
+                              className="flex-shrink-0 ml-1 text-[#A3A3A3] hover:text-[#0A0A0A] transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingTagRows((prev) => prev.map((r, i) => (i === rowIdx ? { key: '', value: '' } : r)));
+                              }}
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </span>
+                          )}
                           <ChevronDown className="w-4 h-4 text-[#737373] flex-shrink-0 ml-1" />
                         </button>
                       </PopoverTrigger>
-                    </TooltipTrigger>
-                    {addingKey && (
-                      <TooltipContent side="top">
-                        <span>{addingKey}</span>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                  <PopoverContent className="w-72 p-0" align="start" side="bottom">
-                    {/* 搜索框 */}
-                    <div className="flex items-center gap-2 px-3 py-2 border-b border-[#e5e5e5]">
-                      <Search className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
-                      <input
-                        autoFocus
-                        className="flex-1 text-sm outline-none placeholder:text-[#A3A3A3]"
-                        placeholder="搜索标签键..."
-                        value={keySearchText}
-                        onChange={(e) => setKeySearchText(e.target.value)}
-                      />
-                    </div>
-                    {/* 标签键列表 */}
-                    <div className="max-h-52 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
-                      {DEMO_TAG_KEYS
-                        .filter(k => k.toLowerCase().includes(keySearchText.toLowerCase()))
-                        .map(k => (
-                          <button
-                            key={k}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
-                              addingKey === k ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
-                            }`}
-                            onClick={() => { setAddingKey(k); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); }}
-                          >
-                            {k}
-                          </button>
-                        ))
-                      }
-                      {DEMO_TAG_KEYS.filter(k => k.toLowerCase().includes(keySearchText.toLowerCase())).length === 0 && (
-                        <div className="px-4 py-3 text-sm text-[#A3A3A3] text-center">无匹配结果</div>
-                      )}
-                    </div>
-                    <div className="px-3 py-1.5 border-t border-[#e5e5e5] text-xs text-[#A3A3A3]">共 {DEMO_TAG_KEYS.length} 条</div>
-                  </PopoverContent>
-                </Popover>
-              </div>
+                      <PopoverContent className="w-72 p-0" align="start" side="bottom">
+                        {/* 搜索框 */}
+                        <div className="flex items-center gap-2 px-3 py-2 border-b border-[#e5e5e5]">
+                          <Search className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
+                          <input
+                            autoFocus
+                            className="flex-1 text-sm outline-none placeholder:text-[#A3A3A3]"
+                            placeholder="搜索标签键..."
+                            value={keySearch}
+                            onChange={(e) => setTagKeySearchByRow((prev) => ({ ...prev, [rowIdx]: e.target.value }))}
+                          />
+                        </div>
+                        {/* 标签键列表 */}
+                        <div className="max-h-52 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                          {tagKeys
+                            .filter(k => k.toLowerCase().includes(keySearch.toLowerCase()))
+                            .map(k => (
+                              <button
+                                key={k}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
+                                  row.key === k ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
+                                }`}
+                                onClick={() => setRowKey(k)}
+                              >
+                                {k}
+                              </button>
+                            ))
+                          }
+                          {tagKeys.filter(k => k.toLowerCase().includes(keySearch.toLowerCase())).length === 0 && (
+                            <div className="px-4 py-3 text-sm text-[#A3A3A3] text-center">无匹配结果</div>
+                          )}
+                        </div>
+                        <div className="px-3 py-1.5 border-t border-[#e5e5e5] text-xs text-[#A3A3A3]">共 {tagKeys.length} 条</div>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
 
-              <span className="text-[#A3A3A3] text-sm flex-shrink-0">:</span>
+                  <span className="text-[#A3A3A3] text-sm flex-shrink-0">:</span>
 
-              {/* 标签値下拉（必须先选键） */}
-              <div className="relative flex-1 min-w-0">
-                {addingKey ? (
-                  <Popover open={valueDropdownOpen} onOpenChange={setValueDropdownOpen}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
+                  {/* 标签値下拉（必须先选键） */}
+                  <div className="relative flex-1 min-w-0">
+                    {row.key ? (
+                      <Popover
+                        open={valueOpen}
+                        onOpenChange={(o) => setTagValueDropdownOpenByRow((prev) => ({ ...prev, [rowIdx]: o }))}
+                      >
                         <PopoverTrigger asChild>
                           <button
                             className="w-full min-w-0 flex items-center justify-between h-9 px-3 text-sm border border-[#E5E5E5] rounded-[4px] bg-white hover:border-[#1447E6] transition-colors overflow-hidden"
-                            onClick={() => { setValueDropdownOpen(v => !v); setKeyDropdownOpen(false); }}
+                            onClick={() => setTagValueDropdownOpenByRow((prev) => ({ ...prev, [rowIdx]: !valueOpen }))}
                           >
-                            <span className={`truncate min-w-0 flex-1 text-left ${addingValue ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>{addingValue || '选择标签値'}</span>
+                            <span className={`truncate min-w-0 flex-1 text-left ${row.value ? 'text-[#0A0A0A]' : 'text-[#A3A3A3]'}`}>{row.value || '选择标签值'}</span>
+                            {row.value && (
+                              <span
+                                role="button"
+                                aria-label="清除标签值"
+                                className="flex-shrink-0 ml-1 text-[#A3A3A3] hover:text-[#0A0A0A] transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingTagRows((prev) => prev.map((r, i) => (i === rowIdx ? { ...r, value: '' } : r)));
+                                }}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </span>
+                            )}
                             <ChevronDown className="w-4 h-4 text-[#737373] flex-shrink-0 ml-1" />
                           </button>
                         </PopoverTrigger>
-                      </TooltipTrigger>
-                      {addingValue && (
-                        <TooltipContent side="top">
-                          <span>{addingValue}</span>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                    <PopoverContent className="w-48 p-0" align="start" side="bottom">
-                      <div className="max-h-44 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
-                        {(DEMO_TAG_KEY_VALUES[addingKey] || []).map(v => (
-                          <button
-                            key={v}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
-                              addingValue === v ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
-                            }`}
-                            onClick={() => { setAddingValue(v); setValueDropdownOpen(false); }}
-                          >
-                            {v}
-                          </button>
-                        ))}
+                        <PopoverContent className="w-48 p-0" align="start" side="bottom">
+                          <div className="max-h-44 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
+                            {(tagKeyValues[row.key] || []).map(v => (
+                              <button
+                                key={v}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
+                                  row.value === v ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
+                                }`}
+                                onClick={() => setRowValue(v)}
+                              >
+                                {v}
+                              </button>
+                            ))}
+                            {(tagKeyValues[row.key] || []).length === 0 && (
+                              <div className="px-4 py-3 text-sm text-[#A3A3A3] text-center">暂无可用值</div>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <div className="w-full h-9 px-3 flex items-center text-sm border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-[#A3A3A3] cursor-not-allowed truncate">
+                        请先选择标签键
                       </div>
-                    </PopoverContent>
-                  </Popover>
-                ) : (
-                  <div className="w-full h-9 px-3 flex items-center text-sm border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-[#A3A3A3] cursor-not-allowed truncate">
-                    请先选择标签键
+                    )}
                   </div>
-                )}
-              </div>
 
-              {/* 添加按鈕 */}
-              <Button
-                variant="outline"
-                size="icon-sm"
-                disabled={!addingKey || !addingValue}
-                onClick={() => {
-                  if (!addingKey || !addingValue) return;
-                  // 检查标签键是否已存在
-                  if (pendingTags.some(t => t.key === addingKey)) {
-                    toast.success('该标签键已存在，请删除原有标签后再添加');
-                    return;
-                  }
-                  setPendingTags(prev => [...prev, { key: addingKey, value: addingValue }]);
-                  setAddingKey('');
-                  setAddingValue('');
-                }}
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
+                  {/* 加号按钮（仅末行展示新增动作；其它行也展示但点击同样在末尾新增） */}
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    disabled={isLastRow && (!row.key || !row.value)}
+                    onClick={() => setEditingTagRows((prev) => [...prev, { key: '', value: '' }])}
+                    aria-label="新增一行"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+
+                  {/* 减号按钮 */}
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    disabled={minusDisabled}
+                    onClick={() => {
+                      setEditingTagRows((prev) => prev.filter((_, i) => i !== rowIdx));
+                      setTagKeySearchByRow((prev) => {
+                        const next = { ...prev };
+                        delete next[rowIdx];
+                        return next;
+                      });
+                      setTagKeyDropdownOpenByRow((prev) => {
+                        const next = { ...prev };
+                        delete next[rowIdx];
+                        return next;
+                      });
+                      setTagValueDropdownOpenByRow((prev) => {
+                        const next = { ...prev };
+                        delete next[rowIdx];
+                        return next;
+                      });
+                    }}
+                    aria-label="删除该行"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </Button>
+                </div>
+              );
+            })}
           </div>
 
 
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => { setShowTagConfigDialog(false); setAddingKey(''); setAddingValue(''); setKeySearchText(''); }}>取消</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowTagConfigDialog(false);
+                setTagKeySearchByRow({});
+                setTagKeyDropdownOpenByRow({});
+                setTagValueDropdownOpenByRow({});
+              }}
+            >
+              取消
+            </Button>
             <Button
               variant="dialog-confirm"
               onClick={() => {
-                // 如果已选了键和值但未点击+，toast 提示
-                if (addingKey && addingValue) {
-                  toast.success('请点击「+」添加后再确认');
-                  return;
-                }
-                setSelectedTags([...pendingTags]);
+                // 过滤掉未填完的行
+                const valid = editingTagRows.filter((r) => r.key && r.value);
+                // 去重：同一 key 只保留第一个
+                const seenKeys = new Set<string>();
+                const dedup = valid.filter((r) => {
+                  if (seenKeys.has(r.key)) return false;
+                  seenKeys.add(r.key);
+                  return true;
+                });
+                setSelectedTags(dedup);
                 setShowTagConfigDialog(false);
-                setAddingKey(''); setAddingValue(''); setKeySearchText('');
+                setTagKeySearchByRow({});
+                setTagKeyDropdownOpenByRow({});
+                setTagValueDropdownOpenByRow({});
                 toast.success(
-                  pendingTags.length > 0
-                    ? `已配置 ${pendingTags.length} 个默认标签，新建实例将自动打 tag`
+                  dedup.length > 0
+                    ? `已配置 ${dedup.length} 个默认标签，新建实例将自动打 tag`
                     : '已清空默认标签配置'
                 );
               }}
@@ -3648,19 +3885,5 @@ export default function AgentMonitor() {
 
 // ─── 工具栏铃铛入口：镜像更新提醒（独立组件，不污染主组件状态） ─────────────
 function ImageUpdateBellEntry() {
-  const outdated = useOutdatedTypes();
-  if (outdated.length === 0) return null;
-  return (
-    <BatchUpdateNotice outdated={outdated}>
-      <button
-        type="button"
-        title={`${outdated.length} 个 Agent 类型有新版本，可推送提醒员工更新`}
-        className="relative inline-flex items-center justify-center w-9 h-9 rounded-[4px] border border-[#e5e5e5] bg-white text-[#020617] hover:bg-[#f5f5f5] transition-colors shrink-0"
-        aria-label="镜像更新提醒"
-      >
-        <Bell className="w-4 h-4" />
-        <HasOutdatedIndicator outdated={outdated} />
-      </button>
-    </BatchUpdateNotice>
-  );
+  return <NewVersionPushNotice variant="bell" />;
 }

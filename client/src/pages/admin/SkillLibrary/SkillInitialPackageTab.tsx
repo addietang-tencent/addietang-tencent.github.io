@@ -40,6 +40,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from '@/components/ui/table';
+import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
   CheckCircle2, Clock, ChevronRight, X, AlertCircle, Sparkles,
   Search, RefreshCw, ChevronDown, Check, Edit2, Filter, Users, Pin
@@ -48,7 +56,9 @@ import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type S
 import { Star } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import EditScopePopover from './EditScopeDialog';
+import { ScopeEditPopover, type ScopeType } from '@/components/ScopeEditPopover';
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from '../MemberManagement/mock';
+import type { UserGroup } from '../MemberManagement/types';
 import { type SkillScope } from './types';
 
 // ─── 公共技能库添加弹窗 ──────────────────────────────────────────────────────────
@@ -587,6 +597,8 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
 
 // ─── 新建技能包对话框 ──────────────────────────────────────────────────────────
 
+const CREATE_DIALOG_ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
+
 interface CreatePackageDialogProps {
   open: boolean;
   existingNames: string[];
@@ -598,7 +610,6 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
   const [name, setName] = useState('');
   const [scopeType, setScopeType] = useState<'public' | 'private'>('public');
   const [groupIds, setGroupIds] = useState<string[]>([]);
-  const [groupSearchQuery, setGroupSearchQuery] = useState('');
 
   const trimmed = name.trim();
 
@@ -620,14 +631,28 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
     setName('');
     setScopeType('public');
     setGroupIds([]);
-    setGroupSearchQuery('');
   };
+
+  /** ScopeEditPopover 确认回调 */
+  const handleScopeConfirm = (scope: ScopeType, ids: string[]) => {
+    if (scope === 'all') {
+      setScopeType('public');
+      setGroupIds([]);
+    } else {
+      setScopeType('private');
+      setGroupIds(ids);
+    }
+  };
+
+  const scopeLabels = scopeType === 'public'
+    ? ['全部用户']
+    : groupIds.map((gid) => CREATE_DIALOG_ALL_GROUPS.find((g) => g.id === gid)?.name || gid);
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) { resetForm(); onCancel(); } }}>
       <DialogContent
-        className="sm:max-w-md"
-        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+        size="sm"
+        style={{ maxHeight: 'min(90vh, 720px)', display: 'flex', flexDirection: 'column' }}
       >
         <DialogHeader>
           <DialogTitle>新建初始技能包</DialogTitle>
@@ -646,114 +671,17 @@ function CreatePackageDialog({ open, existingNames, onConfirm, onCancel }: Creat
                 autoFocus
               />
             </div>
-            {/* 应用范围 */}
+            {/* 应用范围 — 默认 全部用户 tag + 编辑图标，点击图标打开 ScopeEditPopover */}
             <div className="space-y-2">
               <Label className="text-xs font-medium text-[#525252]">应用范围</Label>
-              <div className="flex items-center gap-2 flex-wrap">
-                <button
-                  onClick={() => { setScopeType('public'); setGroupIds([]); }}
-                  className={`h-8 px-4 rounded-[4px] text-sm border transition-colors ${
-                    scopeType === 'public'
-                      ? 'bg-[#020617] border-[#020617] text-white'
-                      : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-                  }`}
-                >
-                  全部用户
-                </button>
-                <button
-                  onClick={() => setScopeType('private')}
-                  className={`h-8 px-4 rounded-[4px] text-sm border transition-colors ${
-                    scopeType === 'private'
-                      ? 'bg-[#020617] border-[#020617] text-white'
-                      : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
-                  }`}
-                >
-                  按分组
-                </button>
-
-                {/* 选择按分组后，右侧出现下拉选择器 */}
-                {scopeType === 'private' && (
-                  <Popover>
-                    <Tooltip delayDuration={1000}>
-                      <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
-                          <button className="flex items-center gap-1.5 h-8 px-3 rounded-[4px] text-sm border border-[#d3d6db] bg-white text-[#0A0A0A] hover:border-[#355EF1] transition-colors min-w-[140px]">
-                            <span className="truncate flex-1 text-left">
-                              {groupIds.length > 0
-                                ? `已选 ${groupIds.length} 个分组`
-                                : '选择分组…'}
-                            </span>
-                            <ChevronDown className="w-3.5 h-3.5 text-[#737373] shrink-0" />
-                          </button>
-                        </PopoverTrigger>
-                      </TooltipTrigger>
-                      {groupIds.length > 0 && (
-                        <TooltipContent side="bottom" className="max-w-[280px]">
-                          <p className="text-xs leading-relaxed">
-                            {groupIds.map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid).join('，')}
-                          </p>
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                    <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                      <div className="p-2 border-b border-[#E5E5E5]">
-                        <div className="relative">
-                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#737373]" />
-                          <input
-                            placeholder="搜索分组…"
-                            value={groupSearchQuery}
-                            onChange={(e) => setGroupSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 h-8 text-sm border border-[#d3d6db] rounded-[4px] bg-white outline-none focus:border-[#355EF1] transition-colors"
-                          />
-                        </div>
-                      </div>
-                      <div className="max-h-[200px] overflow-y-auto p-1">
-                        {MOCK_GROUPS
-                          .filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase()))
-                          .map(group => {
-                            const checked = groupIds.includes(group.id);
-                            return (
-                              <button
-                                key={group.id}
-                                onClick={() => {
-                                  setGroupIds(prev =>
-                                    prev.includes(group.id)
-                                      ? prev.filter(id => id !== group.id)
-                                      : [...prev, group.id]
-                                  );
-                                }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-[#F5F5F5] transition-colors text-left"
-                              >
-                                <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-                                  checked ? 'bg-[#355EF1] border-[#355EF1]' : 'border-[#d3d6db] bg-white'
-                                }`}>
-                                  {checked && <Check className="w-2.5 h-2.5 text-white" />}
-                                </span>
-                                <span className="text-sm text-[#0A0A0A] truncate">{group.name}</span>
-                              </button>
-                            );
-                          })}
-                        {MOCK_GROUPS.filter(g => g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())).length === 0 && (
-                          <p className="text-xs text-[#A3A3A3] py-3 text-center">无匹配分组</p>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5]">
-                        <p className="text-xs text-[#737373]">
-                          已选 {groupIds.length} 个分组
-                        </p>
-                        {groupIds.length > 0 && (
-                          <button
-                            onClick={() => setGroupIds([])}
-                            className="text-xs text-[#737373] hover:text-[#0A0A0A] transition-colors"
-                          >
-                            清除
-                          </button>
-                        )}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
+              <ScopeEditPopover
+                scope={scopeType === 'public' ? 'all' : 'groups'}
+                selectedGroupIds={groupIds}
+                groups={CREATE_DIALOG_ALL_GROUPS}
+                scopeLabels={scopeLabels}
+                maxVisibleBadges={3}
+                onConfirm={handleScopeConfirm}
+              />
             </div>
           </div>
         </DialogBody>
@@ -972,8 +900,8 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
       <DialogContent
-        className="!sm:max-w-[920px]"
-        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+        size="lg"
+        style={{ maxHeight: 'min(90vh, 720px)', display: 'flex', flexDirection: 'column' }}
       >
         <DialogHeader>
           <DialogTitle>批量刷新技能版本</DialogTitle>
@@ -989,108 +917,111 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
           </div>
         ) : (
           <>
-            {/* 列表容器 */}
-            <div className="border border-gray-200 rounded-xl max-h-[380px] overflow-y-auto">
-              {/* 表头行 — sticky，左侧带全选 checkbox */}
-              <div
-                className="grid items-center gap-2 px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-20 cursor-pointer hover:bg-gray-100 transition-colors"
-                style={{ gridTemplateColumns: '28px 1.3fr 52px 60px 60px 1.8fr' }}
-                onClick={toggleAll}
-              >
-                <div className="flex items-center justify-center">
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                    allPageSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                  }`}>
-                    {allPageSelected && <Check className="w-3 h-3 text-white" />}
-                  </div>
-                </div>
-                <span className="text-xs font-medium text-gray-500">技能名称</span>
-                <span className="text-xs font-medium text-gray-500">类型</span>
-                <span className="text-xs font-medium text-gray-500">新版本</span>
-                <span className="text-xs font-medium text-gray-500">原版本</span>
-                <span className="text-xs font-medium text-gray-500">更新说明</span>
+            {/* 表格容器（与模型列表一致：bg-white + 4px 圆角 + #e5e5e5 边框） */}
+            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+              <div className="max-h-[420px] overflow-y-auto">
+                <Table density="compact">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[44px]">
+                        <Checkbox
+                          checked={allPageSelected}
+                          onCheckedChange={toggleAll}
+                          aria-label={allPageSelected ? '取消全选' : '全选当前页'}
+                        />
+                      </TableHead>
+                      <TableHead className="w-[26%]">技能名称</TableHead>
+                      <TableHead className="w-[8%]">类型</TableHead>
+                      <TableHead className="w-[12%]">新版本</TableHead>
+                      <TableHead className="w-[12%]">原版本</TableHead>
+                      <TableHead className="w-[34%]">更新说明</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagedSkills.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-[#A3A3A3]">
+                          暂无可更新的技能
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pagedSkills.map((skill) => {
+                        const latest = getLatestVersion(skill)!;
+                        const checked = selectedIds.has(skill.skillId);
+                        const changeLog = getChangeLog(skill, latest);
+                        return (
+                          <TableRow
+                            key={skill.skillId}
+                            data-state={checked ? 'selected' : undefined}
+                            onClick={() => toggleOne(skill.skillId)}
+                            className="cursor-pointer"
+                          >
+                            <TableCell>
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={() => toggleOne(skill.skillId)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <span className="block truncate">
+                                {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <StatusTag mode="fill" variant={skill.source === 'public' ? 'blue' : 'gray'}>
+                                {skill.source === 'public' ? '公共' : '企业'}
+                              </StatusTag>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-mono">v{latest}</span>
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-mono text-[#A3A3A3]">v{skill.version}</span>
+                            </TableCell>
+                            <TableCell>
+                              <Tooltip delayDuration={300}>
+                                <TooltipTrigger asChild>
+                                  <span className="line-clamp-2 block whitespace-normal">
+                                    {changeLog}
+                                  </span>
+                                </TooltipTrigger>
+                                {changeLog !== '-' && (
+                                  <TooltipContent side="top" className="max-w-[360px]">
+                                    <p className="text-xs whitespace-pre-wrap">{changeLog}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-
-              {/* 技能列表项 */}
-              {pagedSkills.length === 0 ? (
-                <div className="flex items-center justify-center py-8 text-sm text-gray-400">
-                  暂无可更新的技能
-                </div>
-              ) : (
-                pagedSkills.map((skill) => {
-                  const latest = getLatestVersion(skill)!;
-                  const checked = selectedIds.has(skill.skillId);
-                  const changeLog = getChangeLog(skill, latest);
-                  return (
-                    <div
-                      key={skill.skillId}
-                      onClick={() => toggleOne(skill.skillId)}
-                      className={`grid items-center gap-2 px-3 py-3 border-b border-[#e5e5e5] last:border-b-0 cursor-pointer transition-colors ${checked ? 'bg-blue-50/60' : 'hover:bg-gray-50'}`}
-                      style={{ gridTemplateColumns: '28px 1.3fr 52px 60px 60px 1.8fr' }}
-                    >
-                      {/* 勾选框 */}
-                      <div className="flex items-center justify-center">
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                          checked ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                        }`}>
-                          {checked && <Check className="w-3 h-3 text-white" />}
-                        </div>
-                      </div>
-                      {/* 技能名称 */}
-                      <span className="text-sm font-medium text-gray-900 truncate">
-                        {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
-                      </span>
-                      {/* 类型 */}
-                      <StatusTag mode="fill" variant={skill.source === 'public' ? 'blue' : 'gray'}>
-                        {skill.source === 'public' ? '公共' : '企业'}
-                      </StatusTag>
-                      {/* 新版本 */}
-                      <span className="font-mono text-xs text-gray-600 font-medium">v{latest}</span>
-                      {/* 原版本 */}
-                      <span className="font-mono text-xs text-gray-400">v{skill.version}</span>
-                      {/* 更新说明 */}
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <span className="text-xs text-gray-500 line-clamp-2 block">
-                            {changeLog}
-                          </span>
-                        </TooltipTrigger>
-                        {changeLog !== '-' && (
-                          <TooltipContent side="top" className="max-w-[360px]">
-                            <p className="text-xs whitespace-pre-wrap">{changeLog}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </div>
-                  );
-                })
-              )}
             </div>
 
             {/* 分页控件 */}
-            <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
+            <div className="pt-2">
               <Pagination
                 total={updatableSkills.length}
                 current={currentPage}
                 pageSize={pageSize}
-                showTotal={(total) => `共 ${total} 条`}
                 showSizeChanger
                 pageSizeOptions={PAGE_SIZE_OPTIONS}
+                showTotal={(total) => `共 ${total} 条`}
+                size="default"
                 className="w-full justify-between"
-                onChange={(page, newPageSize) => {
-                  if (newPageSize !== pageSize) {
-                    setPageSize(newPageSize);
+                onChange={(page, size) => {
+                  if (size !== pageSize) {
+                    setPageSize(size);
                     setCurrentPage(1);
                   } else {
                     setCurrentPage(page);
                   }
                 }}
               />
-              {selectedIds.size > 0 && (
-                <span className="text-[#737373] ml-1.5">
-                  已选 {selectedIds.size} 条记录
-                </span>
-              )}
             </div>
           </>
         )}
@@ -1782,15 +1713,19 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-400">
                       <span>{pkg.skills.length} 个技能</span>
-                      {/* 应用范围标签 + 编辑 */}
+                      {/* 应用范围标签 + 编辑 — 完全复用 agent 类型页同款 ScopeEditPopover（同数据源 + 同默认 props） */}
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <EditScopePopover
-                          groups={MOCK_GROUPS}
-                          currentScope={pkg.scopeType === 'public' ? 'public' : 'private'}
-                          currentGroupIds={pkg.groupIds || []}
-                          scopeLabels={scopeLabels}
-                          isPublic={isPub}
-                          onConfirm={(scope, groupIds) => handleScopeChange(pkg.id, scope, groupIds)}
+                        <ScopeEditPopover
+                          scope={pkg.scopeType === 'public' ? 'all' : 'groups'}
+                          selectedGroupIds={pkg.groupIds || []}
+                          groups={CREATE_DIALOG_ALL_GROUPS}
+                          onConfirm={(scope, groupIds) =>
+                            handleScopeChange(
+                              pkg.id,
+                              scope === 'all' ? 'public' : 'private',
+                              groupIds,
+                            )
+                          }
                         />
                       </div>
                     </div>

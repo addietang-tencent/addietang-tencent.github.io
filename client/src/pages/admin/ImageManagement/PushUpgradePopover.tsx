@@ -1,77 +1,70 @@
 /**
- * PushUpgradeDialog - 推送更新提醒弹窗（支持 Agent 类型多选）
+ * PushUpgradePopover - 推送更新提醒下拉框（支持 Agent 类型多选）
  *
- * 心智：
- *   推送是声音放大 = "管理员让员工知道：你的实例和当前生效镜像版本不一致"
+ * 形态从 Dialog 改为 Popover：
+ *   - 触发器由父组件渲染（如顶部黄色「当前有 N 个生效镜像有新版本」按钮）
+ *   - PopoverContent 内含 Agent 类型多选 + 信息提示 + 操作按钮
+ *
+ * 心智：与原 PushUpgradeDialog 完全一致。
  *   - 不需要选目标版本：版本由"当前启用镜像"决定
  *   - 不需要选实例范围：默认就是该类型下所有"实例版本 ≠ 启用版本"的员工
- *   - 弹窗里只让用户选「Agent 类型」（支持多选）
- *
- * 可推送条件：
- *   - 该类型已启用某镜像（启用版本存在）
- *   - 实际有 ≥ 1 个实例版本 < 启用版本（mock：演示时全部类型都可选）
+ *   - 已经在推送当前版本的类型：禁用 Checkbox，提示「正在提醒员工更新」
  */
 import { useEffect, useMemo, useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Megaphone, Info, Sparkles } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Megaphone, Info, Sparkles, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { setActivePush, listActivePushes, type ActivePush } from "@/lib/upgradePushStore";
+import {
+  setActivePush,
+  listActivePushes,
+  clearActivePush,
+  type ActivePush,
+} from "@/lib/upgradePushStore";
 import { cn } from "@/lib/utils";
-import type { ImageRow } from "./deriveAgentTypeView";
-
-// ─── 输入信息 ─────────────────────────────────────────────
-/** 一个可被推送的 Agent 类型条目 */
-export interface PushableAgentType {
-  /** Agent 类型 ID（OpenClaw / HermesAgent / ... / custom-xxx） */
-  agentType: string;
-  /** 展示名 */
-  agentTypeLabel: string;
-  /** 当前启用版本（必有，否则不会出现在列表） */
-  enabledVersion: string;
-  /** 当前启用镜像 */
-  enabledImage: ImageRow;
-  /** 启用镜像名（人类可读） */
-  imageName: string;
-  /** 镜像来源 */
-  imageSource: "public" | "custom";
-  /** 旧版本实例数（mock 演示用） */
-  outdatedInstanceCount: number;
-  /** 是否所有实例都已是最新版（true 时不可推送） */
-  allUpToDate: boolean;
-}
+import type { PushableAgentType } from "./PushUpgradeDialog";
 
 interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  /** Popover 触发节点（如顶部黄色按钮） */
+  trigger: React.ReactNode;
   /** 当前所有可推送的 Agent 类型 */
   pushable: PushableAgentType[];
-  /** 默认选中的 agent 类型（从某条更新记录入口触发时传） */
+  /** 默认选中的 agent 类型 */
   defaultAgentType?: string;
   /** 推送人（mock） */
   pushedBy?: string;
-  /** 点击「查看全部更新记录」link 时触发 */
+  /** 点击「查看全部更新记录」按钮时触发 */
   onViewAllRecords?: () => void;
+  /** 受控开关状态（可选） */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export default function PushUpgradeDialog({
-  open,
-  onOpenChange,
+export default function PushUpgradePopover({
+  trigger,
   pushable,
   defaultAgentType,
   pushedBy = "alice@acompany.com",
   onViewAllRecords,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
 }: Props) {
-  // 活跃推送列表（用于在每张卡片上显示「正在提醒」状态）
+  // 内部 / 受控开关
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    setInternalOpen(next);
+    setControlledOpen?.(next);
+  };
+
+  // 活跃推送列表
   const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
   useEffect(() => {
     if (!open) return;
@@ -81,7 +74,7 @@ export default function PushUpgradeDialog({
     return () => window.removeEventListener("upgrade-push-changed", onChange);
   }, [open]);
 
-  /** agentType -> 当前活跃推送（仅当推送版本 = 当前启用版本时生效，旧推送由 store 自动清理） */
+  /** agentType -> 当前活跃推送 */
   const activePushByType = useMemo(() => {
     const map = new Map<string, ActivePush>();
     pushable.forEach((p) => {
@@ -99,12 +92,10 @@ export default function PushUpgradeDialog({
     [pushable, activePushByType],
   );
 
-  // 多选：保存被选中的 agentType 列表
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
 
   useEffect(() => {
     if (!open) return;
-    // 优先用默认值；否则默认全选
     if (defaultAgentType && selectable.some((p) => p.agentType === defaultAgentType)) {
       setSelectedTypes([defaultAgentType]);
     } else if (selectable.length > 0) {
@@ -132,7 +123,6 @@ export default function PushUpgradeDialog({
 
   const allSelectableChecked =
     selectable.length > 0 && selectable.every((p) => selectedTypes.includes(p.agentType));
-  const someSelectableChecked = selectable.some((p) => selectedTypes.includes(p.agentType));
 
   const toggleOne = (agentType: string, checked: boolean) => {
     setSelectedTypes((prev) =>
@@ -149,6 +139,13 @@ export default function PushUpgradeDialog({
   };
 
   const canPush = selectedItems.length > 0;
+
+  /** 撤回某 Agent 类型的当前推送 */
+  const handleRevoke = (p: PushableAgentType) => {
+    clearActivePush(p.agentType);
+    setActivePushes(listActivePushes());
+    toast.success(`已撤回「${p.agentTypeLabel}」的更新推送提醒`);
+  };
 
   const handleConfirm = () => {
     if (selectedItems.length === 0) {
@@ -173,22 +170,27 @@ export default function PushUpgradeDialog({
     toast.success(
       `已向「${labels}」共 ${totalOutdated} 个旧版本 Agent 推送更新提醒`,
     );
-    onOpenChange(false);
+    setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[560px]">
-        <DialogHeader>
-          <DialogTitle>
-            推送更新提醒
-          </DialogTitle>
-          <DialogDescription className="text-xs text-[#737373]">
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        className="w-[480px] p-0"
+      >
+        {/* 标题区 */}
+        <div className="px-4 pt-4 pb-3 border-b border-[#F5F5F5]">
+          <div className="text-sm font-medium text-[#0A0A0A]">新版本更新推送提醒</div>
+          <div className="text-xs text-[#737373] mt-0.5">
             向使用某 Agent 类型的员工推送更新提醒，建议更新到当前启用的镜像版本
-          </DialogDescription>
-        </DialogHeader>
+          </div>
+        </div>
 
-        <div className="space-y-4 py-1">
+        {/* 内容区 */}
+        <div className="px-4 py-3 space-y-3 max-h-[60vh] overflow-y-auto">
           {/* 1. Agent 类型多选 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -211,14 +213,13 @@ export default function PushUpgradeDialog({
                 暂无已启用的 Agent 类型，请先到表格中启用一个镜像
               </div>
             ) : (
-              <div className="space-y-2 max-h-[320px] overflow-y-auto">
+              <div className="space-y-2">
                 {pushable.map((p) => {
                   const checked = selectedTypes.includes(p.agentType);
                   const activePush = activePushByType.get(p.agentType);
                   const isActivePushing = !!activePush;
-                  // 已是最新版 或 已经在推送当前版本 → 不可选
                   const disabled = p.allUpToDate || isActivePushing;
-                  const id = `push-type-${p.agentType}`;
+                  const id = `push-popover-${p.agentType}`;
                   return (
                     <label
                       key={p.agentType}
@@ -251,10 +252,31 @@ export default function PushUpgradeDialog({
                             v{p.enabledVersion}
                           </span>
                           {isActivePushing ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-[#1447E6] shrink-0 ml-auto">
-                              <Megaphone className="w-2.5 h-2.5" />
-                              正在提醒员工更新
-                            </span>
+                            <div className="inline-flex items-center gap-2 shrink-0 ml-auto">
+                              <span className="inline-flex items-center gap-1 text-[11px] text-[#1447E6]">
+                                <Megaphone className="w-2.5 h-2.5" />
+                                正在提醒员工更新
+                              </span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleRevoke(p);
+                                    }}
+                                    className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-[#d42a1e] transition-colors cursor-pointer"
+                                  >
+                                    <RotateCcw className="w-2.5 h-2.5" />
+                                    撤回提醒
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs max-w-[220px]">
+                                  撤回后用户端的"可更新"徽章将立即消失
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
                           ) : p.allUpToDate ? (
                             <span className="text-[11px] text-[#A3A3A3] shrink-0 ml-auto">
                               已是最新版
@@ -292,15 +314,6 @@ export default function PushUpgradeDialog({
                   </span>
                   个旧版本 Agent，将在用户端收到更新提醒。
                 </div>
-                <ul className="mt-1.5 space-y-0.5 text-[11px] text-[#737373]">
-                  {selectedItems.map((item) => (
-                    <li key={item.agentType} className="flex items-center gap-1">
-                      <span className="font-medium text-[#334155]">{item.agentTypeLabel}</span>
-                      <span className="font-mono tabular-nums">→ v{item.enabledVersion}</span>
-                      <span>· {item.outdatedInstanceCount} 个</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
             </div>
           )}
@@ -310,32 +323,28 @@ export default function PushUpgradeDialog({
             <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] px-3 py-2.5 flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-[#A3A3A3] mt-0.5 shrink-0" />
               <div className="text-xs text-[#737373] leading-relaxed">
-                所有 Agent 类型下的实例都已是最新版，无需推送
+                所有可推送的 Agent 类型当前都已是最新版或已在推送中
               </div>
             </div>
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="claw-outline" size="claw-sm" onClick={() => onOpenChange(false)}>
+        {/* 操作区 */}
+        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-[#F5F5F5]">
+          <Button variant="claw-outline" size="claw-sm" onClick={() => setOpen(false)}>
             取消
           </Button>
-          {onViewAllRecords && (
-            <Button variant="claw-outline" size="claw-sm" onClick={onViewAllRecords}>
-              查看全部更新记录
-            </Button>
-          )}
           <Button
             variant="dialog-confirm"
             size="claw-sm"
             onClick={handleConfirm}
             disabled={!canPush}
           >
-            确认推送
+            推送最新版本
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

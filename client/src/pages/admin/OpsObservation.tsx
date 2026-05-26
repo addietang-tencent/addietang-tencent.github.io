@@ -12,6 +12,8 @@ import { StatusTag } from "@/components/ui/status-tag";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SurfaceInner } from "@/components/ui/Surface";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -597,9 +599,18 @@ export default function OpsObservation() {
           </DialogHeader>
           <DialogBody className="flex-1">
             <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+              <RadioGroup
+                value={selectedPluginVersion?.version ?? ""}
+                onValueChange={(val) => {
+                  const v = CLS_PLUGIN_VERSIONS.find((x) => x.version === val);
+                  if (v) setSelectedPluginVersion(v);
+                }}
+                className="contents"
+              >
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead style={{ width: 40 }} />
                     <TableHead style={{ width: 100 }}>版本号</TableHead>
                     <TableHead>更新内容</TableHead>
                     <TableHead style={{ width: 120 }}>状态</TableHead>
@@ -608,30 +619,36 @@ export default function OpsObservation() {
                 <TableBody>
                   {CLS_PLUGIN_VERSIONS.map((v) => {
                     const isUpgradeable = v.status !== 'current' && v.status !== 'deprecated';
-                    const isSelected = selectedPluginVersion?.version === v.version;
                     return (
                       <TableRow
                         key={v.version}
                         onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
-                        data-state={isSelected ? "selected" : undefined}
                         className={
                           isUpgradeable
                             ? "cursor-pointer"
                             : "cursor-not-allowed opacity-60"
                         }
                       >
+                        <TableCell className="py-2">
+                          <RadioGroupItem
+                            value={v.version}
+                            disabled={!isUpgradeable}
+                            aria-label={`选择版本 ${v.version}`}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{v.version}</TableCell>
                         <TableCell className="text-[#525252]">{v.changelog}</TableCell>
                         <TableCell>
                           {v.status === 'current' && <StatusTag mode="dot" variant="green">当前版本</StatusTag>}
                           {v.status === 'deprecated' && <StatusTag mode="dot" variant="gray">已弃用</StatusTag>}
-                          {v.status === 'available' && isSelected && <StatusTag mode="dot" variant="blue">已选中</StatusTag>}
                         </TableCell>
                       </TableRow>
                     );
                   })}
                 </TableBody>
               </Table>
+              </RadioGroup>
             </div>
           </DialogBody>
           <DialogFooter>
@@ -956,11 +973,12 @@ export default function OpsObservation() {
       <Dialog open={showFreeQuotaDialog} onOpenChange={setShowFreeQuotaDialog}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
-            <DialogTitle>免费额度说明</DialogTitle>
+            <DialogTitle>开启CLS日志服务-免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-4 space-y-2">
-              <p className="text-sm text-[#525252]">
+            <Alert variant="info">
+              <AlertOperationInfoIcon />
+              <AlertDescription>
                 为您赠送<span className="font-semibold text-[#355EF1]">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-[#355EF1]">3000U</span>），预估可覆盖 <span className="font-semibold text-[#355EF1]">500台</span> Agent 机器<span className="font-semibold text-[#355EF1]">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-[#355EF1]">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
                   href="#"
@@ -973,9 +991,9 @@ export default function OpsObservation() {
                   计费详情
                 </a>
                 。
-              </p>
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer">
+              </AlertDescription>
+            </Alert>
+            <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
                 id="free-quota-agreement"
                 checked={freeQuotaAgreed}
@@ -1029,24 +1047,42 @@ export default function OpsObservation() {
                     </ul>
                   </AlertDescription>
                 </Alert>
-                <div className="flex items-start gap-2">
-                  <Checkbox
-                    id="deleteLogTopic"
-                    checked={deleteLogTopic}
-                    onCheckedChange={(checked) => setDeleteLogTopic(checked === true)}
-                    className="mt-0.5"
-                  />
-                  <div className="flex-1 space-y-2">
-                    <Label htmlFor="deleteLogTopic" className="text-sm font-medium text-[#0A0A0A] cursor-pointer">
-                      同时删除关联的日志主题资源
-                    </Label>
-                    <p className="text-xs text-[#737373] leading-relaxed">
-                      勾选后将永久删除该日志主题及所有日志数据，
-                      <span className="text-[#DC2626]">数据不可恢复</span>
-                      ；未删除则会持续产生存储费用。
-                    </p>
+                <SurfaceInner
+                  className="p-3 cursor-pointer transition-colors hover:bg-[#FAFAFA]"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setDeleteLogTopic((prev) => !prev)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setDeleteLogTopic((prev) => !prev);
+                    }
+                  }}
+                >
+                  <div className="flex items-start gap-2">
+                    <Checkbox
+                      id="deleteLogTopic"
+                      checked={deleteLogTopic}
+                      onCheckedChange={(checked) => setDeleteLogTopic(checked === true)}
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-0.5"
+                    />
+                    <div className="flex-1 space-y-2">
+                      <Label
+                        htmlFor="deleteLogTopic"
+                        className="text-sm font-medium text-[#0A0A0A] cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        同时删除关联的日志主题资源
+                      </Label>
+                      <p className="text-sm text-[#525252] leading-relaxed">
+                        勾选后将永久删除该日志主题及所有日志数据，
+                        <span className="text-[#DC2626]">数据不可恢复</span>
+                        ；未删除则会持续产生存储费用。
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </SurfaceInner>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>

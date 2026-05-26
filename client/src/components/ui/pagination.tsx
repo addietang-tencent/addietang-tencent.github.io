@@ -9,6 +9,13 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /**
  * Pagination 分页器
@@ -387,27 +394,33 @@ function Pagination({
         </li>
       </ul>
 
-      {/* Size changer */}
+      {/* Size changer — 使用项目 Select 组件，下拉面板风格统一 */}
       {showSizeChanger && (
-        <select
-          value={pageSize}
+        <Select
+          value={String(pageSize)}
           disabled={disabled}
-          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-          className={cn(
-            "border border-[#E4E4E4] rounded-[4px] bg-white text-[#09090b] outline-none transition-colors pl-3 pr-7 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_8px_center] bg-no-repeat",
-            itemSize,
-            textSize,
-            "hover:border-[#355EF1]",
-            "focus:border-[#355EF1]",
-            "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-[#E4E4E4]"
-          )}
+          onValueChange={(v) => handlePageSizeChange(Number(v))}
         >
-          {pageSizeOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt} 条/页
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            size="sm"
+            className={cn(
+              "bg-white text-[#09090b]",
+              "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-[#E4E4E4]",
+              textSize,
+              // 与分页主控件高度对齐：default → 32px, small → 24px
+              isSmall ? "!h-6 px-2 [&_svg]:size-3" : "!h-8",
+            )}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {pageSizeOptions.map((opt) => (
+              <SelectItem key={opt} value={String(opt)}>
+                {opt} 条/页
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
       {/* Quick jumper */}

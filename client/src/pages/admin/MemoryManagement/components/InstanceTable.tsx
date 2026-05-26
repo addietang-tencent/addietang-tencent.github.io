@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CircleAlert } from 'lucide-react';
 import { Pagination } from '@/components/ui/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -26,6 +28,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 // 骨架屏组件
 const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
@@ -556,11 +568,8 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           content: (
             <div className="space-y-3">
               <p className="text-[14px] text-[#020617] leading-relaxed">
-                即将为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Free 服务。
+                即将为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Free 服务。开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。
               </p>
-              <div className="p-3 bg-[#EFF6FF] rounded-lg border border-[#BFDBFE]">
-                <p className="text-[13px] text-[#1447E6] leading-relaxed">开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
-              </div>
               {selectedInstances.length > count && (
                 <p className="text-[12px] text-[#737373]">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已开启记忆，将被跳过。
@@ -581,6 +590,10 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           title: '开启 Memory Pro',
           content: (
             <div className="space-y-3">
+              <Alert variant="warning">
+                <CircleAlert />
+                <AlertDescription>开启 Pro 版后不支持回退到 Free 版</AlertDescription>
+              </Alert>
               <p className="text-[14px] text-[#020617] leading-relaxed">
                 确认为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Pro 服务？
               </p>
@@ -589,12 +602,9 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                   其中 {fromFreeCount} 个 Agent 将从 Free 版升级，数据将自动迁移。
                 </p>
               )}
-              <p className="text-[14px] text-[#737373] leading-relaxed">
+              <p className="text-[14px] text-[#020617] leading-relaxed">
                 开启后将重启 Gateway 服务，届时会有短暂的服务中断。
               </p>
-              <div className="p-3 bg-[#FFFBEB] rounded-lg border border-[#FDE68A]">
-                <p className="text-[13px] text-[#92400E]">开启 Pro 版后不支持回退到 Free 版</p>
-              </div>
               {selectedInstances.length > count && (
                 <p className="text-[12px] text-[#737373]">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已是 Pro 版，将被跳过。
@@ -614,41 +624,31 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         const freeCount = count - proCount;
         return {
           title: '批量关闭 Memory 服务',
+          isAlert: true,
           content: (
             <div className="space-y-3">
               <p className="text-[14px] text-[#020617] leading-relaxed">
-                即将关闭 <span className="font-medium">{count}</span> 个 Agent 的 Memory 服务。
+                即将关闭 <span className="font-medium">{count}</span> 个 Agent 的 Memory 服务。关闭后将重启相关 Gateway 服务，<span className="text-[#DC2626] font-medium">届时会有短暂的服务中断</span>。{!hasProInDisable && 'Free 版实例的记忆数据将保留在本地，重新开启后可继续使用。'}
               </p>
               {proCount > 0 && freeCount > 0 && (
                 <p className="text-[14px] text-[#737373]">
                   包含 {proCount} 个 Pro 版、{freeCount} 个 Free 版实例。
                 </p>
               )}
-              <div className="p-3 bg-[#EFF6FF] rounded-lg border border-[#BFDBFE]">
-                <p className="text-[13px] text-[#1447E6] leading-relaxed">关闭后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
-              </div>
-              {hasProInDisable ? (
-                <div className="p-3 bg-[#FEF2F2] rounded-lg border border-[#FECACA]">
-                  <p className="text-[13px] text-[#DC2626] font-medium">
-                    {proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除，此操作不可恢复
-                  </p>
-                </div>
-              ) : (
-                <p className="text-[14px] text-[#737373] leading-relaxed">
-                  Free 版实例的记忆数据将保留在本地，重新开启后可继续使用。
+              {hasProInDisable && (
+                <p className="text-[14px] text-[#DC2626] font-medium leading-relaxed">
+                  {proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除，此操作不可恢复。
                 </p>
               )}
               {/* 二次确认输入框 */}
-              <div className="pt-2">
-                <label className="block text-[14px] text-[#020617] mb-2">
-                  请输入「<span className="font-medium text-[#DC2626]">关闭</span>」以确认：
+              <div className="pt-2 space-y-2">
+                <label className="block text-[14px] font-medium text-[#0A0A0A]">
+                  请输入「关闭」以确认
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder="请输入「关闭」"
-                  className="w-full h-9 px-3 border border-[#E5E5E5] rounded-[4px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1447E6] focus:border-transparent"
+                  placeholder="输入「关闭」"
                 />
               </div>
               {selectedInstances.length > count && (
@@ -692,21 +692,21 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             title: '开启 Memory Pro',
             content: (
               <div className="space-y-3">
+                <Alert variant="warning">
+                  <CircleAlert />
+                  <AlertDescription>开启 Pro 版后不支持回退到 Free 版</AlertDescription>
+                </Alert>
                 <p className="text-[14px] text-[#020617] leading-relaxed">
                   确认为 Agent「<span className="font-medium">{targetInstance.name}</span>」开启 Memory Pro 服务？
                 </p>
                 {isFromFree && (
-                  <p className="text-[14px] text-[#737373] leading-relaxed">
+                  <p className="text-[14px] text-[#020617] leading-relaxed">
                     Free 版的记忆数据将自动迁移到 Pro 版。
                   </p>
                 )}
-                <p className="text-[14px] text-[#737373] leading-relaxed">
+                <p className="text-[14px] text-[#020617] leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
-
-                <div className="p-3 bg-[#FFFBEB] rounded-lg border border-[#FDE68A]">
-                  <p className="text-[13px] text-[#92400E]">开启 Pro 版后不支持回退到 Free 版</p>
-                </div>
               </div>
             ),
             confirmText: '确认开启',
@@ -760,9 +760,47 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
     const config = getDialogConfig();
     if (!config) return null;
 
+    // 警示弹窗（批量关闭等危险操作）
+    if (config.isAlert) {
+      return (
+        <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && closeDialog()}>
+          <AlertDialogContent className="sm:max-w-[420px]">
+            <button
+              type="button"
+              aria-label="关闭"
+              onClick={closeDialog}
+              className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+            >
+              <X className="size-5" />
+              <span className="sr-only">关闭</span>
+            </button>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-[#0A0A0A]">{config.title}</AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div>{config.content}</div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={closeDialog} disabled={isProcessing}>
+                取消
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-white hover:bg-destructive/90"
+                onClick={executeStatusChange}
+                disabled={isProcessing || config.confirmDisabled}
+              >
+                {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                {config.confirmText}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      );
+    }
+
     return (
       <Dialog open={true} onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-        <DialogContent className="max-w-[420px]">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-[16px] font-semibold text-[#020617]">
               {config.title}

@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle, AlertOperationInfoIcon } from '@/c
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { CircleAlert, Lock } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 
 // 配置常量
 const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
@@ -68,7 +68,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="sm:max-w-md"
+        className="sm:max-w-[560px]"
         style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
       >
         <DialogHeader>
@@ -85,46 +85,39 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
               </Alert>
             )}
 
-            {/* 限免活动提示 */}
-            <Alert variant="warning">
-              <CircleAlert />
+            {/* 合并：限免活动 + 开通说明 */}
+            <Alert variant="info">
+              <AlertOperationInfoIcon />
               <AlertTitle>限时免费体验（至 2026.6.15）</AlertTitle>
               <AlertDescription>
-                免费体验期内可使用全部 Pro 能力，体验结束前我们会提前通知定价；体验期结束后<span className="font-medium">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。
-              </AlertDescription>
-            </Alert>
-
-            <Alert variant="operation-info">
-              <AlertOperationInfoIcon />
-              <AlertDescription>
                 <ul className="list-disc pl-4 space-y-0.5">
-                  <li>开通后将获得 <span className="font-semibold">{FIXED_MEMORY_SPACES}</span> 个记忆空间，每个记忆空间可绑定一个 Agent</li>
-                  <li>开通服务需要 3-5 分钟准备资源，准备完成后即可使用</li>
+                  <li>免费体验期内可使用全部 Pro 能力，体验结束前我们会提前通知定价；体验期结束后<span className="font-medium">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。</li>
+                  <li>开通后将获得 <span className="font-semibold">{FIXED_MEMORY_SPACES}</span> 个记忆空间，每个记忆空间可绑定一个 Agent。</li>
+                  <li>开通服务需要 3-5 分钟准备资源，准备完成后即可使用。</li>
                 </ul>
               </AlertDescription>
             </Alert>
 
-            {/* 配置项 */}
-            <div className="rounded-[4px] border border-[#E5E5E5] bg-white">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E5E5]">
+            {/* 配置项（无外边框） */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Label className="text-sm font-medium text-[#0A0A0A]">记忆空间配额</Label>
-                  <Lock className="w-3.5 h-3.5 text-[#737373]" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-[#0A0A0A]">{FIXED_MEMORY_SPACES} 个</span>
                   <span className="text-xs text-[#737373]">如需更多请联系商务</span>
+                  <span className="text-sm font-medium text-[#0A0A0A]">{FIXED_MEMORY_SPACES} 个</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-[#0A0A0A]">默认开通</Label>
-                  <p className="text-xs text-[#737373]">新创建的 Agent 自动开通 Pro 版</p>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-[#0A0A0A]">默认开通</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#737373]">新创建的 Agent 自动开通 Pro 版</span>
+                  <Switch
+                    checked={autoEnableForNewInstances}
+                    onCheckedChange={setAutoEnableForNewInstances}
+                  />
                 </div>
-                <Switch
-                  checked={autoEnableForNewInstances}
-                  onCheckedChange={setAutoEnableForNewInstances}
-                />
               </div>
             </div>
           </div>

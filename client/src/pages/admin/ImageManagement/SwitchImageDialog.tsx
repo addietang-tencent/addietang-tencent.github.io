@@ -16,7 +16,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   History,
-  Pencil,
   Plus,
   RefreshCw,
 } from "lucide-react";
@@ -178,7 +177,7 @@ export default function SwitchImageDialog({
               {/* 当前生效镜像信息卡片 */}
               {effectiveImage && (
                 <SurfaceInner className="px-5 py-4">
-                  <div className="text-xs font-medium text-[#737373] mb-2">当前生效镜像</div>
+                  <div className="text-xs font-medium text-[#737373] mb-2">当前用户可见镜像</div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <StatusTag variant={effectiveImage.source === "public" ? "blue" : "gray"}>
                       {effectiveImage.source === "public" ? "公共" : "自定义"}
@@ -362,22 +361,12 @@ function CustomList({
           pendingId={pendingId}
           onSelect={onSelect}
           renderActions={(img) => {
-            const missingVersion = !img.agentVersion?.trim();
             return (
               <>
-                {missingVersion && (
-                  <Button
-                    variant="link-dark"
-                    onClick={() => onEditImage(img.id)}
-                  >
-                    编辑补齐版本
-                  </Button>
-                )}
                 <Button
                   variant="link-dark"
                   onClick={() => onEditImage(img.id)}
                 >
-                  <Pencil className="w-3.5 h-3.5 mr-1" />
                   编辑
                 </Button>
                 <Tooltip>
@@ -434,7 +423,7 @@ function ImageList({
             <TableHead>镜像</TableHead>
             <TableHead>版本</TableHead>
             <TableHead>创建时间</TableHead>
-            <TableHead className="text-right">操作</TableHead>
+            <TableHead>操作</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -459,7 +448,7 @@ function ImageList({
                   />
                 </TableCell>
 
-                {/* 镜像：类型标签 + 名称 + ID + 状态 */}
+                {/* 镜像：类型标签 + 名称 + ID + 状态（与 agent 类型页镜像列同款样式） */}
                 <TableCell>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <StatusTag variant={imgType === "公共" ? "blue" : "gray"}>
@@ -474,10 +463,25 @@ function ImageList({
                       </StatusTag>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
-                    <span className="truncate">{img.id}</span>
+                  <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
+                    <span className="font-mono truncate">{img.id}</span>
                     <span className="text-gray-200">|</span>
                     <ImageStatusBadge status={img.status} />
+                    {img.source === "public" && (
+                      <>
+                        <span className="text-gray-200">|</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-[11px] text-gray-400 inline-block cursor-default underline decoration-dashed underline-offset-2 decoration-gray-300">
+                              腾讯云维护
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            由腾讯云持续维护更新，自动跟随官方版本
+                          </TooltipContent>
+                        </Tooltip>
+                      </>
+                    )}
                   </div>
                 </TableCell>
 
@@ -531,10 +535,9 @@ function ImageList({
 
                 {/* 操作列 */}
                 <TableActionCell
-                  className="text-right"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center gap-2">
                     {renderActions(img)}
                   </div>
                 </TableActionCell>

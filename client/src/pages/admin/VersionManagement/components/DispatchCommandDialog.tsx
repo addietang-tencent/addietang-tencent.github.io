@@ -501,8 +501,12 @@ export default function DispatchCommandDialog({
                       candidateInstances.map((i) => {
                         const checked = selected.has(i.instanceId);
                         return (
-                          <tr key={i.instanceId} className={checked ? "bg-[#E8ECFE]/40" : "hover:bg-[#FAFAFA]"}>
-                            <td className="px-3 py-2.5">
+                          <tr
+                            key={i.instanceId}
+                            onClick={() => toggle(i.instanceId)}
+                            className={`cursor-pointer ${checked ? "bg-[#E8ECFE]/40" : "hover:bg-[#FAFAFA]"}`}
+                          >
+                            <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={checked}
                                 onCheckedChange={() => toggle(i.instanceId)}

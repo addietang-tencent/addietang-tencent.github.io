@@ -22,7 +22,7 @@ export function ImageStatusBadge({ status }: { status: string }) {
   const c = STATUS_MAP[status] ?? STATUS_MAP.available;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-sm ${c.textClass} whitespace-nowrap`}
+      className={`inline-flex items-center gap-1.5 text-[12px] ${c.textClass} whitespace-nowrap`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
       {c.text}

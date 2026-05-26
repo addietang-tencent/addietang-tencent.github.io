@@ -6,9 +6,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogBody,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from "@/components/ui/sheet";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertTitle, AlertDescription, AlertInfoIcon } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +53,7 @@ import {
   ChevronDown,
   ChevronRight,
   AlertTriangle,
+  CircleAlert,
   Info,
   ChevronLeft,
   Link,
@@ -1851,42 +1862,43 @@ export default function FileManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Recycle Bin Dialog */}
-      <Dialog open={recyclebinOpen} onOpenChange={setRecyclebinOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-hidden flex flex-col gap-0 p-0">
-          {/* Header */}
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-[#E5E5E5]">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-[4px] bg-[#F5F5F5] flex items-center justify-center shrink-0">
-                <Trash2 className="w-4 h-4 text-[#737373]" strokeWidth={1.75} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <DialogTitle className="text-base font-semibold text-[#0A0A0A] leading-tight">
-                  回收站
-                </DialogTitle>
-                <p className="text-xs text-[#737373] mt-1 leading-relaxed">
-                  {getRecyclebinInstances().length > 0 ? (
-                    <>共 <span className="text-[#020617] font-medium tabular-nums">{getRecyclebinInstances().length}</span> 个网盘空间待处理 · 关闭后保留 15 天，逾期自动永久删除</>
-                  ) : (
-                    <>关闭后的网盘空间将在此保留 15 天，逾期自动永久删除</>
-                  )}
-                </p>
-              </div>
-            </div>
-          </DialogHeader>
+      {/* Recycle Bin Sheet（右侧非模态侧边栏） */}
+      <Sheet open={recyclebinOpen} onOpenChange={setRecyclebinOpen} modal={false}>
+        <SheetContent
+          side="right"
+          showOverlay={false}
+          className="w-full sm:max-w-[640px] p-0 gap-0 flex flex-col"
+          onInteractOutside={(e) => {
+            // 点击在二次确认 Dialog/AlertDialog 等其他 Radix Portal 内时，阻止关闭侧边栏；
+            // 真正点击页面正文（非任何 portal）时允许默认关闭行为。
+            const target = e.target as HTMLElement | null;
+            if (target?.closest("[data-slot='dialog-content'], [data-slot='alert-dialog-content'], [data-radix-popper-content-wrapper]")) {
+              e.preventDefault();
+            }
+          }}
+        >
+          <SheetHeader className="px-6 pt-6 pb-4 gap-1.5">
+            <SheetTitle className="text-base font-semibold text-[#0A0A0A]">回收站</SheetTitle>
+            <SheetDescription className="text-sm text-[#737373]">
+              {getRecyclebinInstances().length > 0 ? (
+                <>共 <span className="text-[#020617] font-medium tabular-nums">{getRecyclebinInstances().length}</span> 个网盘空间待处理 · 关闭后保留 15 天，逾期自动永久删除</>
+              ) : (
+                <>关闭后的网盘空间将在此保留 15 天，逾期自动永久删除</>
+              )}
+            </SheetDescription>
+          </SheetHeader>
 
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto px-6 py-5 bg-[#FAFAFA]">
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2" style={{ scrollbarGutter: "stable" }}>
             {getRecyclebinInstances().length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="w-16 h-16 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center mb-4">
                   <Trash2 className="w-7 h-7 text-[#A3A3A3]" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm font-medium text-[#334155]">回收站为空</p>
-                <p className="text-xs text-[#A3A3A3] mt-1">没有待恢复的网盘空间</p>
+                <p className="text-sm font-medium text-[#0A0A0A]">回收站为空</p>
+                <p className="text-xs text-[#737373] mt-1">没有待恢复的网盘空间</p>
               </div>
             ) : (
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {getRecyclebinInstances().map((instance) => {
                   const days = instance.remainingDays;
                   // 紧迫度色阶：≤3天 红色 / ≤7天 橙色 / >7天 中性灰
@@ -1895,15 +1907,15 @@ export default function FileManagement() {
                       ? { bg: "bg-[#FEF2F2]", text: "text-[#DC2626]", iconColor: "text-[#DC2626]" }
                       : days <= 7
                       ? { bg: "bg-[#FFF7ED]", text: "text-[#C2410C]", iconColor: "text-[#EA580C]" }
-                      : { bg: "bg-[#F1F5F9]", text: "text-[#475569]", iconColor: "text-[#64748B]" };
+                      : { bg: "bg-[#F5F5F5]", text: "text-[#525252]", iconColor: "text-[#737373]" };
 
                   return (
                     <div
                       key={instance.id}
-                      className="group bg-white border border-[#E5E5E5] rounded-[4px] px-4 py-3.5 hover:border-[#1447E6]/30 transition-colors"
+                      className="bg-white border border-[#E5E5E5] rounded-[4px] px-4 py-3.5 hover:border-[#1447E6]/30 transition-colors"
                     >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           {/* 头像 */}
                           <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                             {instance.avatar}
@@ -1932,66 +1944,39 @@ export default function FileManagement() {
                         </div>
 
                         {/* 操作按钮区 */}
-                        <div className="flex items-center gap-1 shrink-0">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-2.5 gap-1.5 text-[#334155] hover:text-[#1447E6] hover:bg-[#EFF6FF]"
-                                  onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
-                                >
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                  恢复
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>恢复此网盘空间</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                        <div className="flex items-center gap-1 justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2.5 gap-1.5 text-[#525252] hover:text-[#1447E6]"
+                            onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            恢复
+                          </Button>
                           <div className="w-px h-4 bg-[#E5E5E5]" />
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-2.5 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#F5F5F5]"
-                                  onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
-                                >
-                                  <Link className="w-3.5 h-3.5" />
-                                  转接
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>将此网盘转接给其他实例</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2.5 gap-1.5 text-[#525252] hover:text-[#0A0A0A]"
+                            onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
+                          >
+                            <Link className="w-3.5 h-3.5" />
+                            转接
+                          </Button>
                           <div className="w-px h-4 bg-[#E5E5E5]" />
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 px-2.5 gap-1.5 text-[#737373] hover:text-[#DC2626] hover:bg-[#FEF2F2]"
-                                  onClick={() => {
-                                    setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
-                                    setRecyclebinDeleteDialogOpen(true);
-                                  }}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  永久删除
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>永久删除此网盘空间（不可恢复）</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-2.5 gap-1.5 text-[#737373] hover:text-[#DC2626]"
+                            onClick={() => {
+                              setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
+                              setRecyclebinDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            永久删除
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -2001,41 +1986,33 @@ export default function FileManagement() {
             )}
           </div>
 
-          {/* Footer */}
-          <DialogFooter className="px-6 py-4 border-t border-[#E5E5E5] bg-white">
-            <Button variant="claw-outline" size="claw-sm" onClick={() => setRecyclebinOpen(false)}>
-              关闭
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <SheetFooter className="h-4 p-0 mt-0" />
+        </SheetContent>
+      </Sheet>
 
       {/* Recyclebin Recover Confirmation Dialog */}
       <Dialog open={recyclebinRecoverDialogOpen} onOpenChange={setRecyclebinRecoverDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
-              <RotateCcw className="w-5 h-5 text-[#355EF1]" />
-              恢复网盘空间
-            </DialogTitle>
+            <DialogTitle>恢复网盘空间</DialogTitle>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-4">
-              <p className="text-sm text-[#334155] leading-relaxed">
-                确定要恢复 <span className="font-semibold text-[#355EF1]">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
+          <DialogBody>
+            <div className="space-y-4">
+              <Alert variant="info">
+                <AlertInfoIcon />
+                <AlertDescription>
+                  <ul className="space-y-0.5">
+                    <li>• 恢复后将继续使用之前的网盘空间</li>
+                    <li>• 原有文件和数据将保持不变</li>
+                    <li>• 恢复操作完全免费</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+              <p className="text-sm text-[#0A0A0A]">
+                确定要恢复 <span className="font-medium text-[#0A0A0A]">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
               </p>
             </div>
-            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] p-3">
-              <div className="flex items-start gap-2 text-xs text-[#737373]">
-                <Info className="w-4 h-4 text-[#A3A3A3] shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p>• 恢复后将继续使用之前的网盘空间</p>
-                  <p>• 原有文件和数据将保持不变</p>
-                  <p>• 恢复操作完全免费</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRecyclebinRecover}>取消</Button>
             <Button variant="dialog-confirm" onClick={handleConfirmRecyclebinRecover}>
@@ -2045,113 +2022,129 @@ export default function FileManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Recyclebin Permanent Delete Confirmation Dialog */}
-      <Dialog open={recyclebinDeleteDialogOpen} onOpenChange={setRecyclebinDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-red-600" />
-              永久删除网盘空间
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="bg-red-50 border border-red-100 rounded-[4px] p-4">
-              <p className="text-sm text-[#334155] leading-relaxed">
-                确定要永久删除 <span className="font-semibold text-red-600">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
-              </p>
-            </div>
-            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] p-3">
-              <div className="flex items-start gap-2 text-xs text-[#737373]">
-                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-semibold text-red-600">⚠️ 此操作不可恢复！</p>
-                  <p>• 网盘中所有文件和数据将被永久删除</p>
-                  <p>• 删除后无法恢复任何内容</p>
-                  <p>• 请谨慎操作</p>
-                </div>
+      {/* Recyclebin Permanent Delete Confirmation - 警示弹窗 */}
+      <AlertDialog open={recyclebinDeleteDialogOpen} onOpenChange={setRecyclebinDeleteDialogOpen}>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={handleCancelPermanentDelete}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#0A0A0A]">永久删除网盘空间</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <Alert variant="warning">
+                  <CircleAlert />
+                  <AlertTitle>注意事项</AlertTitle>
+                  <AlertDescription>
+                    <ul className="space-y-0.5">
+                      <li>• 网盘中所有文件和数据将被永久删除</li>
+                      <li>• 删除后无法恢复任何内容</li>
+                      <li>• 请谨慎操作</li>
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+                <p className="text-sm text-[#0A0A0A]">
+                  确定要永久删除 <span className="font-medium text-[#0A0A0A]">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
+                </p>
               </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelPermanentDelete}>取消</Button>
-            <Button variant="destructive" onClick={handleConfirmPermanentDelete}>
-              永久删除
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelPermanentDelete}>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmPermanentDelete}>永久删除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Transfer Dialog - 转接网盘 */}
       <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent
+          className="sm:max-w-[720px] flex flex-col"
+          style={{ maxHeight: "min(90vh, 780px)" }}
+        >
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
-              <Link className="w-5 h-5 text-purple-600" />
-              转接网盘空间
-            </DialogTitle>
+            <DialogTitle>转接网盘空间</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto py-4 space-y-4">
-            <div className="bg-purple-50 border border-purple-100 rounded-[4px] p-4">
-              <p className="text-sm text-[#334155] leading-relaxed">
-                将 <span className="font-semibold text-purple-600">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
-              </p>
-              <p className="text-xs text-[#737373] mt-2">
-                实例ID: <span className="font-mono text-purple-600">{instanceToTransfer?.instanceId}</span>
-              </p>
-            </div>
+          <DialogBody className="flex-1">
+            <div className="space-y-4">
+              {/* Alert 提示置顶 */}
+              <Alert variant="info">
+                <AlertInfoIcon />
+                <AlertDescription>
+                  <ul className="space-y-0.5">
+                    <li>• 转接后，网盘空间将绑定到新实例</li>
+                    <li>• 原实例将无法再访问此网盘</li>
+                    <li>• 网盘中的文件和数据将完整保留</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
 
-            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-3">
-              <div className="flex items-start gap-2 text-xs text-[#355EF1]">
-                <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p>• 转接后，网盘空间将绑定到新实例</p>
-                  <p>• 原实例将无法再访问此网盘</p>
-                  <p>• 网盘中的文件和数据将完整保留</p>
-                </div>
+              {/* 待转接的网盘信息卡片：白底黑字 */}
+              <div className="bg-white border border-[#E5E5E5] rounded-[4px] p-4">
+                <p className="text-sm text-[#0A0A0A] leading-relaxed">
+                  将 <span className="font-medium text-[#0A0A0A]">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
+                </p>
+                <p className="text-xs text-[#737373] mt-2">
+                  实例ID：<span className="font-mono text-[#0A0A0A]">{instanceToTransfer?.instanceId}</span>
+                </p>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <Label className="text-sm font-semibold text-[#0A0A0A]">选择目标实例</Label>
-              {getAvailableTargetInstances().length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-[#A3A3A3]">
-                  <Bot className="w-12 h-12 mb-3 opacity-30" />
-                  <p className="text-sm">暂无可转接的目标实例</p>
-                  <p className="text-xs mt-1">只能转接给未启用过网盘的实例</p>
-                </div>
-              ) : (
-                <RadioGroup value={selectedTargetInstance} onValueChange={setSelectedTargetInstance}>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                    {getAvailableTargetInstances().map((item) => (
-                      <div key={item.id} className="flex items-center">
-                        <RadioGroupItem value={item.id} id={`transfer-${item.id}`} className="peer sr-only" />
-                        <Label
-                          htmlFor={`transfer-${item.id}`}
-                          className="flex flex-1 items-center gap-3 rounded-[4px] border-2 border-[#e5e5e5] bg-white p-4 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+              {/* 选择目标实例 */}
+              <div className="space-y-3">
+                <div className="text-sm font-medium text-[#0A0A0A]">选择目标实例</div>
+                {getAvailableTargetInstances().length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-[#A3A3A3]">
+                    <Bot className="w-12 h-12 mb-3 opacity-30" />
+                    <p className="text-sm">暂无可转接的目标实例</p>
+                    <p className="text-xs mt-1">只能转接给未启用过网盘的实例</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1" style={{ scrollbarGutter: "stable" }}>
+                    {getAvailableTargetInstances().map((item) => {
+                      const isSelected = selectedTargetInstance === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setSelectedTargetInstance(item.id)}
+                          className={`w-full text-left flex items-center gap-3 rounded-[4px] border bg-white p-4 transition-colors ${
+                            isSelected
+                              ? "border-[#355EF1] bg-[#F5F8FF]"
+                              : "border-[#E5E5E5] hover:border-[#355EF1]"
+                          }`}
                         >
                           <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                             {item.avatar}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-sm font-semibold text-[#0A0A0A] truncate">
+                              <h4 className={`text-sm font-medium truncate ${isSelected ? "text-[#355EF1]" : "text-[#0A0A0A]"}`}>
                                 {item.instanceName}
                               </h4>
                               <StatusTag mode="fill" variant="gray">未启用</StatusTag>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-[#737373]">
                               <span>创建人: {item.creator}</span>
-                              <span className="font-mono text-[#355EF1]">{item.instanceId}</span>
+                              <span className="font-mono">{item.instanceId}</span>
                             </div>
                           </div>
-                        </Label>
-                      </div>
-                    ))}
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-[#355EF1] shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                </RadioGroup>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelTransfer}>取消</Button>
             <Button

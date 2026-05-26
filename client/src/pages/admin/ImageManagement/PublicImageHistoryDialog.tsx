@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { StatusTag } from "@/components/ui/status-tag";
+import { SurfaceInner } from "@/components/ui/Surface";
 import { AGENT_VERSIONS } from "../VersionManagement/mockData";
 import type { AgentTypeKey } from "../VersionManagement/mockData";
 
@@ -54,45 +55,43 @@ export default function PublicImageHistoryDialog({
           <DialogDescription asChild>
             <div className="space-y-0.5">
               <div className="text-sm font-medium text-[#0A0A0A]">{imageName}</div>
-              <div className="font-mono text-xs text-[#737373]">{imageId}</div>
+              <div className="text-sm text-[#525252]">{imageId}</div>
             </div>
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody className="flex-1">
           {records.length === 0 ? (
-            <div className="text-center py-12 text-sm text-[#A3A3A3]">
+            <div className="text-center py-12 text-sm text-[#525252]">
               暂无版本更新记录
             </div>
           ) : (
-            <ol className="relative space-y-3 ml-4 border-l-2 border-[#E5E5E5] pl-6">
+            <ol className="relative ml-2 border-l border-[#E5E5E5] pl-5 space-y-5">
               {records.map((r) => {
                 const isCurrent = r.isLatest;
                 return (
                   <li key={`${r.agentType}-${r.version}`} className="relative">
                     <span
-                      className={`absolute -left-[33px] top-1 w-4 h-4 rounded-full border-2 ${
-                        isCurrent
-                          ? "bg-[#355EF1] border-[#355EF1]"
-                          : "bg-white border-[#A3A3A3]"
+                      className={`absolute -left-[26px] top-1.5 w-2.5 h-2.5 rounded-full ${
+                        isCurrent ? "bg-[#355EF1]" : "bg-[#D4D4D4]"
                       }`}
                     />
-                    <div className="rounded-[4px] p-3 bg-white border border-[#E5E5E5]">
+                    <SurfaceInner className="p-3">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mono font-semibold text-sm text-[#0A0A0A] tabular-nums">
+                        <span className="text-sm font-medium text-[#0A0A0A]">
                           v{r.version}
                         </span>
-                        {isCurrent && <StatusTag mode="fill" variant="green">当前版本</StatusTag>}
-                        <span className="text-xs text-[#737373] font-mono ml-auto">
+                        {isCurrent && <StatusTag variant="green">当前版本</StatusTag>}
+                        <span className="text-sm text-[#525252] ml-auto">
                           {r.releaseTime}
                         </span>
                       </div>
                       {r.description && (
-                        <p className="mt-1.5 text-xs text-[#525252] leading-relaxed">
+                        <p className="mt-1 text-sm text-[#525252] leading-relaxed">
                           {r.description}
                         </p>
                       )}
-                    </div>
+                    </SurfaceInner>
                   </li>
                 );
               })}

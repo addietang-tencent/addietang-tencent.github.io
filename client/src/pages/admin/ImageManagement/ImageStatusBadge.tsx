@@ -12,7 +12,7 @@ const STATUS_MAP: Record<
   string,
   { text: string; dotClass: string; textClass: string }
 > = {
-  available: { text: "可用", dotClass: "bg-green-500", textClass: "text-gray-600" },
+  available: { text: "可用", dotClass: "bg-green-500", textClass: "text-gray-400" },
   creating: { text: "创建中", dotClass: "bg-amber-500", textClass: "text-amber-600" },
   failed: { text: "异常", dotClass: "bg-red-500", textClass: "text-red-600" },
   error: { text: "异常", dotClass: "bg-red-500", textClass: "text-red-600" },

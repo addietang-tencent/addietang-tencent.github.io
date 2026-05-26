@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 import { Input } from '@/components/ui/input';
-import { Search, Grid3x3, List, Send, Trash2, Loader, X } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Trash2, Loader } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
@@ -511,16 +511,7 @@ export default function PluginListTab() {
 
       {/* 删除确认弹窗 - 警示弹窗 */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="sm:max-w-[560px]">
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={() => setDeleteDialogOpen(false)}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
+        <AlertDialogContent className="sm:max-w-[420px]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#0A0A0A]">删除插件</AlertDialogTitle>
             <AlertDialogDescription asChild>

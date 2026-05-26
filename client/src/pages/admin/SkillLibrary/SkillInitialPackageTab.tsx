@@ -813,16 +813,7 @@ interface DeleteConfirmDialogProps {
 function DeleteConfirmDialog({ open, packageName, onConfirm, onCancel }: DeleteConfirmDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
-      <AlertDialogContent className="sm:max-w-[560px]">
-        <button
-          type="button"
-          aria-label="关闭"
-          onClick={onCancel}
-          className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-        >
-          <X className="size-5" />
-          <span className="sr-only">关闭</span>
-        </button>
+      <AlertDialogContent className="sm:max-w-[420px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-[#0A0A0A]">确认删除</AlertDialogTitle>
           <AlertDialogDescription asChild>

@@ -1598,10 +1598,10 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => { setSecurityScanDialogOpen(false); setSecurityScanSkillId(null); }}>取消</AlertDialogCancel>
             <AlertDialogAction
+              variant="dialog-confirm"
               onClick={handleSecurityScanConfirm}
               disabled={securityServiceUsed >= 1000}
-              className="text-white disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: 'linear-gradient(90deg, #020617 70%, #1447E6 100%)' }}
+              className="disabled:cursor-not-allowed"
             >
               确认检测
             </AlertDialogAction>

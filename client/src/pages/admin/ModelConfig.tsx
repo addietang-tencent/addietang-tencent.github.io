@@ -889,7 +889,7 @@ export default function ModelConfig() {
 
       {/* Add Model Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="sm:max-w-[720px]">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>添加模型</DialogTitle>
           </DialogHeader>

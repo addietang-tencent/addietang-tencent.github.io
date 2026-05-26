@@ -358,7 +358,7 @@ function SmallIconStateButton({
       {...props}
     >
       <Icon className="w-3 h-3" />
-      <span className="whitespace-nowrap">{label}</span>
+      {label && <span className="whitespace-nowrap">{label}</span>}
     </button>
   );
 }

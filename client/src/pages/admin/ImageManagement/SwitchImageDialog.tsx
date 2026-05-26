@@ -417,7 +417,7 @@ function ImageList({
 
             {/* 镜像类型 */}
             <div className="basis-0 grow shrink-0 min-w-[70px] max-w-[90px]">
-              <StatusTag
+              <StatusTag mode="fill"
                 variant={imgType === "公共" ? "blue" : "gray"}
                 className="text-[10px] h-4 px-1.5"
               >

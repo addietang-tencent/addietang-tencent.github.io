@@ -345,7 +345,7 @@ function ScopePopover({
   const renderBadges = () => {
     if (model.visibilityScope === "all") {
       return (
-        <StatusTag variant="blue">
+        <StatusTag mode="fill" variant="blue">
           全部用户
         </StatusTag>
       );
@@ -353,7 +353,7 @@ function ScopePopover({
 
     if (selectedGroupPaths.length === 0) {
       return (
-        <StatusTag variant="blue">
+        <StatusTag mode="fill" variant="blue">
           全部用户
         </StatusTag>
       );
@@ -368,11 +368,11 @@ function ScopePopover({
       <Tooltip>
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default">
-            <StatusTag variant="gray" className="max-w-[140px] truncate">
+            <StatusTag mode="fill" variant="gray" className="max-w-[140px] truncate">
               {firstName}
             </StatusTag>
             {rest > 0 && (
-              <StatusTag variant="gray">
+              <StatusTag mode="fill" variant="gray">
                 +{rest}
               </StatusTag>
             )}

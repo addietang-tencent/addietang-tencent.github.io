@@ -268,14 +268,14 @@ export default function BatchUpdateNotice({
                       <span className="text-[12px] text-[#1447E6] font-mono tabular-nums">
                         v{item.enabledVersion}
                       </span>
-                      <StatusTag variant="blue">新版本上线</StatusTag>
+                      <StatusTag mode="fill" variant="blue">新版本上线</StatusTag>
                     </div>
                     <p className="text-[12px] text-[#737373] mt-1">
                       有 <span className="font-medium text-[#020617]">{item.outdatedCount}</span> 个 Agent 运行旧版本
                     </p>
                     {push && (
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
-                        <StatusTag variant="blue" dot>正在提醒员工更新</StatusTag>
+                        <StatusTag mode="fill" variant="blue">正在提醒员工更新</StatusTag>
                         <button
                           onClick={() => handleRevoke(item)}
                           className="text-[12px] text-[#737373] hover:text-[#020617] transition-colors"

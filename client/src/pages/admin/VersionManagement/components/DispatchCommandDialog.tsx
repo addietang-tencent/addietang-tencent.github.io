@@ -445,7 +445,7 @@ export default function DispatchCommandDialog({
                 选择执行对象
                 <span className="text-[#DC2626]">*</span>
                 {selected.size > 0 && (
-                  <StatusTag variant="blue" className="ml-1 text-[10px] h-4 px-1.5">
+                  <StatusTag mode="fill" variant="blue" className="ml-1 text-[10px] h-4 px-1.5">
                     已选 {selected.size} 台
                   </StatusTag>
                 )}

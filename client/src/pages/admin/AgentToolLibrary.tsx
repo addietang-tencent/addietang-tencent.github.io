@@ -107,7 +107,7 @@ export default function AgentToolLibrary() {
                     <ShieldCheck className="w-3.5 h-3.5 text-[#A3A3A3]" />
                     恶意 Skills 扫描 API
                   </span>
-                  <StatusTag variant="gray">未开通</StatusTag>
+                  <StatusTag mode="fill" variant="gray">未开通</StatusTag>
                   <button
                     onClick={() => setSecurityApplyDialogOpen(true)}
                     className="text-xs text-[#355EF1] hover:text-[#355EF1] font-medium"
@@ -123,7 +123,7 @@ export default function AgentToolLibrary() {
                         <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
                         恶意 Skills 扫描 API
                       </span>
-                      <StatusTag variant="green">试用中</StatusTag>
+                      <StatusTag mode="fill" variant="green">试用中</StatusTag>
                     </div>
                   </HoverCardTrigger>
                   <HoverCardContent side="bottom" align="end" className="w-80 p-4">

@@ -623,9 +623,9 @@ export default function OpsObservation() {
                         <TableCell className="font-medium">{v.version}</TableCell>
                         <TableCell className="text-[#525252]">{v.changelog}</TableCell>
                         <TableCell>
-                          {v.status === 'current' && <StatusTag variant="green">当前版本</StatusTag>}
-                          {v.status === 'deprecated' && <StatusTag variant="gray">已弃用</StatusTag>}
-                          {v.status === 'available' && isSelected && <StatusTag variant="blue">已选中</StatusTag>}
+                          {v.status === 'current' && <StatusTag mode="dot" variant="green">当前版本</StatusTag>}
+                          {v.status === 'deprecated' && <StatusTag mode="dot" variant="gray">已弃用</StatusTag>}
+                          {v.status === 'available' && isSelected && <StatusTag mode="dot" variant="blue">已选中</StatusTag>}
                         </TableCell>
                       </TableRow>
                     );

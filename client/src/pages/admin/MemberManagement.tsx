@@ -2669,11 +2669,11 @@ export default function MemberManagement() {
                           <HoverCard>
                             <HoverCardTrigger asChild>
                               <span className="inline-flex items-center gap-1 cursor-pointer max-w-full">
-                                <StatusTag variant="gray" className="max-w-[160px] truncate">
+                                <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate">
                                   {mmGroupItems[0].path}
                                 </StatusTag>
                                 {mmGroupItems.length > 1 && (
-                                  <StatusTag variant="gray">
+                                  <StatusTag mode="fill" variant="gray">
                                     +{mmGroupItems.length - 1}
                                   </StatusTag>
                                 )}
@@ -2711,11 +2711,11 @@ export default function MemberManagement() {
                           <HoverCard>
                             <HoverCardTrigger asChild>
                               <span className="inline-flex items-center gap-1 cursor-pointer max-w-full">
-                                <StatusTag variant="gray" className="max-w-[160px] truncate">
+                                <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate">
                                   {manualGroupPaths[0].path}
                                 </StatusTag>
                                 {manualGroupPaths.length > 1 && (
-                                  <StatusTag variant="gray">
+                                  <StatusTag mode="fill" variant="gray">
                                     +{manualGroupPaths.length - 1}
                                   </StatusTag>
                                 )}
@@ -2732,15 +2732,13 @@ export default function MemberManagement() {
                     </td>
                   )}
                   <td className="px-3 py-4 whitespace-nowrap">
-                    <StatusTag variant={member.role === "admin" ? "blue" : "gray"}>
-                      {member.role === "admin" ? "管理员" : "用户"}
-                    </StatusTag>
+                    <StatusTag preset={member.role === "admin" ? "role-admin" : "role-user"} />
                   </td>
                   <td className="px-3 py-4 whitespace-nowrap">
                     {member.status === "active" ? (
-                      <StatusTag variant="green" dot>正常</StatusTag>
+                      <StatusTag mode="dot" variant="green">正常</StatusTag>
                     ) : (
-                      <StatusTag variant="red" dot>禁用</StatusTag>
+                      <StatusTag mode="dot" variant="red">禁用</StatusTag>
                     )}
                   </td>
                   <td className="px-3 py-4">
@@ -3392,7 +3390,7 @@ export default function MemberManagement() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <StatusTag variant="red" dot>禁用</StatusTag>
+                            <StatusTag mode="dot" variant="red">禁用</StatusTag>
                           </td>
                         </tr>
                       ))}
@@ -4015,7 +4013,7 @@ export default function MemberManagement() {
                   {hasRelatedConfigs ? (
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {configs.filter((c) => c.items.length > 0).map((c) => (
-                        <StatusTag key={c.type} variant="gray">{c.type}({c.items.length})</StatusTag>
+                        <StatusTag mode="fill" key={c.type} variant="gray">{c.type}({c.items.length})</StatusTag>
                       ))}
                     </div>
                   ) : (
@@ -4226,15 +4224,13 @@ export default function MemberManagement() {
                                 )}
                                 <TableCell className="text-xs text-[#737373]">{groupDisplay}</TableCell>
                                 <TableCell className="w-24">
-                                  <StatusTag variant={m.role === "admin" ? "blue" : "gray"}>
-                                    {m.role === "admin" ? "管理员" : "用户"}
-                                  </StatusTag>
+                                  <StatusTag preset={m.role === "admin" ? "role-admin" : "role-user"} />
                                 </TableCell>
                                 <TableCell className="w-20">
                                   {m.status === "active" ? (
-                                    <StatusTag variant="green" dot>正常</StatusTag>
+                                    <StatusTag mode="dot" variant="green">正常</StatusTag>
                                   ) : (
-                                    <StatusTag variant="red" dot>禁用</StatusTag>
+                                    <StatusTag mode="dot" variant="red">禁用</StatusTag>
                                   )}
                                 </TableCell>
                               </TableRow>

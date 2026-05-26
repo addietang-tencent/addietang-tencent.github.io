@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils";
  * Typography（用户端文字语义组件）
  *
  * 默认颜色全部绑定到 v2 颜色 token：
- * - text-gray-900 → #0A0A0A 主文字
+ * - text-gray-900 → #0A0A0A 主文字 / 正文（与卡片标题一致）
  * - text-gray-950 → #020617 强调文字
- * - text-gray-700 → #334155 正文 / 次级文字
+ * - text-gray-700 → #334155 同字号描述性正文 / 次级文字
  * - text-gray-500 → #737373 辅助文字
  * - text-gray-400 → #A3A3A3 极弱文字
  * - text-[var(--brand-blue)] → #1447E6 品牌 / 活跃文字
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 export const typographyColorTokens = {
   primary: "text-gray-900",
   emphasis: "text-gray-950",
+  body: "text-gray-900",
   secondary: "text-gray-700",
   muted: "text-gray-500",
   weak: "text-gray-400",
@@ -111,7 +112,7 @@ export const BodyText = createTypography(
   "BodyText",
   "p",
   "font-sans text-sm font-normal leading-[1.5]",
-  "secondary",
+  "body",
 );
 
 export const BodyMedium = createTypography(
@@ -142,6 +143,13 @@ export const MetaMedium = createTypography(
   "muted",
 );
 
+export const SmallBodyText = createTypography(
+  "SmallBodyText",
+  "span",
+  "font-sans text-xs font-medium leading-3 tracking-[0.18px]",
+  "emphasis",
+);
+
 export const TinyText = createTypography(
   "TinyText",
   "span",
@@ -160,7 +168,7 @@ export const InlineNumber = createTypography(
   "InlineNumber",
   "span",
   "font-din text-sm leading-[1.5] tabular-nums",
-  "secondary",
+  "body",
 );
 
 export const CodeText = createTypography(

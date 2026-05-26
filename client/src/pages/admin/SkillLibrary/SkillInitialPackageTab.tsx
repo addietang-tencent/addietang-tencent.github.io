@@ -137,12 +137,12 @@ function AddPublicSkillDialog({ open, existingSkillIds, onConfirm, onCancel }: A
                       </div>
                     )}
                     {isAlreadyAdded && (
-                      <StatusTag variant="gray" className="absolute top-2 right-2">已添加</StatusTag>
+                      <StatusTag mode="fill" variant="gray" className="absolute top-2 right-2">已添加</StatusTag>
                     )}
                     {/* 技能名称（英文）+ 版本号 */}
                     <div className="flex items-center gap-2 mb-1.5 pr-8">
                       <span className="font-mono font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
-                      <StatusTag variant="gray">v{skill.version}</StatusTag>
+                      <StatusTag mode="fill" variant="gray">v{skill.version}</StatusTag>
                     </div>
                     {/* 描述（中文） */}
                     <p className="text-xs text-[#737373] line-clamp-2">{skill.descriptionZh}</p>
@@ -309,26 +309,26 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           </div>
         )}
         {isAlreadyAdded && (
-          <StatusTag variant="gray" className="absolute top-2 right-2 z-10">已添加</StatusTag>
+          <StatusTag mode="fill" variant="gray" className="absolute top-2 right-2 z-10">已添加</StatusTag>
         )}
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
-            <StatusTag variant="gray">v{skill.version}</StatusTag>
+            <StatusTag mode="fill" variant="gray">v{skill.version}</StatusTag>
           </div>
           {/* 应用范围标签 - 右上角 */}
           <div className="flex items-center gap-1 shrink-0">
             {isPublicScope ? (
-              <StatusTag variant="blue">全部用户</StatusTag>
+              <StatusTag mode="fill" variant="blue">全部用户</StatusTag>
             ) : (
               <Tooltip delayDuration={300}>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-default">
-                    <StatusTag variant="gray" className="max-w-[80px] truncate">
+                    <StatusTag mode="fill" variant="gray" className="max-w-[80px] truncate">
                       {scopeLabelsArr[0]}
                     </StatusTag>
                     {scopeLabelsArr.length > 1 && (
-                      <StatusTag variant="gray">
+                      <StatusTag mode="fill" variant="gray">
                         +{scopeLabelsArr.length - 1}
                       </StatusTag>
                     )}
@@ -1049,7 +1049,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
                         {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
                       </span>
                       {/* 类型 */}
-                      <StatusTag variant={skill.source === 'public' ? 'blue' : 'gray'}>
+                      <StatusTag mode="fill" variant={skill.source === 'public' ? 'blue' : 'gray'}>
                         {skill.source === 'public' ? '公共' : '企业'}
                       </StatusTag>
                       {/* 新版本 */}
@@ -1243,11 +1243,11 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className="text-sm font-semibold text-gray-900">{pkg.name}</h2>
               {pkg.isActive && (
-                <StatusTag variant="green" dot>生效中</StatusTag>
+                <StatusTag mode="fill" variant="green">生效中</StatusTag>
               )}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <StatusTag variant={isPublicScope(pkg) ? "blue" : "gray"}>
+              <StatusTag mode="fill" variant={isPublicScope(pkg) ? "blue" : "gray"}>
                 {isPublicScope(pkg) ? '全部用户' : scopeLabels.join('、')}
               </StatusTag>
             </div>
@@ -1324,7 +1324,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <StatusTag variant={skill.source === 'public' ? 'blue' : 'gray'}>
+                      <StatusTag mode="fill" variant={skill.source === 'public' ? 'blue' : 'gray'}>
                         {skill.source === 'public' ? '公共' : '企业'}
                       </StatusTag>
                       {wasRefreshed ? (

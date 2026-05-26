@@ -457,7 +457,7 @@ function BatchUpdateDialog({
                           {item.skill.name}
                         </span>
                         {/* 类型 */}
-                        <StatusTag variant={item.skill.source === '公共' ? 'blue' : 'gray'}>
+                        <StatusTag mode="fill" variant={item.skill.source === '公共' ? 'blue' : 'gray'}>
                           {item.skill.source}
                         </StatusTag>
                         {/* 新版本 */}
@@ -702,11 +702,11 @@ function RoleAddPublicSkillDialog({
                       </div>
                     )}
                     {isAlreadyAdded && (
-                      <StatusTag variant="gray" className="absolute top-2 right-2">已添加</StatusTag>
+                      <StatusTag mode="fill" variant="gray" className="absolute top-2 right-2">已添加</StatusTag>
                     )}
                     <div className="flex items-center gap-2 mb-1.5 pr-8">
                       <span className="font-mono font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
-                      <StatusTag variant="gray">v{skill.version}</StatusTag>
+                      <StatusTag mode="fill" variant="gray">v{skill.version}</StatusTag>
                     </div>
                     <p className="text-xs text-[#737373] line-clamp-2">{skill.descriptionZh}</p>
                   </div>
@@ -886,27 +886,27 @@ function RoleAddEnterpriseSkillDialog({
           </div>
         )}
         {isAlreadyAdded && (
-          <StatusTag variant="gray" className="absolute top-2 right-2 z-10">已添加</StatusTag>
+          <StatusTag mode="fill" variant="gray" className="absolute top-2 right-2 z-10">已添加</StatusTag>
         )}
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-medium text-sm text-[#0A0A0A] truncate min-w-0">{skill.name}</span>
-            <StatusTag variant="gray">v{skill.version}</StatusTag>
+            <StatusTag mode="fill" variant="gray">v{skill.version}</StatusTag>
           </div>
           {/* 应用范围标签 - 右上角（已添加的技能不显示，右上角只显示"已添加"） */}
           {!isAlreadyAdded && (
             <div className="flex items-center gap-1 shrink-0">
               {isPublicScope ? (
-                <StatusTag variant="blue">全部用户</StatusTag>
+                <StatusTag mode="fill" variant="blue">全部用户</StatusTag>
               ) : (
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
                     <span className="inline-flex items-center gap-1 cursor-default">
-                      <StatusTag variant="gray" className="max-w-[80px] truncate">
+                      <StatusTag mode="fill" variant="gray" className="max-w-[80px] truncate">
                         {scopeLabelsArr[0]}
                       </StatusTag>
                       {scopeLabelsArr.length > 1 && (
-                        <StatusTag variant="gray">
+                        <StatusTag mode="fill" variant="gray">
                           +{scopeLabelsArr.length - 1}
                         </StatusTag>
                       )}
@@ -1536,7 +1536,7 @@ function RoleEditModal({
                               </span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <StatusTag variant={skill.source === '公共' ? 'blue' : 'gray'}>
+                              <StatusTag mode="fill" variant={skill.source === '公共' ? 'blue' : 'gray'}>
                                 {skill.source}
                               </StatusTag>
                               {wasRefreshed ? (

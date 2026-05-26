@@ -52,7 +52,8 @@ description: >
 |--------|----------------|------|------|
 | `primary` | `text-gray-900` | `#0A0A0A` | 标题、卡片标题、主内容 |
 | `emphasis` | `text-gray-950` | `#020617` | 强调文字、按钮文字、关键字段 |
-| `secondary` | `text-gray-700` | `#334155` | 正文、表格内容、ID、说明正文 |
+| `body` | `text-gray-900` | `#0A0A0A` | 正文主内容、表格内容（与卡片标题一致） |
+| `secondary` | `text-gray-700` | `#334155` | 同字号描述性正文、补充说明、次级信息 |
 | `muted` | `text-gray-500` | `#737373` | 时间、描述、辅助说明、表头 |
 | `weak` | `text-gray-400` | `#A3A3A3` | 占位、空状态、极弱提示 |
 | `brand` | `text-[var(--brand-blue)]` | `#1447E6` | 链接、活跃态、步骤标识、英文 Badge |
@@ -69,14 +70,15 @@ description: >
 | `SectionTitle` | `h2` | 18px / Medium / 1.4 | `primary` | 页面内大模块标题 |
 | `PanelTitle` | `h2` | 16px / Semibold / 1.4 | `primary` | Dialog / Sheet / 卡片区块 / 表格区块标题 |
 | `CardTitle` | `h3` | 14px / Medium / 1.5 | `primary` | Agent 卡片名、技能卡标题、模型名、列表项标题 |
-| `BodyText` | `p` | 14px / Regular / 1.5 | `secondary` | 普通正文、说明、表格内容 |
+| `BodyText` | `p` | 14px / Regular / 1.5 | `body` | 普通正文、表格内容；描述行用 `tone="secondary"` |
 | `BodyMedium` | `span` | 14px / Medium / 1.5 | `emphasis` | 按钮、Tab、Label、列表主字段 |
 | `CompactText` | `span` | 13px / Regular / 1.5 | `secondary` | 紧凑列表、空间不足的轻量描述 |
 | `MetaText` | `span` | 12px / Regular / 1.5 | `muted` | 时间、ID、Tooltip、辅助说明、空状态 |
-| `MetaMedium` | `span` | 12px / Medium / 1.5 | `muted` | 表头、状态标签内文字、次级强调 |
+| `MetaMedium` | `span` | 12px / Medium / 1.5 | `muted` | 表头、次级强调 |
+| `SmallBodyText` | `span` | 12px / Medium / 12px / tracking 0.18px | `emphasis` | `StatusTag` 内文字、小型信息标签、紧凑表格内轻量正文 |
 | `TinyText` | `span` | 10px / Semibold / Open Sans | `brand` | `New` / `Beta` / 小角标 |
 | `StatNumber` | `span` | 24px / Bold / DIN | `emphasis` | 统计数字、额度数字 |
-| `InlineNumber` | `span` | 14px / DIN / tabular | `secondary` | 表格内 Token 数、请求数、百分比 |
+| `InlineNumber` | `span` | 14px / DIN / tabular | `body` | 表格内 Token 数、请求数、百分比 |
 | `CodeText` | `code` | 12px / Menlo | `secondary` | ID、Token、路径、命令、代码片段 |
 | `StepText` | `span` | 14px / Medium / Menlo | `brand` | Step 1 / Step 2 / 步骤编号 |
 
@@ -90,16 +92,19 @@ import {
   BodyText,
   BodyMedium,
   MetaText,
+  SmallBodyText,
   StatNumber,
   CodeText,
 } from "@/components/ui/Typography";
 
 <TenantPageTitle>Agent 详情</TenantPageTitle>
 <BodyText>这里是当前 Agent 的模型、通道和技能配置说明。</BodyText>
+<BodyText tone="secondary">这是同字号描述性文字，颜色浅一档。</BodyText>
 <PanelTitle as="h3">模型使用汇总</PanelTitle>
 <CardTitle>Alice 的技术助手</CardTitle>
 <BodyMedium tone="brand">查看详情</BodyMedium>
 <MetaText>更新于 2026-05-21 21:14</MetaText>
+<SmallBodyText>用户</SmallBodyText>
 <StatNumber>128,000</StatNumber>
 <CodeText>ins-g71c6vud</CodeText>
 ```
@@ -114,9 +119,10 @@ import {
 | Dialog / Sheet 标题 | `PanelTitle` |
 | Card 标题 | `CardTitle` |
 | 表格表头 | `MetaMedium` |
-| 表格内容 | `BodyText` 或 `InlineNumber` |
+| 表格内容 | `BodyText` 或 `InlineNumber`（默认 `body`）；同字号描述行用 `BodyText tone="secondary"` |
 | 空状态说明 | `MetaText tone="weak"` |
 | Badge / New / Beta | `TinyText` 或 `MetaMedium`，英文 Badge 优先 `TinyText` |
+| StatusTag / 小型信息标签 | `SmallBodyText` 对应规格：12px / Medium / `emphasis` / tracking 0.18px |
 | 统计卡数字 | `StatNumber` |
 | ID / Token / 路径 | `CodeText` |
 
@@ -996,54 +1002,113 @@ import {
 
 **文件**: `client/src/components/ui/status-tag.tsx`
 
-> 用于表格、卡片、列表中表示状态（运行中/已停止/待处理）或分类属性（管理员/用户/个人）的轻量标签。
+> 用于表格、卡片、列表中表示状态（运行中/已停止/待处理）或分类属性（角色、范围、版本）的轻量标签。组件内部文字必须复用 `SmallBodyText` 对应 token。
 
-**设计令牌：**
+### 16.1 分类与 API
+
+| 分类 | API | 适用场景 |
+|------|-----|----------|
+| 状态点类 | `<StatusTag mode="dot" variant="green">正常</StatusTag>` | 表格状态列、运行状态、开关状态、任务状态 |
+| 填充信息类 | `<StatusTag mode="fill" variant="blue">全部用户</StatusTag>` | 范围、版本、类型、数量等辅助信息 |
+| 角色类 | `<StatusTag preset="role-admin" />` / `<StatusTag preset="role-user" />` | 管控端「用户管理」表格角色列 |
+| 自定义 icon 类 | `<StatusTag variant="role" icon={<SomeIcon />}>自定义</StatusTag>` | 低频自定义带 icon 标签；高频语义应沉淀为 `preset` |
+
+### 16.2 颜色 token
+
+> 同一颜色在 `mode="dot"` 与 `mode="fill"` 中保持近似语义：dot 使用主色，fill 使用同语义浅底色 + 主色文字。后续新增颜色（如 `amber` / `purple`）必须同时补齐 `text / bg / dot` 三个 token。
+
+| variant | text / dot | fill bg | 使用场景 |
+|---------|------------|---------|----------|
+| `green` | `#008236` | `#E9F8EB` | 正常、运行中、已完成、开启、生效 |
+| `blue` | `#1447E6` | `#E8ECFE` | 进行中、全部用户、推荐/提示 |
+| `gray` | `#0A0A0A` | `#F5F5F5` | 默认、待处理、关闭、版本、范围 |
+| `red` | `#DC2626` | `#FEF2F2` | 错误、失败、异常、风险 |
+
+### 16.3 状态点类 `mode="dot"`
 
 | Token | Value |
 |-------|-------|
-| height | `20px` (h-5) |
-| border-radius | `full` (rounded-full) |
-| padding | `px-2 py-[2px]` |
-| font | `text-xs (12px) leading-3 tracking-[0.18px]` |
-| dot size | `6px` (w-1.5 h-1.5 rounded-full) |
-| gap (dot ↔ text) | `4px` (gap-1) |
+| background | 无 |
+| border | 无 |
+| padding | 无左右间距（`px-0 py-0`） |
+| layout | `inline-flex items-center gap-1` |
+| dot size | `6px` (`w-1.5 h-1.5 rounded-full`) |
+| font | `SmallBodyText`：12px / Medium / tracking 0.18px |
+| color | 使用当前 `variant` 的 text / dot 主色 |
 
-**变体色板：**
-
-| variant | 背景 | 文字/圆点 | 使用场景 |
-|---------|------|-----------|----------|
-| `green` | `#E9F8EB` | `#008236` | 正常、运行中、已完成、开启 |
-| `gray` | `#F5F5F5` | `#0A0A0A` | 默认、待处理、关闭、用户角色 |
-| `blue` | `#E8ECFE` | `#1447E6` | 管理员、进行中、类型标签 |
-| `red` | `#FEF2F2` | `#DC2626` | 错误、失败、异常 |
-
-**使用方式：**
+**表格状态列必须使用 `mode="dot"`。**
 
 ```tsx
-import { StatusTag } from "@/components/ui/status-tag";
-
-// 带圆点（状态指示）
-<StatusTag variant="green" dot>运行中</StatusTag>
-<StatusTag variant="gray" dot>已停止</StatusTag>
-<StatusTag variant="red" dot>异常</StatusTag>
-
-// 无圆点（分类属性）
-<StatusTag variant="blue">管理员</StatusTag>
-<StatusTag variant="gray">用户</StatusTag>
-<StatusTag variant="blue">个人</StatusTag>
+<StatusTag mode="dot" variant="green">正常</StatusTag>
+<StatusTag mode="dot" variant="blue">进行中</StatusTag>
+<StatusTag mode="dot" variant="gray">待处理</StatusTag>
+<StatusTag mode="dot" variant="red">失败</StatusTag>
 ```
 
-**使用规则：**
-- 表格中状态列必须使用 `StatusTag`，禁止自定义 `<span>` + 颜色 class
-- 开启/关闭状态：`variant="green" dot` / `variant="gray" dot`
-- 角色/类型标签：`variant="blue"` 或 `variant="gray"`（无 dot）
-- 错误/失败状态：`variant="red" dot`
+### 16.4 填充信息类 `mode="fill"`
 
-**禁止事项：**
-- 禁止使用自定义的 `bg-blue-50 text-blue-600 rounded-xl` 或 `bg-green-50 text-green-600` 等样式替代 StatusTag
-- 禁止使用红/绿色纯文字（如 `text-green-600` / `text-red-500`）表示开关状态
-- 禁止自定义标签圆角（如 `rounded-xl`），统一使用组件内置的 `rounded-full`
+| Token | Value |
+|-------|-------|
+| height | `20px` (`h-5`) |
+| background | 使用当前 `variant` 的浅色 bg |
+| border-radius | `full` (`rounded-full`) |
+| padding | `px-2 py-[2px]` |
+| dot | 不展示 |
+| font | `SmallBodyText` |
+
+```tsx
+<StatusTag mode="fill" variant="blue">全部用户</StatusTag>
+<StatusTag mode="fill" variant="gray">v1.2.0</StatusTag>
+<StatusTag mode="fill" variant="green">已接入</StatusTag>
+```
+
+### 16.5 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
+
+| Token | 管理员 | 用户 |
+|-------|--------|------|
+| API | `preset="role-admin"` | `preset="role-user"` |
+| width（设计稿） | `69px` | `57px` |
+| height | `22px` | `22px` |
+| background | `#FFFFFF` | `#FFFFFF` |
+| border | `1px solid #E5E5E5` | `1px solid #E5E5E5` |
+| border-radius | `20px` / `rounded-full` | `20px` / `rounded-full` |
+| foreground | `#020617` | `#020617` |
+| icon | `AdminRoleIcon` / `12px` | `UserRoleIcon` / `12px` |
+| padding / gap | `px-2` / `gap-1` | `px-2` / `gap-1` |
+| font | `SmallBodyText` | `SmallBodyText` |
+
+```tsx
+<StatusTag preset="role-admin" />
+<StatusTag preset="role-user" />
+```
+
+### 16.6 兼容规则
+
+旧写法仍兼容，但新代码不再推荐：
+
+```tsx
+// 旧：兼容，会自动等价为 mode="dot"
+<StatusTag variant="green" dot>正常</StatusTag>
+
+// 新：推荐
+<StatusTag mode="dot" variant="green">正常</StatusTag>
+```
+
+### 16.7 使用规则
+
+- 表格状态列必须使用 `mode="dot"`，禁止使用有底色胶囊表达状态列。
+- 信息/分类/版本/范围类标签必须使用 `mode="fill"`，不带 dot。
+- 角色列必须使用 `preset="role-admin"` / `preset="role-user"`，禁止业务侧自行拼 icon、描边和文字。
+- `icon` 插槽只用于低频自定义标签；同一语义复用 2 次以上，应沉淀为 `preset`。
+- 传入 `icon` 时，业务侧只提供形状；icon 必须支持 `currentColor`，不要在业务侧写颜色和尺寸。
+
+### 16.8 禁止事项
+
+- 禁止使用自定义的 `bg-blue-50 text-blue-600 rounded-xl` 或 `bg-green-50 text-green-600` 等样式替代 StatusTag。
+- 禁止在表格状态列使用 `mode="fill"` 或旧的有底色 dot 胶囊。
+- 禁止使用红/绿色纯文字（如 `text-green-600` / `text-red-500`）表示开关状态。
+- 禁止自定义标签圆角（如 `rounded-xl`），统一使用组件内置圆角。
+- 禁止在用户管理角色列自行拼装 `span + icon + border`，统一使用 `StatusTag preset`。
 
 ---
 

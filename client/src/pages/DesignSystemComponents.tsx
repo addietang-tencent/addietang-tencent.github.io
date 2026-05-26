@@ -662,17 +662,32 @@ const COMPONENTS: ComponentMeta[] = [
     description: "用于运行中、待完成、进行中、异常等状态表达。",
     owner: "addietang / miekoyychen",
     source: "client/src/components/ui/status-tag.tsx",
-    doc: "SKILL-GLOBAL-COMPONENTS.md · StatusTag",
+    doc: "SKILL-GLOBAL-COMPONENTS.md · StatusTag / client/public/research/admin-status-tag-usage-audit.md",
     platform: "Global 全局",
     adoption: "常用",
-    applicationSummary: "业务状态表达常用组件。",
-    applicationScope: "运行状态、配置状态、任务状态",
-    moduleCount: 24,
-    instanceCount: 58,
-    tags: ["已接入预览", "常用"],
-    usage: ["运行中", "待完成", "进行中", "异常"],
-    notes: ["优先使用已有语义色，不要新增随意色。", "需要强调状态时可带 dot。"],
-    migration: ["手写状态胶囊 → StatusTag"],
+    applicationSummary: "业务状态表达常用组件；当前管控端 19 个模块、84 处使用。",
+    applicationScope: "运行状态、配置状态、任务状态、范围/版本等轻量信息",
+    moduleCount: 19,
+    instanceCount: 84,
+    tags: ["已接入预览", "常用", "Admin 管控端已拉取"],
+    usage: ["green：成功 / 开启 / 生效", "blue：进行中 / 全部用户 / 推荐信息", "gray：待处理 / 关闭 / 版本 / 范围", "red：失败 / 异常"],
+    notes: ["优先使用已有 green / blue / gray / red 语义色，不要新增随意色。", "mode=\"dot\" 只用于真实状态，不用于版本号、范围、价格等信息标签。", "详细使用清单见 admin-status-tag-usage-audit.md。"],
+    migration: ["手写状态胶囊 → StatusTag", "状态类标签使用 mode=\"dot\"", "信息类标签使用 mode=\"fill\""],
+    applicationPages: [
+      { name: "OpenClaw 监控", path: "/admin/openclaw-monitor", platform: "Admin 管控端", priority: "高", usage: "实例生命周期、异常/处理中状态、模型主备状态 · 12 处" },
+      { name: "成员管理", path: "/admin/members", platform: "Admin 管控端", priority: "高", usage: "成员角色、账号状态、分组/配置摘要 · 12 处" },
+      { name: "技能配置", path: "/admin/skill-config", platform: "Admin 管控端", priority: "高", usage: "初始技能包、角色设定、版本、已添加、应用范围 · 20 处" },
+      { name: "镜像管理", path: "/admin/image-management", platform: "Admin 管控端", priority: "高", usage: "Agent 类型、首选/自定义内核、应用范围 · 7 处" },
+      { name: "模型配置", path: "/admin/model-config", platform: "Admin 管控端", priority: "高", usage: "模型应用范围与更多分组数量 · 4 处" },
+      { name: "平台策略", path: "/admin/platform-policy", platform: "Admin 管控端", priority: "高", usage: "策略当前值、开关状态和分组规则 · 4 处" },
+      { name: "基础信息", path: "/admin/basic-info", platform: "Admin 管控端", priority: "中", usage: "初始化步骤完成态、功能/配置类型标识 · 6 处" },
+      { name: "安全组", path: "/admin/security-group", platform: "Admin 管控端", priority: "中", usage: "云端/本地规则启停状态 · 4 处" },
+      { name: "审计日志", path: "/admin/audit-log", platform: "Admin 管控端", priority: "中", usage: "请求成功 / 失败结果 · 2 处" },
+      { name: "Agent 工具库", path: "/admin/agent-tool-library", platform: "Admin 管控端", priority: "中", usage: "试用中 / 未开通状态 · 2 处" },
+      { name: "文件管理", path: "/admin/file-management", platform: "Admin 管控端", priority: "中", usage: "免费、未启用状态 · 2 处" },
+      { name: "技能详情", path: "/admin/skill-detail/1", platform: "Admin 管控端", priority: "中", usage: "安全检测状态 · 2 处" },
+      { name: "Tokens 监控", path: "/admin/tokens-monitor", platform: "Admin 管控端", priority: "补充", usage: "当前版本标识 · 1 处" },
+    ],
   },
   {
     id: "empty",
@@ -862,7 +877,8 @@ function TypographyPreview() {
     ["SectionTitle", <SectionTitle key="section">组件分类展示</SectionTitle>, "大模块标题"],
     ["PanelTitle", <PanelTitle key="panel">全状态真实示例</PanelTitle>, "面板标题"],
     ["CardTitle", <CardTitle key="card">Alice 的技术助手</CardTitle>, "卡片标题"],
-    ["BodyText", <BodyText key="body">这里展示组件使用说明和推荐参考方式。</BodyText>, "正文说明"],
+    ["BodyText", <BodyText key="body">这里展示组件使用说明和推荐参考方式。</BodyText>, "正文主内容"],
+    ["BodyText secondary", <BodyText key="body-secondary" tone="secondary">用于描述行、补充说明等同字号浅色正文。</BodyText>, "描述性正文"],
     ["MetaText", <MetaText key="meta">更新于 2026-05-24 00:00</MetaText>, "辅助信息"],
     ["StatNumber", <StatNumber key="stat">128,000</StatNumber>, "统计数字"],
     ["CodeText", <CodeText key="code">client/src/components/ui/button.tsx</CodeText>, "路径 / ID"],
@@ -871,7 +887,8 @@ function TypographyPreview() {
   const toneCards = [
     { token: "primary", name: "标题色", value: "#0A0A0A", color: "#0A0A0A" },
     { token: "emphasis", name: "强调", value: "#020617", color: "#020617" },
-    { token: "secondary", name: "正文", value: "#334155", color: "#334155" },
+    { token: "body", name: "正文", value: "#0A0A0A", color: "#0A0A0A" },
+    { token: "secondary", name: "描述正文", value: "#334155", color: "#334155" },
     { token: "muted", name: "辅助", value: "#737373", color: "#737373" },
     { token: "weak", name: "极弱", value: "#A3A3A3", color: "#A3A3A3" },
     { token: "brand", name: "活跃", value: "#1447E6", color: "#1447E6" },
@@ -892,7 +909,7 @@ function TypographyPreview() {
         </div>
       </PreviewPanel>
       <PreviewPanel title="Tone 色阶示例" layout="wide">
-        <div className="grid grid-cols-7 gap-2.5">
+        <div className="grid grid-cols-4 gap-2.5">
           {toneCards.map((tone) => (
             <div key={tone.token} className="overflow-hidden rounded-[4px] border border-[#EAF1F8] bg-white">
               <div className="h-11" style={{ backgroundColor: tone.color }} />
@@ -1085,7 +1102,7 @@ function TablePreview() {
               <TableRow key={name}>
                 <TableCell className="font-medium">{name}</TableCell>
                 <TableCell>{group}</TableCell>
-                <TableCell><StatusTag variant={status === "高频参考" ? "blue" : "green"} dot>{status}</StatusTag></TableCell>
+                <TableCell><StatusTag mode="dot" variant={status === "高频参考" ? "blue" : "green"}>{status}</StatusTag></TableCell>
                 <TableCell className="text-right tabular-nums">约 {modules} 个页面/模块</TableCell>
                 <TableActionCell><div className="flex gap-3"><Button variant="link-dark" size="sm">查看</Button><Button variant="link-dark" size="sm">复制用法</Button></div></TableActionCell>
               </TableRow>
@@ -1136,7 +1153,28 @@ function StatusPreview({ id }: { id: ComponentId }) {
     return <PreviewPanel title="Badge variants"><div className="flex flex-wrap items-center gap-3"><Badge>Default</Badge><Badge variant="secondary">Secondary</Badge><Badge variant="outline">Outline</Badge><Badge variant="destructive">Destructive</Badge></div></PreviewPanel>;
   }
   if (id === "status-tag") {
-    return <PreviewPanel title="StatusTag variants"><div className="flex flex-wrap items-center gap-3"><StatusTag variant="green" dot>运行中</StatusTag><StatusTag variant="blue" dot>进行中</StatusTag><StatusTag variant="gray">待完成</StatusTag><StatusTag variant="red" dot>异常</StatusTag></div></PreviewPanel>;
+    return (
+      <PreviewPanel title="StatusTag variants">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <StatusTag mode="fill" variant="green">运行中</StatusTag>
+            <StatusTag mode="fill" variant="blue">进行中</StatusTag>
+            <StatusTag mode="fill" variant="gray">待处理</StatusTag>
+            <StatusTag mode="fill" variant="red">异常</StatusTag>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusTag mode="fill" variant="blue">全部用户</StatusTag>
+            <StatusTag mode="fill" variant="gray">v1.2.0</StatusTag>
+            <StatusTag mode="fill" variant="green">已接入</StatusTag>
+            <StatusTag mode="fill" variant="red">高风险</StatusTag>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusTag preset="role-admin" />
+            <StatusTag preset="role-user" />
+          </div>
+        </div>
+      </PreviewPanel>
+    );
   }
   return (
     <PreviewPanel title="Empty 空状态">

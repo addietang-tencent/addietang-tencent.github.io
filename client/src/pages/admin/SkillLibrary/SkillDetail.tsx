@@ -635,7 +635,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 if (secStatus === 'not_scanned') {
                   return (
                     <span className="inline-flex items-center gap-1.5">
-                      <StatusTag variant="gray">未检测</StatusTag>
+                      <StatusTag mode="fill" variant="gray">未检测</StatusTag>
                       <button
                         onClick={() => setSecurityScanDialogOpen(true)}
                         className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-[#355EF1] bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
@@ -648,7 +648,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 }
                 if (secStatus === 'scanning') {
                   return (
-                    <StatusTag variant="blue">
+                    <StatusTag mode="fill" variant="blue">
                       <Loader className="w-3 h-3 animate-spin" />
                       检测中
                     </StatusTag>
@@ -1236,7 +1236,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2 text-[#0A0A0A]">
               提交安全检测
-              <StatusTag variant="blue">限免</StatusTag>
+              <StatusTag mode="fill" variant="blue">限免</StatusTag>
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <p className="text-sm text-[#0A0A0A]">

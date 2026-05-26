@@ -1239,7 +1239,7 @@ export default function FileManagement() {
                     <span className="tabular-nums">
                       {item.used}/<span className="font-semibold">{item.quota}</span>
                     </span>
-                    <StatusTag variant="green" className="ml-2">免费</StatusTag>
+                    <StatusTag mode="fill" variant="green" className="ml-2">免费</StatusTag>
                   </TableCell>
                   <TableCell className="tabular-nums">{item.expiry}</TableCell>
                 </TableRow>
@@ -1891,9 +1891,7 @@ export default function FileManagement() {
                             <h4 className="text-sm font-semibold text-[#0A0A0A] truncate">
                               {instance.instanceName}
                             </h4>
-                            <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
-                              {instance.remainingDays}天后永久删除
-                            </span>
+                            <StatusTag mode="fill" variant="red">{instance.remainingDays} 天后永久删除</StatusTag>
                           </div>
                           <div className="flex items-center gap-4 text-xs text-[#737373]">
                             <span>创建人: {instance.creator}</span>
@@ -2100,7 +2098,7 @@ export default function FileManagement() {
                               <h4 className="text-sm font-semibold text-[#0A0A0A] truncate">
                                 {item.instanceName}
                               </h4>
-                              <StatusTag variant="gray">未启用</StatusTag>
+                              <StatusTag mode="fill" variant="gray">未启用</StatusTag>
                             </div>
                             <div className="flex items-center gap-3 text-xs text-[#737373]">
                               <span>创建人: {item.creator}</span>

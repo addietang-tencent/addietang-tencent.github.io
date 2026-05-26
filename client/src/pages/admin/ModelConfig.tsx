@@ -2,15 +2,17 @@
  * ModelConfig - 管控端模型配置页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -22,14 +24,18 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { toast } from "sonner";
-import { ScopeEditPopover } from "@/components/ScopeEditPopover";
 import {
-  Plus, Trash2, Info, Pencil, X,
+  Popover, PopoverContent, PopoverTrigger,
+} from "@/components/ui/popover";
+import { toast } from "sonner";
+import {
+  Plus, Info, Pencil,
+  Check, X, ChevronRight, ChevronDown, Minus,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import {
   CUSTOM_PROVIDER_VALUE,
   useAdminModelsState,
@@ -67,6 +73,463 @@ const DEFAULT_JSON = `{
     "name": "model_name"
   }
 }`;
+
+// ─── 分组路径工具函数 ─────────────────────────────────────
+/** 获取分组的完整路径（如 "全公司/技术部/前端组"） */
+function getGroupPath(groupId: string, groups: UserGroup[]): string {
+  const map = new Map(groups.map((g) => [g.id, g]));
+  const chain: string[] = [];
+  let cur = map.get(groupId);
+  while (cur) {
+    chain.unshift(cur.name);
+    cur = cur.parentId ? map.get(cur.parentId) : undefined;
+  }
+  return chain.join("/");
+}
+
+// ─── 树形多选节点的选中状态 ─────────────────────────────
+type CheckState = "checked" | "unchecked" | "indeterminate";
+
+function getCheckState(
+  node: GroupTreeNode,
+  selectedIds: Set<string>
+): CheckState {
+  if (selectedIds.has(node.id)) return "checked";
+  if (node.children.length === 0) return "unchecked";
+  let hasChecked = false;
+  let hasUnchecked = false;
+  for (const c of node.children) {
+    const s = getCheckState(c, selectedIds);
+    if (s === "checked") hasChecked = true;
+    else if (s === "unchecked") hasUnchecked = true;
+    else { hasChecked = true; hasUnchecked = true; }
+    if (hasChecked && hasUnchecked) return "indeterminate";
+  }
+  if (hasChecked && !hasUnchecked) return "checked";
+  if (!hasChecked && hasUnchecked) return "unchecked";
+  return "indeterminate";
+}
+
+/** 获取子孙所有 id（含自身） */
+function getDescendantIds(node: GroupTreeNode): string[] {
+  const ids: string[] = [node.id];
+  node.children.forEach((c) => ids.push(...getDescendantIds(c)));
+  return ids;
+}
+
+// 应用范围 Popover 编辑面板（树形多选版）
+function ScopePopover({
+  model,
+  groups,
+  onSave,
+}: {
+  model: ModelRow;
+  groups: UserGroup[];
+  onSave: (id: string, scope: "all" | "groups", groupIds: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftScope, setDraftScope] = useState<"all" | "groups">(model.visibilityScope);
+  const [draftGroupIds, setDraftGroupIds] = useState<string[]>(model.visibilityGroupIds);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // 按展示分区分桶构建树（oneid-group + manual 合并为 "custom"）
+  type DisplayBucket = "dept" | "custom";
+  const groupsByBucket = useMemo(() => {
+    const buckets: Record<DisplayBucket, UserGroup[]> = { dept: [], custom: [] };
+    groups.forEach((g) => {
+      if (g.source === "oneid-dept") buckets.dept.push(g);
+      else buckets.custom.push(g);
+    });
+    return buckets;
+  }, [groups]);
+
+  const activeBuckets = useMemo(() => {
+    const order: DisplayBucket[] = ["dept", "custom"];
+    return order.filter((b) => groupsByBucket[b].length > 0);
+  }, [groupsByBucket]);
+
+  const BUCKET_LABELS: Record<DisplayBucket, string> = { dept: "部门", custom: "自定义分组" };
+
+  // 每个分区的树
+  const treesMap = useMemo(() => {
+    const map: Record<string, GroupTreeNode[]> = {};
+    activeBuckets.forEach((b) => { map[b] = buildGroupTree(groupsByBucket[b]); });
+    return map;
+  }, [activeBuckets, groupsByBucket]);
+
+  // 是否有可展示的分组
+  const hasGroups = activeBuckets.length > 0;
+
+  // 每次打开时同步当前模型的状态
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      setDraftScope(model.visibilityScope);
+      setDraftGroupIds([...model.visibilityGroupIds]);
+      setSearchQuery("");
+      // 默认展开所有已选分组的祖先
+      const expandSet = new Set<string>();
+      const groupMap = new Map(groups.map((g) => [g.id, g]));
+      model.visibilityGroupIds.forEach((gid) => {
+        let cur = groupMap.get(gid);
+        while (cur && cur.parentId) {
+          expandSet.add(cur.parentId);
+          cur = groupMap.get(cur.parentId);
+        }
+      });
+      // 也展开根节点
+      activeBuckets.forEach((b) => {
+        treesMap[b]?.forEach((root) => expandSet.add(root.id));
+      });
+      setExpanded(expandSet);
+    }
+    setOpen(v);
+  };
+
+  const toggleExpand = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  // 树节点 check/uncheck 逻辑
+  const toggleNode = (node: GroupTreeNode) => {
+    const ids = new Set(draftGroupIds);
+    const state = getCheckState(node, ids);
+    const descendants = getDescendantIds(node);
+    if (state === "checked") {
+      // 取消自身及所有子孙
+      descendants.forEach((d) => ids.delete(d));
+    } else {
+      // 选中自身及所有子孙
+      descendants.forEach((d) => ids.add(d));
+    }
+    setDraftGroupIds(Array.from(ids));
+  };
+
+  const handleClearSelection = () => {
+    setDraftGroupIds([]);
+    setSearchQuery("");
+  };
+
+  // 确认按钮是否可点击：按分组时至少选了一个分组
+  const isConfirmDisabled = draftScope === "groups" && draftGroupIds.length === 0;
+
+  const handleConfirm = () => {
+    if (isConfirmDisabled) return;
+    onSave(
+      model.id,
+      draftScope,
+      draftScope === "all" ? [] : draftGroupIds,
+    );
+    setOpen(false);
+    toast.success("应用范围已更新");
+  };
+
+  // 搜索过滤：扁平匹配
+  const matchedGroupIds = useMemo(() => {
+    if (!searchQuery.trim()) return null; // null = 不过滤
+    const q = searchQuery.toLowerCase();
+    return new Set(
+      groups
+        .filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, groups).toLowerCase().includes(q))
+        .map((g) => g.id)
+    );
+  }, [searchQuery, groups]);
+
+  // 判断节点或其子孙是否匹配搜索
+  const isNodeVisible = (node: GroupTreeNode): boolean => {
+    if (!matchedGroupIds) return true;
+    if (matchedGroupIds.has(node.id)) return true;
+    return node.children.some(isNodeVisible);
+  };
+
+  // 渲染一个树节点
+  const renderTreeNode = (node: GroupTreeNode, depth: number) => {
+    if (!isNodeVisible(node)) return null;
+
+    const selectedSet = new Set(draftGroupIds);
+    const checkState = getCheckState(node, selectedSet);
+    const isExpanded = expanded.has(node.id);
+    const hasChildren = node.children.length > 0;
+
+    return (
+      <div key={node.id}>
+        <button
+          onClick={() => toggleNode(node)}
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-[#f5f5f5] transition-colors text-left"
+          style={{ paddingLeft: 8 + depth * 16 }}
+        >
+          {/* 展开/折叠 */}
+          {hasChildren ? (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpand(node.id);
+              }}
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronRight className="w-3 h-3" />
+              )}
+            </span>
+          ) : (
+            <span className="w-4 h-4 shrink-0" />
+          )}
+          {/* Checkbox 三态 */}
+          <span
+            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
+              checkState === "checked"
+                ? "bg-[#eff4ff]0 border-blue-500"
+                : checkState === "indeterminate"
+                  ? "bg-[#eff4ff]0 border-blue-500"
+                  : "border-gray-300 bg-white"
+            }`}
+          >
+            {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
+            {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
+          </span>
+          <span className="text-xs text-[#334155] truncate">{node.name}</span>
+        </button>
+        {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
+      </div>
+    );
+  };
+
+  // 已选分组标签（子孙全选时自动合并为父分组）
+  const selectedTags = useMemo(() => {
+    const selectedSet = new Set(draftGroupIds);
+    // 利用树结构找到"有效最高节点"：如果一个节点的所有子孙都被选中，则该节点代表它们
+    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
+      const result: string[] = [];
+      for (const node of nodes) {
+        const state = getCheckState(node, selectedSet);
+        if (state === "checked") {
+          result.push(node.id);
+        } else if (state === "indeterminate") {
+          result.push(...collectEffective(node.children));
+        }
+      }
+      return result;
+    };
+    const effectiveIds: string[] = [];
+    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
+    return effectiveIds.map((gid) => ({ id: gid, path: getGroupPath(gid, groups) }));
+  }, [draftGroupIds, groups, activeBuckets, treesMap]);
+
+  // 解析已选分组名（用于表格徽章展示）
+  const selectedGroupPaths = useMemo(() => {
+    const selectedSet = new Set(model.visibilityGroupIds);
+    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
+      const result: string[] = [];
+      for (const node of nodes) {
+        const state = getCheckState(node, selectedSet);
+        if (state === "checked") {
+          result.push(node.id);
+        } else if (state === "indeterminate") {
+          result.push(...collectEffective(node.children));
+        }
+      }
+      return result;
+    };
+    const effectiveIds: string[] = [];
+    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
+    return effectiveIds.map((gid) => getGroupPath(gid, groups));
+  }, [groups, model.visibilityGroupIds, activeBuckets, treesMap]);
+
+  // 徽章区域
+  const renderBadges = () => {
+    if (model.visibilityScope === "all") {
+      return (
+        <AllUsersTag />
+      );
+    }
+
+    if (selectedGroupPaths.length === 0) {
+      return (
+        <AllUsersTag />
+      );
+    }
+
+    // 按分组：第一个分组完整路径 + +N
+    const firstName = selectedGroupPaths[0];
+    const rest = selectedGroupPaths.length - 1;
+    const tooltipText = selectedGroupPaths.join("\n");
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 cursor-default">
+            <StatusTag mode="fill" variant="gray" className="max-w-[170px] truncate">
+              {firstName}
+            </StatusTag>
+            {rest > 0 && (
+              <StatusTag mode="fill" variant="gray">
+                +{rest}
+              </StatusTag>
+            )}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
+          {tooltipText}
+        </TooltipContent>
+      </Tooltip>
+    );
+  };
+
+  return (
+    <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[220px]">
+      {renderBadges()}
+      <Popover open={open} onOpenChange={handleOpenChange}>
+        <PopoverTrigger asChild>
+          <button
+            className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
+            title="编辑应用范围"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="start" sideOffset={6}>
+          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
+            {/* Segment 切换（标准分段选择器） */}
+            <SegmentGroup className="w-full">
+              <SegmentOption
+                active={draftScope === "all"}
+                onClick={() => setDraftScope("all")}
+                className="flex-1"
+              >
+                全部用户
+              </SegmentOption>
+              <SegmentOption
+                active={draftScope === "groups"}
+                onClick={() => setDraftScope("groups")}
+                className="flex-1"
+              >
+                按分组
+              </SegmentOption>
+            </SegmentGroup>
+
+            {/* 分组列表（仅 groups 模式） */}
+            {draftScope === "groups" && (
+              <div className="space-y-1.5">
+                {!hasGroups ? (
+                  /* 无分组空状态 */
+                  <div className="text-center py-5 px-2">
+                    <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                      暂无分组，请前往
+                      <a
+                        href="/admin/members"
+                        className="text-[#355EF1] hover:text-[#355EF1] hover:underline mx-0.5"
+                        onClick={(e) => { e.preventDefault(); setOpen(false); window.location.href = "/admin/members"; }}
+                      >
+                        用户管理
+                      </a>
+                      建立分组
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* 合并搜索框 + 已选标签 */}
+                    <div
+                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-[#e5e5e5] rounded-[4px] bg-[#fafafa] focus-within:border-[#355EF1] focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
+                    >
+                      {selectedTags.map((tag) => (
+                        <span
+                          key={tag.id}
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#eff4ff] text-[#355EF1] text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]"
+                        >
+                          <span className="truncate">{tag.path}</span>
+                          <button
+                            onClick={() => {
+                              const findNode = (nodes: GroupTreeNode[]): GroupTreeNode | undefined => {
+                                for (const n of nodes) {
+                                  if (n.id === tag.id) return n;
+                                  const found = findNode(n.children);
+                                  if (found) return found;
+                                }
+                                return undefined;
+                              };
+                              let targetNode: GroupTreeNode | undefined;
+                              for (const b of activeBuckets) {
+                                targetNode = findNode(treesMap[b] || []);
+                                if (targetNode) break;
+                              }
+                              const idsToRemove = targetNode ? new Set(getDescendantIds(targetNode)) : new Set([tag.id]);
+                              setDraftGroupIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
+                            }}
+                            className="text-[#355EF1] hover:text-[#355EF1] shrink-0"
+                          >
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </span>
+                      ))}
+                      <input
+                        type="text"
+                        placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-[#A3A3A3]"
+                      />
+                      {/* 清除全部按钮：hover 时显示 */}
+                      {(selectedTags.length > 0 || searchQuery) && (
+                        <button
+                          onClick={handleClearSelection}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="清除全部"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 分组树形列表（按分区 + 小标题） */}
+                    <div className="max-h-[220px] overflow-y-auto">
+                      {activeBuckets.map((bucket) => {
+                        const trees = treesMap[bucket];
+                        if (!trees || trees.length === 0) return null;
+                        const anyVisible = trees.some(isNodeVisible);
+                        if (!anyVisible) return null;
+                        return (
+                          <div key={bucket} className="mb-1">
+                            <div className="px-2 py-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wider">
+                              {BUCKET_LABELS[bucket]}
+                            </div>
+                            {trees.map((root) => renderTreeNode(root, 0))}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 底部按钮 */}
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5] shrink-0">
+            <Button size="claw-sm" variant="claw-outline" className="h-7 px-3 text-xs" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              size="claw-sm"
+              variant="claw-primary"
+              className="h-7 px-3 text-xs"
+              disabled={isConfirmDisabled}
+              onClick={handleConfirm}
+            >
+              确认
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
 
 // 编辑配额弹窗
 function EditQuotaDialog({
@@ -244,6 +707,10 @@ export default function ModelConfig() {
     setModels(updated);
   };
 
+  const visibleModelCount = useMemo(() => models.filter((model) => model.visible).length, [models]);
+  const defaultModel = useMemo(() => models.find((model) => model.isDefault), [models]);
+  const scopedModelCount = useMemo(() => models.filter((model) => model.visibilityScope === "groups").length, [models]);
+
   return (
     <>
       <div className="page-enter space-y-6">
@@ -262,26 +729,47 @@ export default function ModelConfig() {
           </Alert>
         </div>
 
-        {/* Part 1: Model List */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-[#0A0A0A]">模型列表</h2>
-            <Button size="sm" onClick={openAddDialog}>
-              <Plus className="w-3.5 h-3.5 mr-1.5" />
+        <div className="grid grid-cols-4 gap-4">
+          <SurfaceCard className="p-4">
+            <p className="text-xs text-[#737373]">已配置模型</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums font-din text-[#020617]">{models.length}</p>
+          </SurfaceCard>
+          <SurfaceCard className="p-4">
+            <p className="text-xs text-[#737373]">用户可见</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums font-din text-[#020617]">{visibleModelCount}</p>
+          </SurfaceCard>
+          <SurfaceCard className="p-4">
+            <p className="text-xs text-[#737373]">默认模型</p>
+            <p className="mt-2 truncate text-sm font-medium text-[#0A0A0A]">
+              {defaultModel ? `${defaultModel.name} · ${defaultModel.version}` : "未设置"}
+            </p>
+          </SurfaceCard>
+          <SurfaceCard className="p-4">
+            <p className="text-xs text-[#737373]">按分组可见</p>
+            <p className="mt-2 text-2xl font-semibold tabular-nums font-din text-[#020617]">{scopedModelCount}</p>
+          </SurfaceCard>
+        </div>
+
+        <SurfaceCard className="overflow-hidden">
+          <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-4">
+            <div>
+              <h2 className="text-base font-semibold text-[#0A0A0A]">模型列表</h2>
+              <p className="mt-1 text-xs text-[#737373]">集中管理模型接入、配额、用户可见性与默认配置。</p>
+            </div>
+            <Button variant="claw-primary" size="claw-sm" onClick={openAddDialog}>
+              <Plus className="w-3.5 h-3.5" />
               添加模型
             </Button>
           </div>
 
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
-            <Table>
+          <Table scrollX={1120}>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[22%]">模型名称</TableHead>
-                <TableHead className="w-[28%]">模型 URL</TableHead>
-                <TableHead className="w-[13%]">每日 Tokens 上限</TableHead>
-                <TableHead className="w-[8%]">用户可见</TableHead>
-                <TableHead className="w-[10%]">默认配置</TableHead>
-                <TableHead className="w-[10%]">
+                <TableHead fixed="left" className="w-[260px]">模型信息</TableHead>
+                <TableHead className="w-[280px]">接入地址</TableHead>
+                <TableHead className="w-[150px]">每日配额</TableHead>
+                <TableHead className="w-[180px]">启用策略</TableHead>
+                <TableHead className="w-[220px]">
                   <div className="flex items-center gap-1">
                     应用范围
                     <Tooltip>
@@ -291,133 +779,123 @@ export default function ModelConfig() {
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
-                        应用范围决定了哪些用户可以看到该模型，以及哪些用户创建新的 Agent 时自动预添加该模型。「全部用户」表示所有人可见并自动预添加，「按分组」仅对指定分组用户可见并自动预添加。
+                        应用范围决定哪些用户可以看到该模型，以及哪些用户创建新的 Agent 时自动预添加该模型。
                       </TooltipContent>
                     </Tooltip>
                   </div>
                 </TableHead>
-                <TableHead className="w-[5%]">操作</TableHead>
+                <TableHead fixed="right" className="w-[96px]">操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {models.map((model) => (
                 <TableRow key={model.id}>
-                  <TableCell>
-                    <div>
-                      <p className="text-sm font-medium text-[#0A0A0A]">{model.name}</p>
-                      <p className="text-xs text-[#A3A3A3]">{model.version}</p>
-                      <div className="mt-1">
+                  <TableCell fixed="left" className="w-[260px]">
+                    <div className="min-w-0 space-y-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <p className="truncate text-sm font-medium text-[#0A0A0A]">{model.name}</p>
+                        {model.isDefault && <StatusTag mode="fill" variant="blue">默认</StatusTag>}
+                      </div>
+                      <p className="truncate text-xs text-[#737373]">{model.version}</p>
+                      <div className="flex items-center gap-1.5">
                         {model.provider === CUSTOM_PROVIDER_VALUE ? (
-                          // 自定义模型：Toggle Tag，点击弹出二次确认
-                          model.isMultimodal ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() => setMultimodalConfirm({ model, enable: false })}
-                                  className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#eff4ff] text-[#355EF1] border border-blue-100 hover:bg-red-50 hover:text-red-400 hover:border-red-100 transition-colors cursor-pointer"
-                                >
-                                  <span className="group-hover:hidden">多模态</span>
-                                  <span className="hidden group-hover:inline-flex items-center gap-0.5">
-                                    <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                    关闭多模态
-                                  </span>
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent className="text-xs">点击关闭多模态</TooltipContent>
-                            </Tooltip>
-                          ) : (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  onClick={() => setMultimodalConfirm({ model, enable: true })}
-                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-[#A3A3A3] border border-dashed border-gray-300 hover:text-[#355EF1] hover:border-[#355EF1] hover:bg-[#eff4ff] transition-colors cursor-pointer"
-                                >
-                                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                                  多模态
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent className="text-xs">点击开启多模态</TooltipContent>
-                            </Tooltip>
-                          )
+                          <button
+                            onClick={() => setMultimodalConfirm({ model, enable: !model.isMultimodal })}
+                            className={model.isMultimodal
+                              ? "inline-flex items-center gap-1 rounded-full bg-[#E8ECFE] px-2 py-[2px] text-xs text-[#1447E6] transition-colors hover:bg-red-50 hover:text-[#DC2626]"
+                              : "inline-flex items-center gap-1 rounded-full border border-dashed border-[#D8E1FF] px-2 py-[2px] text-xs text-[#1447E6] transition-colors hover:bg-[#F2F5FF]"
+                            }
+                          >
+                            {model.isMultimodal ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                            {model.isMultimodal ? "关闭多模态" : "多模态"}
+                          </button>
                         ) : model.isMultimodal ? (
-                          // 非自定义模型：只读 Badge
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#eff4ff] text-[#355EF1] border border-blue-100">多模态</span>
+                          <StatusTag mode="fill" variant="blue">多模态</StatusTag>
                         ) : null}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-[#737373] font-mono whitespace-nowrap">{model.modelUrl}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm text-[#334155]">{model.dailyLimit.toLocaleString()}</span>
-                      <button
-                        onClick={() => openEditQuota(model)}
-                        className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
-                        title="编辑配额"
-                      >
-                        <Pencil className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Switch
-                      checked={model.visible}
-                      onCheckedChange={(v) => handleToggleVisible(model.id, v)}
-                    />
-                  </TableCell>
-
-                  {/* 默认模型单选 */}
-                  <TableCell>
+                  <TableCell className="w-[280px]">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="inline-flex">
-                          <Switch
-                            checked={model.isDefault}
-                            onCheckedChange={(v) => handleSetDefault(model.id, v)}
-                            disabled={!model.visible && !model.isDefault}
-                            aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
-                          />
+                        <span className="inline-flex max-w-[248px] cursor-default rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-[#334155]">
+                          <span className="truncate">{model.modelUrl}</span>
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent className="text-xs">
-                        {model.isDefault
-                          ? "当前默认模型"
-                          : model.visible
-                            ? "点击设为默认模型"
-                            : "需先开启「用户可见」才可设为默认"}
+                      <TooltipContent className="max-w-[360px] text-xs font-mono break-all">
+                        {model.modelUrl}
                       </TooltipContent>
                     </Tooltip>
                   </TableCell>
-                  {/* 应用范围 */}
-                  <TableCell>
-                    <ScopeEditPopover
-                      scope={model.visibilityScope}
-                      selectedGroupIds={model.visibilityGroupIds}
+                  <TableCell className="w-[150px]">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <p className="text-sm font-medium tabular-nums text-[#020617]">{model.dailyLimit.toLocaleString()}</p>
+                        <p className="text-xs text-[#A3A3A3]">tokens / day</p>
+                      </div>
+                      <Button variant="link-dark" size="sm" className="text-xs" onClick={() => openEditQuota(model)}>
+                        <Pencil className="w-3 h-3" />
+                        编辑
+                      </Button>
+                    </div>
+                  </TableCell>
+                  <TableCell className="w-[180px]">
+                    <div className="space-y-2.5">
+                      <div className="flex max-w-[150px] items-center justify-between gap-3">
+                        <span className="text-xs text-[#737373]">用户可见</span>
+                        <Switch
+                          checked={model.visible}
+                          onCheckedChange={(v) => handleToggleVisible(model.id, v)}
+                        />
+                      </div>
+                      <div className="flex max-w-[150px] items-center justify-between gap-3">
+                        <span className="text-xs text-[#737373]">默认配置</span>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              <Switch
+                                checked={model.isDefault}
+                                onCheckedChange={(v) => handleSetDefault(model.id, v)}
+                                disabled={!model.visible && !model.isDefault}
+                                aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
+                              />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-xs">
+                            {model.isDefault
+                              ? "当前默认模型"
+                              : model.visible
+                                ? "点击设为默认模型"
+                                : "需先开启「用户可见」才可设为默认"}
+                          </TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="w-[220px]">
+                    <ScopePopover
+                      model={model}
                       groups={ALL_GROUPS}
-                      onConfirm={(scope, groupIds) => {
+                      onSave={(id, scope, groupIds) => {
                         setModels((prev) =>
                           prev.map((m) =>
-                            m.id === model.id ? { ...m, visibilityScope: scope, visibilityGroupIds: groupIds } : m
+                            m.id === id ? { ...m, visibilityScope: scope, visibilityGroupIds: groupIds } : m
                           )
                         );
                       }}
                     />
                   </TableCell>
-                  <TableCell>
-                    <button
-                      onClick={() => setDeleteConfirmModel(model)}
-                      className="text-[#A3A3A3] hover:text-red-500 transition-colors">
+                  <TableActionCell fixed="right" className="w-[96px]" actionsClassName="justify-start">
+                    <Button variant="link" size="sm" className="text-xs" onClick={() => setDeleteConfirmModel(model)}>
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </TableCell>
+                      删除
+                    </Button>
+                  </TableActionCell>
                 </TableRow>
               ))}
             </TableBody>
-            </Table>
-          </div>
-        </div>
+          </Table>
+        </SurfaceCard>
 
 
       </div>

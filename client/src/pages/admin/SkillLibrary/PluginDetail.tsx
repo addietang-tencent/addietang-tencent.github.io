@@ -442,16 +442,16 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
       {/* Tab 区域 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
+          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-0 border-b border-[#e5e5e5] rounded-none">
             <TabsTrigger
               value="files"
-              className="rounded-xl px-4 py-1.5 text-sm text-[#737373] bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-[#355EF1] data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-xl px-4 py-1.5 text-sm text-[#737373] bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-[#355EF1] data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -459,11 +459,11 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
 
           {/* 文件列表 Tab */}
           <TabsContent value="files" className="mt-4 p-0">
-            <div className="flex h-[47rem] border border-gray-200 rounded-xl overflow-hidden bg-white">
+            <div className="flex h-[47rem] border border-[#e5e5e5] rounded-xl overflow-hidden bg-white">
               {/* 左列：版本号选择 */}
-              <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-[#0A0A0A]">版本</p>
+              <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
+                <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+                  <p className="text-sm font-medium text-[#09090b]">版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {plugin.versions?.map((ver: string, idx: number) => {
@@ -473,17 +473,17 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-2.5 border-b border-[#e5e5e5] transition-colors ${
-                          isSelected ? 'bg-blue-50' : 'hover:bg-gray-50 cursor-pointer'
+                        className={`w-full text-left px-3 py-3.5 border-b border-[#f4f4f5] transition-colors ${
+                          isSelected ? 'bg-[#f4f4f5]' : 'hover:bg-[#f4f4f5] cursor-pointer'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[11px] font-semibold ${isSelected ? 'text-[#0A0A0A]' : 'text-[#334155]'}`}>
+                          <span className="text-[14px] font-semibold text-[#09090b]">
                             {ver}
                           </span>
                           {isLatest && (
-                            <span className="text-[10px] font-medium text-[#355EF1] bg-blue-100 px-1.5 py-0.5 rounded">
-                              最新
+                            <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold leading-none tracking-[0.015em] text-[#355EF1]">
+                              New
                             </span>
                           )}
                         </div>
@@ -494,9 +494,9 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               </div>
 
               {/* 中列：文件列表 */}
-              <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-[#0A0A0A]">{selectedVersion || plugin.version}</p>
+              <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
+                <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+                  <p className="text-sm font-medium text-[#09090b]">{selectedVersion || plugin.version}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {renderFileTree(processedFiles)}
@@ -507,8 +507,8 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               <div className="flex-1 flex flex-col bg-white">
                 {expandedFile ? (
                   <>
-                    <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
-                      <p className="text-xs font-medium text-[#0A0A0A]">{expandedFile}</p>
+                    <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+                      <p className="text-sm font-medium text-[#09090b]">{expandedFile}</p>
                       {isMarkdownFile(expandedFile) && (
                         <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                           <button

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -258,7 +259,7 @@ function ScopePopover({
       <div key={node.id}>
         <button
           onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
+          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-[#f5f5f5] transition-colors text-left"
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {/* 展开/折叠 */}
@@ -283,9 +284,9 @@ function ScopePopover({
           <span
             className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
               checkState === "checked"
-                ? "bg-blue-500 border-blue-500"
+                ? "bg-[#eff4ff]0 border-blue-500"
                 : checkState === "indeterminate"
-                  ? "bg-blue-500 border-blue-500"
+                  ? "bg-[#eff4ff]0 border-blue-500"
                   : "border-gray-300 bg-white"
             }`}
           >
@@ -438,12 +439,12 @@ function ScopePopover({
                   <>
                     {/* 合并搜索框 + 已选标签 */}
                     <div
-                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-xl bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
+                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-[#e5e5e5] rounded-[4px] bg-[#fafafa] focus-within:border-[#355EF1] focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
                     >
                       {selectedTags.map((tag) => (
                         <span
                           key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-[#355EF1] text-[10px] rounded-xl border border-blue-100 shrink-0 max-w-[200px]"
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#eff4ff] text-[#355EF1] text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]"
                         >
                           <span className="truncate">{tag.path}</span>
                           <button
@@ -728,26 +729,25 @@ export default function ModelConfig() {
         </div>
 
         {/* Part 1: Model List */}
-        <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
-         >
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+        <div className="space-y-16">
+          <div className="flex items-center justify-between">
             <h2 className="font-semibold text-[#0A0A0A]">模型列表</h2>
-            <Button size="sm" onClick={openAddDialog}
-             >
+            <Button size="sm" onClick={openAddDialog}>
               <Plus className="w-3.5 h-3.5 mr-1.5" />
               添加模型
             </Button>
           </div>
 
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[22%]">模型名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">模型 URL</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[13%]">每日 Tokens 上限</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[8%]">用户可见</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[10%]">默认配置</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[10%]">
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+            <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[22%]">模型名称</TableHead>
+                <TableHead className="w-[28%]">模型 URL</TableHead>
+                <TableHead className="w-[13%]">每日 Tokens 上限</TableHead>
+                <TableHead className="w-[8%]">用户可见</TableHead>
+                <TableHead className="w-[10%]">默认配置</TableHead>
+                <TableHead className="w-[10%]">
                   <div className="flex items-center gap-1">
                     应用范围
                     <Tooltip>
@@ -761,14 +761,14 @@ export default function ModelConfig() {
                       </TooltipContent>
                     </Tooltip>
                   </div>
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap w-[5%]">操作</th>
-              </tr>
-            </thead>
-            <tbody>
+                </TableHead>
+                <TableHead className="w-[5%]">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {models.map((model) => (
-                <tr key={model.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
+                <TableRow key={model.id}>
+                  <TableCell>
                     <div>
                       <p className="text-sm font-medium text-[#0A0A0A]">{model.name}</p>
                       <p className="text-xs text-[#A3A3A3]">{model.version}</p>
@@ -780,7 +780,7 @@ export default function ModelConfig() {
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={() => setMultimodalConfirm({ model, enable: false })}
-                                  className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100 hover:bg-red-50 hover:text-red-400 hover:border-red-100 transition-colors cursor-pointer"
+                                  className="group inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#eff4ff] text-[#355EF1] border border-blue-100 hover:bg-red-50 hover:text-red-400 hover:border-red-100 transition-colors cursor-pointer"
                                 >
                                   <span className="group-hover:hidden">多模态</span>
                                   <span className="hidden group-hover:inline-flex items-center gap-0.5">
@@ -796,7 +796,7 @@ export default function ModelConfig() {
                               <TooltipTrigger asChild>
                                 <button
                                   onClick={() => setMultimodalConfirm({ model, enable: true })}
-                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-[#A3A3A3] border border-dashed border-gray-300 hover:text-[#355EF1] hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-[#A3A3A3] border border-dashed border-gray-300 hover:text-[#355EF1] hover:border-[#355EF1] hover:bg-[#eff4ff] transition-colors cursor-pointer"
                                 >
                                   <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                                   多模态
@@ -807,15 +807,15 @@ export default function ModelConfig() {
                           )
                         ) : model.isMultimodal ? (
                           // 非自定义模型：只读 Badge
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-[#355EF1] border border-blue-100">多模态</span>
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#eff4ff] text-[#355EF1] border border-blue-100">多模态</span>
                         ) : null}
                       </div>
                     </div>
-                  </td>
-                  <td className="px-4 py-4">
+                  </TableCell>
+                  <TableCell>
                     <span className="text-sm text-[#737373] font-mono whitespace-nowrap">{model.modelUrl}</span>
-                  </td>
-                  <td className="px-4 py-4">
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm text-[#334155]">{model.dailyLimit.toLocaleString()}</span>
                       <button
@@ -826,16 +826,16 @@ export default function ModelConfig() {
                         <Pencil className="w-3 h-3" />
                       </button>
                     </div>
-                  </td>
-                  <td className="px-4 py-4 align-middle">
+                  </TableCell>
+                  <TableCell>
                     <Switch
                       checked={model.visible}
                       onCheckedChange={(v) => handleToggleVisible(model.id, v)}
                     />
-                  </td>
+                  </TableCell>
 
                   {/* 默认模型单选 */}
-                  <td className="px-4 py-4 align-middle">
+                  <TableCell>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="inline-flex">
@@ -855,9 +855,9 @@ export default function ModelConfig() {
                             : "需先开启「用户可见」才可设为默认"}
                       </TooltipContent>
                     </Tooltip>
-                  </td>
+                  </TableCell>
                   {/* 应用范围 */}
-                  <td className="px-4 py-4 align-middle">
+                  <TableCell>
                     <ScopePopover
                       model={model}
                       groups={ALL_GROUPS}
@@ -869,20 +869,19 @@ export default function ModelConfig() {
                         );
                       }}
                     />
-                  </td>
-                  <td className="px-4 py-4 align-middle">
+                  </TableCell>
+                  <TableCell>
                     <button
                       onClick={() => setDeleteConfirmModel(model)}
                       className="text-[#A3A3A3] hover:text-red-500 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-
-
+            </TableBody>
+            </Table>
+          </div>
         </div>
 
 

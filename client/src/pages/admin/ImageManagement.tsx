@@ -25,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { RadioCard } from "@/components/ui/radio-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   Dialog,
   DialogBody,
@@ -583,13 +584,13 @@ function OverviewStats({
   return (
     <div className="h-8 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
       <div className="flex items-center gap-2">
-        <span className="text-xs text-[#737373]">Agent 类型</span>
-        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
+        <span className="text-[13px] text-[#737373]">Agent 类型</span>
+        <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
       </div>
       <span className="w-px h-3 bg-[#E5E5E5]" />
       <div className="flex items-center gap-2">
-        <span className="text-xs text-[#737373]">已对用户可见</span>
-        <span className="text-xs text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
+        <span className="text-[13px] text-[#737373]">已对用户可见</span>
+        <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
       </div>
     </div>
   );

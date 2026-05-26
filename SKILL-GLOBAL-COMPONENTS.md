@@ -289,6 +289,8 @@ import {
 | `link` | 无 | 无 | `#355EF1` | 加下划线 | 40%透明 |
 | `link-dark` | 无 | 无 | `#020617` | 文字`#525252` | 文字`rgba(2,6,23,0.3)` |
 
+> **注**：`link` / `link-dark` 是**纯内联文字**形态，**强制清零 padding 与高度**（`!px-0 !py-0 !h-auto`），不受 `size` 影响——所以无论传 `size="default"` / `size="sm"`，按钮都是纯文字尺寸，方便在表格操作列、行内提示等场景与周围文字基线对齐。如果需要给 link 增加点击热区，请用外层包装容器自行加 `padding`。
+
 ### 4.2 尺寸
 
 | size | 高度 | padding |
@@ -304,33 +306,65 @@ import {
 - 同行所有控件高度必须一致（如 Input h-9 + Button h-9）
 - disabled 态有 `cursor-not-allowed`，不用全局 `opacity-50`
 - **刷新按钮标准写法**: `<Button variant="claw-outline" size="icon" className="w-9 h-9">`
-- **表格操作列**：操作列必须使用 `<TableActionCell>` 组件包裹，内部按钮自动强制应用 `link-dark` 黑色文字样式。也可手动使用 `variant="link-dark"`。禁止在操作列使用 outline、default、ghost 或自定义样式。
+- **表格操作列**：操作列必须使用 `<TableActionCell>` 组件包裹，内部按钮**必须**显式声明 `variant="link"`（品牌蓝文字按钮 `#355EF1`）。`TableActionCell` 内置 `flex items-center gap-3` 容器，**操作项间距固定 12px**，且与表头 `<TableHead>` 的 `px-4` 完全对齐，业务侧无需再手写外层 `<div>` wrapper。禁止省略 variant（会得到默认 claw-primary 实心按钮），禁止使用 outline、default、ghost、link-dark 或自定义样式。
 
 ```tsx
 import { TableActionCell } from "@/components/ui/table";
 
-// 推荐：使用 TableActionCell 自动应用 link-dark 样式
+// ✅ 正确：直接把 Button 平铺为 children，TableActionCell 自动应用 flex + gap-3 + 左对齐
 <TableActionCell>
-  <Button onClick={...}>编辑</Button>
-  <Button onClick={...}>查看详情</Button>
-  <Button onClick={...} disabled>删除</Button>
+  <Button variant="link" onClick={onEdit}>编辑</Button>
+  <Button variant="link" onClick={onView}>查看详情</Button>
+  <Button variant="link" onClick={onDelete} disabled>删除</Button>
 </TableActionCell>
 
-// 也可手动指定 variant
-<TableCell>
-  <Button variant="link-dark" size="sm">编辑</Button>
-  <Button variant="link-dark" size="sm">查看详情</Button>
-</TableCell>
+// ✅ 删除按钮也统一蓝色 link，**不再用红色覆盖**（语义差异由二次确认 Dialog 承担）
+<TableActionCell>
+  <Button variant="link" onClick={onEdit}>编辑</Button>
+  <Button variant="link" onClick={onDelete}>删除</Button>
+</TableActionCell>
+
+// ✅ 给内置 flex 容器追加 className（如固定高度让按钮组高度一致）
+<TableActionCell actionsClassName="h-5">
+  <Button variant="link">终端</Button>
+  <Button variant="link">关机</Button>
+</TableActionCell>
+
+// ✅ 特殊布局（多行 / 自定义 wrapper）：设 rawChildren 关闭内置 flex 容器
+<TableActionCell rawChildren>
+  <div className="grid grid-cols-2 gap-2">...</div>
+</TableActionCell>
+
+// ❌ 错误：再嵌套 <div className="flex items-center gap-3"> wrapper（多余且会与内置容器叠加）
+<TableActionCell>
+  <div className="flex items-center gap-3">
+    <Button variant="link">编辑</Button>
+  </div>
+</TableActionCell>
+
+// ❌ 错误：省略 variant 会得到 claw-primary 实心黑蓝渐变按钮
+<TableActionCell>
+  <Button onClick={onEdit}>编辑</Button>
+</TableActionCell>
+
+// ❌ 错误：禁止再使用 link-dark
+<TableActionCell>
+  <Button variant="link-dark" onClick={onEdit}>编辑</Button>
+</TableActionCell>
 ```
 
-### link-dark 四种状态
+### link 四种状态（操作列按钮的标准色阶，对齐 button.tsx variant="link"）
 
 | 状态 | 文字色 | 效果 |
 |------|--------|------|
-| Normal | `#020617` | 黑色文字，无背景无边框 |
-| Hover | `#525252` | 文字变深灰 |
-| Active/Click | `#020617` + 下划线 | 点击反馈 |
-| Disabled | `rgba(2,6,23,0.3)` | 浅灰，无下划线 |
+| Normal | `#355EF1` | 品牌蓝文字，无背景无边框 |
+| Hover | `#355EF1` + 下划线 | 鼠标移入加下划线 |
+| Active/Click | `#0a226f` | 点击反馈：深蓝 |
+| Disabled | `rgba(20,71,230,0.4)` | 40% 透明蓝，无下划线 |
+
+> **历史变更**：v2026.05 之前 TableActionCell 操作列约定 `variant="link-dark"`（黑色文字），已弃用。新规范一律改为 `variant="link"`（品牌蓝），与 Ant Design 等主流后台风格对齐。如发现存量页面里 TableActionCell 内还写着 `variant="link-dark"`，按"触达即同步"机制顺手换成 `variant="link"`。
+>
+> **为什么 TableActionCell 不自动应用 link 样式？** Tailwind v4 + CVA 生成的 utility class specificity 相同（均为 0,1,0），父级选择器 `[&_[data-slot=button]]:text-...` 无法稳定覆盖 Button 自身 `variant` 携带的色值/背景/边框。强行用 `:where()` 降权又会破坏业务覆盖优先级。最稳的方式是要求业务侧显式声明 `variant="link"`。
 
 ### 4.4 Plain 普通按钮（弹窗内筛选按钮）
 
@@ -623,12 +657,12 @@ import { SmallIconStateButton } from "@/components/ui/button";
 | 属性 | 标准版（默认） | 紧凑版 `density="compact"` |
 |------|----------------|------------------------------|
 | 表格字号 | `text-sm`（14px） | `text-xs`（12px） |
-| 表头高度 | `h-12`（48px） | `h-10`（40px，参考 shadcn Data Table） |
+| 表头高度 | `h-[54px]`（54px） | `h-10`（40px） |
 | 表头文字 | `BodyMedium` 对应：14px / Medium / `text-gray-900` | `MetaMedium` 对应：12px / Medium / `text-gray-500` |
 | 表头 padding | `px-4`（左右 16px） | `px-4`（左右 16px） |
-| 正文单元格 | `px-4 py-3 text-sm` | `px-4 py-[9px] text-xs` |
+| 正文单元格 | `h-[54px] px-4 py-3 text-sm` | `h-10 px-4 py-2 text-xs` |
 | 正文颜色 | `text-gray-900` / `#171717` | 同标准版 |
-| 纯文本行高 | 约 45px | 约 36px |
+| 纯文本行高 | 最小 54px，复杂内容允许自然撑高 | 最小 40px，复杂内容允许自然撑高 |
 | 行分割线 | `border-gray-200` | 同标准版 |
 | hover / selected | 全局 TableRow 状态 | 同标准版 |
 
@@ -980,8 +1014,9 @@ import { Badge } from "@/components/ui/badge";
 | body row / border | `border-b border-[#f0f0f0]` |
 | body row / hover | `hover:bg-[#fafafa]` |
 | body row / selected | `bg-[rgba(53,94,241,0.06)]` |
-| body cell / padding | `px-4 py-3` |
-| body cell / font | `text-[14px] text-[#09090b]` |
+| body cell / height | 标准版最小视觉高度 `54px`；紧凑版最小视觉高度 `40px`；复杂内容允许自然撑高 |
+| body cell / padding | 标准版 `px-4 py-3`；紧凑版 `px-4 py-2` |
+| body cell / font | 标准版 `text-sm`（14px）；紧凑版 `text-xs`（12px） |
 | footer / bg | `bg-[#fafafa] border-t border-[#f0f0f0]` |
 
 **组件导出：**
@@ -1035,36 +1070,150 @@ import {
 ```
 
 **操作列规则（强制）：**
-- 操作列必须使用 `<TableActionCell>` 包裹 —— 内部按钮自动应用 `link-dark` 黑色文字按钮样式
+- 操作列必须使用 `<TableActionCell>` 包裹 —— 内置 `flex items-center gap-6` 容器，**操作项间距固定 24px**，且与表头 `<TableHead>` 的 `px-4` 完全对齐
 - 操作列必须使用**文字按钮**（如"编辑"、"删除"、"终端"、"关机"），禁止使用纯 icon 按钮
-- 也可在 `<TableCell>` 中手动使用 `<Button variant="link-dark">`
-- 操作按钮之间用 `gap-3` 或 `gap-4` 分隔
-- 禁止在操作列使用 ghost、outline、default 或自定义按钮样式
-- **横向滚动固定**：当表格列过多需横向滚动时，操作列必须 `sticky right-0` 固定在表格最右侧，其余列横向滚动。操作列表头和单元格需加 `sticky right-0 z-10 bg-white`（单元格）或 `bg-[#fafafa]`（表头），并在左侧添加阴影分隔线：
+- **每个 Button 必须显式 `variant="link"`**（品牌蓝文字按钮）——不显式声明会得到默认 claw-primary 实心按钮（黑→蓝渐变 + 白字）
+- **删除按钮也统一蓝色 link**，不再用红色覆盖；危险操作的语义由文案 + AlertDialog 二次确认承担（参考 Ant Design 等现代后台规范）。禁止再加 `text-red-600` / `hover:text-red-700` / `disabled:text-red-300` 等红色样式
+- **禁止业务侧再手写 `<div className="flex items-center gap-6">` wrapper**，直接把 Button 平铺为 TableActionCell 的 children 即可。如需在内置容器上追加 className（如固定高度 `h-5`），用 `actionsClassName` prop
+- 特殊布局（多行 / 自定义 wrapper）：设 `rawChildren` 关闭内置 flex 容器
+- 禁止在操作列使用 ghost、outline、default、link-dark 或自定义按钮样式
+- **横向滚动固定**：当表格列过多需横向滚动时，操作列必须 `fixed="right"` 固定在最右侧。**统一使用 `<Table scrollX={...}>` + `fixed` 属性**，不允许手写 sticky + bg 的写法（详见下方「固定列（Fixed Columns）」章节）。
+
+### 15.1 固定列（Fixed Columns）
+
+> 参考 Ant Design Table fixed columns（https://ant.design/components/table-cn#table-demo-fixed-header），但视觉与交互严格使用项目自身规范。
+> 适用场景：列数较多、需要左右横向滚动，但首列（如"名称/Full Name"）或末列（操作列）需要常驻可见。
+
+**核心 API：**
+
+| API | 类型 | 说明 |
+|-----|------|------|
+| `<Table scrollX>` | `number \| string` | 表格最小内宽（数字 → px，字符串 → 直接作为 min-width，如 `"max-content"`）。**只要传了 scrollX，即开启横向滚动模式**。不需要固定列也可使用。 |
+| `<TableHead fixed>` | `"left" \| "right"` | 表头单元格固定到左侧或右侧。 |
+| `<TableHead fixedShadow>` | `boolean`，默认 `true` | 是否允许该边界列显示 1px 分隔线 + 滚动阴影。组件会自动根据横向滚动状态控制实际显隐：无横滚不显示；在最左侧不显示 left 分隔线/阴影；在最右侧不显示 right 分隔线/阴影。多列同侧固定时（如复选框 + 名称列同时 `fixed="left"`），**只保留最外侧那一列为 `true`**，其余列设 `false`，否则中间会出现多余的分隔线/阴影。 |
+| `<TableCell fixed>` | `"left" \| "right"` | 内容单元格固定到左侧或右侧。 |
+| `<TableCell fixedShadow>` | `boolean`，默认 `true` | 同 `TableHead`。 |
+| `<TableActionCell fixed>` | `"left" \| "right"` | 操作单元格固定到左侧或右侧（操作列固定时使用 `fixed="right"`）。 |
+| `<TableActionCell fixedShadow>` | `boolean`，默认 `true` | 同上。 |
+
+**多列同侧固定的偏移规则**：第 2 个及后续的同侧固定列必须用 `style={{ left: <累计宽度> }}`（左固定）或 `style={{ right: <累计宽度> }}`（右固定）错开，组件内部默认 `left:0` / `right:0` 会被 inline style 覆盖。
+
+**强制约束：**
+
+1. 必须配合 `<Table scrollX={...}>` 使用，单独给单元格加 `fixed` 但不开启 scrollX 没有意义。
+2. 同一列的 `<TableHead>` 与 `<TableCell>` 的 `fixed` 必须**完全一致**（要么都不固定，要么固定在同一侧），否则表头与内容会错位。
+3. 操作列在固定模式下必须使用 `<TableActionCell fixed="right">`，禁止改用 `<TableCell>` + 手写按钮样式绕过 link-dark 规范。
+4. 固定列的视觉效果（hover 跟随 / 阴影分隔 / 表头底色 / 单元格白底 / 选中态）由组件内部 token 自动处理，**禁止业务侧再手写 `sticky right-0 z-10 bg-white` 之类的 className**。
+5. 表头底色固定为 `#fafafa`、单元格底色固定为 `#fff`、行 hover/选中 时固定列底色自动跟随，由组件内部基于 `group-hover` / `group-data-[state=selected]` 实现。
+
+**视觉细节（已内置，无需手动处理）：**
+
+- 固定列与滚动区之间的分隔线：1px / `#f0f0f0`（与表格其他分隔线一致）；仅在对应方向存在可滚动内容时出现（最左隐藏 left 分隔线，最右隐藏 right 分隔线，无横滚全部隐藏）
+- 滚动阴影：6px 渐变（`linear-gradient(rgba(0,0,0,0.06) → transparent)`），向滚动方向渐隐；同样仅在对应方向存在可滚动内容时出现（最左隐藏 left shadow，最右隐藏 right shadow，无横滚全部隐藏）
+- 表头处于固定模式时仍保持 `bg-[#fafafa]` 灰底；单元格白底，并通过 `group-hover` 自动跟随行 hover 变成 `#fafafa`、selected 变成 `rgba(53,94,241,0.06)`
+- 横向滚动模式下 `<table>` 自动切换为 `border-separate border-spacing-0`，单元格自身补下分隔线，避免 `<tr>` border 在 separate 模式下失效
+- **滚动条隐藏策略**：横向滚动模式下，容器默认应用全局 `.scrollbar-on-hover` 工具类——**滚动条默认隐藏**，仅当鼠标 hover 表格区域或正在滚动时才出现，离开后自动隐藏。无需业务侧手动处理。
+- **z-index 分层**：表头固定列 `z-50`、body 固定列 `z-20`。**业务表头 / 单元格内部如需 `position:relative` + `z-*`（如带 Popover 筛选的列），`z-*` 必须 ≤ `z-40`**，否则会浮在固定列上方导致"滚动穿透"。Popover/Dialog 等浮层因为是 `fixed` / Portal 定位，不在表格 stacking context 内，不受此约束。
+
+**标准用法：**
 
 ```tsx
-// 操作列表头
-<TableHead className="sticky right-0 z-10 bg-[#fafafa]">操作</TableHead>
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableActionCell,
+} from "@/components/ui/table";
 
-// 操作列单元格
-<TableActionCell className="sticky right-0 z-10 bg-white">
-  <Button>编辑</Button>
-  <Button>删除</Button>
-</TableActionCell>
+<div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+  <Table scrollX={1500}>
+    <TableHeader>
+      <TableRow>
+        {/* 左固定 */}
+        <TableHead fixed="left" className="w-[120px]">Full Name</TableHead>
+        {/* 中间滚动列 */}
+        <TableHead className="w-[140px]">Column 1</TableHead>
+        <TableHead className="w-[140px]">Column 2</TableHead>
+        <TableHead className="w-[140px]">Column 3</TableHead>
+        <TableHead className="w-[140px]">Column 4</TableHead>
+        <TableHead className="w-[140px]">Column 5</TableHead>
+        <TableHead className="w-[140px]">Column 6</TableHead>
+        <TableHead className="w-[140px]">Column 7</TableHead>
+        <TableHead className="w-[140px]">Column 8</TableHead>
+        {/* 右固定（操作列） */}
+        <TableHead fixed="right" className="w-[140px]">操作</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {data.map((row) => (
+        <TableRow key={row.id}>
+          <TableCell fixed="left" className="font-medium">{row.name}</TableCell>
+          <TableCell>{row.col1}</TableCell>
+          <TableCell>{row.col2}</TableCell>
+          <TableCell>{row.col3}</TableCell>
+          <TableCell>{row.col4}</TableCell>
+          <TableCell>{row.col5}</TableCell>
+          <TableCell>{row.col6}</TableCell>
+          <TableCell>{row.col7}</TableCell>
+          <TableCell>{row.col8}</TableCell>
+          <TableActionCell fixed="right">
+            <Button variant="link" onClick={...}>编辑</Button>
+            <Button variant="link" onClick={...}>删除</Button>
+          </TableActionCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</div>
 ```
 
-- 阴影分隔线推荐写法（可选，表格有横向滚动时添加）：
+**多列同侧固定（如复选框列 + 名称列同时固定左侧）：**
+
 ```tsx
-// 在 sticky 单元格内部添加左侧阴影
-<div className="absolute left-0 top-0 bottom-0 w-[6px] -ml-[6px]" 
-     style={{ background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
+<Table scrollX={1500}>
+  <TableHeader>
+    <TableRow>
+      {/* 第 1 列：复选框（非边界列，关闭阴影） */}
+      <TableHead fixed="left" fixedShadow={false} style={{ width: 56, minWidth: 56 }}>
+        <Checkbox ... />
+      </TableHead>
+      {/* 第 2 列：名称（边界列，保留阴影），用 left:56 错开 */}
+      <TableHead fixed="left" style={{ left: 56, minWidth: 240 }}>名称 / ID</TableHead>
+      {/* 中间滚动列 ... */}
+      <TableHead fixed="right" style={{ width: 200 }}>操作</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {data.map((row) => (
+      <TableRow key={row.id}>
+        <TableCell fixed="left" fixedShadow={false} style={{ width: 56, minWidth: 56 }}>
+          <Checkbox ... />
+        </TableCell>
+        <TableCell fixed="left" style={{ left: 56, minWidth: 240 }}>{row.name}</TableCell>
+        {/* 中间滚动列 ... */}
+        <TableActionCell fixed="right">...</TableActionCell>
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
 ```
+
+**禁止事项：**
+
+- ❌ 禁止业务侧手写 `<th className="sticky right-0 z-10 bg-[#fafafa]">` 来模拟固定列；必须使用 `fixed="left|right"` 属性。
+- ❌ 禁止手写阴影分隔线（`<div style={{ background: "linear-gradient(...)" }} />` 等）；阴影由组件内部 `before` 伪元素提供，且与表格分隔线对齐。
+- ❌ 禁止在 `fixed` 列上覆盖背景色（如 `bg-blue-50`）；固定列底色严格遵循表头 `#fafafa` / 单元格 `#fff` / 行 hover `#fafafa` / 选中 `rgba(53,94,241,0.06)`。
+- ❌ 禁止只给 `<TableHead fixed>` 不给同列的 `<TableCell fixed>`，或反过来。
+- ❌ 多列同侧固定时，禁止全部保留 `fixedShadow={true}`（默认值），否则列之间会出现多余的分隔线/滚动阴影；只在最外侧的边界列保留 true，其余内部固定列必须设 `fixedShadow={false}`。
 
 **表头规则（强制，参照 /admin/audit-log 页面视觉）：**
 - `TableHeader` 强制灰色背景 `bg-[#fafafa]`，不允许覆盖
-- `TableHead` 强制样式：标准版对齐 `BodyMedium`（`text-sm font-medium text-gray-900 h-12 px-4 text-left`）；紧凑版对齐 `MetaMedium`（`text-xs font-medium text-gray-500 h-10 px-4 text-left`）
-- `TableCell` 强制样式：`text-[#09090b] text-[14px] px-4 py-3`
-- **表头与单元格横向 padding 必须一致**：标准版和紧凑版都使用 `px-4`（16px），确保左右内容到边框的距离一致；禁止紧凑版改成 `px-2` / `px-3`
+- `TableHead` 强制样式：标准版对齐 `BodyMedium`（`text-sm font-medium text-gray-900 h-[54px] px-4 py-0 text-left`）；紧凑版对齐 `MetaMedium`（`text-xs font-medium text-gray-500 h-10 px-4 py-0 text-left`）
+- `TableCell` / `TableActionCell` 强制样式：标准版 `text-sm h-[54px] px-4 py-3`；紧凑版 `text-xs h-10 px-4 py-2`；`h-*` 作为 table-cell 的最小视觉高度，复杂内容允许自然撑高
+- **表头与单元格横向 padding 必须一致**：标准版和紧凑版都使用 `px-4`（16px），确保左右内容到边框的距离一致；纵向 padding 由单元格控制，标准版 `py-3`、紧凑版 `py-2`；禁止紧凑版横向改成 `px-2` / `px-3`
 - **每列标题和内容必须左对齐**，禁止使用 `text-center` 或 `text-right`（数字列除外）
 - **标准表格分页器推荐使用 Pagination 默认尺寸**：页面级表格底部分页默认沿用 `size="default"`，如无空间压力不建议切到 `small`
 - 禁止通过 className 覆盖表头的字体颜色、字号、字重、对齐方式

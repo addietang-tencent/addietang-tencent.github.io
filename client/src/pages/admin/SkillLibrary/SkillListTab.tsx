@@ -175,17 +175,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   const scopeDropdownRef = useRef<HTMLDivElement>(null);
   // 保存编辑弹窗打开前的滚动位置（含表格水平滚动），关闭后恢复
   const scrollPositionRef = useRef<{ x: number; y: number; tableScrollLeft?: number } | null>(null);
-  // 表格水平滚动容器 ref
+  // 表格水平滚动容器 ref（用于保存/恢复滚动位置）
   const tableScrollRef = useRef<HTMLDivElement>(null);
-  // 名称列右侧投影：仅在横向滚动 > 0 时显示
-  const [isTableScrolled, setIsTableScrolled] = useState(false);
-  useEffect(() => {
-    const el = tableScrollRef.current;
-    if (!el) return;
-    const onScroll = () => setIsTableScrolled(el.scrollLeft > 0);
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [viewMode]);
 
   // 下发状态缓存：key 是 skillId，value 是摘要
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
@@ -1089,20 +1080,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
-          <Table containerRef={tableScrollRef} className="min-w-[1500px] table-fixed">
+          <Table containerRef={tableScrollRef} scrollX={1500}>
             <TableHeader>
               <TableRow>
-                <TableHead
-                  className="sticky left-0 z-10 w-[260px] bg-[#FAFAFA] relative"
-                  style={{ width: 260 }}
-                >
+                <TableHead fixed="left" className="w-[260px]" style={{ width: 260 }}>
                   技能信息
-                  {isTableScrolled && (
-                    <>
-                      <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-                      <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
-                    </>
-                  )}
                 </TableHead>
                 <TableHead className="w-[170px]" style={{ width: 170 }}>状态 / 下发</TableHead>
                 <TableHead className="w-[110px]" style={{ width: 110 }}>版本</TableHead>
@@ -1110,12 +1092,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <TableHead className="w-[210px]" style={{ width: 210 }}>分类</TableHead>
                 <TableHead className="w-[190px]" style={{ width: 190 }}>应用范围</TableHead>
                 <TableHead className="w-[130px]" style={{ width: 130 }}>最后更新</TableHead>
-                <TableHead
-                  className="sticky right-0 z-20 w-[210px] bg-[#FAFAFA] relative"
-                  style={{ width: 210 }}
-                >
-                  <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
-                  <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
+                <TableHead fixed="right" className="w-[210px]" style={{ width: 210 }}>
                   操作
                 </TableHead>
               </TableRow>
@@ -1174,15 +1151,10 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     >
                       {/* 技能信息 — 固定左侧 */}
                       <TableCell
-                        className="sticky left-0 z-10 bg-white group-hover:bg-[#FAFAFA] transition-colors relative align-top"
+                        fixed="left"
+                        className="align-top"
                         style={{ width: 260 }}
                       >
-                        {isTableScrolled && (
-                          <>
-                            <div className="absolute right-0 top-0 bottom-0 w-px bg-gray-200" />
-                            <div className="absolute top-0 bottom-0" style={{ right: '-6px', width: '6px', background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.04))' }} />
-                          </>
-                        )}
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
@@ -1363,12 +1335,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </TableCell>
                       {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
                       <TableCell
-                        className="sticky right-0 z-20 bg-white group-hover:bg-[#FAFAFA] transition-colors relative align-top"
+                        fixed="right"
+                        className="align-top"
                         style={{ width: 210 }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-px bg-gray-200" />
-                        <div className="absolute top-0 bottom-0" style={{ left: '-6px', width: '6px', background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.04))' }} />
                         <div className="flex items-center gap-1">
                           {/* 下发按钮 */}
                           <Button

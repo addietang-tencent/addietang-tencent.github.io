@@ -7,6 +7,9 @@ import { ProCloseDialog } from './components/ProCloseDialog';
 import { OneClickUpgradeDialog } from './components/OneClickUpgradeDialog';
 import { DefaultMemoryVersion, DefaultMemoryVersionType } from './components/DefaultMemoryVersion';
 import { AlertCircle, Loader2, CheckCircle2, X, Info, ChevronDown, ChevronUp, ArrowUpCircle } from 'lucide-react';
+import { SurfaceCard } from '@/components/ui/Surface';
+import { StatusTag } from '@/components/ui/status-tag';
+import { Button } from '@/components/ui/button';
 
 // 配置常量
 const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
@@ -179,19 +182,17 @@ export const MemoryManagement: React.FC = () => {
       )}
 
       {/* 顶部：版本对比说明（可折叠） */}
-      <div 
-        className="mb-6 bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-      >
+      <SurfaceCard className="mb-6 overflow-hidden">
         {/* 折叠触发器 */}
         <button
           onClick={() => setVersionCompareExpanded(!versionCompareExpanded)}
-          className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          className="w-full px-6 py-4 flex items-center justify-between hover:bg-[#FAFAFA] transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-[#355EF1]" />
-            <span className="text-sm font-medium text-[#334155]">了解 Memory Free 版与 Pro 版的区别</span>
+            <Info className="w-4 h-4 text-[#1447E6]" />
+            <span className="text-sm font-medium text-[#0A0A0A]">了解 Memory Free 版与 Pro 版的区别</span>
           </div>
-          <span className="text-sm text-[#355EF1] flex items-center gap-0.5">
+          <span className="text-sm text-[#1447E6] flex items-center gap-0.5">
             {versionCompareExpanded ? '收起' : '展开'}
             {versionCompareExpanded ? (
               <ChevronUp className="w-4 h-4" />
@@ -200,16 +201,16 @@ export const MemoryManagement: React.FC = () => {
             )}
           </span>
         </button>
-        
+
         {/* 可折叠内容 */}
         {versionCompareExpanded && (
           <div className="px-6 pb-5">
-            <ComparisonTable 
+            <ComparisonTable
               isProActive={isProActive}
             />
           </div>
         )}
-      </div>
+      </SurfaceCard>
 
       {/* 服务概览 - 统计卡片 */}
       <div 
@@ -269,21 +270,20 @@ export const MemoryManagement: React.FC = () => {
                   <div className="flex flex-col gap-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">Pro 版</span>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-semibold bg-amber-400 text-amber-900">
-                        免费体验中
-                      </span>
+                      <StatusTag variant="blue">免费体验中</StatusTag>
                     </div>
 
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   {isProInactive && (
-                    <button
+                    <Button
+                      variant="claw-primary"
+                      size="claw-sm"
                       onClick={() => setActivationDialogOpen(true)}
-                      className="whitespace-nowrap px-3 py-1.5 text-xs font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-xl transition-colors"
                     >
                       立即开通
-                    </button>
+                    </Button>
                   )}
                   {isProActive && (
                     // Pro 卡片右上角仅保留「关闭服务」入口；

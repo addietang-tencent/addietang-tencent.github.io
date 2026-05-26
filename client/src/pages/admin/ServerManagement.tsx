@@ -221,9 +221,9 @@ export default function ServerManagement() {
                           <td className="px-6 py-3 text-sm text-[#A3A3A3]">{rule.remark || "-"}</td>
                           <td className="px-6 py-3">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditRule(rule, "inbound")} className="text-[#355EF1] hover:text-[#355EF1] text-xs">编辑</button>
+                              <button onClick={() => openEditRule(rule, "inbound")} className="text-[#355EF1] hover:underline text-xs">编辑</button>
                               <button onClick={() => { setInboundRules(inboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}
-                                className="text-red-400 hover:text-red-600 text-xs">删除</button>
+                                className="text-[#355EF1] hover:underline text-xs">删除</button>
                             </div>
                           </td>
                         </tr>
@@ -268,9 +268,9 @@ export default function ServerManagement() {
                           <td className="px-6 py-3 text-sm text-[#A3A3A3]">{rule.remark || "-"}</td>
                           <td className="px-6 py-3">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditRule(rule, "outbound")} className="text-[#355EF1] hover:text-[#355EF1] text-xs">编辑</button>
+                              <button onClick={() => openEditRule(rule, "outbound")} className="text-[#355EF1] hover:underline text-xs">编辑</button>
                               <button onClick={() => { setOutboundRules(outboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}
-                                className="text-red-400 hover:text-red-600 text-xs">删除</button>
+                                className="text-[#355EF1] hover:underline text-xs">删除</button>
                             </div>
                           </td>
                         </tr>

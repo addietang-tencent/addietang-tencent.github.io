@@ -536,7 +536,7 @@ export default function MCPListTab() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(mcp.name)}
-                          className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                          className="h-7 text-xs"
                         >
                           <Trash2 className="w-3 h-3 mr-1" />
                           删除

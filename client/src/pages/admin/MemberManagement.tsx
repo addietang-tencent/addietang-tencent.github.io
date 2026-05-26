@@ -2,7 +2,7 @@
  * MemberManagement - 管控端用户管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
@@ -1815,24 +1815,6 @@ export default function MemberManagement() {
   const [editMemberId, setEditMemberId] = useState<string | null>(null);
   const [addBtnHovered, setAddBtnHovered] = useState(false);
 
-  // 用户列表表格横向滚动检测（操作列 sticky right 阴影）
-  const memberTableScrollRef = useRef<HTMLDivElement>(null);
-  const [memberTableCanScrollRight, setMemberTableCanScrollRight] = useState(false);
-  useEffect(() => {
-    const el = memberTableScrollRef.current;
-    if (!el) return;
-    const check = () => {
-      const canScroll = el.scrollWidth > el.clientWidth;
-      const isAtRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
-      setMemberTableCanScrollRight(canScroll && !isAtRight);
-    };
-    check();
-    el.addEventListener("scroll", check, { passive: true });
-    const ro = new ResizeObserver(check);
-    ro.observe(el);
-    return () => { el.removeEventListener("scroll", check); ro.disconnect(); };
-  }, []);
-
   const [newMember, setNewMember] = useState({ ...emptyNewMember });
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
   const [resetForm, setResetForm] = useState({ ...emptyResetForm });
@@ -2537,13 +2519,11 @@ export default function MemberManagement() {
 
         {/* Table - 全部视图 */}
         {viewMode === "all" && (
-        <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
-         >
-          <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={memberTableScrollRef}>
-          <Table className="w-full" style={{ minWidth: hasOneid ? "1320px" : "100%" }}>
+        <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+          <Table scrollX={hasOneid ? 1320 : 1180}>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead style={{ minWidth: "220px" }}>
+                <TableHead fixed="left" style={{ width: "220px", minWidth: "220px", maxWidth: "220px" }}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -2590,10 +2570,7 @@ export default function MemberManagement() {
                   </div>
                 </TableHead>
                 <TableHead style={{ minWidth: "110px" }}>加入时间</TableHead>
-                <TableHead className="sticky right-0 z-10 relative" style={{ backgroundColor: "#fafafa" }}>
-                  {memberTableCanScrollRight && (
-                    <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
-                  )}
+                <TableHead fixed="right" style={{ width: "112px", minWidth: "112px" }}>
                   操作
                 </TableHead>
               </TableRow>
@@ -2609,7 +2586,7 @@ export default function MemberManagement() {
                 const manualGroupPaths = !hasOneid ? getManualUserGroupPaths(member.id) : [];
                 return (
                 <TableRow key={member.id}>
-                  <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                  <TableCell fixed="left" style={{ width: "220px", minWidth: "220px", maxWidth: "220px" }}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="block max-w-[180px] truncate font-medium text-gray-950 cursor-pointer">{member.id}</span>
@@ -2794,21 +2771,17 @@ export default function MemberManagement() {
                   <TableCell>
                     <span className="text-gray-500">{member.joinTime}</span>
                   </TableCell>
-                  <TableActionCell className="sticky right-0 bg-white z-10 relative">
-                    {memberTableCanScrollRight && (
-                      <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="link-dark"
-                        onClick={() => openEditDialog(member)}
-                      >
-                        编辑
-                      </Button>
-                      {!hasOneid && (
+                  <TableActionCell fixed="right" style={{ width: "112px", minWidth: "112px" }}>
+                    <Button
+                      variant="link"
+                      onClick={() => openEditDialog(member)}
+                    >
+                      编辑
+                    </Button>
+                    {!hasOneid && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="link-dark">
+                          <Button variant="link">
                             更多
                           </Button>
                         </DropdownMenuTrigger>
@@ -2862,14 +2835,12 @@ export default function MemberManagement() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
-                    </div>
                   </TableActionCell>
                 </TableRow>
                 );
               })}
             </TableBody>
           </Table>
-          </div>
 
           {/* 底部翻页 */}
           <div className="px-6 py-3 border-t border-gray-50">

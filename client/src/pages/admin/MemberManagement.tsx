@@ -2372,7 +2372,7 @@ export default function MemberManagement() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">用户管理</h1>
             <p className="text-sm text-gray-500 mt-1">管理企业用户的访问权限和资源配额
-              {hasOneid && (
+              {hasOneid && !isUnified && (
                 <>
                   <span className="mx-2">|</span>
                   <button

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { TenantCard } from '@/components/ui/Surface';
+import { TenantSegmentGroup, TenantSegmentOption } from '@/components/ui/segment';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import {
   Select,
@@ -309,10 +310,10 @@ export default function SkillSquare() {
             className="relative min-h-[calc(100vh-64px)]"
             style={{ paddingLeft: 120, paddingRight: 120, paddingBottom: 75 }}
           >
-            {/* Hero 段 — 112px / 渐变标题 */}
+            {/* Hero 段 — 112px / 标题居中对齐（对齐「我的 Agent」） */}
             <div className="relative h-[112px]">
               <div className="h-[112px] flex flex-col justify-center gap-2 overflow-hidden">
-                <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 w-fit bg-gradient-to-r from-[#0A0A0A] to-[#1447E6] bg-clip-text text-transparent">
+                <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 text-[#0A0A0A]">
                   企业技能
                 </h1>
                 <p className="font-sans font-normal text-xs leading-[22.22px] tracking-[0.015em] text-[#737373] m-0">
@@ -322,7 +323,7 @@ export default function SkillSquare() {
             </div>
 
             {/* 内容段（搜索栏 / 分类 / 卡片网格） */}
-            <div className="relative h-auto py-6">
+            <div className="relative h-auto pb-6">
 
         {/* 搜索栏 + 筛选 */}
         <div className="relative flex h-10 flex-wrap gap-2 mb-4 items-center">
@@ -359,35 +360,17 @@ export default function SkillSquare() {
             <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
 
-          {/* 视图切换 — §8.6 Segmented Control（0522 胶囊版） */}
-          <div
-            className="inline-flex items-center gap-1 p-1 rounded-full bg-muted"
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setViewMode('card')}
-              className={`w-8 h-8 rounded-full ${
-                viewMode === 'card'
-                  ? 'bg-white text-foreground shadow-[var(--shadow-segment)]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
-              }`}
-            >
+          {/* 视图切换 — 统一 segment 样式（带图标+文字） */}
+          <TenantSegmentGroup>
+            <TenantSegmentOption active={viewMode === 'card'} onClick={() => setViewMode('card')}>
               <LayoutGrid className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setViewMode('list')}
-              className={`w-8 h-8 rounded-full ${
-                viewMode === 'list'
-                  ? 'bg-white text-foreground shadow-[var(--shadow-segment)]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
-              }`}
-            >
+              卡片视图
+            </TenantSegmentOption>
+            <TenantSegmentOption active={viewMode === 'list'} onClick={() => setViewMode('list')}>
               <List className="w-4 h-4" />
-            </Button>
-          </div>
+              列表视图
+            </TenantSegmentOption>
+          </TenantSegmentGroup>
         </div>
 
         {/* 分类横排按钮 */}
@@ -509,8 +492,8 @@ function SkillCard({
           <div className="flex items-center gap-4 min-w-0 flex-1">
             {initial && (
               <div
-                className="flex items-center justify-center flex-shrink-0 rounded-[4px]"
-                style={{ width: 40, height: 40, background: getLetterColor(initial).bg }}
+                className="flex items-center justify-center flex-shrink-0 rounded-full"
+                style={{ width: 48, height: 48, background: getLetterColor(initial).bg }}
               >
                 <span className="font-bold text-sm" style={{ color: getLetterColor(initial).text }}>{initial}</span>
               </div>
@@ -701,7 +684,7 @@ function SkillListRow({
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {initial && (
             <div
-              className="w-9 h-9 rounded-[4px] flex items-center justify-center flex-shrink-0"
+              className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
               style={{ background: getLetterColor(initial).bg }}
             >
               <span className="text-sm font-bold" style={{ color: getLetterColor(initial).text }}>{initial}</span>
@@ -1079,121 +1062,117 @@ function SkillSquareDetail({
 
   return (
     <div className="flex-1 flex flex-col relative">
-      {/* ======== Header（参照 Agent 详情页风格）======== */}
-      {/* 与 Agent 详情页一致：外层 items-end（按钮底对齐）、py-6、左侧整组 items-center */}
-      <header className="relative flex items-end justify-between gap-6 py-6">
-        <div className="flex items-center gap-3">
-          {/* 返回按钮 */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onBack}
-                  className="w-8 h-8 shrink-0 text-[#525252]"
+      {/* ======== Header（参照设计稿）======== */}
+      {/* 返回按钮在最上面，icon + 文字形式，左对齐头像 */}
+      <header className="relative flex flex-col gap-4 py-6">
+        {/* 返回行 */}
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-1.5 text-[#525252] hover:text-[#1447E6] transition-colors self-start"
+          style={{ fontSize: 14, lineHeight: "20px" }}
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>返回</span>
+        </button>
+
+        {/* 主信息行：头像顶对齐标题 + 右侧按钮底对齐 */}
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex items-start gap-3">
+            {/* 技能图标（首字母圆形） */}
+            {(() => {
+              const initial = getSkillInitial(skill.name) || 'A';
+              const colors = getLetterColor(initial);
+              return (
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-semibold shrink-0"
+                  style={{ background: colors.bg, color: colors.text }}
                 >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>返回列表</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+                  {initial}
+                </div>
+              );
+            })()}
 
-          {/* 技能图标（首字母渐变圆形） */}
-          {(() => {
-            const initial = getSkillInitial(skill.name) || 'A';
-            const colors = getLetterColor(initial);
-            return (
-              <div
-                className="w-12 h-12 rounded-[4px] flex items-center justify-center text-xl font-semibold shrink-0"
-                style={{ background: colors.bg, color: colors.text }}
-              >
-                {initial}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-3">
+                <h1
+                  className="text-[22px] font-semibold leading-7"
+                  style={{ color: "#0A0A0A", letterSpacing: "-0.02em" }}
+                >
+                  {skill.name}
+                </h1>
+                <span
+                  className="inline-flex items-center"
+                  style={{
+                    padding: "2px 6px",
+                    borderRadius: "2px",
+                    border: "1px solid #DAE0E9",
+                    background: "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
+                    color: "#334155",
+                    fontSize: "12px",
+                    lineHeight: "18px",
+                  }}
+                >
+                  v{skill.version}
+                </span>
               </div>
-            );
-          })()}
-
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-3">
-              <h1
-                className="text-[22px] font-semibold leading-7"
-                style={{ color: "#0A0A0A", letterSpacing: "-0.02em" }}
-              >
-                {skill.name}
-              </h1>
-              <span
-                className="inline-flex items-center"
-                style={{
-                  padding: "2px 6px",
-                  borderRadius: "2px",
-                  border: "1px solid #DAE0E9",
-                  background: "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
-                  color: "#334155",
-                  fontSize: "12px",
-                  lineHeight: "18px",
-                }}
-              >
-                v{skill.version}
-              </span>
-            </div>
-            {/* 元信息行 */}
-            <div
-              className="flex items-center flex-wrap gap-2"
-              style={{
-                fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
-                fontWeight: 400,
-                fontSize: "12px",
-                lineHeight: "20px",
-                color: "#737373",
-              }}
-            >
-              <span>slug: {skill.slug}</span>
-              <span>|</span>
-              {skill.categories && skill.categories.length > 0 && (
-                <>
-                  <span>分类：{skill.categories.map((catId: string) => getCategoryName(catId)).join('、')}</span>
-                  <span>|</span>
-                </>
-              )}
-              <span className="inline-flex items-center gap-1">
-                <Download className="w-3 h-3 text-[#A3A3A3]"/>
-                {formatDownloadCount(MOCK_DOWNLOAD_COUNTS[skill.id] || 0)}
-              </span>
-              <span>|</span>
-              <span>{formatDate(skill.uploadTime)} 发布</span>
-            </div>
-            {skill.description && (
-              <p
-                className="mt-1"
+              {/* 元信息行 */}
+              <div
+                className="flex items-center flex-wrap gap-2"
                 style={{
                   fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
-                  fontSize: "13px",
+                  fontWeight: 400,
+                  fontSize: "12px",
                   lineHeight: "20px",
                   color: "#737373",
                 }}
               >
-                {skill.description}
-              </p>
-            )}
+                <span>slug: {skill.slug}</span>
+                <span>|</span>
+                {skill.categories && skill.categories.length > 0 && (
+                  <>
+                    <span>分类：{skill.categories.map((catId: string) => getCategoryName(catId)).join('、')}</span>
+                    <span>|</span>
+                  </>
+                )}
+                <span className="inline-flex items-center gap-1">
+                  <Download className="w-3 h-3 text-[#A3A3A3]"/>
+                  {formatDownloadCount(MOCK_DOWNLOAD_COUNTS[skill.id] || 0)}
+                </span>
+                <span>|</span>
+                <span>{formatDate(skill.uploadTime)} 发布</span>
+              </div>
+              {skill.description && (
+                <p
+                  className="mt-1"
+                  style={{
+                    fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
+                    fontSize: "13px",
+                    lineHeight: "20px",
+                    color: "#737373",
+                  }}
+                >
+                  {skill.description}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* 右：操作按钮组（底对齐到 header 底部） */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="tenant-outline" size="claw" onClick={handleDownload} disabled={isDownloading}>
-            {isDownloading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            下载
-          </Button>
-          <Button
-            variant="tenant-primary"
-            size="claw"
-            onClick={() => setDistributeDialogOpen(true)}
-            disabled={hasInProgress}
-          >
-            <Plus className="w-4 h-4" />
-            {hasInProgress ? '下发中...' : '下发'}
-          </Button>
+          {/* 右：操作按钮组 */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="tenant-outline" size="claw" onClick={handleDownload} disabled={isDownloading}>
+              {isDownloading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              下载
+            </Button>
+            <Button
+              variant="tenant-primary"
+              size="claw"
+              onClick={() => setDistributeDialogOpen(true)}
+              disabled={hasInProgress}
+            >
+              <Plus className="w-4 h-4" />
+              {hasInProgress ? '下发中...' : '下发'}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -1201,25 +1180,25 @@ function SkillSquareDetail({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 flex flex-col">
         {/* Tab 导航段 */}
         <div className="relative py-4">
-          {/* §8.6 Segmented Control（0522 胶囊版）：灰底容器 + 白滑块 + var(--shadow-segment) */}
           <TabsList
-            className="inline-flex items-center gap-1 p-1 h-auto rounded-full bg-muted"
+            className="inline-flex items-center h-9 p-0 rounded-[40px] border-0"
+            style={{ background: "rgba(228, 232, 241, 0.4)" }}
           >
             <TabsTrigger
               value="overview"
-              className="rounded-full px-3 py-1 text-sm font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
+              className="rounded-[40px] h-full px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] font-normal text-[#334155] hover:text-[#020617] data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-normal data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] transition-all"
             >
               概述
             </TabsTrigger>
             <TabsTrigger
               value="files"
-              className="rounded-full px-3 py-1 text-sm font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
+              className="rounded-[40px] h-full px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] font-normal text-[#334155] hover:text-[#020617] data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-normal data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] transition-all"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-full px-3 py-1 text-sm font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-medium data-[state=active]:shadow-[var(--shadow-segment)] transition-colors"
+              className="rounded-[40px] h-full px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] font-normal text-[#334155] hover:text-[#020617] data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-normal data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] transition-all"
             >
               下发记录
             </TabsTrigger>
@@ -1324,18 +1303,19 @@ function SkillSquareDetail({
                   <>
                     <div className="h-12 px-3 border-b border-[#E5E5E5] flex items-center justify-between">
                       <p className="text-sm font-medium text-[#09090b]">{expandedFile}</p>
-                      {/* 内嵌 Segmented Control（预览/源码，0522 胶囊版） */}
+                      {/* 内嵌 Segmented Control（预览/源码，统一 segment 样式） */}
                       <div
-                        className="flex items-center gap-0.5 rounded-full p-0.5 bg-muted"
+                        className="flex items-center h-7 rounded-[40px]"
+                        style={{ background: "rgba(228, 232, 241, 0.4)" }}
                       >
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setFileViewMode('preview')}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs h-auto ${
+                          className={`flex items-center gap-1 px-2 py-1 h-7 rounded-[40px] text-xs ${
                             fileViewMode === 'preview'
-                              ? 'bg-white font-medium text-foreground hover:bg-white shadow-[var(--shadow-segment)]'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                              ? 'bg-white font-normal text-[#020617] hover:bg-white outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]'
+                              : 'text-[#334155] hover:text-[#020617] hover:bg-transparent'
                           }`}
                         >
                           <Eye className="w-3 h-3" />
@@ -1345,10 +1325,10 @@ function SkillSquareDetail({
                           variant="ghost"
                           size="sm"
                           onClick={() => setFileViewMode('source')}
-                          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs h-auto ${
+                          className={`flex items-center gap-1 px-2 py-1 h-7 rounded-[40px] text-xs ${
                             fileViewMode === 'source'
-                              ? 'bg-white font-medium text-foreground hover:bg-white shadow-[var(--shadow-segment)]'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-transparent'
+                              ? 'bg-white font-normal text-[#020617] hover:bg-white outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]'
+                              : 'text-[#334155] hover:text-[#020617] hover:bg-transparent'
                           }`}
                         >
                           <Code className="w-3 h-3" />

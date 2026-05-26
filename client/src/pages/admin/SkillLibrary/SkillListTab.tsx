@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 
 import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -795,30 +796,14 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
-          <div className="flex items-center gap-1 border border-[#E5E5E5] rounded-[4px] p-0.5 bg-white h-9">
-            <button
-              onClick={() => setViewMode('card')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'card'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-              title="卡片视图"
-            >
+          <SegmentGroup>
+            <SegmentOption active={viewMode === 'card'} onClick={() => setViewMode('card')} title="卡片视图">
               <Grid3x3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-              title="列表视图"
-            >
+            </SegmentOption>
+            <SegmentOption active={viewMode === 'list'} onClick={() => setViewMode('list')} title="列表视图">
               <List className="w-4 h-4" />
-            </button>
-          </div>
+            </SegmentOption>
+          </SegmentGroup>
 
           <div className="flex items-center gap-2">
             <Button variant="claw-primary" size="claw-sm" onClick={() => setUploadDialogOpen(true)}>

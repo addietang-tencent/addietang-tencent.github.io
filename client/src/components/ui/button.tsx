@@ -173,10 +173,10 @@ const buttonVariants = cva(
          * - 用途：用户端业务页 CTA、弹窗确认、表单提交
          */
         "tenant-primary":
-          "!rounded-full [background:linear-gradient(90deg,#020617_70%,#1447E6_110%)] text-white font-normal border-0 " +
-          "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
-          "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
-          "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",
+          "!rounded-full [background:linear-gradient(90deg,#020617_70%,#1447E6_100%)] text-white font-normal border-0 " +
+          "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_100%)] " +
+          "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_100%)] " +
+          "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_100%)] disabled:text-white/50 disabled:opacity-100",
 
         /**
          * 用户端线性描边按钮（tenant-outline）
@@ -199,10 +199,10 @@ const buttonVariants = cva(
          *   规范的 20px 圆角，介于 4px（claw）和 full（tenant）之间
          */
         "tenant-outline-r20":
-          "!rounded-[20px] bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
-          "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] hover:[box-shadow:0_1px_3px_rgba(0,0,0,0.08)] " +
-          "active:bg-white active:border-[#e3e3e3] active:[box-shadow:none] " +
-          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
+          "!rounded-[20px] bg-white border border-[#cbcbcb] text-[#020617] font-normal " +
+          "hover:bg-[#f5f5f5] hover:border-[#b5b5b5] " +
+          "active:bg-white active:border-[#b5b5b5] active:[box-shadow:none] " +
+          "disabled:bg-white disabled:border-[#cbcbcb] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
 
         /**
          * 用户端危险按钮（tenant-destructive）

@@ -13,9 +13,9 @@ function Input({
   ...props
 }: React.ComponentProps<"input"> & {
   /**
-   * 用户端形态：圆角变为 rounded-full（胶囊），与 tenant-* Button 系列对齐。
+   * 用户端形态：圆角变为 rounded-xl（12px），与用户端卡片圆角统一。
    * 仅 pages/tenant/** 业务页使用；管理端保持 rounded-[4px]。
-   * 规范来源：SKILL-TENANT.md（2026-05-23 控件圆角对齐）
+   * 规范来源：SKILL-TENANT.md（2026-05-25 控件圆角对齐）
    */
   tenant?: boolean;
 }) {

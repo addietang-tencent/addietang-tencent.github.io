@@ -883,7 +883,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={value} id={`agent-type-${value}`} className="peer sr-only" />
                         <Label
                           htmlFor={`agent-type-${value}`}
-                          className="flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#1447E6] peer-data-[state=checked]:text-[#355EF1] transition-colors"
+                          className="flex items-center justify-center h-6 rounded-full border border-[#E5E5E5] bg-white px-3 text-xs font-medium text-[#020617] hover:bg-[#F5F5F5] hover:border-[#E3E3E3] hover:text-[#020617] cursor-pointer peer-data-[state=checked]:bg-[#020617] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#020617] peer-data-[state=checked]:hover:bg-[#020617] peer-data-[state=checked]:hover:text-white transition-colors"
                         >
                           {label}
                         </Label>
@@ -911,7 +911,7 @@ export default function MyOpenClaw() {
                     <RadioGroupItem value="__general__" id="role-general" className="peer sr-only" />
                     <Label
                       htmlFor="role-general"
-                      className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#1447E6] peer-data-[state=checked]:text-[#355EF1] transition-colors"
+                      className="flex items-center justify-center whitespace-nowrap h-6 rounded-full border border-[#E5E5E5] bg-white px-3 text-xs font-medium text-[#020617] hover:bg-[#F5F5F5] hover:border-[#E3E3E3] hover:text-[#020617] cursor-pointer peer-data-[state=checked]:bg-[#020617] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#020617] peer-data-[state=checked]:hover:bg-[#020617] peer-data-[state=checked]:hover:text-white transition-colors"
                     >
                       通用助手
                     </Label>
@@ -923,7 +923,7 @@ export default function MyOpenClaw() {
                         <RadioGroupItem value={role.id} id={`role-${role.id}`} className="peer sr-only" />
                         <Label
                           htmlFor={`role-${role.id}`}
-                          className="flex items-center justify-center whitespace-nowrap rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-1.5 text-xs font-medium text-[#737373] hover:border-[#1447E6] hover:text-[#355EF1] cursor-pointer peer-data-[state=checked]:border-[#1447E6] peer-data-[state=checked]:text-[#355EF1] transition-colors"
+                          className="flex items-center justify-center whitespace-nowrap h-6 rounded-full border border-[#E5E5E5] bg-white px-3 text-xs font-medium text-[#020617] hover:bg-[#F5F5F5] hover:border-[#E3E3E3] hover:text-[#020617] cursor-pointer peer-data-[state=checked]:bg-[#020617] peer-data-[state=checked]:text-white peer-data-[state=checked]:border-[#020617] peer-data-[state=checked]:hover:bg-[#020617] peer-data-[state=checked]:hover:text-white transition-colors"
                         >
                           {role.name}
                         </Label>
@@ -948,7 +948,7 @@ export default function MyOpenClaw() {
                     : generalIntro;
 
                   return (
-                    <SurfaceInner className="mt-3 overflow-hidden bg-[#FAFAFA] relative">
+                    <SurfaceInner className="mt-3 overflow-hidden bg-[#FAFAFA] relative rounded-[12px]">
                       <div className="p-4 space-y-3 relative z-10">
                         <div className="flex items-center gap-2">
                           <AgentAvatar
@@ -991,7 +991,7 @@ export default function MyOpenClaw() {
                 取消
               </Button>
               <Button
-                variant="tenant-primary"
+                variant="tenant-dialog-confirm"
                 onClick={handleCreate}
               >
                 确认创建

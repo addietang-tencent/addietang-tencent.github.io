@@ -1583,7 +1583,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
 
         {/* Segment nav + content area */}
         <Segment value={activeDetailTab} onValueChange={setActiveDetailTab}>
-          <SegmentList>
+          <SegmentList className="my-4">
             <SegmentItem value="basic">基础配置</SegmentItem>
             <SegmentItem value="tools">工具管理</SegmentItem>
             <SegmentItem value="memory">记忆管理</SegmentItem>
@@ -2259,7 +2259,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                   <div className="border-t border-[#e5e5e5] pt-4">
                     {quickFixState === "idle" && (
                       <Button
-                        variant="tenant-primary"
+                        variant="tenant-ghost"
                         size="claw-sm"
                         className="text-xs"
                         onClick={runQuickFixMock}

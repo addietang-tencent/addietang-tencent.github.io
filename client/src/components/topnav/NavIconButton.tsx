@@ -10,8 +10,8 @@
  *     - 红点：4x4，绝对定位，#E85C5C
  *   pill 胶囊变体（如「切换管控端」按钮，Figma 1077:34989）：
  *     - padding: 6px 12px、圆角 20px（胶囊）
- *     - 默认底：rgba(219, 221, 228, 0.32) 浅灰
- *     - hover：加深至 #F5F5F5
+ *     - 默认底：透明
+ *     - hover：rgba(219, 221, 228, 0.32) 浅灰
  *
  * 用法：
  *   <NavIconButton icon={<HelpIcon />} title="使用指南" />
@@ -48,8 +48,8 @@ const NavIconButton = React.forwardRef<HTMLButtonElement, NavIconButtonProps>(
   ) {
     // 形态分支：默认 = 4px 圆角无底色；pill = 20px 胶囊带浅灰底
     const shape = pill
-      ? "rounded-[20px] px-3 py-[6px] bg-[rgba(219,221,228,0.32)] hover:bg-[#F5F5F5]"
-      : "rounded-[4px] px-2 py-[6px] hover:bg-[#F5F5F5]";
+      ? "rounded-full px-3 py-[6px] h-8 hover:bg-[rgba(219,221,228,0.32)]"
+      : "rounded-full px-2 py-[6px] h-8 hover:bg-[rgba(219,221,228,0.32)]";
 
     return (
       <button

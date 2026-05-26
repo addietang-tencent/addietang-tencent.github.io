@@ -24,7 +24,7 @@ function Table({
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-[14px] text-[#09090b]", className)}
+        className={cn("w-full caption-bottom font-sans text-sm leading-[1.5] text-gray-900", className)}
         {...props}
       />
     </div>
@@ -35,7 +35,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
       data-slot="table-header"
-      className={cn("bg-[#fafafa] [&_tr]:border-b [&_tr]:border-[#f0f0f0]", className)}
+      className={cn("bg-gray-50 [&_tr]:border-b [&_tr]:border-gray-200", className)}
       {...props}
     />
   );
@@ -56,7 +56,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "bg-[#fafafa] border-t border-[#f0f0f0] font-medium [&>tr]:last:border-b-0",
+        "bg-gray-50 border-t border-gray-200 font-sans text-sm font-medium leading-[1.5] text-gray-900 [&>tr]:last:border-b-0",
         className
       )}
       {...props}
@@ -69,7 +69,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-[#fafafa] data-[state=selected]:bg-[rgba(53,94,241,0.06)] data-[state=selected]:hover:bg-[rgba(53,94,241,0.1)] border-b border-[#f0f0f0] transition-colors",
+        "border-b border-gray-200 transition-colors hover:bg-gray-50 data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)]",
         className
       )}
       {...props}
@@ -81,25 +81,21 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
  * TableHead - 表头单元格（强制样式，与 audit-log 页面视觉一致）
  *
  * 强制规范：
- * - 背景色：继承 TableHeader 的 bg-[#fafafa]（灰色）
- * - 文字色：#09090b（黑色）
- * - 字号：14px
- * - 字重：font-semibold（600）
- * - 行高：h-[54px]
+ * - 背景色：继承 TableHeader 的 bg-gray-50（#FAFAFA）
+ * - 文字：对齐 Typography MetaMedium（12px / Medium / #737373）
+ * - 行高：h-12
  * - 内边距：px-4
- * - 对齐：text-left align-middle（强制左对齐，禁止 text-center/text-right）
+ * - 默认对齐：text-left align-middle，可按列通过 className 覆盖 text-right
  * - 不换行：whitespace-nowrap
  *
- * 禁止通过 className 覆盖以上字体/颜色/字重/对齐属性。
- * className 仅用于控制宽度（w-[xx%]）和 sticky 定位。
- * 每列标题和内容必须统一左对齐。
+ * className 主要用于控制宽度（w-[xx%]）、sticky 定位和必要的列对齐。
  */
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "text-[#09090b] h-[54px] px-4 text-left align-middle font-semibold text-[14px] whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "h-12 px-4 text-left align-middle font-sans text-xs font-medium leading-[1.5] text-gray-500 whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
@@ -112,7 +108,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-4 py-3 align-middle whitespace-nowrap text-[14px] text-[#09090b] text-left [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "px-4 py-3 text-left align-middle whitespace-nowrap font-sans text-sm font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className
       )}
       {...props}
@@ -130,7 +126,7 @@ function TableActionCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-action-cell"
       className={cn(
-        "px-4 py-3 align-middle whitespace-nowrap text-[14px] [&:has([role=checkbox])]:pr-0",
+        "px-4 py-3 align-middle whitespace-nowrap font-sans text-sm font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0",
         "[&_[data-slot=button]]:text-[#020617] [&_[data-slot=button]]:font-normal [&_[data-slot=button]]:underline-offset-4 [&_[data-slot=button]]:bg-transparent [&_[data-slot=button]]:border-0 [&_[data-slot=button]]:shadow-none [&_[data-slot=button]]:p-0 [&_[data-slot=button]]:h-auto",
         "[&_[data-slot=button]:hover]:text-[#525252] [&_[data-slot=button]:hover]:bg-transparent",
         "[&_[data-slot=button]:active]:text-[#020617] [&_[data-slot=button]:active]:underline",
@@ -149,7 +145,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("text-[#09090b] mt-4 text-[14px]", className)}
+      className={cn("mt-4 font-sans text-xs font-normal leading-[1.5] text-gray-500", className)}
       {...props}
     />
   );

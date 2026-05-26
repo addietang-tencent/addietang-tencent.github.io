@@ -3,12 +3,12 @@ import { Pagination } from "@/components/ui/pagination";
 import {
   Dialog,
   DialogContent,
-  DialogBody,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription, AlertTitle, AlertOperationInfoIcon } from "@/components/ui/alert";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,14 +36,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { StatusTag } from "@/components/ui/status-tag";
 import { toast } from "sonner";
-import {
-  Search,
+import { 
+  Search, 
   Bot,
   Building,
   ChevronDown,
   ChevronRight,
   AlertTriangle,
-  CircleAlert,
   Info,
   ChevronLeft,
   Link,
@@ -122,17 +121,17 @@ function FMGroupFilter({
     return (
       <div>
         <div
-          className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-blue-50" : "hover:bg-gray-100"}`}
+          className={`flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? "bg-[#eff4ff]" : "hover:bg-[#f5f5f5]"}`}
           style={{ paddingLeft: `${8 + level * 16}px` }}
           onClick={() => setTempValue(node.id)}
         >
           {hasChildren ? (
-            <button className="p-0.5 text-gray-400 shrink-0" onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}>
+            <button className="p-0.5 text-[#A3A3A3] shrink-0" onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}>
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </button>
           ) : <span className="w-4 shrink-0" />}
-          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
-          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-[#355EF1] font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-[#355EF1] flex-shrink-0" />}
         </div>
         {hasChildren && (isExpanded || !!search) && node.children!.map(c => <TreeNode key={c.id} node={c} level={level + 1} />)}
       </div>
@@ -143,38 +142,38 @@ function FMGroupFilter({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" role="combobox"
-          className={`w-[140px] justify-between bg-white text-sm font-normal h-9 hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}>
+          className={`w-[140px] justify-between bg-white text-sm font-normal h-9 ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}>
           <span className="truncate">{triggerNode?.name || "全部分组"}</span>
-          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 text-[#737373] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="p-2 border-b border-[#e5e5e5]">
-          <input
-            type="text" placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full h-8 px-3 text-sm rounded-md border border-gray-200 bg-white text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
+          <Input
+            placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
+            className="h-8 text-sm"
           />
         </div>
         <div className="max-h-[280px] overflow-y-auto p-2">
-          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"}`} onClick={() => setTempValue("")}>
-            <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
-            {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-[#eff4ff]" : "hover:bg-[#f5f5f5]"}`} onClick={() => setTempValue("")}>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部分组</span>
+            {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
           </div>
           {groups.map(g => <TreeNode key={g.id} node={g} />)}
         </div>
         <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs overflow-hidden">
             {tempValue === "" ? (
-              <span className="text-blue-600 font-medium truncate">全部分组</span>
+              <span className="text-[#355EF1] font-medium truncate">全部分组</span>
             ) : selectedNode ? (
-              <span className="text-blue-600 font-medium truncate">{selectedNode.name}</span>
+              <span className="text-[#355EF1] font-medium truncate">{selectedNode.name}</span>
             ) : (
-              <span className="text-gray-400 truncate">未选择</span>
+              <span className="text-[#A3A3A3] truncate">未选择</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={handleCancel}>取消</Button>
-            <Button size="sm" className="text-xs h-7 px-3" onClick={handleConfirm}>确认</Button>
+            <Button variant="outline" size="sm" className="text-xs h-7 px-2" onClick={handleCancel}>取消</Button>
+            <Button variant="dialog-confirm" size="sm" className="text-xs h-7 px-3" onClick={handleConfirm}>确认</Button>
           </div>
         </div>
       </PopoverContent>
@@ -233,17 +232,17 @@ function FMGroupTagSelector({
     return (
       <div>
         <div
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-md cursor-pointer transition-colors ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}`}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md cursor-pointer transition-colors ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-[#fafafa]"}`}
           style={{ paddingLeft: `${8 + depth * 16}px` }}
           onClick={() => !disabled && toggle(node.id)}
         >
           {node.children.length > 0 ? (
-            <button className="p-0.5 text-gray-400 shrink-0" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+            <button className="p-0.5 text-[#A3A3A3] shrink-0" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
               {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </button>
           ) : <span className="w-4 shrink-0" />}
           <Checkbox checked={checked} disabled={disabled} className="w-3.5 h-3.5 shrink-0" onChange={() => {}} />
-          <span className="text-xs text-gray-700 truncate">{node.name}</span>
+          <span className="text-xs text-[#334155] truncate">{node.name}</span>
         </div>
         {expanded && node.children.map((c) => <TreeNode key={c.id} node={c} depth={depth + 1} />)}
       </div>
@@ -255,13 +254,13 @@ function FMGroupTagSelector({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="min-h-7 flex flex-wrap gap-1 items-center px-2 py-1 border border-gray-200 rounded-md cursor-pointer hover:border-blue-400 transition-colors bg-white">
+        <div className="min-h-7 flex flex-wrap gap-1 items-center px-2 py-1 border border-[#e5e5e5] rounded-md cursor-pointer hover:border-[#355EF1] transition-colors bg-white">
           {selectedIds.length === 0
-            ? <span className="text-xs text-gray-400">选择分组…</span>
+            ? <span className="text-xs text-[#A3A3A3]">选择分组…</span>
             : selectedIds.map((id) => (
-              <span key={id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px]">
+              <span key={id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px]">
                 {getGroupName(id)}
-                <button onClick={(e) => { e.stopPropagation(); toggle(id); }} className="hover:text-blue-900"><X className="w-2.5 h-2.5" /></button>
+                <button onClick={(e) => { e.stopPropagation(); toggle(id); }} className="hover:text-[#0A0A0A]"><X className="w-2.5 h-2.5" /></button>
               </span>
             ))}
         </div>
@@ -270,7 +269,7 @@ function FMGroupTagSelector({
         <Input placeholder="搜索分组…" value={search} onChange={(e) => setSearch(e.target.value)} className="h-7 text-xs mb-2" />
         <div className="max-h-48 overflow-y-auto">
           {filtered.length === 0
-            ? <p className="text-xs text-gray-400 text-center py-4">无匹配分组</p>
+            ? <p className="text-xs text-[#A3A3A3] text-center py-4">无匹配分组</p>
             : filtered.map((n) => <TreeNode key={n.id} node={n} />)}
         </div>
       </PopoverContent>
@@ -319,19 +318,19 @@ function FMGroupBadges({ groupIds }: { groupIds: string[] }) {
     return () => observer.disconnect();
   }, [paths, groupIds.length]);
 
-  if (groupIds.length === 0) return <span className="text-xs text-gray-500 font-medium">预设策略</span>;
+  if (groupIds.length === 0) return <span className="text-xs text-[#737373] font-medium">预设策略</span>;
   const omitted = paths.length - visibleCount;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div ref={containerRef} className="flex items-center gap-1 w-full overflow-hidden cursor-default">
           {paths.slice(0, visibleCount).map((p, i) => (
-            <span key={i} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap shrink-0">{p}</span>
+            <span key={i} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px] whitespace-nowrap shrink-0">{p}</span>
           ))}
-          {omitted > 0 && <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">…共 {paths.length} 个分组</span>}
+          {omitted > 0 && <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap shrink-0">…共 {paths.length} 个分组</span>}
           <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
-            {paths.map((p, i) => <span key={`m-${i}`} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap">{p}</span>)}
-            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap" />
+            {paths.map((p, i) => <span key={`m-${i}`} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px] whitespace-nowrap">{p}</span>)}
+            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap" />
           </div>
         </div>
       </TooltipTrigger>
@@ -407,27 +406,27 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
 
   const renderFallbackValueEditor = () => (
     <>
-      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-gray-200 text-gray-500"}`}>开启</button>
-      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-gray-200 text-gray-500"}`}>关闭</button>
+      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-[#e5e5e5] text-[#737373]"}`}>开启</button>
+      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-[#e5e5e5] text-[#737373]"}`}>关闭</button>
     </>
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+    <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
       <div className="px-5 pt-5 pb-3">
         <div className="flex items-center gap-3 mb-1.5">
-          <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-xl flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
-          <h3 className="text-sm font-semibold text-gray-900 flex-1">{title}</h3>
+          <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-[4px] flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
+          <h3 className="text-sm font-semibold text-[#0A0A0A] flex-1">{title}</h3>
         </div>
-        <p className="text-xs text-gray-400 leading-relaxed">{description}</p>
+        <p className="text-xs text-[#A3A3A3] leading-relaxed">{description}</p>
       </div>
 
       <div className="px-5 pb-4">
         {(groupRules.length > 0 || addingNew) && (
           <div className={`${FM_ROW_CLASS} border-b border-[#e5e5e5]`}>
-            <span className="flex-1 text-[11px] font-medium text-gray-400 uppercase tracking-wide">分组</span>
-            <span className="w-24 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">权限</span>
-            <span className="w-14 text-right text-[11px] font-medium text-gray-400 uppercase tracking-wide">操作</span>
+            <span className="flex-1 text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">分组</span>
+            <span className="w-24 text-right text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">权限</span>
+            <span className="w-14 text-right text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">操作</span>
           </div>
         )}
 
@@ -442,19 +441,19 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                   <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
                 </div>
                 <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
-                  <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                  <button onClick={() => saveEdit(rule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                  <button onClick={cancelEdit} className="text-[#A3A3A3] hover:text-[#737373] transition-colors p-1"><X className="w-3 h-3" /></button>
+                  <button onClick={() => saveEdit(rule.id)} className="text-[#355EF1] hover:text-[#355EF1] transition-colors p-1"><Check className="w-3 h-3" /></button>
                 </div>
               </div>
             ) : (
-              <div className={`${FM_ROW_CLASS} border-b border-gray-50 hover:bg-gray-50/50 transition-colors`}>
+              <div className={`${FM_ROW_CLASS} border-b border-gray-50 hover:bg-[#fafafa]/50 transition-colors`}>
                 <div className="flex-1 min-w-0"><FMGroupBadges groupIds={rule.groupIds} /></div>
                 <div className="w-24 text-right">
                   <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>
                 </div>
                 <div className="w-14 flex items-center justify-end gap-1">
-                  <button onClick={() => startEdit(rule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-                  <button onClick={() => deleteRule(rule.id)} className="text-gray-400 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
+                  <button onClick={() => startEdit(rule)} className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+                  <button onClick={() => deleteRule(rule.id)} className="text-[#A3A3A3] hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
                 </div>
               </div>
             )}
@@ -470,36 +469,36 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
               <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
             </div>
             <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
-              <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-              <button onClick={() => saveEdit()} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+              <button onClick={cancelEdit} className="text-[#A3A3A3] hover:text-[#737373] transition-colors p-1"><X className="w-3 h-3" /></button>
+              <button onClick={() => saveEdit()} className="text-[#355EF1] hover:text-[#355EF1] transition-colors p-1"><Check className="w-3 h-3" /></button>
             </div>
           </div>
         ) : (
           groupRules.length === 0 && (
-            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50/50 rounded-lg transition-colors">
+            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-[#355EF1] hover:text-[#355EF1] hover:bg-[#eff4ff]/50 rounded-lg transition-colors">
               <Plus className="w-3.5 h-3.5" />添加分组策略
             </button>
           )
         )}
 
-        <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
+        <div className="border-t border-dashed border-[#e5e5e5] mt-2 pt-2">
           {editingId === fallbackRule.id ? (
             <div className={FM_ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
+              <div className="flex-1 min-w-0"><span className="text-xs text-[#737373] font-medium">预设策略</span></div>
               <div className="w-24 flex items-center justify-end gap-1">{renderFallbackValueEditor()}</div>
               <div className="w-14 flex items-center justify-end gap-1">
-                <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600 transition-colors p-1"><X className="w-3 h-3" /></button>
-                <button onClick={() => saveEdit(fallbackRule.id)} className="text-blue-500 hover:text-blue-700 transition-colors p-1"><Check className="w-3 h-3" /></button>
+                <button onClick={cancelEdit} className="text-[#A3A3A3] hover:text-[#737373] transition-colors p-1"><X className="w-3 h-3" /></button>
+                <button onClick={() => saveEdit(fallbackRule.id)} className="text-[#355EF1] hover:text-[#355EF1] transition-colors p-1"><Check className="w-3 h-3" /></button>
               </div>
             </div>
           ) : (
             <div className={FM_ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-gray-500 font-medium">预设策略</span></div>
+              <div className="flex-1 min-w-0"><span className="text-xs text-[#737373] font-medium">预设策略</span></div>
               <div className="w-24 text-right">
                 <span className={`text-xs font-medium ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>
               </div>
               <div className="w-14 flex items-center justify-end">
-                <button onClick={() => startEdit(fallbackRule)} className="text-gray-400 hover:text-blue-500 transition-colors p-1"><Pencil className="w-3 h-3" /></button>
+                <button onClick={() => startEdit(fallbackRule)} className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors p-1"><Pencil className="w-3 h-3" /></button>
               </div>
             </div>
           )}
@@ -507,16 +506,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
       </div>
 
       <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
-        <AlertDialogContent className="sm:max-w-[420px]">
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={() => setConfirmFallbackDraft(null)}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>切换后将清空分组策略</AlertDialogTitle>
             <AlertDialogDescription>分组策略是基于「预设策略」的例外设置。切换「预设策略」后，现有分组策略将全部清空，需重新添加。</AlertDialogDescription>
@@ -604,7 +594,7 @@ const StatCard = ({ title, value, icon: IconComponent }: { title: string; value:
       <IconComponent />
       <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">{title}</span>
     </div>
-    <p className="text-2xl font-bold text-black leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{value}</p>
+    <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{value}</p>
   </div>
 );
 
@@ -1195,8 +1185,8 @@ export default function FileManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">网盘管理</h1>
-          <p className="text-sm text-gray-500 mt-1">为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持</p>
+          <h1 className="text-2xl font-bold text-[#0A0A0A]">网盘管理</h1>
+          <p className="text-sm text-[#737373] mt-1">为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持</p>
         </div>
       </div>
 
@@ -1217,7 +1207,7 @@ export default function FileManagement() {
       {/* Enterprise Public Space Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-gray-900">企业公共空间</h2>
+          <h2 className="font-semibold text-[#0A0A0A]">企业公共空间</h2>
         </div>
 
         {/* 信息提示横幅 */}
@@ -1229,61 +1219,40 @@ export default function FileManagement() {
         </Alert>
 
         <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
         >
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[35%]">
-                  空间名称
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[18%]">
-                  类型
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[28%]">
-                  已用/存储容量
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[19%]">
-                  有效期
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[35%]">空间名称</TableHead>
+                <TableHead className="w-[18%]">类型</TableHead>
+                <TableHead className="w-[28%]">已用/存储容量</TableHead>
+                <TableHead className="w-[19%]">有效期</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {ENTERPRISE_SPACES.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0">
-                        <Building className="w-5 h-5 text-white" />
-                      </div>
-                      <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusTag variant="blue">
-                      {item.type}
-                    </StatusTag>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell>{item.type}</TableCell>
+                  <TableCell>
                     <span className="tabular-nums">
-                      {item.used}/{<span className="font-semibold">{item.quota}</span>}
+                      {item.used}/<span className="font-semibold">{item.quota}</span>
                     </span>
-                    <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-600">
-                      免费
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 tabular-nums">{item.expiry}</td>
-                </tr>
+                    <StatusTag variant="green" className="ml-2">免费</StatusTag>
+                  </TableCell>
+                  <TableCell className="tabular-nums">{item.expiry}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
       {/* AI Agent Private Space Section */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-gray-900">智能体网盘</h2>
+          <h2 className="font-semibold text-[#0A0A0A]">智能体网盘</h2>
         </div>
 
         {/* 信息提示横幅 */}
@@ -1314,13 +1283,11 @@ export default function FileManagement() {
           />
         </div>
 
-        <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-        >
-          {/* Search Bar and Batch Enable */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+        {/* 工具栏（独立于表格） */}
+        <div className="flex items-center justify-between mb-4 mt-16">
             <div className="flex items-center gap-3">
               <Button
+                variant="dialog-confirm"
                 onClick={handleBatchEnable}
                 disabled={selectedInstances.size === 0}
               >
@@ -1337,17 +1304,18 @@ export default function FileManagement() {
                 onChange={(v) => setGroupFilter(v)}
               />
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input 
-                  placeholder="搜索名称、ID或创建人" 
-                  className="pl-9 h-9 bg-white border-gray-300 hover:border-gray-400 focus:border-purple-500 rounded-xl text-sm transition-colors"
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+                <Input
+                  placeholder="搜索名称、ID或创建人"
+                  className="pl-9 h-9"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Button
-                variant="outline"
-                className="h-9 px-4 gap-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                variant="claw-outline"
+                size="claw"
+                className="gap-2"
                 onClick={() => setRecyclebinOpen(true)}
               >
                 <Trash2 className="w-4 h-4" />
@@ -1359,58 +1327,50 @@ export default function FileManagement() {
                 )}
               </Button>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span>共计 <span className="font-semibold text-gray-900 tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
+            <div className="flex items-center gap-2 text-[14px] text-[#737373]">
+              <span>共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
             </div>
-          </div>
+        </div>
+
+        <div
+          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+        >
 
           {/* Flat Table */}
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[6%]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[6%]">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
                       disabled={disabledInstancesCount === 0}
-                      className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none bg-gray-300 border-gray-500" : ""}
+                      className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none" : ""}
                       aria-label="全选"
                     />
-                    <span className={disabledInstancesCount === 0 ? "text-gray-400" : ""}>全选</span>
+                    <span className={disabledInstancesCount === 0 ? "text-[#A3A3A3]" : ""}>全选</span>
                   </div>
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[20%]">
-                  OpenClaw 实例
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[15%]">
-                  创建人
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[8%]">
-                  类型
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[18%]">
-                  已用/存储容量
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide w-[10%]">
-                  有效期
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap w-[9%]">
-                  启用网盘
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+                </TableHead>
+                <TableHead className="w-[20%]">OpenClaw 实例</TableHead>
+                <TableHead className="w-[15%]">创建人</TableHead>
+                <TableHead className="w-[8%]">类型</TableHead>
+                <TableHead className="w-[18%]">已用/存储容量</TableHead>
+                <TableHead className="w-[10%]">有效期</TableHead>
+                <TableHead className="w-[9%]">启用网盘</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginatedPersonalSpaces.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
-                      <Search className="w-12 h-12 text-gray-300" />
-                      <p className="text-sm text-gray-500">未找到匹配的记录</p>
-                      <p className="text-xs text-gray-400">请尝试其他搜索关键词</p>
+                      <Search className="w-12 h-12 text-[#A3A3A3]" />
+                      <p className="text-sm text-[#737373]">未找到匹配的记录</p>
+                      <p className="text-xs text-[#A3A3A3]">请尝试其他搜索关键词</p>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 paginatedPersonalSpaces.map((item) => {
                   const isEnabled = instancesEnabled[item.id];
@@ -1420,9 +1380,9 @@ export default function FileManagement() {
                   return (
                     <tr 
                       key={item.id} 
-                      className="hover:bg-gray-50/50 transition-colors"
+                      className="hover:bg-[#fafafa]/50 transition-colors"
                     >
-                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}
@@ -1431,40 +1391,33 @@ export default function FileManagement() {
                           aria-label={`选择 ${item.instanceName}`}
                         />
                       </td>
-                      <td className="px-6 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-9 h-9 rounded-full bg-[#355EF1] flex items-center justify-center shrink-0">
-                            <Bot className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="flex flex-col min-w-0 flex-1">
+                      <td className="px-4 py-3" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                        <div className="flex flex-col min-w-0">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="text-sm font-medium text-gray-900 truncate max-w-[140px]">{item.instanceName}</span>
+                                <span className="text-sm font-medium text-[#0A0A0A] truncate max-w-[180px]">{item.instanceName}</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.instanceName}</TooltipContent>
                             </Tooltip>
-                            <span className="text-xs font-mono text-blue-500">{item.instanceId}</span>
-                          </div>
+                            <span className="text-xs font-mono text-[#355EF1]">{item.instanceId}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
+                      <td className="px-4 py-3" style={{ width: '160px', minWidth: '160px', maxWidth: '160px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-sm text-gray-900 truncate block max-w-[140px]">{item.creator}</span>
+                            <span className="text-sm text-[#0A0A0A] truncate block max-w-[140px]">{item.creator}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.creator}</TooltipContent>
                         </Tooltip>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-xl text-xs font-medium bg-blue-50 text-blue-600">
+                      <td className="px-4 py-3 text-[14px] text-[#09090b]">
                           {item.type}
-                        </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">
+                      <td className="px-4 py-3 text-sm text-[#334155]">
                         {isEnabled ? (
                           <span className="tabular-nums">
                             {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                            <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-600">
+                            <span className="ml-2 px-2 py-0.5 rounded-[4px] text-xs font-medium bg-emerald-50 text-emerald-600">
                               免费
                             </span>
                           </span>
@@ -1472,14 +1425,14 @@ export default function FileManagement() {
                           <span className="tabular-nums flex items-center gap-1">
                             <span>
                               {item.used}/{<span className="font-semibold">{item.quota}</span>}
-                              <span className="ml-2 px-2 py-0.5 rounded-xl text-xs font-medium bg-blue-50 text-blue-600">
+                              <span className="ml-2 px-2 py-0.5 rounded-[4px] text-xs font-medium bg-[#eff4ff] text-[#355EF1]">
                                 可恢复
                               </span>
                             </span>
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <Info className="w-3.5 h-3.5 text-blue-500 cursor-help shrink-0" />
+                                  <Info className="w-3.5 h-3.5 text-[#355EF1] cursor-help shrink-0" />
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p className="text-xs">剩余 {getRemainingDays(item.id)} 天可恢复</p>
@@ -1488,13 +1441,13 @@ export default function FileManagement() {
                             </TooltipProvider>
                           </span>
                         ) : (
-                          <span className="text-gray-400">未启用</span>
+                          <span className="text-[#A3A3A3]">未启用</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700 tabular-nums">
-                        {isEnabled ? item.expiry : <span className="text-gray-400">-</span>}
+                      <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">
+                        {isEnabled ? item.expiry : <span className="text-[#A3A3A3]">-</span>}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         <Switch 
                           checked={isEnabled}
                           onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}
@@ -1504,11 +1457,11 @@ export default function FileManagement() {
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
 
           {/* Pagination */}
-          <div className="px-6 py-4 border-t border-[#e5e5e5]">
+          <div className="px-4 py-3 border-t border-[#e5e5e5]">
             <Pagination
               total={filteredPersonalSpaces.length}
               current={currentPage}
@@ -1522,76 +1475,60 @@ export default function FileManagement() {
         </div>
       </div>
 
-      {/* Disable Confirmation Dialog (row 9 关闭网盘) - 警示弹窗 */}
-      <AlertDialog open={disableDialogOpen} onOpenChange={setDisableDialogOpen}>
-        <AlertDialogContent className="sm:max-w-md">
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={handleCancelDisable}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">确认关闭网盘</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                <p className="text-sm text-[#0A0A0A]">
-                  您确定要关闭「<span className="font-medium">{instanceToDisable?.name}</span>」的网盘功能吗？
-                </p>
-                <Alert variant="warning">
-                  <CircleAlert />
-                  <AlertTitle>关闭网盘后</AlertTitle>
-                  <AlertDescription>
-                    <ul className="list-disc pl-4 space-y-0.5">
-                      <li>该实例将无法访问网盘中的文件</li>
-                      <li><span className="text-[#DC2626]">15 天内</span>网盘数据可恢复</li>
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelDisable}>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDisable}
-            >
-              确认关闭
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Batch Enable Dialog (row 4 批量启用网盘服务) - 普通弹窗 */}
-      <Dialog open={batchEnableDialogOpen} onOpenChange={setBatchEnableDialogOpen}>
-        <DialogContent
-          className="sm:max-w-md"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
+      {/* Disable Confirmation Dialog */}
+      <Dialog open={disableDialogOpen} onOpenChange={setDisableDialogOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>批量启用网盘服务</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A]">
+              确认关闭网盘
+            </DialogTitle>
           </DialogHeader>
-          <DialogBody className="flex-1">
-            <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A]">
-                您确定要为选中的 <span className="font-semibold tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗？
-              </p>
-              <Alert variant="operation-info">
-                <AlertOperationInfoIcon />
-                <AlertTitle>启用后</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc pl-4 space-y-0.5">
-                    <li>每个实例将获得 3 个月 50GB 免费额度</li>
-                    <li>实例可以访问专属网盘空间</li>
-                    <li>到期后可购买资源包续租</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-[#334155]">
+              您确定要关闭 <span className="font-bold text-[#0A0A0A]">"{instanceToDisable?.name}"</span> 的网盘功能吗？
+            </p>
+            <div className="p-3 bg-[#fafafa] border border-[#e5e5e5] rounded-[4px]">
+              <div className="text-xs text-[#334155] space-y-1">
+                <p className="font-semibold">关闭网盘后：</p>
+                <div className="space-y-0.5 ml-1">
+                  <p>• 该实例将无法访问网盘中的文件</p>
+                  <p>• 15天内网盘数据可恢复</p>
+                </div>
+              </div>
             </div>
-          </DialogBody>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelDisable}>取消</Button>
+            <Button onClick={handleConfirmDisable} variant="destructive">
+              确认关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Enable Confirmation Dialog */}
+      <Dialog open={batchEnableDialogOpen} onOpenChange={setBatchEnableDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-[#0A0A0A]">
+              批量启用网盘服务
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-[#334155]">
+              您确定要为选中的 <span className="font-semibold text-[#0A0A0A] tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
+            </p>
+            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+              <div className="text-xs text-[#334155] space-y-1 leading-relaxed">
+                <p className="font-semibold">启用后：</p>
+                <ul className="list-disc list-inside space-y-0.5 ml-1">
+                  <li>每个实例将获得 3个月50GB 免费额度</li>
+                  <li>实例可以访问专属网盘空间</li>
+                  <li>到期后可购买资源包续租</li>
+                </ul>
+              </div>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelBatchEnable}>取消</Button>
             <Button variant="dialog-confirm" onClick={handleConfirmBatchEnable}>
@@ -1601,85 +1538,88 @@ export default function FileManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Enable Choice Dialog - 普通弹窗 */}
+      {/* Enable Choice Dialog - 选择新启用或恢复已有 */}
       <Dialog open={enableChoiceDialogOpen} onOpenChange={setEnableChoiceDialogOpen}>
-        <DialogContent
-          className="sm:max-w-md"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>选择启用方式</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A]">
+              选择启用方式
+            </DialogTitle>
           </DialogHeader>
-          <DialogBody className="flex-1">
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-[#334155]">
+              检测到回收站中有该实例之前的网盘空间（15天内可恢复），您可以选择：
+            </p>
+            
             <div className="space-y-3">
-              <p className="text-sm text-[#0A0A0A]">
-                检测到回收站中有该实例之前的网盘空间（<span className="text-[#DC2626]">15 天内</span>可恢复），您可以选择：
-              </p>
               {/* 新启用网盘 */}
               <button
                 onClick={handleChooseNewEnable}
-                className="w-full group rounded-[4px] border border-[#E5E5E5] hover:border-[#355EF1] bg-white p-4 text-left transition-colors"
+                className="w-full group relative overflow-hidden rounded-[4px] border-2 border-[#e5e5e5] hover:border-[#355EF1] bg-white p-5 text-left transition-all duration-200"
               >
-                <div className="flex items-start gap-3">
-                  <div className="shrink-0 size-9 rounded-[4px] bg-[#F0F3FC] flex items-center justify-center">
-                    <Plus className="size-5 text-[#1447E6]" />
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-medium text-[#0A0A0A] mb-1">新启用网盘</h3>
-                    <p className="text-xs text-[#525252]">为该实例创建新的网盘空间</p>
+                    <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">新启用网盘</h3>
+                    <p className="text-sm text-[#737373]">
+                      为该实例创建新的网盘空间
+                    </p>
                   </div>
                 </div>
               </button>
+
               {/* 恢复已有网盘 */}
               <button
                 onClick={handleChooseRecoverExisting}
-                className="w-full group rounded-[4px] border border-[#E5E5E5] hover:border-[#355EF1] bg-white p-4 text-left transition-colors"
+                className="w-full group relative overflow-hidden rounded-[4px] border-2 border-[#e5e5e5] hover:border-green-400 bg-white p-5 text-left transition-all duration-200"
               >
-                <div className="flex items-start gap-3">
-                  <div className="shrink-0 size-9 rounded-[4px] bg-[#E9F8EB] flex items-center justify-center">
-                    <RotateCcw className="size-5 text-[#008236]" />
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                    <RotateCcw className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-medium text-[#0A0A0A] mb-1">恢复已有网盘</h3>
-                    <p className="text-xs text-[#525252]">恢复该实例之前的网盘空间，保留原有文件和数据</p>
+                    <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">恢复已有网盘</h3>
+                    <p className="text-sm text-[#737373]">
+                      恢复该实例之前的网盘空间，保留原有文件和数据
+                    </p>
                   </div>
                 </div>
               </button>
             </div>
-          </DialogBody>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelEnableChoice}>取消</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Single Enable Dialog (row 9) - 普通弹窗 */}
+      {/* Single Enable Confirmation Dialog */}
       <Dialog open={singleEnableDialogOpen} onOpenChange={setSingleEnableDialogOpen}>
-        <DialogContent
-          className="sm:max-w-md"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>启用网盘服务</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A]">
+              启用网盘服务
+            </DialogTitle>
           </DialogHeader>
-          <DialogBody className="flex-1">
-            <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A]">
-                您确定要为「<span className="font-medium">{instanceToEnable?.name}</span>」启用网盘服务吗？
-              </p>
-              <Alert variant="operation-info">
-                <AlertOperationInfoIcon />
-                <AlertTitle>启用后</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc pl-4 space-y-0.5">
-                    <li>该实例将获得 3 个月 50GB 免费额度</li>
-                    <li>实例可以访问专属网盘空间</li>
-                    <li>到期后可以进行续租</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-[#334155]">
+              您确定要为 <span className="font-bold text-[#0A0A0A]">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
+            </p>
+            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+              <div className="text-xs text-[#334155] space-y-1 leading-relaxed">
+                <p className="font-semibold">启用后：</p>
+                <ul className="list-disc list-inside space-y-0.5 ml-1">
+                  <li>该实例将获得 3个月50GB 免费额度</li>
+                  <li>实例可以访问专属网盘空间</li>
+                  <li>到期后可以进行续租</li>
+                </ul>
+              </div>
             </div>
-          </DialogBody>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelSingleEnable}>取消</Button>
             <Button variant="dialog-confirm" onClick={handleConfirmSingleEnable}>
@@ -1691,23 +1631,23 @@ export default function FileManagement() {
 
       {/* Purchase Storage Dialog */}
       <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
-        <DialogContent className="sm:max-w-[720px]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 flex items-center gap-2">
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-purple-600" />
               购买网盘容量
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
-              <p className="text-xs text-blue-600 leading-relaxed">
+            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] px-3 py-2.5">
+              <p className="text-xs text-[#355EF1] leading-relaxed">
                 为 <span className="font-semibold">"{instanceToPurchase?.name}"</span> 购买网盘容量
               </p>
             </div>
 
             {/* 选择存储容量 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择存储容量</Label>
+              <Label className="text-sm font-semibold text-[#0A0A0A]">选择存储容量</Label>
               <RadioGroup value={selectedCapacity} onValueChange={setSelectedCapacity}>
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -1719,10 +1659,10 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={item.value} className="peer sr-only" />
                       <Label
                         htmlFor={item.value}
-                        className="flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
-                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
-                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
+                        <span className="text-sm font-semibold text-[#0A0A0A]">{item.label}</span>
+                        <span className="text-xs text-[#737373] mt-1">{item.price}</span>
                       </Label>
                     </div>
                   ))}
@@ -1732,7 +1672,7 @@ export default function FileManagement() {
 
             {/* 选择购买时长 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择购买时长</Label>
+              <Label className="text-sm font-semibold text-[#0A0A0A]">选择购买时长</Label>
               <RadioGroup value={selectedDuration} onValueChange={setSelectedDuration}>
                 <div className="space-y-2">
                   {[
@@ -1745,9 +1685,9 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`duration-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
-                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                        <span className="text-sm font-medium text-[#0A0A0A]">{item.label}</span>
                       </Label>
                     </div>
                   ))}
@@ -1756,14 +1696,14 @@ export default function FileManagement() {
             </div>
 
             {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-[4px] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">合计金额：</span>
+                <span className="text-sm text-[#334155]">合计金额：</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculatePrice()}</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#737373] mt-2">
                 购买后立即生效，有效期 {selectedDuration} 个月
               </p>
             </div>
@@ -1771,7 +1711,6 @@ export default function FileManagement() {
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelPurchase}>取消</Button>
             <Button
-              variant="dialog-confirm"
               onClick={handleConfirmPurchase}
               className="gap-2"
             >
@@ -1784,22 +1723,22 @@ export default function FileManagement() {
 
       {/* Renew Storage Dialog */}
       <Dialog open={renewDialogOpen} onOpenChange={setRenewDialogOpen}>
-        <DialogContent className="sm:max-w-[720px]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-blue-600" />
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-[#355EF1]" />
               续费网盘
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
-            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
-              <p className="text-xs text-blue-600 leading-relaxed">
+            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] px-3 py-2.5">
+              <p className="text-xs text-[#355EF1] leading-relaxed">
                 为 <span className="font-semibold">"{instanceToRenew?.name}"</span> 续费网盘服务
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
-              <div className="text-xs text-gray-700 space-y-1">
+            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+              <div className="text-xs text-[#334155] space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
                 <p>• 到期时间：2026-06-30</p>
@@ -1808,7 +1747,7 @@ export default function FileManagement() {
 
             {/* 选择续费时长 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择续费时长</Label>
+              <Label className="text-sm font-semibold text-[#0A0A0A]">选择续费时长</Label>
               <RadioGroup value={renewDuration} onValueChange={setRenewDuration}>
                 <div className="space-y-2">
                   {[
@@ -1821,9 +1760,9 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`renew-duration-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`renew-duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-blue-50 transition-all"
+                        className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-[#eff4ff] transition-all"
                       >
-                        <span className="text-sm font-medium text-gray-900">{item.label}</span>
+                        <span className="text-sm font-medium text-[#0A0A0A]">{item.label}</span>
                       </Label>
                     </div>
                   ))}
@@ -1832,25 +1771,21 @@ export default function FileManagement() {
             </div>
 
             {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-[#355EF1] rounded-[4px] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">续费金额：</span>
+                <span className="text-sm text-[#334155]">续费金额：</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-blue-600 tabular-nums">¥{calculateRenewPrice()}</span>
+                  <span className="text-2xl font-bold text-[#355EF1] tabular-nums">¥{calculateRenewPrice()}</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#737373] mt-2">
                 续费后有效期延长 {renewDuration} 个月
               </p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRenew}>取消</Button>
-            <Button 
-              variant="dialog-confirm"
-              onClick={handleConfirmRenew} 
-              className="gap-2"
-            >
+            <Button variant="dialog-confirm" onClick={handleConfirmRenew}>
               确认续费
             </Button>
           </DialogFooter>
@@ -1859,22 +1794,22 @@ export default function FileManagement() {
 
       {/* Expand Storage Dialog */}
       <Dialog open={expandDialogOpen} onOpenChange={setExpandDialogOpen}>
-        <DialogContent className="sm:max-w-[720px]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-gray-900 flex items-center gap-2">
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-purple-600" />
               扩容网盘
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-5 py-4">
-            <div className="bg-purple-50 border border-purple-100 rounded-xl px-3 py-2.5">
+            <div className="bg-purple-50 border border-purple-100 rounded-[4px] px-3 py-2.5">
               <p className="text-xs text-purple-600 leading-relaxed">
                 为 <span className="font-semibold">"{instanceToExpand?.name}"</span> 扩容网盘空间
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5">
-              <div className="text-xs text-gray-700 space-y-1">
+            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+              <div className="text-xs text-[#334155] space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
                 <p>• 到期时间：2026-06-30</p>
@@ -1883,7 +1818,7 @@ export default function FileManagement() {
 
             {/* 选择扩容容量 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-gray-900">选择扩容容量</Label>
+              <Label className="text-sm font-semibold text-[#0A0A0A]">选择扩容容量</Label>
               <RadioGroup value={expandCapacity} onValueChange={setExpandCapacity}>
                 <div className="grid grid-cols-3 gap-3 max-h-[240px] overflow-y-auto pr-2">
                   {generateExpandCapacityOptions().map((item) => (
@@ -1891,10 +1826,10 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`expand-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`expand-${item.value}`}
-                        className="flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-gray-200 bg-white p-3 hover:bg-gray-50 cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
-                        <span className="text-sm font-semibold text-gray-900">{item.label}</span>
-                        <span className="text-xs text-gray-500 mt-1">{item.price}</span>
+                        <span className="text-sm font-semibold text-[#0A0A0A]">{item.label}</span>
+                        <span className="text-xs text-[#737373] mt-1">{item.price}</span>
                       </Label>
                     </div>
                   ))}
@@ -1903,44 +1838,40 @@ export default function FileManagement() {
             </div>
 
             {/* 价格汇总 */}
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-[4px] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">扩容费用：</span>
+                <span className="text-sm text-[#334155]">扩容费用：</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculateExpandPrice()}</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#737373] mt-2">
                 扩容 {expandCapacity}，立即生效，不延长有效期
               </p>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelExpand}>取消</Button>
-            <Button 
-              variant="dialog-confirm"
-              onClick={handleConfirmExpand} 
-              className="gap-2"
-            >
+            <Button variant="dialog-confirm" onClick={handleConfirmExpand}>
               确认扩容
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Recycle Bin Dialog (row 5) - 普通弹窗 */}
+      {/* Recycle Bin Dialog */}
       <Dialog open={recyclebinOpen} onOpenChange={setRecyclebinOpen}>
-        <DialogContent
-          className="sm:max-w-2xl"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
+        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>回收站</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-[#737373]" />
+              回收站
+            </DialogTitle>
           </DialogHeader>
-          <DialogBody className="flex-1">
+          <div className="flex-1 overflow-y-auto py-4">
             {getRecyclebinInstances().length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-[#A3A3A3]">
-                <Trash2 className="w-12 h-12 mb-3 opacity-40" />
+                <Trash2 className="w-16 h-16 mb-4 opacity-30" />
                 <p className="text-sm">回收站为空</p>
               </div>
             ) : (
@@ -1948,221 +1879,242 @@ export default function FileManagement() {
                 {getRecyclebinInstances().map((instance) => (
                   <div
                     key={instance.id}
-                    className="rounded-[4px] border border-[#E5E5E5] bg-white p-4"
+                    className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] p-4 hover:bg-gray-100 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className="w-9 h-9 rounded-[4px] bg-[#F5F5F5] flex items-center justify-center text-[#0A0A0A] font-medium text-sm shrink-0">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                           {instance.avatar}
                         </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-medium text-[#0A0A0A] truncate">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-semibold text-[#0A0A0A] truncate">
                               {instance.instanceName}
                             </h4>
-                            <StatusTag variant="red">{instance.remainingDays} 天后永久删除</StatusTag>
+                            <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-xs rounded-full font-medium">
+                              {instance.remainingDays}天后永久删除
+                            </span>
                           </div>
                           <div className="flex items-center gap-4 text-xs text-[#737373]">
-                            <span>创建人：{instance.creator}</span>
-                            <span>容量：{instance.used}/{instance.quota}</span>
-                            <span>实例 ID：{instance.instanceId}</span>
+                            <span>创建人: {instance.creator}</span>
+                            <span>容量: {instance.used}/{instance.quota}</span>
+                            <span>实例ID: {instance.instanceId}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <Button
-                          variant="link-dark"
-                          onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
-                        >
-                          恢复
-                        </Button>
-                        <Button
-                          variant="link-dark"
-                          onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
-                        >
-                          转接
-                        </Button>
-                        <Button
-                          variant="link-dark"
-                          className="!text-[#d42a1e] hover:!text-[#b91c1c]"
-                          onClick={() => {
-                            setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
-                            setRecyclebinDeleteDialogOpen(true);
-                          }}
-                        >
-                          永久删除
-                        </Button>
+                      <div className="flex items-center gap-2 ml-4">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#f4f4f5]"
+                                onClick={() => handleRestoreFromRecyclebin(instance.id, instance.instanceName)}
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                恢复
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>恢复此网盘空间</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 gap-1.5 text-[#334155] hover:text-[#0A0A0A] hover:bg-[#f4f4f5]"
+                                onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
+                              >
+                                <Link className="w-3.5 h-3.5" />
+                                转接
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>将此网盘转接给其他实例</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 px-2 gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => {
+                                  setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
+                                  setRecyclebinDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                永久删除
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>永久删除此网盘空间（不可恢复）</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </DialogBody>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRecyclebinOpen(false)}>关闭</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Recyclebin Recover Dialog (row 6) - 普通弹窗 */}
+      {/* Recyclebin Recover Confirmation Dialog */}
       <Dialog open={recyclebinRecoverDialogOpen} onOpenChange={setRecyclebinRecoverDialogOpen}>
-        <DialogContent
-          className="sm:max-w-md"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>恢复网盘空间</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+              <RotateCcw className="w-5 h-5 text-[#355EF1]" />
+              恢复网盘空间
+            </DialogTitle>
           </DialogHeader>
-          <DialogBody className="flex-1">
-            <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A]">
-                确定要恢复「<span className="font-medium">{instanceToRecoverFromRecyclebin?.name}</span>」的网盘服务吗？
+          <div className="py-4 space-y-4">
+            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-4">
+              <p className="text-sm text-[#334155] leading-relaxed">
+                确定要恢复 <span className="font-semibold text-[#355EF1]">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
               </p>
-              <Alert variant="operation-info">
-                <AlertOperationInfoIcon />
-                <AlertTitle>恢复说明</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc pl-4 space-y-0.5">
-                    <li>恢复后将继续使用之前的网盘空间</li>
-                    <li>原有文件和数据将保持不变</li>
-                    <li>恢复操作完全免费</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
             </div>
-          </DialogBody>
+            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] p-3">
+              <div className="flex items-start gap-2 text-xs text-[#737373]">
+                <Info className="w-4 h-4 text-[#A3A3A3] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p>• 恢复后将继续使用之前的网盘空间</p>
+                  <p>• 原有文件和数据将保持不变</p>
+                  <p>• 恢复操作完全免费</p>
+                </div>
+              </div>
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelRecyclebinRecover}>取消</Button>
-            <Button variant="dialog-confirm" onClick={handleConfirmRecyclebinRecover} className="gap-2">
-              <RotateCcw className="w-4 h-4" />
+            <Button variant="dialog-confirm" onClick={handleConfirmRecyclebinRecover}>
               确认恢复
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Recyclebin Permanent Delete - 警示弹窗 */}
-      <AlertDialog open={recyclebinDeleteDialogOpen} onOpenChange={setRecyclebinDeleteDialogOpen}>
-        <AlertDialogContent className="sm:max-w-[560px]">
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={handleCancelPermanentDelete}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">永久删除网盘空间</AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3">
-                <p className="text-sm text-[#0A0A0A]">
-                  确定要永久删除「<span className="font-medium">{instanceToDeletePermanently?.name}</span>」的网盘空间吗？
-                </p>
-                <Alert variant="warning">
-                  <CircleAlert />
-                  <AlertTitle>此操作不可恢复</AlertTitle>
-                  <AlertDescription>
-                    <ul className="list-disc pl-4 space-y-0.5">
-                      <li>网盘中所有文件和数据将被永久删除</li>
-                      <li>删除后无法恢复任何内容</li>
-                      <li>请谨慎操作</li>
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelPermanentDelete}>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmPermanentDelete}
-            >
-              <Trash2 className="w-4 h-4" />
-              永久删除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Transfer Dialog (row 7 转接网盘) - 普通弹窗 */}
-      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
-        <DialogContent
-          className="sm:max-w-2xl"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
+      {/* Recyclebin Permanent Delete Confirmation Dialog */}
+      <Dialog open={recyclebinDeleteDialogOpen} onOpenChange={setRecyclebinDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>转接网盘空间</DialogTitle>
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-600" />
+              永久删除网盘空间
+            </DialogTitle>
           </DialogHeader>
-          <DialogBody className="flex-1">
-            <div className="space-y-4">
-              <Alert variant="operation-info">
-                <AlertOperationInfoIcon />
-                <AlertTitle>转接说明</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc pl-4 space-y-0.5">
-                    <li>转接后，网盘空间将绑定到新实例</li>
-                    <li>原实例将无法再访问此网盘</li>
-                    <li>网盘中的文件和数据将完整保留</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
-
-              <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3 space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#525252]">来源实例</span>
-                  <span className="text-sm font-medium text-[#0A0A0A]">{instanceToTransfer?.name}</span>
+          <div className="py-4 space-y-4">
+            <div className="bg-red-50 border border-red-100 rounded-[4px] p-4">
+              <p className="text-sm text-[#334155] leading-relaxed">
+                确定要永久删除 <span className="font-semibold text-red-600">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
+              </p>
+            </div>
+            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] p-3">
+              <div className="flex items-start gap-2 text-xs text-[#737373]">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-red-600">⚠️ 此操作不可恢复！</p>
+                  <p>• 网盘中所有文件和数据将被永久删除</p>
+                  <p>• 删除后无法恢复任何内容</p>
+                  <p>• 请谨慎操作</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#525252]">实例 ID</span>
-                  <span className="text-xs font-mono text-[#525252]">{instanceToTransfer?.instanceId}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-[#525252]">选择目标实例</Label>
-                {getAvailableTargetInstances().length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 rounded-[4px] border border-dashed border-[#E5E5E5] text-[#A3A3A3]">
-                    <Bot className="w-10 h-10 mb-2 opacity-40" />
-                    <p className="text-sm">暂无可转接的目标实例</p>
-                    <p className="text-xs mt-1">只能转接给未启用过网盘的实例</p>
-                  </div>
-                ) : (
-                  <RadioGroup value={selectedTargetInstance} onValueChange={setSelectedTargetInstance}>
-                    <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1">
-                      {getAvailableTargetInstances().map((item) => (
-                        <div key={item.id} className="flex items-center">
-                          <RadioGroupItem value={item.id} id={`transfer-${item.id}`} className="peer sr-only" />
-                          <Label
-                            htmlFor={`transfer-${item.id}`}
-                            className="flex flex-1 items-center gap-3 rounded-[4px] border border-[#E5E5E5] bg-white p-3 cursor-pointer hover:border-[#355EF1] peer-data-[state=checked]:border-[#355EF1] peer-data-[state=checked]:bg-[#F0F3FC] transition-colors"
-                          >
-                            <div className="w-9 h-9 rounded-[4px] bg-[#F5F5F5] flex items-center justify-center text-[#0A0A0A] font-medium text-sm shrink-0">
-                              {item.avatar}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <h4 className="text-sm font-medium text-[#0A0A0A] truncate">
-                                  {item.instanceName}
-                                </h4>
-                                <StatusTag variant="gray">未启用</StatusTag>
-                              </div>
-                              <div className="flex items-center gap-3 text-xs text-[#737373]">
-                                <span>创建人：{item.creator}</span>
-                                <span className="font-mono">{item.instanceId}</span>
-                              </div>
-                            </div>
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </RadioGroup>
-                )}
               </div>
             </div>
-          </DialogBody>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelPermanentDelete}>取消</Button>
+            <Button variant="destructive" onClick={handleConfirmPermanentDelete}>
+              永久删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transfer Dialog - 转接网盘 */}
+      <Dialog open={transferDialogOpen} onOpenChange={setTransferDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+              <Link className="w-5 h-5 text-purple-600" />
+              转接网盘空间
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto py-4 space-y-4">
+            <div className="bg-purple-50 border border-purple-100 rounded-[4px] p-4">
+              <p className="text-sm text-[#334155] leading-relaxed">
+                将 <span className="font-semibold text-purple-600">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
+              </p>
+              <p className="text-xs text-[#737373] mt-2">
+                实例ID: <span className="font-mono text-purple-600">{instanceToTransfer?.instanceId}</span>
+              </p>
+            </div>
+
+            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-3">
+              <div className="flex items-start gap-2 text-xs text-[#355EF1]">
+                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p>• 转接后，网盘空间将绑定到新实例</p>
+                  <p>• 原实例将无法再访问此网盘</p>
+                  <p>• 网盘中的文件和数据将完整保留</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-[#0A0A0A]">选择目标实例</Label>
+              {getAvailableTargetInstances().length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-[#A3A3A3]">
+                  <Bot className="w-12 h-12 mb-3 opacity-30" />
+                  <p className="text-sm">暂无可转接的目标实例</p>
+                  <p className="text-xs mt-1">只能转接给未启用过网盘的实例</p>
+                </div>
+              ) : (
+                <RadioGroup value={selectedTargetInstance} onValueChange={setSelectedTargetInstance}>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                    {getAvailableTargetInstances().map((item) => (
+                      <div key={item.id} className="flex items-center">
+                        <RadioGroupItem value={item.id} id={`transfer-${item.id}`} className="peer sr-only" />
+                        <Label
+                          htmlFor={`transfer-${item.id}`}
+                          className="flex flex-1 items-center gap-3 rounded-[4px] border-2 border-[#e5e5e5] bg-white p-4 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                            {item.avatar}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-sm font-semibold text-[#0A0A0A] truncate">
+                                {item.instanceName}
+                              </h4>
+                              <StatusTag variant="gray">未启用</StatusTag>
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-[#737373]">
+                              <span>创建人: {item.creator}</span>
+                              <span className="font-mono text-[#355EF1]">{item.instanceId}</span>
+                            </div>
+                          </div>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
+            </div>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCancelTransfer}>取消</Button>
             <Button

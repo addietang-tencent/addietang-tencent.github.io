@@ -479,15 +479,15 @@ export default function SessionManagement() {
       {/* 页头 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">会话管理</h1>
-          <p className="text-sm text-gray-500 mt-1">让每一轮对话，都可追溪、可分析、可优化</p>
+          <h1 className="text-2xl font-bold text-[#09090b]">会话管理</h1>
+          <p className="text-sm text-[#737373] mt-1">让每一轮对话，都可追溪、可分析、可优化</p>
         </div>
         <div className="flex items-center gap-2">
           <DatePicker
             value={dateFrom}
             onChange={handleFromChange}
           />
-          <span className="text-gray-400 text-sm">—</span>
+          <span className="text-[#A3A3A3] text-sm">—</span>
           <DatePicker
             value={dateTo}
             onChange={handleToChange}
@@ -592,7 +592,7 @@ export default function SessionManagement() {
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-[4px] px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
           <div className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
@@ -607,7 +607,7 @@ export default function SessionManagement() {
         <div className="flex items-start justify-between mb-6 gap-4">
           {/* 左侧：Agent 名称筛选 */}
           <div className="flex-1">
-            <label className="text-xs font-medium text-gray-700 block mb-2">Agent名称：</label>
+            <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
             <AgentCombobox
               value={selectedAgent}
               onValueChange={setSelectedAgent}
@@ -619,7 +619,7 @@ export default function SessionManagement() {
             <Button
               onClick={() => setShowPluginUpgradeDialog(true)}
               variant="outline"
-              className="text-xs h-8 px-3 text-blue-600 border-blue-200 hover:bg-blue-50 bg-white"
+              className="text-xs h-8 px-3 text-[#355EF1] border-[#355EF1] hover:bg-[#eff4ff] bg-white"
             >
               升级CLS采集插件
             </Button>
@@ -640,16 +640,16 @@ export default function SessionManagement() {
           {/* 顶部指标卡 */}
           <div className="grid grid-cols-4 gap-4">
             {STAT_CARDS.map((card) => (
-              <div key={card.metric} className="bg-white rounded-xl border border-[#e5e5e5] p-5">
+              <div key={card.metric} className="bg-white rounded-[4px] border border-[#e5e5e5] p-5">
                 <div className="flex items-start justify-between mb-3">
-                  <span className="text-xs text-gray-500 font-medium">{card.label}</span>
-                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${card.iconBg} flex items-center justify-center text-white`}>
+                  <span className="text-xs text-[#737373] font-medium">{card.label}</span>
+                  <div className={`w-8 h-8 rounded-[4px] bg-gradient-to-br ${card.iconBg} flex items-center justify-center text-white`}>
                     <card.icon className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-2xl font-bold text-gray-900">{card.value}</div>
+                <div className="text-2xl font-bold text-[#09090b]">{card.value}</div>
                 {card.channels && (
-                  <div className="mt-3 text-xs text-gray-500 space-y-1">
+                  <div className="mt-3 text-xs text-[#737373] space-y-1">
                     {card.channels.map((ch) => (
                       <div key={ch}>{ch}</div>
                     ))}
@@ -662,44 +662,44 @@ export default function SessionManagement() {
           {/* 会话摘要表格 */}
           <div>
             <div className="mb-4">
-              <h2 className="text-lg font-bold text-gray-900">会话摘要一览</h2>
-              <p className="text-xs text-gray-400 mt-1">按时间倒序 · 点击查看会话详情</p>
+              <h2 className="text-lg font-bold text-[#09090b]">会话摘要一览</h2>
+              <p className="text-xs text-[#A3A3A3] mt-1">按时间倒序 · 点击查看会话详情</p>
             </div>
-            <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
              >
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话 ID</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">模型</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">轮次</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">TOKENS</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">成本</th>
+                  <tr className="border-b border-gray-50 bg-[#fafafa]/50">
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">会话</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">会话 ID</th>
+                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">模型</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">轮次</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">TOKENS</th>
+                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">成本</th>
                     <th className="text-right px-6 py-3">
                       <button
                         onClick={() => handleSort("updatedAt")}
-                        className="flex items-center justify-end gap-2 text-xs font-medium text-gray-500 uppercase tracking-wide hover:text-gray-700 w-full"
+                        className="flex items-center justify-end gap-2 text-xs font-medium text-[#737373] uppercase tracking-wide hover:text-[#525252] w-full"
                       >
                         更新时间
                         <SortIcon column="updatedAt" />
                       </button>
                     </th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">操作</th>
+                    <th className="text-center px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {paginatedSessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={session.id} className="hover:bg-[#f5f5f5]/50 transition-colors">
                       <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
-                        <div className="text-sm text-gray-700 font-medium hover:text-blue-600 transition-colors">{session.name}</div>
+                        <div className="text-sm text-[#525252] font-medium hover:text-[#355EF1] transition-colors">{session.name}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 font-mono">{session.id}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{session.model}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">28</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{session.tokens}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right font-mono">{session.cost}</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 text-right">{session.updatedAt}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373] font-mono">{session.id}</td>
+                      <td className="px-6 py-4 text-sm text-[#525252]">{session.model}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373] text-right">28</td>
+                      <td className="px-6 py-4 text-sm text-[#737373] text-right font-mono">{session.tokens}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373] text-right font-mono">{session.cost}</td>
+                      <td className="px-6 py-4 text-sm text-[#737373] text-right">{session.updatedAt}</td>
                       <td className="px-6 py-4 text-center">
                         <Button
                           onClick={() => navigate(`/admin/session/${session.id}`)}
@@ -715,7 +715,7 @@ export default function SessionManagement() {
               </table>
             </div>
             {/* 翻页控件 */}
-            <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/50">
+            <div className="px-6 py-4 border-t border-gray-50 bg-[#fafafa]/50">
               <Pagination
                 total={filteredSessions.length}
                 current={currentPage}
@@ -730,8 +730,8 @@ export default function SessionManagement() {
           {/* 渠道与模型分布 */}
           <div className="grid grid-cols-2 gap-6">
             {/* 渠道分布 */}
-            <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
-              <h3 className="text-sm font-bold text-gray-900 mb-4">渠道分布</h3>
+            <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+              <h3 className="text-sm font-bold text-[#09090b] mb-4">渠道分布</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={CHANNEL_DIST_DATA}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -744,8 +744,8 @@ export default function SessionManagement() {
             </div>
 
             {/* 模型分布 */}
-            <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
-              <h3 className="text-sm font-bold text-gray-900 mb-4">模型分布</h3>
+            <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+              <h3 className="text-sm font-bold text-[#09090b] mb-4">模型分布</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
                   <Pie
@@ -781,14 +781,14 @@ export default function SessionManagement() {
               {isCheckingAuth ? (
                 <>
                   {/* 检测中的旋转动画 */}
-                  <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                  <p className="text-xs text-gray-500 text-center">检测中...</p>
+                  <div className="w-8 h-8 border-2 border-[#355EF1] border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-xs text-[#737373] text-center">检测中...</p>
                 </>
               ) : authCompleted ? (
                 <>
                   {/* 检测完成后显示完成 icon */}
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+                  <p className="text-xs text-[#737373] text-center">检测到已授权</p>
                 </>
               ) : null}
             </div>
@@ -814,16 +814,16 @@ export default function SessionManagement() {
             <DialogTitle>免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
-              <p className="text-sm text-gray-700">
-                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
+            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-4 space-y-2">
+              <p className="text-sm text-[#525252]">
+                为您赠送<span className="font-semibold text-[#355EF1]">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-[#355EF1]">3000U</span>），预估可覆盖 <span className="font-semibold text-[#355EF1]">500台</span> Agent 机器<span className="font-semibold text-[#355EF1]">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-[#355EF1]">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     handleGoToCalcDetail();
                   }}
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-[#355EF1] hover:text-[#1447E6] underline"
                 >
                   计费详情
                 </a>
@@ -835,9 +835,9 @@ export default function SessionManagement() {
                 type="checkbox"
                 checked={freeQuotaAgreed}
                 onChange={(e) => setFreeQuotaAgreed(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-[#e5e5e5] text-[#355EF1] focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-700">我已阅读并同意免费额度说明</span>
+              <span className="text-sm text-[#525252]">我已阅读并同意免费额度说明</span>
             </label>
           </div>
           <DialogFooter className="flex gap-2 justify-end">

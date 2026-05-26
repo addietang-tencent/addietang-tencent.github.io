@@ -509,7 +509,7 @@ function InstanceDepartmentFilter({
       <PopoverContent className="w-[280px] p-0" align="start">
         <div className="max-h-[280px] overflow-y-auto p-2">
           <div className={`flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors ${
-            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
+            tempValue === "" ? "bg-[#eff4ff]" : "hover:bg-[#f5f5f5]"
           }`} onClick={() => setTempValue("")}>
             <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部部门</span>
             {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
@@ -602,7 +602,7 @@ function DepartmentColumnFilter({
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="搜索部门"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-300" />
+            className="w-full h-8 pl-8 pr-3 text-sm border border-[#e5e5e5] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-[#355EF1]/30" />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
@@ -1753,7 +1753,7 @@ export default function AgentMonitor() {
             {(dateFrom || dateTo) && (
               <button
                 onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-                className="h-9 px-3 text-sm rounded-xl border border-gray-200 bg-white text-[#737373] hover:text-[#355EF1] hover:border-blue-300 transition-colors whitespace-nowrap"
+                className="h-9 px-3 text-sm rounded-[4px] border border-[#e5e5e5] bg-white text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors whitespace-nowrap"
               >
                 清除筛选
               </button>
@@ -2046,7 +2046,7 @@ export default function AgentMonitor() {
                     当前状态
                     <button
                       ref={filterButtonRef}
-                      className="p-1 hover:bg-gray-200 rounded-[4px]"
+                      className="p-1 hover:bg-[#f5f5f5] rounded-[4px]"
                       onClick={() => {
                         if (filterButtonRef.current) {
                           const rect = filterButtonRef.current.getBoundingClientRect();
@@ -2213,7 +2213,7 @@ export default function AgentMonitor() {
                   const checkboxTooltip = "";
 
                   return (
-                    <TableRow key={claw.id} className="group hover:bg-gray-50/50 transition-colors">
+                    <TableRow key={claw.id} className="group hover:bg-[#f5f5f5]/50 transition-colors">
                       {/* 复选框 */}
                       <TableCell className="py-4 px-4 whitespace-nowrap" style={{ width: '120px', minWidth: '120px' }}>
                         <Checkbox
@@ -2373,7 +2373,7 @@ export default function AgentMonitor() {
                               </button>
                             </HoverCardTrigger>
                             <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden">
-                              <div className="grid grid-cols-2 bg-gray-50 border-b border-[#e5e5e5] px-3 py-2">
+                              <div className="grid grid-cols-2 bg-[#fafafa] border-b border-[#e5e5e5] px-3 py-2">
                                 <span className="text-xs font-semibold text-[#334155]">标签键</span>
                                 <span className="text-xs font-semibold text-[#334155]">标签值</span>
                               </div>
@@ -2458,7 +2458,7 @@ export default function AgentMonitor() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-gray-50 cursor-pointer ${isRunning ? "text-[#737373] focus:text-[#334155]" : "text-[#A3A3A3] opacity-40 cursor-not-allowed"}`}
+                                className={`text-xs focus:bg-[#fafafa] cursor-pointer ${isRunning ? "text-[#737373] focus:text-[#334155]" : "text-[#A3A3A3] opacity-40 cursor-not-allowed"}`}
                                 disabled={!isRunning}
                                 onClick={() => handleRestart(claw)}
                               >
@@ -2466,7 +2466,7 @@ export default function AgentMonitor() {
                                 重启
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-gray-50 cursor-pointer ${["running", "shutdown"].includes(claw.status) ? "text-[#737373] focus:text-[#334155]" : "text-[#A3A3A3] opacity-40 cursor-not-allowed"}`}
+                                className={`text-xs focus:bg-[#fafafa] cursor-pointer ${["running", "shutdown"].includes(claw.status) ? "text-[#737373] focus:text-[#334155]" : "text-[#A3A3A3] opacity-40 cursor-not-allowed"}`}
                                 disabled={!["running", "shutdown"].includes(claw.status)}
                                 onClick={() => handleReinstallClick(claw)}
                               >
@@ -2474,7 +2474,7 @@ export default function AgentMonitor() {
                                 重新安装 Agent
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className="text-xs text-[#737373] focus:text-[#334155] focus:bg-gray-50 cursor-pointer"
+                                className="text-xs text-[#737373] focus:text-[#334155] focus:bg-[#fafafa] cursor-pointer"
                                 onClick={() => handleOpenMonitor(claw)}
                               >
                                 <Activity className="w-3.5 h-3.5 mr-2" />
@@ -2682,15 +2682,15 @@ export default function AgentMonitor() {
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-[#0A0A0A]">下发失败提醒</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
+          <div className="space-y-2 text-xs text-yellow-700 bg-yellow-50 border border-yellow-200 rounded-[4px] px-4 py-3">
             <p>当前没有生效的 OpenClaw 镜像，以下 agent 无法升级。</p>
             <p>请先前往「镜像管理」页面将目标镜像指定为生效状态。</p>
           </div>
           <p className="text-sm text-[#737373]">任务已提交，以下 <span className="font-semibold text-red-600">{upgradeFailedAgents.length}</span> 个实例无法执行</p>
-          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-xl scrollbar-on-hover">
+          <div className="max-h-64 overflow-y-auto border border-[#e5e5e5] rounded-[4px] scrollbar-on-hover">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e5e5e5] bg-gray-50/60">
+                <tr className="border-b border-[#e5e5e5] bg-[#fafafa]/60">
                   <th className="text-left px-4 py-2 text-xs font-medium text-[#737373]">实例</th>
                   <th className="text-left px-4 py-2 text-xs font-medium text-[#737373]">Agent类型</th>
                    <th className="text-left px-4 py-2 text-xs font-medium text-[#737373]">下发失败原因</th>
@@ -2698,10 +2698,10 @@ export default function AgentMonitor() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {upgradeFailedAgents.map((a, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50/50">
+                  <tr key={idx} className="hover:bg-[#f5f5f5]/50">
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-[4px] bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center flex-shrink-0">
                           <span className="text-white" style={{ fontSize: '10px' }}>C</span>
                         </div>
                         <div className="min-w-0">
@@ -2756,7 +2756,7 @@ export default function AgentMonitor() {
                 <Tooltip key={tag.key + ':' + tag.value}>
                   <TooltipTrigger asChild>
                     <span
-                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs text-[#355EF1] font-medium max-w-[200px]"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#eff4ff] border border-[#355EF1] rounded-full text-xs text-[#355EF1] font-medium max-w-[200px]"
                     >
                       <span className="truncate">{tag.key}：{tag.value}</span>
                       <button
@@ -2819,8 +2819,8 @@ export default function AgentMonitor() {
                         .map(k => (
                           <button
                             key={k}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                              addingKey === k ? 'text-[#355EF1] font-medium bg-blue-50/50' : 'text-[#334155]'
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
+                              addingKey === k ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
                             }`}
                             onClick={() => { setAddingKey(k); setAddingValue(''); setKeySearchText(''); setKeyDropdownOpen(false); }}
                           >
@@ -2866,8 +2866,8 @@ export default function AgentMonitor() {
                         {(DEMO_TAG_KEY_VALUES[addingKey] || []).map(v => (
                           <button
                             key={v}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                              addingValue === v ? 'text-[#355EF1] font-medium bg-blue-50/50' : 'text-[#334155]'
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
+                              addingValue === v ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
                             }`}
                             onClick={() => { setAddingValue(v); setValueDropdownOpen(false); }}
                           >
@@ -2965,7 +2965,7 @@ export default function AgentMonitor() {
               </div>
             </div>
             {/* 抽屉内容 - 灰色背景 */}
-            <div className="flex-1 overflow-y-auto bg-gray-50">
+            <div className="flex-1 overflow-y-auto bg-[#fafafa]">
               <div className="p-6 space-y-5">
                 {/* 名称/ID 部分 */}
                 <div className="flex items-center gap-3">
@@ -3006,7 +3006,7 @@ export default function AgentMonitor() {
                   const renderInlineEditForm = () => (
                     <div className="space-y-3">
                       {providerGroups.length === 0 ? (
-                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                        <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-3 py-2.5">
                           <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                           <p className="text-xs text-amber-700 leading-relaxed">
                             当前「模型配置」页中没有对用户可见的模型，请前往该页面添加或开启模型可见性。
@@ -3017,7 +3017,7 @@ export default function AgentMonitor() {
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-[#737373]">模型厂商</label>
                             <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
-                              <SelectTrigger className="w-full bg-white border-gray-200 h-9">
+                              <SelectTrigger className="w-full bg-white border-[#e5e5e5] h-9">
                                 <SelectValue placeholder="选择模型厂商" />
                               </SelectTrigger>
                               <SelectContent>
@@ -3030,7 +3030,7 @@ export default function AgentMonitor() {
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-[#737373]">模型名称</label>
                             <Select value={modelDraftModelId} onValueChange={setModelDraftModelId}>
-                              <SelectTrigger className="w-full bg-white border-gray-200 h-9">
+                              <SelectTrigger className="w-full bg-white border-[#e5e5e5] h-9">
                                 <SelectValue placeholder="选择模型名称" />
                               </SelectTrigger>
                               <SelectContent>
@@ -3069,7 +3069,7 @@ export default function AgentMonitor() {
                     return (
                       <div
                         key={model.id}
-                        className={`px-4 py-3 bg-white rounded-xl border transition-colors ${isReplacingThis ? "border-blue-300" : "border-gray-200"}`}
+                        className={`px-4 py-3 bg-white rounded-[4px] border transition-colors ${isReplacingThis ? "border-[#355EF1]" : "border-[#e5e5e5]"}`}
                       >
                         {isReplacingThis ? (
                           renderInlineEditForm()
@@ -3167,7 +3167,7 @@ export default function AgentMonitor() {
 
                       {/* 空态（无模型且不在新增态） */}
                       {models.length === 0 && !isAdding && (
-                        <div className="px-4 py-6 bg-white rounded-xl border border-dashed border-gray-200 text-center text-sm text-[#A3A3A3]">
+                        <div className="px-4 py-6 bg-white rounded-[4px] border border-dashed border-[#e5e5e5] text-center text-sm text-[#A3A3A3]">
                           暂未配置模型
                         </div>
                       )}
@@ -3190,7 +3190,7 @@ export default function AgentMonitor() {
 
                       {/* 新增态：底部 inline 卡（替换态已在行内展示，不再重复渲染） */}
                       {isAdding && (
-                        <div className="mt-2 px-4 py-3 bg-white rounded-xl border border-blue-200">
+                        <div className="mt-2 px-4 py-3 bg-white rounded-[4px] border border-[#355EF1]">
                           {renderInlineEditForm()}
                         </div>
                       )}
@@ -3210,7 +3210,7 @@ export default function AgentMonitor() {
                       const isExpanded = expandedChannel === channel.name;
                       const isEditingThis = isExpanded && channelEditDraft !== null;
                       return (
-                        <div key={channel.name} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                        <div key={channel.name} className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
                           {/* 行头：通道名 + 展开/折叠按钮 */}
                           <div className="group px-4 py-3 flex items-center gap-3">
                             <button
@@ -3232,9 +3232,9 @@ export default function AgentMonitor() {
 
                           {/* 展开区域：凭证查看 / 编辑 */}
                           {isExpanded && (
-                            <div className="border-t border-[#e5e5e5] px-4 py-3 bg-gray-50/50 space-y-2">
+                            <div className="border-t border-[#e5e5e5] px-4 py-3 bg-[#fafafa]/50 space-y-2">
                               {fields.length === 0 ? (
-                                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+                                <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
                                   <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
                                   <p className="text-xs text-[#355EF1] leading-relaxed">
                                     该通道无需凭证配置（由租户在用户端完成扫码授权）。
@@ -3254,7 +3254,7 @@ export default function AgentMonitor() {
                                               type={field.secret && !visible ? "password" : "text"}
                                               value={channelEditDraft![field.key] ?? ""}
                                               onChange={(e) => setChannelEditDraft(prev => ({ ...(prev ?? {}), [field.key]: e.target.value }))}
-                                              className="bg-white border-gray-200 text-sm h-9 pr-10"
+                                              className="bg-white border-[#e5e5e5] text-sm h-9 pr-10"
                                             />
                                             {field.secret && (
                                               <button
@@ -3320,7 +3320,7 @@ export default function AgentMonitor() {
                       );
                     })}
                     {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
-                      <div className="px-4 py-6 bg-white rounded-xl border border-dashed border-gray-200 text-center text-sm text-[#A3A3A3]">
+                      <div className="px-4 py-6 bg-white rounded-[4px] border border-dashed border-[#e5e5e5] text-center text-sm text-[#A3A3A3]">
                         暂未接入通道
                       </div>
                     )}
@@ -3331,12 +3331,12 @@ export default function AgentMonitor() {
                       const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
                       const isWechatLike = currentCh?.wechatMode;
                       return (
-                        <div className="px-4 py-3 bg-white rounded-xl border border-gray-200 space-y-3">
+                        <div className="px-4 py-3 bg-white rounded-[4px] border border-[#e5e5e5] space-y-3">
                           {/* 通道选择 */}
                           <div className="space-y-2">
                             <label className="text-xs font-medium text-[#737373]">通道类型</label>
                             <Select value={channelDraft} onValueChange={handleChannelDraftChange}>
-                              <SelectTrigger className="w-full bg-white border-gray-200 h-9">
+                              <SelectTrigger className="w-full bg-white border-[#e5e5e5] h-9">
                                 <SelectValue placeholder="选择要添加的通道" />
                               </SelectTrigger>
                               <SelectContent>
@@ -3355,7 +3355,7 @@ export default function AgentMonitor() {
 
                           {/* 无凭证字段的通道（微信）：提示框 */}
                           {currentCh && isWechatLike && (
-                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+                            <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
                               <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
                               <p className="text-xs text-[#355EF1] leading-relaxed">
                                 微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
@@ -3377,7 +3377,7 @@ export default function AgentMonitor() {
                                         value={channelDraftFields[field.key] ?? ""}
                                         onChange={(e) => setChannelDraftFields(prev => ({ ...prev, [field.key]: e.target.value }))}
                                         placeholder={field.label}
-                                        className="bg-gray-50 border-gray-200 text-sm h-9 pr-10"
+                                        className="bg-[#fafafa] border-[#e5e5e5] text-sm h-9 pr-10"
                                       />
                                       {field.secret && (
                                         <button
@@ -3418,7 +3418,7 @@ export default function AgentMonitor() {
                   <div className="text-sm text-[#737373] mb-2">已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）</div>
                   <div className="space-y-2">
                     {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
-                      <div key={skill} className="px-4 py-3 bg-white rounded-xl border border-gray-200 text-sm text-[#0A0A0A]">
+                      <div key={skill} className="px-4 py-3 bg-white rounded-[4px] border border-[#e5e5e5] text-sm text-[#0A0A0A]">
                         {skill}
                       </div>
                     ))}
@@ -3506,7 +3506,7 @@ export default function AgentMonitor() {
               <h2 className="text-lg font-semibold text-[#0A0A0A]">{selectedClaw.name} - 监控</h2>
               <button
                 onClick={() => setShowMonitorDrawer(false)}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-[#f5f5f5] rounded"
               >
                 <X className="w-5 h-5 text-[#A3A3A3]" />
               </button>
@@ -3523,10 +3523,10 @@ export default function AgentMonitor() {
                     { label: "总 Tokens",   value: "6,912", icon: Zap,         color: "from-blue-600 to-purple-600" },
                   ].map((stat) => (
                     <div key={stat.label}
-                      className="bg-white rounded-xl border border-[#e5e5e5] p-4"
+                      className="bg-white rounded-[4px] border border-[#e5e5e5] p-4"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-7 h-7 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                        <div className={`w-7 h-7 rounded-[4px] bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
                           <stat.icon className="w-3.5 h-3.5 text-white" />
                         </div>
                         <p className="text-xs text-[#A3A3A3]">{stat.label}</p>
@@ -3556,10 +3556,10 @@ export default function AgentMonitor() {
                       { label: "平均轮次", value: "8.5", icon: RotateCw,     color: "from-cyan-500 to-cyan-600" },
                     ].map((stat) => (
                       <div key={stat.label}
-                        className="bg-white rounded-xl border border-[#e5e5e5] p-4"
+                        className="bg-white rounded-[4px] border border-[#e5e5e5] p-4"
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <div className={`w-7 h-7 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
+                          <div className={`w-7 h-7 rounded-[4px] bg-gradient-to-br ${stat.color} flex items-center justify-center flex-shrink-0`}>
                             <stat.icon className="w-3.5 h-3.5 text-white" />
                           </div>
                           <p className="text-xs text-[#A3A3A3]">{stat.label}</p>
@@ -3570,7 +3570,7 @@ export default function AgentMonitor() {
                   </div>
 
                   {/* 会话摘要表格 */}
-                  <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+                  <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
                   >
                     <table className="w-full text-sm table-fixed">
                       <colgroup>
@@ -3580,7 +3580,7 @@ export default function AgentMonitor() {
                         <col style={{ width: '24%' }} />
                       </colgroup>
                       <thead>
-                        <tr className="border-b border-gray-50 bg-gray-50/50">
+                        <tr className="border-b border-gray-50 bg-[#fafafa]/50">
                           <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">会话</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">类型</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">模型</th>
@@ -3588,19 +3588,19 @@ export default function AgentMonitor() {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr className="border-b border-[#e5e5e5] hover:bg-gray-50/60 transition-colors">
+                        <tr className="border-b border-[#e5e5e5] hover:bg-[#f5f5f5]/60 transition-colors">
                           <td className="px-4 py-3 text-[#0A0A0A] font-mono text-xs truncate">c3b2ac3c</td>
                           <td className="px-4 py-3 text-[#737373] text-xs truncate">Feishu Dm</td>
                           <td className="px-4 py-3 text-[#737373] text-xs truncate">hunyuan-turbos-latest</td>
                           <td className="px-4 py-3 text-[#737373] text-xs">2026-03-09 17:49</td>
                         </tr>
-                        <tr className="border-b border-[#e5e5e5] hover:bg-gray-50/60 transition-colors">
+                        <tr className="border-b border-[#e5e5e5] hover:bg-[#f5f5f5]/60 transition-colors">
                           <td className="px-4 py-3 text-[#0A0A0A] font-mono text-xs truncate">81c87c7b</td>
                           <td className="px-4 py-3 text-[#737373] text-xs truncate">QQ Dm</td>
                           <td className="px-4 py-3 text-[#737373] text-xs truncate">hunyuan-turbos-latest</td>
                           <td className="px-4 py-3 text-[#737373] text-xs">2026-03-09 10:07</td>
                         </tr>
-                        <tr className="hover:bg-gray-50/60 transition-colors">
+                        <tr className="hover:bg-[#f5f5f5]/60 transition-colors">
                           <td className="px-4 py-3 text-[#0A0A0A] font-mono text-xs truncate">267e462d</td>
                           <td className="px-4 py-3 text-[#737373] text-xs truncate">CLI</td>
                           <td className="px-4 py-3 text-[#737373] text-xs truncate">deepseek-v3.2</td>

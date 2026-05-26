@@ -1255,8 +1255,8 @@ function CreateSecurityGroupDialog({
                 return (
                   <label
                     key={option.key}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-colors cursor-pointer ${
-                      isChecked ? "bg-blue-50/50 border-blue-200" : "bg-white border-gray-200 hover:bg-gray-50"
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-colors cursor-pointer ${
+                      isChecked ? "bg-[#eff4ff]/50 border-[#355EF1]" : "bg-white border-[#e5e5e5] hover:bg-[#f5f5f5]"
                     }`}
                   >
                     <div className="flex items-center justify-center">
@@ -1282,7 +1282,7 @@ function CreateSecurityGroupDialog({
                         }}
                       />
                     </div>
-                    <span className={`text-xs font-medium ${isChecked ? "text-blue-900" : "text-gray-700"}`}>
+                    <span className={`text-xs font-medium ${isChecked ? "text-blue-900" : "text-[#525252]"}`}>
                       {option.label}
                     </span>
                   </label>
@@ -1315,15 +1315,15 @@ function CreateSecurityGroupDialog({
             )}
 
             <div className="border border-[#E5E5E5] rounded-[4px] overflow-hidden">
-              <div className="flex items-center px-3 border-b border-gray-200 bg-white" style={{ minHeight: "36px" }}>
+              <div className="flex items-center px-3 border-b border-[#e5e5e5] bg-white" style={{ minHeight: "36px" }}>
                 {(["outbound", "inbound"] as const).map((tab) => (
                   <button
                     key={tab}
                     onClick={() => onPreviewTabChange(tab)}
                     className={`relative px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
                       previewTab === tab
-                        ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                        : "text-gray-500 hover:text-gray-700"
+                        ? "text-[#355EF1] border-b-2 border-blue-600 -mb-px"
+                        : "text-[#737373] hover:text-[#525252]"
                     }`}
                   >
                     {tab === "outbound" ? "出站规则" : "入站规则"} ({tab === "outbound" ? previewOutbound.length : previewInbound.length})
@@ -1334,12 +1334,12 @@ function CreateSecurityGroupDialog({
               <div className="max-h-40 overflow-y-auto scrollbar-on-hover">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-gray-50/50 border-b border-[#e5e5e5]">
-                      <th className="px-3 py-2 text-left font-medium text-gray-500">{previewTab === "outbound" ? "目标" : "来源"}</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-500">协议</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-500">端口</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-500">策略</th>
-                      <th className="px-3 py-2 text-left font-medium text-gray-400">说明</th>
+                    <tr className="bg-[#fafafa]/50 border-b border-[#e5e5e5]">
+                      <th className="px-3 py-2 text-left font-medium text-[#737373]">{previewTab === "outbound" ? "目标" : "来源"}</th>
+                      <th className="px-3 py-2 text-left font-medium text-[#737373]">协议</th>
+                      <th className="px-3 py-2 text-left font-medium text-[#737373]">端口</th>
+                      <th className="px-3 py-2 text-left font-medium text-[#737373]">策略</th>
+                      <th className="px-3 py-2 text-left font-medium text-[#A3A3A3]">说明</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1350,10 +1350,10 @@ function CreateSecurityGroupDialog({
                         // 这里我们仅为规则行添加一个非常轻的过渡背景类（如果不需要具体判断谁引起的，直接用默认即可，React会自动应用动画，这里为了明显反馈，我们让所有展示出来的规则都自带淡入高亮效果）。
                         // 此处通过在渲染时添加动画类名实现每次重渲染的高亮闪烁，或者简单使用 hover
                         return (
-                          <tr key={`preview-${previewTab}-${rule.source}-${rule.port}-${index}`} className="animate-in fade-in bg-white border-b border-gray-50 last:border-0 hover:bg-gray-50/60 transition-colors">
-                            <td className="px-3 py-2 text-gray-700">{rule.source}</td>
-                            <td className="px-3 py-2 text-gray-700">{rule.protocol}</td>
-                            <td className="px-3 py-2 text-gray-700">{rule.port}</td>
+                          <tr key={`preview-${previewTab}-${rule.source}-${rule.port}-${index}`} className="animate-in fade-in bg-white border-b border-gray-50 last:border-0 hover:bg-[#f5f5f5]/60 transition-colors">
+                            <td className="px-3 py-2 text-[#525252]">{rule.source}</td>
+                            <td className="px-3 py-2 text-[#525252]">{rule.protocol}</td>
+                            <td className="px-3 py-2 text-[#525252]">{rule.port}</td>
                             <td className="px-3 py-2">
                               {rule.policy === "允许" ? (
                                 <StatusTag variant="green" dot>
@@ -1365,13 +1365,13 @@ function CreateSecurityGroupDialog({
                                 </StatusTag>
                               )}
                             </td>
-                            <td className="px-3 py-2 text-gray-400">{rule.remark || "—"}</td>
+                            <td className="px-3 py-2 text-[#A3A3A3]">{rule.remark || "—"}</td>
                           </tr>
                         );
                       })
                     ) : (
                       <tr className="bg-white">
-                        <td colSpan={5} className="px-3 py-6 text-center text-gray-400">
+                        <td colSpan={5} className="px-3 py-6 text-center text-[#A3A3A3]">
                           暂无规则
                         </td>
                       </tr>
@@ -1656,7 +1656,7 @@ function GroupTagSelector({
     const hasChildren = node.children.length > 0;
     const isDisabled = disabledSet.has(node.id);
 
-    const nameSpan = <span className="text-xs text-gray-700 truncate">{node.name}</span>;
+    const nameSpan = <span className="text-xs text-[#525252] truncate">{node.name}</span>;
 
     return (
       <div key={node.id}>
@@ -1664,13 +1664,13 @@ function GroupTagSelector({
           type="button"
           onClick={() => !isDisabled && toggleNode(node)}
           disabled={isDisabled}
-          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-xl transition-colors text-left ${isDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-50"}`}
+          className={`w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] transition-colors text-left ${isDisabled ? "opacity-40 cursor-not-allowed" : "hover:bg-[#f5f5f5]"}`}
           style={{ paddingLeft: 8 + depth * 16 }}
         >
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-gray-400 hover:text-gray-600 shrink-0 cursor-pointer"
+              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -1720,17 +1720,17 @@ function GroupTagSelector({
                 <div
                   onMouseEnter={() => setHover(true)}
                   onMouseLeave={() => setHover(false)}
-                  className="relative w-full min-h-7 px-2 py-1 rounded-xl border border-gray-200 bg-white hover:border-blue-300 transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+                  className="relative w-full min-h-7 px-2 py-1 rounded-[4px] border border-[#e5e5e5] bg-white hover:border-[#355EF1] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
                 >
                   {effectiveIds.length === 0 ? (
-                    <span className="text-xs text-gray-400 px-1">选择分组…</span>
+                    <span className="text-xs text-[#A3A3A3] px-1">选择分组…</span>
                   ) : (
                     effectiveIds.map((id) => {
                       const path = getGroupPath(id, ALL_GROUPS_SHARED);
                       return (
                         <span
                           key={id}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 max-w-full"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#eff4ff] text-[#355EF1] border border-blue-100 max-w-full"
                         >
                           <span className="truncate">{path}</span>
                           <button
@@ -1772,16 +1772,16 @@ function GroupTagSelector({
               >
                 <div className="p-2.5 border-b border-[#e5e5e5]">
                   <div className="relative">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                     <input
                       type="text"
                       placeholder="搜索分组…"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-8 pr-7 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
+                      className="w-full pl-8 pr-7 py-1.5 text-xs border border-[#e5e5e5] rounded-[4px] bg-[#fafafa] outline-none focus:border-[#355EF1] focus:ring-1 focus:ring-[#355EF1]/20 transition-colors"
                     />
                     {search && (
-                      <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                      <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
                         <X className="w-3 h-3" />
                       </button>
                     )}
@@ -1789,7 +1789,7 @@ function GroupTagSelector({
                 </div>
                 <div className="max-h-[280px] overflow-y-auto p-1.5">
                   {activeSources.length === 0 ? (
-                    <p className="text-[11px] text-gray-400 text-center py-4">暂无分组</p>
+                    <p className="text-[11px] text-[#A3A3A3] text-center py-4">暂无分组</p>
                   ) : (
                     activeSources.map((source) => {
                       const trees = treesMap[source] || [];
@@ -1797,7 +1797,7 @@ function GroupTagSelector({
                       if (!hasVisibleTrees) return null;
                       return (
                         <div key={source} className="mb-1.5 last:mb-0">
-                          <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
+                          <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
                           {trees.map((root) => renderNode(root, 0))}
                         </div>
                       );
@@ -1811,7 +1811,7 @@ function GroupTagSelector({
           <button
             type="button"
             onClick={cancelEditing}
-            className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+            className="shrink-0 w-7 h-7 inline-flex items-center justify-center rounded-[4px] bg-white border border-[#e5e5e5] text-[#737373] hover:bg-[#f5f5f5] hover:text-[#525252] transition-colors"
             title="取消"
           >
             <X className="w-3.5 h-3.5" />
@@ -1832,7 +1832,7 @@ function GroupTagSelector({
         <button
           type="button"
           onClick={enterEditing}
-          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-[#355EF1] hover:text-blue-700 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           添加分组
@@ -1846,11 +1846,11 @@ function GroupTagSelector({
             const allPaths = valueIds.map((gid) => getGroupPath(gid, ALL_GROUPS_SHARED));
             const badge = (
               <span className="inline-flex items-center gap-1 cursor-default align-middle">
-                <span className="inline-flex items-center max-w-[180px] px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-100 whitespace-nowrap overflow-hidden">
+                <span className="inline-flex items-center max-w-[180px] px-2 py-0.5 rounded-full text-xs font-medium bg-[#eff4ff] text-[#355EF1] border border-blue-100 whitespace-nowrap overflow-hidden">
                   <span className="truncate">{firstPath}</span>
                 </span>
                 {rest > 0 && (
-                  <span className="text-[11px] text-gray-500 whitespace-nowrap shrink-0">
+                  <span className="text-[11px] text-[#737373] whitespace-nowrap shrink-0">
                     …共 {valueIds.length} 个分组
                   </span>
                 )}
@@ -1871,7 +1871,7 @@ function GroupTagSelector({
           <button
             type="button"
             onClick={enterEditing}
-            className="text-gray-300 hover:text-blue-500 transition-colors shrink-0"
+            className="text-[#A3A3A3] hover:text-blue-500 transition-colors shrink-0"
             title="编辑应用范围"
           >
             <Pencil className="w-3 h-3" />
@@ -1957,7 +1957,7 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
   }, [paths, groupNames.length]);
 
   if (groupNames.length === 0) {
-    return <span className="text-xs text-gray-400">—</span>;
+    return <span className="text-xs text-[#A3A3A3]">—</span>;
   }
 
   const omitted = paths.length - visibleCount;
@@ -1980,7 +1980,7 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
             </StatusTag>
           ))}
           {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap shrink-0">
               …共 {paths.length} 个分组
             </span>
           )}
@@ -1997,7 +1997,7 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
             ))}
             <span
               ref={moreRef}
-              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap"
+              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap"
             />
           </div>
         </div>
@@ -2092,8 +2092,8 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
   // 结构：subnetId 在前（资源主体）、状态说明在后（轻量 warning 文案）
   // 颜色：全删（影响实例创建）→ 弱橙色 amber-600，与 VPC 行「配置待更新」呼应；
   //       部分删（仍有可用子网）→ 中性灰色，避免对仍可工作的可用区做无谓告警。
-  const tone = allDeleted ? "text-amber-600" : "text-gray-400";
-  const sepTone = allDeleted ? "text-amber-300" : "text-gray-300";
+  const tone = allDeleted ? "text-amber-600" : "text-[#A3A3A3]";
+  const sepTone = allDeleted ? "text-amber-300" : "text-[#A3A3A3]";
   const deletedPill = deleted.length > 0 && (
     <span className={`inline-flex items-start gap-2 text-xs ${tone} leading-relaxed max-w-full break-all`}>
       <span className="min-w-0">
@@ -2112,7 +2112,7 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
   if (allDeleted) {
     return (
       <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0 cursor-default">
-        <span className="text-xs text-gray-500 shrink-0">无可用子网</span>
+        <span className="text-xs text-[#737373] shrink-0">无可用子网</span>
         {deletedPill}
       </div>
     );
@@ -2127,18 +2127,18 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
             <span
               key={s.id}
               ref={(el) => { tagRefs.current[i] = el; }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xl bg-gray-100 text-xs whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#f5f5f5] text-xs whitespace-nowrap shrink-0"
             >
-              <span className="font-mono text-gray-500">{s.id}</span>
-              <span className="text-gray-300">|</span>
-              <span className="text-gray-700">{s.name}</span>
-              <span className="text-gray-300">|</span>
-              <span className="font-mono text-gray-400">{s.cidr}</span>
+              <span className="font-mono text-[#737373]">{s.id}</span>
+              <span className="text-[#A3A3A3]">|</span>
+              <span className="text-[#525252]">{s.name}</span>
+              <span className="text-[#A3A3A3]">|</span>
+              <span className="font-mono text-[#A3A3A3]">{s.cidr}</span>
             </span>
           ))}
           {/* 折叠提示 */}
           {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap shrink-0">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-xs text-[#A3A3A3] whitespace-nowrap shrink-0">
               …共 {healthy.length} 个可用子网
             </span>
           )}
@@ -2148,16 +2148,16 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
               <span
                 key={`m-${s.id}`}
                 ref={(el) => { tagRefs.current[i] = el; }}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-xl bg-gray-100 text-xs whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#f5f5f5] text-xs whitespace-nowrap"
               >
-                <span className="font-mono text-gray-500">{s.id}</span>
-                <span className="text-gray-300">|</span>
-                <span className="text-gray-700">{s.name}</span>
-                <span className="text-gray-300">|</span>
-                <span className="font-mono text-gray-400">{s.cidr}</span>
+                <span className="font-mono text-[#737373]">{s.id}</span>
+                <span className="text-[#A3A3A3]">|</span>
+                <span className="text-[#525252]">{s.name}</span>
+                <span className="text-[#A3A3A3]">|</span>
+                <span className="font-mono text-[#A3A3A3]">{s.cidr}</span>
               </span>
             ))}
-            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-xs text-gray-400 whitespace-nowrap" />
+            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-xs text-[#A3A3A3] whitespace-nowrap" />
           </div>
         </div>
       )}
@@ -2434,7 +2434,7 @@ export default function SecurityGroupManagement() {
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors ${
                     isCompleted || isActive
                       ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-gray-200 bg-white text-gray-400"
+                      : "border-[#e5e5e5] bg-white text-[#A3A3A3]"
                   }`}
                 >
                   {isCompleted ? <Check className="h-3.5 w-3.5" /> : index + 1}
@@ -2442,10 +2442,10 @@ export default function SecurityGroupManagement() {
                 <span
                   className={`truncate text-sm font-medium transition-colors ${
                     isActive
-                      ? "text-gray-900"
+                      ? "text-[#09090b]"
                       : isCompleted
-                        ? "text-blue-600"
-                        : "text-gray-400"
+                        ? "text-[#355EF1]"
+                        : "text-[#A3A3A3]"
                   }`}
                 >
                   {label}
@@ -2475,7 +2475,7 @@ export default function SecurityGroupManagement() {
   }, [migrationBusinessState, hasRunningTasks, hasFailedTasks]);
 
   const MigrationBanner = shouldShowMigrationBanner ? (
-    <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+    <div className="mb-5 flex items-start gap-3 rounded-[4px] border border-amber-200 bg-amber-50 px-4 py-3">
       <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
       <div className="min-w-0 flex-1">
         <p className="text-xs leading-relaxed text-amber-800">
@@ -2495,12 +2495,12 @@ export default function SecurityGroupManagement() {
     <Dialog open={isMigrationConfirmOpen} onOpenChange={(open) => !open && closeMigrationDialog()}>
       <DialogContent style={{ maxWidth: "min(90vw, 860px)", width: "min(90vw, 860px)" }}>
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-gray-900">{migrationDialogTitle}</DialogTitle>
+          <DialogTitle className="text-base font-semibold text-[#09090b]">{migrationDialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-1">
           {renderMigrationStepBar(0)}
 
-          <div className="flex items-start gap-2.5 rounded-xl border border-amber-100 bg-amber-50 px-3 py-2.5">
+          <div className="flex items-start gap-2.5 rounded-[4px] border border-amber-100 bg-amber-50 px-3 py-2.5">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
             <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-amber-700">
               <li>迁移过程中，Agent 实例会重启；迁移完成后，内网 IP 默认会发生变化，请提前告知相关用户。</li>
@@ -2508,7 +2508,7 @@ export default function SecurityGroupManagement() {
             </ul>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-[#e5e5e5] bg-white">
+          <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white">
             <div className="flex items-center justify-between gap-4 border-b border-[#e5e5e5] px-4" style={{ minHeight: "44px" }}>
               <div className="flex items-center">
                 {(["migratable", "blocked"] as const).map((tab) => (
@@ -2520,46 +2520,46 @@ export default function SecurityGroupManagement() {
                     }}
                     className={`relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
                       confirmMigrationTab === tab
-                        ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                        : "text-gray-500 hover:text-gray-700"
+                        ? "text-[#355EF1] border-b-2 border-blue-600 -mb-px"
+                        : "text-[#737373] hover:text-[#525252]"
                     }`}
                   >
                     {tab === "migratable" ? "可迁移" : "暂不支持迁移"}
-                    <span className="ml-1.5 text-xs text-gray-400">
+                    <span className="ml-1.5 text-xs text-[#A3A3A3]">
                       ({tab === "migratable" ? migratableInstances.length : blockedInstances.length})
                     </span>
                   </button>
                 ))}
               </div>
-              <div className="shrink-0 text-xs text-gray-400">
+              <div className="shrink-0 text-xs text-[#A3A3A3]">
                 <span>
-                  涉及 Agent 实例数：<span className="tabular-nums font-medium text-gray-700">{migrationImpactSummary.instanceCount}</span>
+                  涉及 Agent 实例数：<span className="tabular-nums font-medium text-[#525252]">{migrationImpactSummary.instanceCount}</span>
                 </span>
-                <span className="mx-2 text-gray-300">｜</span>
+                <span className="mx-2 text-[#A3A3A3]">｜</span>
                 <span>
-                  涉及用户数：<span className="tabular-nums font-medium text-gray-700">{migrationImpactSummary.userCount}</span>
+                  涉及用户数：<span className="tabular-nums font-medium text-[#525252]">{migrationImpactSummary.userCount}</span>
                 </span>
               </div>
             </div>
-            <div className={`${confirmTableGridClass} border-b border-[#e5e5e5] bg-gray-50/50 px-3 py-2 text-xs font-medium text-gray-500`}>
+            <div className={`${confirmTableGridClass} border-b border-[#e5e5e5] bg-[#fafafa]/50 px-3 py-2 text-xs font-medium text-[#737373]`}>
               {confirmTableColumns.map((label) => (
                 <span key={label} className="whitespace-nowrap">{label}</span>
               ))}
             </div>
             <div className="divide-y divide-gray-50 bg-white">
               {(confirmTableExpanded ? activeConfirmInstances : activeConfirmInstances.slice(0, 4)).map((item, index) => (
-                <div key={`${item.instance}-${index}`} className={`${confirmTableGridClass} items-center px-3 py-2 text-xs text-gray-700 hover:bg-gray-50/60`}>
-                  <span className="truncate text-gray-500">{item.user}</span>
-                  <span className="truncate font-medium text-gray-900">{item.instance}</span>
-                  <span className="truncate text-gray-500">{item.currentNet}</span>
-                  <span className="truncate text-blue-600">{item.targetNet}</span>
+                <div key={`${item.instance}-${index}`} className={`${confirmTableGridClass} items-center px-3 py-2 text-xs text-[#525252] hover:bg-[#f5f5f5]/60`}>
+                  <span className="truncate text-[#737373]">{item.user}</span>
+                  <span className="truncate font-medium text-[#09090b]">{item.instance}</span>
+                  <span className="truncate text-[#737373]">{item.currentNet}</span>
+                  <span className="truncate text-[#355EF1]">{item.targetNet}</span>
                   <span className={item.note === "可迁移" ? "text-green-600" : "text-amber-700"}>{item.note}</span>
                 </div>
               ))}
             </div>
             {activeConfirmInstances.length > 4 && (
               <button
-                className="w-full border-t border-[#e5e5e5] bg-gray-50/50 py-2 text-xs text-blue-500 transition-colors hover:bg-gray-50 hover:text-blue-600"
+                className="w-full border-t border-[#e5e5e5] bg-[#fafafa]/50 py-2 text-xs text-blue-500 transition-colors hover:bg-[#f5f5f5] hover:text-[#355EF1]"
                 onClick={() => setConfirmTableExpanded((value) => !value)}
               >
                 {confirmTableExpanded ? "收起" : `展开查看剩余 ${activeConfirmInstances.length - 4} 条实例`}
@@ -2602,13 +2602,13 @@ export default function SecurityGroupManagement() {
         }}
       >
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold text-gray-900">{migrationDialogTitle}</DialogTitle>
+          <DialogTitle className="text-base font-semibold text-[#09090b]">{migrationDialogTitle}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           {renderMigrationStepBar(isViewingMigrationResult ? 2 : 1)}
 
           {isViewingMigrationResult ? (
-            <div className="overflow-hidden rounded-xl border border-[#e5e5e5] bg-white">
+            <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white">
               <div className="flex items-center justify-between gap-4 border-b border-[#e5e5e5] px-4" style={{ minHeight: "44px" }}>
                 <div className="flex items-center">
                   {resultTabs.map((tab) => (
@@ -2617,39 +2617,39 @@ export default function SecurityGroupManagement() {
                       onClick={() => setMigrationResultTab(tab)}
                       className={`relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
                         migrationResultTab === tab
-                          ? "text-blue-600 border-b-2 border-blue-600 -mb-px"
-                          : "text-gray-500 hover:text-gray-700"
+                          ? "text-[#355EF1] border-b-2 border-blue-600 -mb-px"
+                          : "text-[#737373] hover:text-[#525252]"
                       }`}
                     >
                       {tab === "success" ? "迁移成功" : "迁移失败"}
-                      <span className="ml-1.5 text-xs text-gray-400">
+                      <span className="ml-1.5 text-xs text-[#A3A3A3]">
                         ({tab === "success" ? currentRunSuccessfulMigrationTasks.length : currentRunFailedMigrationTasks.length})
                       </span>
                     </button>
                   ))}
                 </div>
               </div>
-              <div className={`${resultTableGridClass} border-b border-[#e5e5e5] bg-gray-50/50 px-3 py-2 text-xs font-medium text-gray-500`}>
+              <div className={`${resultTableGridClass} border-b border-[#e5e5e5] bg-[#fafafa]/50 px-3 py-2 text-xs font-medium text-[#737373]`}>
                 {resultTableColumns.map((label) => (
                   <span key={label}>{label}</span>
                 ))}
               </div>
               <div className="divide-y divide-gray-50 max-h-56 overflow-y-auto bg-white">
                 {activeResultTasks.length > 0 ? activeResultTasks.map((task, index) => (
-                  <div key={`${migrationResultTab}-${task.instance}-${index}`} className={`${resultTableGridClass} items-center px-3 py-2 text-xs text-gray-700 hover:bg-gray-50/60`}>
-                    <span className="truncate text-gray-500">{task.user}</span>
-                    <span className="truncate font-medium text-gray-900">{task.instance}</span>
-                    <span className="truncate text-gray-500">{task.currentNet}</span>
+                  <div key={`${migrationResultTab}-${task.instance}-${index}`} className={`${resultTableGridClass} items-center px-3 py-2 text-xs text-[#525252] hover:bg-[#f5f5f5]/60`}>
+                    <span className="truncate text-[#737373]">{task.user}</span>
+                    <span className="truncate font-medium text-[#09090b]">{task.instance}</span>
+                    <span className="truncate text-[#737373]">{task.currentNet}</span>
                     <span className={`inline-flex items-center gap-1 font-medium ${migrationResultTab === "success" ? "text-green-600" : "text-red-500"}`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${migrationResultTab === "success" ? "bg-green-500" : "bg-red-500"}`} />
                       {migrationResultTab === "success" ? "迁移成功" : "迁移失败"}
                     </span>
-                    <span className={migrationResultTab === "success" ? "text-gray-500 leading-relaxed" : "text-red-500 leading-relaxed"}>
+                    <span className={migrationResultTab === "success" ? "text-[#737373] leading-relaxed" : "text-red-500 leading-relaxed"}>
                       {migrationResultTab === "success" ? "-" : task.failReason ?? "请稍后重试；如问题持续存在，请联系管理员处理"}
                     </span>
                   </div>
                 )) : (
-                  <div className="px-3 py-10 text-center text-sm text-gray-400">
+                  <div className="px-3 py-10 text-center text-sm text-[#A3A3A3]">
                     暂无{migrationResultTab === "success" ? "迁移成功" : "迁移失败"}实例
                   </div>
                 )}
@@ -2657,25 +2657,25 @@ export default function SecurityGroupManagement() {
             </div>
           ) : (
             <>
-              <div className="overflow-hidden rounded-xl border border-[#e5e5e5] bg-white">
-                <div className={`${executionTableGridClass} border-b border-[#e5e5e5] bg-gray-50/50 px-3 py-2 text-xs font-medium text-gray-500`}>
+              <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white">
+                <div className={`${executionTableGridClass} border-b border-[#e5e5e5] bg-[#fafafa]/50 px-3 py-2 text-xs font-medium text-[#737373]`}>
                   {executionTableColumns.map((label) => (
                     <span key={label}>{label}</span>
                   ))}
                 </div>
                 <div className="divide-y divide-gray-50 max-h-56 overflow-y-auto bg-white">
                   {activeMigrationTasks.map((task, index) => (
-                    <div key={`${task.instance}-${index}`} className={`${executionTableGridClass} items-center px-3 py-2 text-xs text-gray-700 hover:bg-gray-50/60`}>
-                      <span className="truncate text-gray-500">{task.user}</span>
-                      <span className="truncate font-medium text-gray-900">{task.instance}</span>
+                    <div key={`${task.instance}-${index}`} className={`${executionTableGridClass} items-center px-3 py-2 text-xs text-[#525252] hover:bg-[#f5f5f5]/60`}>
+                      <span className="truncate text-[#737373]">{task.user}</span>
+                      <span className="truncate font-medium text-[#09090b]">{task.instance}</span>
                       <span className={`inline-flex items-center gap-1 font-medium ${
                         task.status === "迁移成功"
                           ? "text-green-600"
                           : task.status === "迁移中"
-                            ? "text-blue-600"
+                            ? "text-[#355EF1]"
                             : task.status === "迁移失败"
                               ? "text-red-500"
-                              : "text-gray-400"
+                              : "text-[#A3A3A3]"
                       }`}>
                         {task.status === "迁移中" ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
@@ -2957,7 +2957,7 @@ export default function SecurityGroupManagement() {
       <div className="flex flex-col w-full">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+            <tr className="border-b border-[#E5E5E5] bg-[#fafafa]/50">
               <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">{type === "inbound" ? "来源" : "目标"}</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">协议</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">端口</th>
@@ -2969,7 +2969,7 @@ export default function SecurityGroupManagement() {
           <tbody className="divide-y divide-[#E5E5E5]">
             {displayRules.length > 0 ? (
               displayRules.map((rule) => (
-                <tr key={rule.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr key={rule.id} className="hover:bg-[#f5f5f5]/50 transition-colors">
                   <td className="px-6 py-4 text-sm text-[#334155]">{rule.source}</td>
                   <td className="px-6 py-4 text-sm text-[#334155]">{rule.protocol}</td>
                   <td className="px-6 py-4 text-sm text-[#334155]">{rule.port}</td>
@@ -3080,7 +3080,7 @@ export default function SecurityGroupManagement() {
             <div className="space-y-3">
                 <div className="rounded-[4px] border border-[#E5E5E5] overflow-hidden bg-white">
                   <div className="relative border-b border-[#E5E5E5] p-3">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3] z-10" />
                     <Input
                       type="text"
                       placeholder="搜索规则模板名称或 ID"
@@ -3091,7 +3091,7 @@ export default function SecurityGroupManagement() {
                     {searchKeyword && (
                       <button
                         onClick={onClearSearch}
-                        className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10"
+                        className="absolute right-6 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] z-10"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -3100,7 +3100,7 @@ export default function SecurityGroupManagement() {
 
                   <div>
                     {candidateSecurityGroups.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                      <div className="flex flex-col items-center justify-center py-10 text-[#A3A3A3]">
                         <Shield className="w-10 h-10 mb-3 opacity-30" />
                         <p className="text-sm">未找到匹配的规则模板</p>
                       </div>
@@ -3133,9 +3133,9 @@ export default function SecurityGroupManagement() {
                                     <div className="flex items-center gap-1.5 min-w-0">
                                       <span className={`text-sm font-medium truncate ${isSelected ? "text-[#1447E6]" : "text-[#0A0A0A]"}`}>{sg.name}</span>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-0.5 truncate">{sg.remark || "—"}</p>
+                                    <p className="text-xs text-[#737373] mt-0.5 truncate">{sg.remark || "—"}</p>
                                   </div>
-                                  <div className="mt-0.5 flex items-center gap-1.5 shrink-0 text-xs text-gray-400 whitespace-nowrap">
+                                  <div className="mt-0.5 flex items-center gap-1.5 shrink-0 text-xs text-[#A3A3A3] whitespace-nowrap">
                                     <span>入站 {sg.inboundCount} 条</span>
                                     <span className="text-gray-200">|</span>
                                     <span>出站 {sg.outboundCount} 条</span>
@@ -3178,16 +3178,16 @@ export default function SecurityGroupManagement() {
                         className={`relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
                           previewTab === tab
                             ? "text-[#1447E6] border-b-2 border-[#1447E6] -mb-px"
-                            : "text-gray-500 hover:text-gray-700"
+                            : "text-[#737373] hover:text-[#525252]"
                         }`}
                       >
                         {tab === "outbound" ? "出站规则" : "入站规则"}
-                        <span className="ml-1.5 text-xs text-gray-400">
+                        <span className="ml-1.5 text-xs text-[#A3A3A3]">
                           ({tab === "outbound" ? selectedSecurityGroup.outboundCount : selectedSecurityGroup.inboundCount})
                         </span>
                       </button>
                     ))}
-                    <span className="ml-auto text-xs text-gray-400 pr-2">仅预览，不可编辑</span>
+                    <span className="ml-auto text-xs text-[#A3A3A3] pr-2">仅预览，不可编辑</span>
                   </div>
                   <div className="max-h-64 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
                     <RuleTableBody
@@ -3279,7 +3279,7 @@ export default function SecurityGroupManagement() {
 
         {/* 页头 */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">网络管理</h1>
+          <h1 className="text-2xl font-bold text-[#09090b]">网络管理</h1>
         </div>
 
         {/* Tab 切换器 */}
@@ -3300,7 +3300,7 @@ export default function SecurityGroupManagement() {
         </div>
 
         {/* Tab 描述 */}
-        <p className="text-sm text-gray-500 mt-3 mb-6 leading-relaxed">{currentTab.description}</p>
+        <p className="text-sm text-[#737373] mt-3 mb-6 leading-relaxed">{currentTab.description}</p>
 
         {/* Tab 内容 */}
         {activeTab === "security" && (
@@ -3325,9 +3325,9 @@ export default function SecurityGroupManagement() {
               {/* 蓝色说明框（仅已配置态显示）
                   [004] 结构：小标题 + 作用范围 + 一致性保障
                         （"了解更多"链接暂移除，等详细说明文章上线后再挂回） */}
-              <div className="relative flex items-start gap-2.5 rounded-[4px] border border-blue-100 bg-blue-50 px-4 py-3">
+              <div className="relative flex items-start gap-2.5 rounded-[4px] border border-blue-100 bg-[#eff4ff] px-4 py-3">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-                <div className="flex-1 text-xs leading-relaxed text-blue-600 space-y-1">
+                <div className="flex-1 text-xs leading-relaxed text-[#355EF1] space-y-1">
                   <p>• 作用范围：此处规则变更仅作用于由 ClawPro 创建并托管的专属云端安全组，不会影响您原有的其他云端安全组及其资源。</p>
                   <p>• 一致性保障：规则始终以 ClawPro 侧配置为准。所有变更会自动同步至云端；若云端规则被其他方式修改，系统会定时检查并自动恢复为 ClawPro 中的设定。</p>
                 </div>
@@ -3357,7 +3357,7 @@ export default function SecurityGroupManagement() {
                   {/* 安全组名称 */}
                   <div>
                     <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">安全组名称</h4>
-                    <p className="text-xs text-gray-500 mb-2">{currentSg.remark || "当前企业的默认安全组"}</p>
+                    <p className="text-xs text-[#737373] mb-2">{currentSg.remark || "当前企业的默认安全组"}</p>
                     <div className="px-4 py-2.5 border border-[#E5E5E5] rounded-[4px] text-sm text-[#0A0A0A]">
                       {currentSg.name}
                     </div>
@@ -3365,7 +3365,7 @@ export default function SecurityGroupManagement() {
                   {/* 云端安全组 */}
                   <div>
                     <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">云端安全组</h4>
-                    <p className="text-xs text-gray-500 mb-2">由 ClawPro 自动生成并托管的云端安全组</p>
+                    <p className="text-xs text-[#737373] mb-2">由 ClawPro 自动生成并托管的云端安全组</p>
                     <Popover>
                       <PopoverTrigger asChild>
                         <button className="px-4 py-2.5 border border-[#E5E5E5] rounded-[4px] text-sm text-[#1447E6] hover:text-[#1039C4] transition-colors flex items-center gap-1">
@@ -3400,7 +3400,7 @@ export default function SecurityGroupManagement() {
                         </div>
                         {currentSg.cloudSgs.length > 1 && (
                           <div className="px-4 pb-4">
-                            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-[4px] px-3 py-2.5">
+                            <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
                               <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
                               <p className="text-xs text-blue-700 leading-relaxed">
                                 当 Agent 数量超过单个云端安全组的承载上限时，ClawPro 会自动创建更多云端安全组来承载，所有安全组规则保持一致。
@@ -3432,7 +3432,7 @@ export default function SecurityGroupManagement() {
                       </defs>
                     </svg>
                     <p className="text-sm font-semibold text-[#020617] leading-[22px] mt-1">暂未配置 ClawPro 安全组，请选择创建方式：</p>
-                    <p className="text-sm text-gray-500 leading-relaxed">设置完成后，当前企业下所有 Agent 所在云服务器将默认使用该 ClawPro 安全组</p>
+                    <p className="text-sm text-[#737373] leading-relaxed">设置完成后，当前企业下所有 Agent 所在云服务器将默认使用该 ClawPro 安全组</p>
                   </div>
                   {/* 操作按钮（文字链接风格） */}
                   <div className="flex items-center gap-2">
@@ -3513,9 +3513,9 @@ export default function SecurityGroupManagement() {
               ) : (
                 <div className="px-6 py-10 flex flex-col items-center justify-center">
                   {securityTab === "outbound" ? (
-                    <p className="text-sm text-gray-500 leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
+                    <p className="text-sm text-[#737373] leading-relaxed">出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用</p>
                   ) : (
-                    <p className="text-sm text-gray-500 leading-relaxed">入站规则为空时，所有入站流量将被拒绝</p>
+                    <p className="text-sm text-[#737373] leading-relaxed">入站规则为空时，所有入站流量将被拒绝</p>
                   )}
                 </div>
               )}
@@ -3587,14 +3587,14 @@ export default function SecurityGroupManagement() {
                   return (
                     <Fragment key={row.id}>
                       {/* 主行 */}
-                      <tr className={`hover:bg-gray-50/30 transition-colors ${idx > 0 ? "border-t border-[#f0f0f0]" : ""}`}>
+                      <tr className={`hover:bg-[#f5f5f5]/30 transition-colors ${idx > 0 ? "border-t border-[#f0f0f0]" : ""}`}>
                         {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
                         <td className="px-6 pt-4 pb-2">
                           <div className="flex items-start gap-2 min-w-0">
                             <button
                               type="button"
                               onClick={() => toggleVpcExpanded(row.id)}
-                              className="mt-0.5 shrink-0 text-gray-400 hover:text-blue-500 transition-colors"
+                              className="mt-0.5 shrink-0 text-[#A3A3A3] hover:text-blue-500 transition-colors"
                               aria-label={expandedVpcIds.has(row.id) ? "收起详情" : "展开详情"}
                               title={expandedVpcIds.has(row.id) ? "收起详情" : "展开详情"}
                             >
@@ -3614,7 +3614,7 @@ export default function SecurityGroupManagement() {
                                 return (
                                   <>
                                     <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className="text-sm font-medium text-gray-900 truncate">{displayName || "—"}</span>
+                                      <span className="text-sm font-medium text-[#09090b] truncate">{displayName || "—"}</span>
                                       {hasAnomaly && (
                                         <Tooltip>
                                           <TooltipTrigger asChild>
@@ -3631,12 +3631,12 @@ export default function SecurityGroupManagement() {
                                     </div>
                                     {row.subnetStrategy === "auto" ? (
                                       // 自动分配 VPC：与子网保持一致的端到端语义，不展示具体 vpc-id/cidr
-                                      <span className="text-xs text-gray-400">自动分配</span>
+                                      <span className="text-xs text-[#A3A3A3]">自动分配</span>
                                     ) : vpcDeleted ? (
                                       // VPC 已被删除：保留 vpcId 作为治理信息，cidr 占位为短横
-                                      <span className="text-xs text-gray-400 font-mono">{row.vpcId} · —</span>
+                                      <span className="text-xs text-[#A3A3A3] font-mono">{row.vpcId} · —</span>
                                     ) : (
-                                      <span className="text-xs text-gray-400 font-mono">{row.vpcId} · {row.cidr}</span>
+                                      <span className="text-xs text-[#A3A3A3] font-mono">{row.vpcId} · {row.cidr}</span>
                                     )}
                                   </>
                                 );
@@ -3647,11 +3647,11 @@ export default function SecurityGroupManagement() {
                         {/* 子网配置：仅展示已配置子网总数 */}
                         <td className="px-4 pt-4 pb-2">
                           {totalSubnets === 0 ? (
-                            <span className="text-xs text-gray-400 whitespace-nowrap">未配置</span>
+                            <span className="text-xs text-[#A3A3A3] whitespace-nowrap">未配置</span>
                           ) : (
-                            <span className="text-sm text-gray-700 whitespace-nowrap">
+                            <span className="text-sm text-[#525252] whitespace-nowrap">
                               <span className="tabular-nums font-medium">{totalSubnets}</span>
-                              <span className="text-gray-500"> 个</span>
+                              <span className="text-[#737373]"> 个</span>
                             </span>
                           )}
                         </td>
@@ -3662,7 +3662,7 @@ export default function SecurityGroupManagement() {
                               <StatusTag variant="blue">预设策略</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="inline-flex items-center text-gray-400 hover:text-gray-500 cursor-default">
+                                  <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-default">
                                     <Info className="w-3 h-3" />
                                   </span>
                                 </TooltipTrigger>
@@ -3752,8 +3752,8 @@ export default function SecurityGroupManagement() {
                       {expandedVpcIds.has(row.id) && (
                         <tr>
                           <td colSpan={4} className="px-6 pb-3 pt-0">
-                            <div className="rounded-xl bg-gray-50/50 border border-[#e5e5e5] px-3 py-2">
-                              <div className="text-[11px] text-gray-400 mb-1.5">子网配置明细</div>
+                            <div className="rounded-[4px] bg-[#fafafa]/50 border border-[#e5e5e5] px-3 py-2">
+                              <div className="text-[11px] text-[#A3A3A3] mb-1.5">子网配置明细</div>
                               <div className="flex flex-col gap-1">
                                 {AVAILABLE_ZONES.map((zone) => {
                                   const subnets = effectiveZoneSubnets[zone] ?? [];
@@ -3763,16 +3763,16 @@ export default function SecurityGroupManagement() {
                                   const rowIsAutoAssigned = row.subnetStrategy === "auto";
                                   return (
                                     <div key={zone} className="flex items-start gap-2 min-w-0">
-                                      <span className="text-xs font-medium shrink-0 w-16 text-gray-600 leading-6">
+                                      <span className="text-xs font-medium shrink-0 w-16 text-[#737373] leading-6">
                                         {zone}
                                       </span>
-                                      <span className="text-xs text-gray-300 shrink-0 leading-6">:</span>
+                                      <span className="text-xs text-[#A3A3A3] shrink-0 leading-6">:</span>
                                       {rowIsAutoAssigned ? (
-                                        <span className="text-xs text-gray-400">自动分配</span>
+                                        <span className="text-xs text-[#A3A3A3]">自动分配</span>
                                       ) : isAssigned ? (
                                         <SubnetBadgesRow subnets={subnets} />
                                       ) : (
-                                        <span className="text-xs text-gray-400">未分配</span>
+                                        <span className="text-xs text-[#A3A3A3]">未分配</span>
                                       )}
                                     </div>
                                   );
@@ -3812,7 +3812,7 @@ export default function SecurityGroupManagement() {
                         setZoneSubnetPickerOpen({});
                         setShowEditVpcDialog(placeholder);
                       }}
-                      className="inline-flex items-center gap-1 px-2 py-1 -mx-2 rounded-xl text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-1 -mx-2 rounded-[4px] text-xs text-[#737373] hover:text-[#525252] hover:bg-[#f5f5f5] transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       添加分组网络策略
@@ -3823,14 +3823,14 @@ export default function SecurityGroupManagement() {
             </Table>
 
             {/* 底部提示 */}
-            <div className="px-6 py-3 border-t border-[#e5e5e5] bg-gray-50/50">
-              <p className="text-xs text-gray-500 leading-relaxed">
+            <div className="px-6 py-3 border-t border-[#e5e5e5] bg-[#fafafa]/50">
+              <p className="text-xs text-[#737373] leading-relaxed">
                 如现有私有网络/子网不符合要求，可以去腾讯云控制台{" "}
                 <a
                   href="https://console.cloud.tencent.com/vpc/vpc"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 underline inline-flex items-center gap-0.5"
+                  className="text-blue-500 hover:text-[#355EF1] underline inline-flex items-center gap-0.5"
                 >
                   新建私有网络
                   <ExternalLink className="w-3 h-3" />
@@ -3840,7 +3840,7 @@ export default function SecurityGroupManagement() {
                   href="https://console.cloud.tencent.com/vpc/subnet"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 underline inline-flex items-center gap-0.5"
+                  className="text-blue-500 hover:text-[#355EF1] underline inline-flex items-center gap-0.5"
                 >
                   新建子网
                   <ExternalLink className="w-3 h-3" />
@@ -3867,7 +3867,7 @@ export default function SecurityGroupManagement() {
               onEscapeKeyDown={(e) => e.preventDefault()}
             >
               <DialogHeader className="mx-0 gap-0 px-6 pt-6 pb-4 border-b border-[#e5e5e5] shrink-0">
-                <DialogTitle className="text-base font-semibold text-gray-900">
+                <DialogTitle className="text-base font-semibold text-[#09090b]">
                   {showEditVpcDialog?.type === "enterprise"
                     ? "编辑预设策略"
                     : showEditVpcDialog?.id === NEW_GROUP_VPC_ID
@@ -3959,12 +3959,12 @@ export default function SecurityGroupManagement() {
                       {/* ── 应用范围（仅分组网络） ── */}
                       {showEditVpcDialog?.type === "group" && (
                         <div className="space-y-3">
-                          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                          <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider flex items-center gap-1">
                             <span>应用范围</span>
                             <TooltipProvider>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="inline-flex items-center text-gray-400 hover:text-gray-600 cursor-help">
+                                  <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-help">
                                     <Info className="w-3 h-3" />
                                   </span>
                                 </TooltipTrigger>
@@ -4013,7 +4013,7 @@ export default function SecurityGroupManagement() {
 
                       {/* ── 私有网络（VPC） ── */}
                       <div className="space-y-3">
-                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">私有网络（VPC）</div>
+                        <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">私有网络（VPC）</div>
                         {(() => {
                           // 触发器展示值：优先展示选中 VPC 的完整信息；"自动分配"特殊态展示系统默认 VPC
                           const triggerVpc = isAutoAssigned
@@ -4026,7 +4026,7 @@ export default function SecurityGroupManagement() {
                               <PopoverTrigger asChild>
                                 <button
                                   type="button"
-                                  className="w-full h-12 px-4 rounded-xl border border-[#e5e5e5] bg-gray-50/40 text-sm text-gray-800 hover:border-gray-200 transition-colors data-[state=open]:border-blue-300 data-[state=open]:bg-white flex items-center justify-between gap-2"
+                                  className="w-full h-12 px-4 rounded-[4px] border border-[#e5e5e5] bg-[#fafafa]/40 text-sm text-gray-800 hover:border-[#e5e5e5] transition-colors data-[state=open]:border-[#355EF1] data-[state=open]:bg-white flex items-center justify-between gap-2"
                                   data-state={editVpcPickerOpen ? "open" : "closed"}
                                 >
                                   {triggerVpc ? (
@@ -4037,20 +4037,20 @@ export default function SecurityGroupManagement() {
                                     ) : (
                                       <span className="flex items-center gap-2 min-w-0 text-gray-800">
                                         <span className="font-mono shrink-0">{triggerVpc.id}</span>
-                                        <span className="text-gray-300 shrink-0">|</span>
+                                        <span className="text-[#A3A3A3] shrink-0">|</span>
                                         <span className="truncate">{triggerVpc.name}</span>
-                                        <span className="text-gray-300 shrink-0">|</span>
+                                        <span className="text-[#A3A3A3] shrink-0">|</span>
                                         <span className="font-mono shrink-0">{triggerVpc.cidr}</span>
                                       </span>
                                     )
                                   ) : (
-                                    <span className="text-gray-400">请选择 VPC</span>
+                                    <span className="text-[#A3A3A3]">请选择 VPC</span>
                                   )}
-                                  <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
+                                  <ChevronDown className={`w-4 h-4 text-[#A3A3A3] shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
                                 </button>
                               </PopoverTrigger>
                               <PopoverContent
-                                className="p-0 shadow-lg border border-gray-200 rounded-xl overflow-hidden"
+                                className="p-0 shadow-lg border border-[#e5e5e5] rounded-[4px] overflow-hidden"
                                 style={{ width: "var(--radix-popover-trigger-width)" }}
                                 align="start"
                                 sideOffset={4}
@@ -4058,7 +4058,7 @@ export default function SecurityGroupManagement() {
                                 <Command>
                                   <CommandInput placeholder="搜索 VPC ID / 名称…" className="text-sm" />
                                   <CommandList className="max-h-72 overflow-y-auto">
-                                    <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的 VPC</CommandEmpty>
+                                    <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的 VPC</CommandEmpty>
                                     <CommandGroup>
                                       {isEnterprise && (
                                         <CommandItem
@@ -4103,9 +4103,9 @@ export default function SecurityGroupManagement() {
                                           >
                                             <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-gray-800">
                                               <span className="font-mono shrink-0">{vpc.id}</span>
-                                              <span className="text-gray-300 shrink-0">|</span>
+                                              <span className="text-[#A3A3A3] shrink-0">|</span>
                                               <span className="truncate">{vpc.name}</span>
-                                              <span className="text-gray-300 shrink-0">|</span>
+                                              <span className="text-[#A3A3A3] shrink-0">|</span>
                                               <span className="font-mono shrink-0">{vpc.cidr}</span>
                                             </div>
                                             {selected && (
@@ -4116,7 +4116,7 @@ export default function SecurityGroupManagement() {
                                       })}
                                     </CommandGroup>
                                   </CommandList>
-                                  <div className="border-t border-[#e5e5e5] px-3 py-2 text-xs text-gray-400 bg-gray-50/50">
+                                  <div className="border-t border-[#e5e5e5] px-3 py-2 text-xs text-[#A3A3A3] bg-[#fafafa]/50">
                                     共 {totalCount} 条
                                   </div>
                                 </Command>
@@ -4134,9 +4134,9 @@ export default function SecurityGroupManagement() {
                       {(isAutoAssigned || editVpcDraft.vpcId || showEditVpcDialog?.id === NEW_GROUP_VPC_ID || !!editAutoCleaned?.vpcId) && (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">可用区及子网配置</div>
+                            <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">可用区及子网配置</div>
                             {!isAutoAssigned && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-[#A3A3A3]">
                                 已分配 {AVAILABLE_ZONES.filter((z) => (editVpcDraft.zoneSubnets[z] ?? []).length > 0).length} / {AVAILABLE_ZONES.length} 个可用区
                               </span>
                             )}
@@ -4149,11 +4149,11 @@ export default function SecurityGroupManagement() {
                                 return (
                                   <div
                                     key={zone}
-                                    className="rounded-xl border border-[#e5e5e5] bg-gray-50/50"
+                                    className="rounded-[4px] border border-[#e5e5e5] bg-[#fafafa]/50"
                                   >
                                     <div className="flex items-center gap-3 px-4 py-3 min-w-0">
-                                      <span className="text-sm font-medium text-gray-700 shrink-0">{zone}</span>
-                                      <span className="text-xs text-gray-400">自动分配</span>
+                                      <span className="text-sm font-medium text-[#525252] shrink-0">{zone}</span>
+                                      <span className="text-xs text-[#A3A3A3]">自动分配</span>
                                     </div>
                                   </div>
                                 );
@@ -4172,8 +4172,8 @@ export default function SecurityGroupManagement() {
                               return (
                                 <div
                                   key={zone}
-                                  className={`rounded-xl border transition-colors ${
-                                    isUnassigned ? "border-[#e5e5e5] bg-gray-50/40" : "border-gray-200 bg-white"
+                                  className={`rounded-[4px] border transition-colors ${
+                                    isUnassigned ? "border-[#e5e5e5] bg-[#fafafa]/40" : "border-[#e5e5e5] bg-white"
                                   }`}
                                 >
                                   {/* 可用区头部 */}
@@ -4181,9 +4181,9 @@ export default function SecurityGroupManagement() {
                                     <div className="flex items-center gap-2">
                                       <span className="text-sm font-medium text-gray-800">{zone}</span>
                                       {isUnassigned ? (
-                                        <span className="text-xs text-gray-400">未分配</span>
+                                        <span className="text-xs text-[#A3A3A3]">未分配</span>
                                       ) : (
-                                        <span className="text-xs text-gray-500">{selectedSubnets.length} 个子网</span>
+                                        <span className="text-xs text-[#737373]">{selectedSubnets.length} 个子网</span>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1">
@@ -4194,7 +4194,7 @@ export default function SecurityGroupManagement() {
                                             ...prev,
                                             zoneSubnets: { ...prev.zoneSubnets, [zone]: [] },
                                           }))}
-                                          className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded-xl hover:bg-gray-100"
+                                          className="text-xs text-[#A3A3A3] hover:text-[#737373] transition-colors px-2 py-1 rounded-[4px] hover:bg-[#f5f5f5]"
                                         >
                                           不分配
                                         </button>
@@ -4212,7 +4212,7 @@ export default function SecurityGroupManagement() {
                                           return (
                                             <div
                                               key={subnet.id}
-                                              className="inline-flex items-center gap-2 pl-2.5 pr-1 py-1 rounded-xl bg-blue-50 border border-blue-100 text-xs"
+                                              className="inline-flex items-center gap-2 pl-2.5 pr-1 py-1 rounded-[4px] bg-[#eff4ff] border border-blue-100 text-xs"
                                             >
                                               <div className="flex items-center gap-1.5 min-w-0">
                                                 <span className="font-medium text-blue-700 truncate max-w-[140px]">{subnet.name}</span>
@@ -4230,7 +4230,7 @@ export default function SecurityGroupManagement() {
                                                     [zone]: (prev.zoneSubnets[zone] ?? []).filter((id) => id !== subnet.id),
                                                   },
                                                 }))}
-                                                className="w-4 h-4 flex items-center justify-center rounded-sm text-blue-400 hover:text-blue-600 hover:bg-blue-100 transition-colors"
+                                                className="w-4 h-4 flex items-center justify-center rounded-sm text-blue-400 hover:text-[#355EF1] hover:bg-[#e0e9ff] transition-colors"
                                                 title="移除此子网"
                                               >
                                                 <X className="w-3 h-3" />
@@ -4252,10 +4252,10 @@ export default function SecurityGroupManagement() {
                                         <button
                                           type="button"
                                           disabled={selectableSubnets.length === 0}
-                                          className={`h-8 w-full flex items-center justify-center gap-1.5 rounded-xl border border-dashed text-xs transition-colors ${
+                                          className={`h-8 w-full flex items-center justify-center gap-1.5 rounded-[4px] border border-dashed text-xs transition-colors ${
                                             selectableSubnets.length === 0
-                                              ? "border-[#e5e5e5] text-gray-300 cursor-not-allowed"
-                                              : "border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-500 hover:bg-blue-50/40"
+                                              ? "border-[#e5e5e5] text-[#A3A3A3] cursor-not-allowed"
+                                              : "border-[#e5e5e5] text-[#737373] hover:border-[#355EF1] hover:text-blue-500 hover:bg-[#eff4ff]/40"
                                           }`}
                                           title={!editVpcDraft.vpcId ? "请先选择 VPC" : selectableSubnets.length === 0 ? "该可用区下无可添加的子网" : "添加子网"}
                                         >
@@ -4270,7 +4270,7 @@ export default function SecurityGroupManagement() {
                                         </button>
                                       </PopoverTrigger>
                                       <PopoverContent
-                                        className="p-0 shadow-lg border border-gray-200 rounded-xl overflow-hidden"
+                                        className="p-0 shadow-lg border border-[#e5e5e5] rounded-[4px] overflow-hidden"
                                         style={{ width: "var(--radix-popover-trigger-width)" }}
                                         align="start"
                                         sideOffset={4}
@@ -4278,7 +4278,7 @@ export default function SecurityGroupManagement() {
                                         <Command>
                                           <CommandInput placeholder="搜索子网 ID / 名称…" className="text-sm" />
                                           <CommandList className="max-h-72 overflow-y-auto">
-                                            <CommandEmpty className="py-3 text-xs text-gray-400 text-center">未找到匹配的子网</CommandEmpty>
+                                            <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的子网</CommandEmpty>
                                             <CommandGroup>
                                               {selectableSubnets.map((subnet) => {
                                                 const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
@@ -4300,12 +4300,12 @@ export default function SecurityGroupManagement() {
                                                   >
                                                     <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-gray-800">
                                                       <span className="font-mono shrink-0">{subnet.id}</span>
-                                                      <span className="text-gray-300 shrink-0">|</span>
+                                                      <span className="text-[#A3A3A3] shrink-0">|</span>
                                                       <span className="truncate">{subnet.name}</span>
-                                                      <span className="text-gray-300 shrink-0">|</span>
+                                                      <span className="text-[#A3A3A3] shrink-0">|</span>
                                                       <span className="font-mono shrink-0">{subnet.cidr}</span>
                                                     </div>
-                                                    <span className={`shrink-0 text-xs tabular-nums ml-2 ${remainingLow ? "text-orange-500" : "text-gray-400"}`}>
+                                                    <span className={`shrink-0 text-xs tabular-nums ml-2 ${remainingLow ? "text-orange-500" : "text-[#A3A3A3]"}`}>
                                                       剩余 IP {subnet.remainingIp}/{subnet.totalIp}
                                                     </span>
                                                   </CommandItem>
@@ -4313,7 +4313,7 @@ export default function SecurityGroupManagement() {
                                               })}
                                             </CommandGroup>
                                           </CommandList>
-                                          <div className="border-t border-[#e5e5e5] px-3 py-2 text-xs text-gray-400 bg-gray-50/50">
+                                          <div className="border-t border-[#e5e5e5] px-3 py-2 text-xs text-[#A3A3A3] bg-[#fafafa]/50">
                                             共 {selectableSubnets.length} 条
                                           </div>
                                         </Command>
@@ -4688,7 +4688,7 @@ export default function SecurityGroupManagement() {
                       {/* 包月带宽常驻气泡提示 - 使用 Portal 避免被卡片 overflow 裁剪 */}
                       {publicConfig.billingMode === "monthly" && showBandwidthTip && tipPos && createPortal(
                         <div
-                          className="fixed w-72 px-3 py-2.5 bg-foreground text-background text-xs rounded-xl shadow-lg"
+                          className="fixed w-72 px-3 py-2.5 bg-foreground text-background text-xs rounded-[4px] shadow-lg"
                           style={{ zIndex: 9999, top: tipPos.top, left: tipPos.left, transform: "translate(-50%, -100%)", lineHeight: 1.8 }}
                         >
                           <button

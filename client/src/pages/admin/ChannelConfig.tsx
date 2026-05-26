@@ -64,7 +64,7 @@ function CustomChannelIcon({ name, color }: { name: string; color: string }) {
   const letter = name ? name.charAt(0).toUpperCase() : "C";
   return (
     <div
-      className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-base select-none"
+      className="w-10 h-10 rounded-[4px] flex items-center justify-center text-white font-bold text-base select-none"
       style={{ background: color }}
     >
       {letter}
@@ -302,11 +302,11 @@ export default function ChannelConfig() {
       {/* ── 内置通道 Tab ── */}
       {activeTab === "builtin" && (
         <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
         >
           <div className="divide-y divide-gray-50">
             {BUILTIN_CHANNELS.map((ch) => (
-              <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors">
+              <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-[#f5f5f5]/50 transition-colors">
                 <div className="flex items-center gap-4">
                   <img src={CHANNEL_ICON_SRC[ch.id]} alt="" aria-hidden="true" className="h-10 w-10 shrink-0" />
                   <div>
@@ -345,7 +345,7 @@ export default function ChannelConfig() {
       {/* ── 自定义通道 Tab ── */}
       {activeTab === "custom" && (
         <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
         >
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
             <a
@@ -385,7 +385,7 @@ export default function ChannelConfig() {
           ) : (
             <div className="divide-y divide-gray-50">
               {customChannels.map((ch) => (
-                <div key={ch.id} className="hover:bg-gray-50/30 transition-colors">
+                <div key={ch.id} className="hover:bg-[#f5f5f5]/30 transition-colors">
                   {/* 主行：仅展示通道名称 + Channel ID + 操作 */}
                   <div className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -393,7 +393,7 @@ export default function ChannelConfig() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-[#0A0A0A] truncate">{ch.name}</p>
-                          <span className="text-xs text-[#A3A3A3] font-mono bg-gray-100 px-1.5 py-0.5 rounded shrink-0">
+                          <span className="text-xs text-[#A3A3A3] font-mono bg-[#f5f5f5] px-1.5 py-0.5 rounded shrink-0">
                             {ch.channelId}
                           </span>
                         </div>
@@ -443,7 +443,7 @@ export default function ChannelConfig() {
                     <div className="px-6 pb-4">
                       <div className="ml-14 space-y-3">
                         {/* IM 服务器地址 */}
-                        <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
+                        <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3">
                           <p className="text-xs font-medium text-[#737373] mb-2">IM 服务器地址</p>
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-2 text-xs">
@@ -457,7 +457,7 @@ export default function ChannelConfig() {
                           </div>
                         </div>
                         {/* 用户凭证字段 */}
-                        <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
+                        <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3">
                           <p className="text-xs font-medium text-[#737373] mb-2">用户凭证字段</p>
                           {ch.credentialFields.length === 0 ? (
                             <p className="text-xs text-[#A3A3A3]">无凭证字段</p>
@@ -466,7 +466,7 @@ export default function ChannelConfig() {
                               {ch.credentialFields.map((f, idx) => (
                                 <span
                                   key={f.id}
-                                  className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-[#334155] px-2.5 py-1 rounded-full"
+                                  className="inline-flex items-center gap-1 text-xs bg-white border border-[#e5e5e5] text-[#334155] px-2.5 py-1 rounded-full"
                                 >
                                   <span className="text-[#A3A3A3]">{idx + 1}.</span>
                                   <span className="font-mono text-[#737373]">{f.key}</span>

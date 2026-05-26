@@ -95,6 +95,10 @@ DialogOverlay.displayName = "DialogOverlay";
  * - md (560px): 表单弹窗（3-6个字段）、发布/编辑（默认）
  * - lg (720px): 复杂表单、含表格/列表、多列内容、详情面板
  * - xl (920px): 多列数据表格批量操作、Tabs + 列表管理、命令下发等多阶段弹窗
+ *
+ * ⚠️ 使用范围：
+ * - 当前 rounded-[12px] 圆角弹窗仅限【用户端（tenant）】使用
+ * - 管理端（admin）禁止使用此弹窗组件，应使用管理端专用弹窗
  */
 const dialogSizeMap = {
   sm: "sm:max-w-[420px]",
@@ -143,7 +147,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-[8px] shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)] duration-200 overflow-clip px-6 pb-6 pt-0",
+          "bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] rounded-[12px] shadow-[0_6px_16px_0_rgba(0,0,0,0.08),0_3px_6px_-4px_rgba(0,0,0,0.12),0_9px_28px_8px_rgba(0,0,0,0.05)] duration-200 overflow-clip px-6 pb-6 pt-0",
           size ? dialogSizeMap[size] : "sm:max-w-[560px]",
           className
         )}

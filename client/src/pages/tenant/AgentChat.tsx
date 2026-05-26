@@ -32,14 +32,9 @@ import {
   Maximize2,
   Minimize2,
   MessageSquarePlus,
-  MoreHorizontal,
   Plus,
   ArrowUp,
   ArrowRight,
-  Edit3,
-  Share2,
-  Archive,
-  Trash2,
 } from "lucide-react";
 
 /* ───────────── Mock 数据 ───────────── */
@@ -52,22 +47,21 @@ interface AgentItem {
 }
 
 /**
- * Agent 头像映射（7 个真实职业，与 /public/assets/avatars/ 中的图一一对应）
+ * Agent 头像映射（对照 Figma 节点 1387-19352）
  *
  * TOP（默认显示 5 个 + 第 6 格"展开/收起"按钮）：
- *   默认助手 / 开发工程师 / 设计师 / 项目经理 / 内容创作者
+ *   初始角色 / 程序员 / 设计师 / 理财助理 / 美食家
  * BOTTOM（点"展开更多"显示）：
- *   行业分析师 / 运营
+ *   运营
  */
 const AGENT_GROUP_TOP: AgentItem[] = [
-  { key: "default", name: "默认助手", avatar: "/assets/avatars/avatar-default.png" },
-  { key: "dev", name: "开发工程师", avatar: "/assets/avatars/avatar-developer.png" },
+  { key: "default", name: "初始角色", avatar: "/assets/avatars/avatar-default.png" },
+  { key: "dev", name: "程序员", avatar: "/assets/avatars/avatar-developer.png" },
   { key: "designer", name: "设计师", avatar: "/assets/avatars/avatar-designer.png" },
-  { key: "pm", name: "项目经理", avatar: "/assets/avatars/avatar-pm.png" },
-  { key: "creator", name: "内容创作者", avatar: "/assets/avatars/avatar-creator.png" },
+  { key: "finance", name: "理财助理", avatar: "/assets/avatars/avatar-analyst.png" },
+  { key: "food", name: "美食家", avatar: "/assets/avatars/avatar-creator.png" },
 ];
 const AGENT_GROUP_BOTTOM: AgentItem[] = [
-  { key: "analyst", name: "行业分析师", avatar: "/assets/avatars/avatar-analyst.png" },
   { key: "operator", name: "运营", avatar: "/assets/avatars/avatar-operator.png" },
 ];
 
@@ -93,8 +87,8 @@ interface InstanceItem {
 }
 
 const INSTANCE_LIST: InstanceItem[] = [
-  { key: "abc", name: "实例名称 ABC", engine: "OpenClaw", online: true },
-  { key: "123", name: "实例名称 123", engine: "Hermes", online: true },
+  { key: "abc", name: "实例名称 AB...", engine: "Hermes", online: true },
+  { key: "123", name: "实例名称 123", engine: "OpenClaw", online: true },
   { key: "liam-syd", name: "Liam悉尼", engine: "Hermes", online: false },
   { key: "liam-tyo", name: "Liam东京", engine: "ACE", online: false },
   { key: "liam-lon", name: "Liam伦敦", engine: "Hermes", online: false },
@@ -142,42 +136,13 @@ function StarBullet() {
   );
 }
 
-/** AgentChat Logo（包含 logo 图标 + Beta 徽章） */
-function HeaderLogo() {
-  return (
-    <div className="flex items-center gap-2">
-      <span
-        aria-hidden
-        className="flex h-6 items-center font-semibold tracking-tight text-[#0A0A0A]"
-        style={{ fontSize: 16, lineHeight: "24px" }}
-      >
-        AgentChat
-      </span>
-      {/* Beta 徽章：Figma layout_GZYS78 高 16，padding 0 5，stroke #D6DBE3，圆角 4 */}
-      <span
-        className="inline-flex items-center justify-center rounded-[4px] border"
-        style={{
-          height: 16,
-          padding: "0 5px",
-          borderColor: "#D6DBE3",
-          fontSize: 12,
-          lineHeight: "18px",
-          color: "rgba(0,0,0,0.5)",
-        }}
-      >
-        Beta
-      </span>
-    </div>
-  );
-}
-
-/** Agent 头像（Figma 40×40 圆；选中态：白底 + #0052D9 1px ring + tea/shadow-xs） */
+/** Agent 头像（48×48 圆形，对齐「我的 Agent」页面尺寸；选中态：白底 + #0052D9 1px ring + tea/shadow-xs） */
 function AgentAvatar({ item, selected }: { item: AgentItem; selected: boolean }) {
   return (
-    <div className="relative flex h-10 w-10 items-center justify-center">
+    <div className="relative flex h-12 w-12 items-center justify-center">
       {/* 圆形容器：选中=白底 + 1px 蓝边 + 阴影；未选=透明（直接显示 avatar 自带渐变背景） */}
       <span
-        className="relative flex h-10 w-10 items-center justify-center rounded-full overflow-hidden"
+        className="relative flex h-12 w-12 items-center justify-center rounded-full overflow-hidden"
         style={
           selected
             ? {
@@ -189,12 +154,12 @@ function AgentAvatar({ item, selected }: { item: AgentItem; selected: boolean })
         }
         // allow-shadow: Figma tea/shadow-xs (0 1 4 rgba(0,0,0,0.05))，仅本设计还原页使用
       >
-        {/* 角色虾头像图片（来自 /public/assets/avatars/） */}
+        {/* 角色头像图片（来自 /public/assets/avatars/） */}
         <img
           src={item.avatar}
           alt={item.name}
           draggable={false}
-          className="h-10 w-10 object-cover rounded-full pointer-events-none select-none"
+          className="h-12 w-12 object-cover rounded-full pointer-events-none select-none"
         />
       </span>
     </div>
@@ -229,7 +194,6 @@ interface AgentChatProps {
 
 export default function AgentChat({ embedded = false }: AgentChatProps) {
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<"chat" | "settings">("chat");
   const [activeAgentKey, setActiveAgentKey] = useState<string>("dev");
   const [inputText, setInputText] = useState<string>("");
   const [activeHistoryKey, setActiveHistoryKey] = useState<string>("h2");
@@ -242,17 +206,9 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
   type ChatMessage = { id: string; role: "user" | "assistant"; content: string };
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  /* 用户菜单 */
-  const [userMenuOpen, setUserMenuOpen] = useState<boolean>(false);
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
-
   /* Header：会话标题切换 popover */
   const [titlePopoverOpen, setTitlePopoverOpen] = useState<boolean>(false);
   const titleTriggerRef = useRef<HTMLDivElement | null>(null);
-
-  /* Header：会话更多菜单 */
-  const [sessionMenuOpen, setSessionMenuOpen] = useState<boolean>(false);
-  const sessionMenuRef = useRef<HTMLDivElement | null>(null);
 
   /* Header：全屏切换 */
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -279,13 +235,11 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
   const activeInstance =
     INSTANCE_LIST.find((i) => i.key === activeInstanceKey) ?? INSTANCE_LIST[0];
 
-  /* 点击外部关闭 popover（实例切换 + 用户菜单 + 会话标题 + 会话更多 + 编辑角色） */
+  /* 点击外部关闭 popover（实例切换 + 会话标题 + 编辑角色） */
   useEffect(() => {
     if (
       !instancePopoverOpen &&
-      !userMenuOpen &&
       !titlePopoverOpen &&
-      !sessionMenuOpen &&
       !roleEditOpen
     )
       return;
@@ -299,25 +253,11 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
         setInstancePopoverOpen(false);
       }
       if (
-        userMenuOpen &&
-        userMenuRef.current &&
-        !userMenuRef.current.contains(target)
-      ) {
-        setUserMenuOpen(false);
-      }
-      if (
         titlePopoverOpen &&
         titleTriggerRef.current &&
         !titleTriggerRef.current.contains(target)
       ) {
         setTitlePopoverOpen(false);
-      }
-      if (
-        sessionMenuOpen &&
-        sessionMenuRef.current &&
-        !sessionMenuRef.current.contains(target)
-      ) {
-        setSessionMenuOpen(false);
       }
       if (
         roleEditOpen &&
@@ -331,9 +271,7 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [
     instancePopoverOpen,
-    userMenuOpen,
     titlePopoverOpen,
-    sessionMenuOpen,
     roleEditOpen,
   ]);
 
@@ -393,22 +331,10 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
         className="w-[228px] flex-shrink-0 flex flex-col bg-white"
         style={{ borderRight: "1px solid #E5E7EB" }}
       >
-        {/* Header：logo + Beta，高 60 与右侧主面板 Header 对齐；底部 1px 分割线 */}
-        <div
-          className="flex items-center gap-2 flex-shrink-0"
-          style={{
-            height: 60,
-            padding: "0 24px",
-            borderBottom: "1px solid #E9ECF1",
-          }}
-        >
-          <HeaderLogo />
-        </div>
-
         {/* 实例信息：可点击切换；hover 显示 chevron；点击展开 popover */}
         <div
           ref={instanceTriggerRef}
-          className="relative flex flex-col gap-2 px-4 pt-3 pb-3"
+          className="relative flex flex-col gap-2 px-4 pt-4 pb-3"
         >
           <button
             type="button"
@@ -466,7 +392,7 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
               {INSTANCE_LIST.map((ins) => {
                 const isActive = ins.key === activeInstanceKey;
                 // Hermes 引擎不支持对话视图：在对话页禁用并显示 tooltip
-                const disabled = activeTab === "chat" && ins.engine === "Hermes";
+                const disabled = ins.engine === "Hermes";
                 return (
                   <div key={ins.key} className="relative group/item">
                     <button
@@ -541,50 +467,6 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
           )}
         </div>
 
-        {/* Segment Tab：wrapper 16 圆角 #F5F6F9 padding 4；激活 item 16 圆角 白底 + 阴影 */}
-        <div className="px-4 pt-3 pb-3">
-          <div
-            className="flex items-center"
-            style={{
-              background: "#F5F6F9",
-              borderRadius: 16,
-              padding: 4,
-              gap: 8,
-            }}
-          >
-            {(["chat", "settings"] as const).map((key) => {
-              const isActive = activeTab === key;
-              return (
-                <button
-                  key={key}
-                  onClick={() => {
-                    if (key === "settings") {
-                      // 跳转到 OpenClaw 详情/基础配置页（图 1）
-                      setLocation(`/openclaw/${activeInstanceKey}`);
-                      return;
-                    }
-                    setActiveTab(key);
-                  }}
-                  className="flex-1 flex items-center justify-center transition-colors"
-                  style={{
-                    padding: "2px 16px",
-                    borderRadius: 16, // Figma 激活 item 圆角
-                    background: isActive ? "#FFFFFF" : "transparent",
-                    boxShadow: isActive ? "0 1px 4px 0 rgba(0,0,0,0.05)" : undefined,
-                    fontSize: 12,
-                    lineHeight: "20px",
-                    fontWeight: isActive ? 500 : 400,
-                    color: isActive ? "rgba(0,0,0,0.9)" : "rgba(0,0,0,0.7)",
-                  }}
-                  // allow-shadow: Figma tea/shadow-xs，激活 Tab 阴影
-                >
-                  {key === "chat" ? "对话" : "设置"}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* 主滚动区 */}
         <div
           className="flex-1 overflow-y-auto"
@@ -638,7 +520,7 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
               aria-label={agentsExpanded ? "收起" : "展开更多"}
               title={agentsExpanded ? "收起" : "展开更多"}
             >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(0,0,0,0.04)] group-hover/more:bg-[rgba(0,0,0,0.08)] text-[#737373] group-hover/more:text-[#1447E6] transition-colors">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(0,0,0,0.04)] group-hover/more:bg-[rgba(0,0,0,0.08)] text-[#737373] group-hover/more:text-[#1447E6] transition-colors">
                 {agentsExpanded ? (
                   <ChevronUp className="h-4 w-4" />
                 ) : (
@@ -702,117 +584,30 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
           <div style={{ height: 24 }} />
         </div>
 
-        {/* Sidebar 底部：前往小程序 + 用户行 */}
+        {/* Sidebar 底部：详细配置 */}
         <div className="flex-shrink-0">
-          {/* 前往小程序按钮：196×36 圆角 8 padding 12 8 */}
-          <div className="px-3 pt-2 pb-2">
+          <div className="px-3 pt-2 pb-4">
             <button
-              className="group/mini w-full flex items-center justify-between bg-white hover:bg-[#F5F6F9] active:scale-[0.98] transition-all"
+              className="group/config w-full flex items-center justify-between bg-white hover:bg-[#F5F6F9] active:scale-[0.98] transition-all"
               style={{
                 height: 36,
                 borderRadius: 8,
                 padding: "0 12px",
               }}
+              onClick={() => setLocation(`/openclaw/${activeInstanceKey}`)}
             >
               <span
                 style={{
-                  fontSize: 12,
+                  fontSize: 14,
                   lineHeight: "20px",
                   fontWeight: 400,
                   color: "#000",
                 }}
               >
-                前往小程序
+                详细配置
               </span>
-              <ArrowRight className="h-4 w-4 text-[#737373] group-hover/mini:text-[#1447E6] group-hover/mini:translate-x-0.5 transition-all" />
+              <ArrowRight className="h-4 w-4 text-[#737373] group-hover/config:text-[#1447E6] group-hover/config:translate-x-0.5 transition-all" />
             </button>
-          </div>
-          {/* 用户行：top stroke 0.5px #E6E9EF，padding 12 8 20；可点击触发用户菜单 */}
-          <div ref={userMenuRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setUserMenuOpen((v) => !v)}
-              className="w-full flex items-center gap-2.5 hover:bg-[#F5F6F9] transition-colors"
-              style={{
-                borderTop: "0.5px solid #E6E9EF",
-                padding: "12px 12px 20px",
-              }}
-            >
-              <span
-                aria-hidden
-                className="flex h-7 w-7 items-center justify-center rounded-full text-white flex-shrink-0"
-                style={{
-                  background: "#000",
-                  fontSize: 14.22,
-                  lineHeight: "21.33px",
-                  fontFamily:
-                    "ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace",
-                  fontWeight: 500,
-                }}
-              >
-                J
-              </span>
-              <span
-                className="flex-1 text-left"
-                style={{
-                  fontSize: 14,
-                  lineHeight: "20px",
-                  color: "#0A0A0A",
-                }}
-              >
-                Jaco
-              </span>
-              <ChevronDown
-                className="h-4 w-4 flex-shrink-0"
-                style={{
-                  color: "rgba(0,0,0,0.4)",
-                  transform: userMenuOpen ? "rotate(180deg)" : undefined,
-                  transition: "transform 0.15s ease",
-                }}
-              />
-            </button>
-
-            {/* 用户菜单 */}
-            {userMenuOpen && (
-              <div
-                className="absolute z-30 bg-white"
-                style={{
-                  left: 8,
-                  right: 8,
-                  bottom: "calc(100% - 4px)",
-                  borderRadius: 12,
-                  border: "1px solid #E9ECF1",
-                  boxShadow:
-                    "0 8px 24px 0 rgba(0,0,0,0.08), 0 1px 4px 0 rgba(0,0,0,0.05)",
-                  padding: 4,
-                }}
-                // allow-shadow: 用户菜单浮层阴影
-              >
-                {[
-                  { key: "profile", label: "个人资料" },
-                  { key: "settings", label: "偏好设置" },
-                  { key: "logout", label: "退出登录" },
-                ].map((it) => (
-                  <button
-                    key={it.key}
-                    onClick={() => setUserMenuOpen(false)}
-                    className="w-full text-left transition-colors hover:bg-[#F5F6F9]"
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: 8,
-                      fontSize: 13,
-                      lineHeight: "20px",
-                      color:
-                        it.key === "logout"
-                          ? "rgba(229,62,62,0.9)"
-                          : "rgba(10,10,10,0.85)",
-                    }}
-                  >
-                    {it.label}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </aside>
@@ -995,9 +790,35 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
               )}
             </div>
           </div>
-          {/* 右侧三按钮：32×32 padding 10 */}
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* 新建会话 → 二次确认 */}
+          {/* 右侧操作区：切换角色 + 新建会话 + 全屏 */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {/* 切换角色按钮：Figma 圆角16 bg #F2F4F8 */}
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 hover:bg-[#E8EBF0] active:scale-[0.97] transition-all"
+              style={{
+                borderRadius: 16,
+                background: "#F2F4F8",
+                padding: "5px 16px",
+              }}
+            >
+              <img
+                src={activeAgent.avatar}
+                alt=""
+                className="h-4 w-4 rounded-full object-cover pointer-events-none select-none"
+              />
+              <span
+                style={{
+                  fontSize: 14,
+                  lineHeight: "20px",
+                  color: "rgba(10,10,10,0.8)",
+                }}
+              >
+                切换角色
+              </span>
+            </button>
+
+            {/* 新建会话 */}
             <button
               onClick={() => setShowNewChatConfirm(true)}
               aria-label="新建会话"
@@ -1007,72 +828,6 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
             >
               <MessageSquarePlus className="h-5 w-5" />
             </button>
-
-            {/* 更多 → 下拉菜单 */}
-            <div ref={sessionMenuRef} className="relative">
-              <button
-                onClick={() => setSessionMenuOpen((v) => !v)}
-                aria-label="更多"
-                title="更多"
-                className="flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F6F9] active:scale-90 transition-all rounded-full"
-                style={{
-                  width: 32,
-                  height: 32,
-                  background: sessionMenuOpen ? "#F5F6F9" : undefined,
-                  color: sessionMenuOpen ? "#0A0A0A" : undefined,
-                }}
-              >
-                <MoreHorizontal className="h-5 w-5" />
-              </button>
-
-              {sessionMenuOpen && (
-                <div
-                  className="absolute right-0 z-30 bg-white"
-                  style={{
-                    top: "calc(100% + 6px)",
-                    width: 180,
-                    borderRadius: 12,
-                    border: "1px solid #E9ECF1",
-                    boxShadow:
-                      "0 8px 24px 0 rgba(0,0,0,0.08), 0 1px 4px 0 rgba(0,0,0,0.05)",
-                    padding: 4,
-                  }}
-                  // allow-shadow: 会话更多菜单
-                >
-                  {[
-                    { key: "rename", label: "重命名", Icon: Edit3 },
-                    { key: "share", label: "分享", Icon: Share2 },
-                    { key: "archive", label: "归档", Icon: Archive },
-                    { key: "delete", label: "删除会话", Icon: Trash2, danger: true },
-                  ].map((it) => (
-                    <button
-                      key={it.key}
-                      onClick={() => setSessionMenuOpen(false)}
-                      className="w-full flex items-center gap-2 text-left transition-colors hover:bg-[#F5F6F9]"
-                      style={{
-                        padding: "8px 12px",
-                        borderRadius: 8,
-                        fontSize: 13,
-                        lineHeight: "20px",
-                        color: it.danger
-                          ? "rgba(229,62,62,0.9)"
-                          : "rgba(10,10,10,0.85)",
-                      }}
-                    >
-                      <it.Icon
-                        className="h-4 w-4"
-                        style={{
-                          color: it.danger
-                            ? "rgba(229,62,62,0.85)"
-                            : "rgba(10,10,10,0.55)",
-                        }}
-                      />
-                      {it.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* 全屏切换 */}
             <button
@@ -1293,6 +1048,31 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
                     }}
                   >
                     指令库
+                  </span>
+                </button>
+                {/* 云桌面 pill：样式同指令库 */}
+                <button
+                  type="button"
+                  className="inline-flex items-center hover:border-[#1447E6]/40 active:scale-[0.97] transition-all"
+                  style={{
+                    borderRadius: 20,
+                    border: "1px solid #E9ECF1",
+                    padding: "6px 12px",
+                    gap: 4,
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "rgba(0,0,0,0.7)" }}>
+                    <rect x="2" y="3" width="12" height="8" rx="1.5" />
+                    <path d="M5 14h6M8 11v3" />
+                  </svg>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      lineHeight: "20px",
+                      color: "rgba(0,0,0,0.9)",
+                    }}
+                  >
+                    云桌面
                   </span>
                 </button>
               </div>

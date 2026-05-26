@@ -26,6 +26,7 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import { TenantCard } from "@/components/ui/Surface";
+import { TenantSegmentGroup, TenantSegmentOption } from "@/components/ui/segment";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -293,15 +294,14 @@ export default function ModelQuota() {
   return (
     <TenantLayout>
       <TooltipProvider>
-        {/* SKILL §7.4 用户端通用骨架 */}
+        {/* SKILL §7.4 用户端通用骨架 — 统一 120px 左右内边距 */}
         <div className="min-w-[1200px]">
-          <div className="max-w-[1920px] mx-auto flex items-stretch page-enter">
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
-            <div className="flex-1 min-w-0 relative min-h-[calc(100vh-64px)] pb-[75px]">
-          {/* Hero 段 — 112px / 渐变标题 */}
+          <div className="max-w-[1920px] mx-auto page-enter">
+            <div className="relative min-h-[calc(100vh-64px)] pb-[75px]" style={{ paddingLeft: 120, paddingRight: 120 }}>
+          {/* Hero 段 — 112px / 标题居中对齐（对齐「我的 Agent」） */}
           <div className="relative h-[112px]">
-            <div className="h-[112px] px-[42px] flex flex-col justify-center gap-2 overflow-hidden">
-              <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 w-fit bg-gradient-to-r from-[#0A0A0A] to-[#1447E6] bg-clip-text text-transparent">
+            <div className="h-[112px] flex flex-col justify-center gap-2 overflow-hidden">
+              <h1 className="font-sans font-medium text-[26px] leading-[35.56px] tracking-[-0.0427em] m-0 text-[#0A0A0A]">
                 模型额度
               </h1>
               <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ export default function ModelQuota() {
           </div>
 
           {/* 内容区 */}
-          <div className="px-[42px] py-6">
+          <div>
 
           {/* Filter Bar */}
           <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
@@ -360,35 +360,21 @@ export default function ModelQuota() {
 
             {/* Right: 日期模式 + 日期 + 刷新 */}
             <div className="flex items-center gap-2 ml-auto flex-wrap">
-              {/* Mode Toggle（§8.6 Segmented Control，0522 胶囊版） */}
-              <div className="flex items-center bg-muted rounded-full p-1 gap-1 h-9">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              {/* Mode Toggle（统一 segment 样式） */}
+              <TenantSegmentGroup>
+                <TenantSegmentOption
+                  active={dateMode === "single"}
                   onClick={() => { setDateMode("single"); setSummaryPage(1); setDetailPage(1); }}
-                  className={cn(
-                    "px-3 h-7 text-sm rounded-full",
-                    dateMode === "single"
-                      ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)] hover:bg-white"
-                      : "text-muted-foreground hover:text-foreground hover:bg-transparent"
-                  )}
                 >
                   单日
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                </TenantSegmentOption>
+                <TenantSegmentOption
+                  active={dateMode === "range"}
                   onClick={() => { setDateMode("range"); setSummaryPage(1); setDetailPage(1); }}
-                  className={cn(
-                    "px-3 h-7 text-sm rounded-full",
-                    dateMode === "range"
-                      ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)] hover:bg-white"
-                      : "text-muted-foreground hover:text-foreground hover:bg-transparent"
-                  )}
                 >
                   时间段
-                </Button>
-              </div>
+                </TenantSegmentOption>
+              </TenantSegmentGroup>
 
               {/* Date Input(s) */}
               {dateMode === "single" ? (
@@ -423,12 +409,11 @@ export default function ModelQuota() {
               {/* Refresh */}
               <Button
                 variant="tenant-outline"
-                size="claw"
+                size="icon"
                 onClick={handleRefresh}
-                className="text-xs"
+                className="w-9 h-9 !rounded-full"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                刷新
+                <RefreshCw className="w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -506,10 +491,10 @@ export default function ModelQuota() {
               <TableHeader>
                 <TableRow>
                   <TableHead>模型名称</TableHead>
-                  <TableHead className="text-right">总请求数</TableHead>
-                  <TableHead className="text-right">输入 Tokens</TableHead>
-                  <TableHead className="text-right">输出 Tokens</TableHead>
-                  <TableHead className="text-right">总 Tokens</TableHead>
+                  <TableHead className="text-right w-32">总请求数</TableHead>
+                  <TableHead className="text-right w-32">输入 Tokens</TableHead>
+                  <TableHead className="text-right w-32">输出 Tokens</TableHead>
+                  <TableHead className="text-right w-32">总 Tokens</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -583,15 +568,14 @@ export default function ModelQuota() {
             </div>
           </TenantCard>
 
-          </div>{/* end 内容区 px-[42px] py-6 */}
+          </div>{/* end 内容区 py-6 */}
 
           {/* 底部提示语 */}
           <p className="absolute bottom-7 left-0 right-0 text-xs text-gray-400 text-center">
             额度由企业管理员统一配置，如需调整请联系管理员
           </p>
-            </div>{/* end flex-1 min-w-0 relative */}
-            <div aria-hidden className="shrink-0 w-20 self-stretch" />
-          </div>{/* end max-w-[1920px] flex */}
+            </div>{/* end padding wrapper */}
+          </div>{/* end max-w-[1920px] */}
         </div>{/* end min-w-[1200px] */}
       </TooltipProvider>
     </TenantLayout>

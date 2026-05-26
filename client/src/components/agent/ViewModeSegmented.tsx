@@ -1,9 +1,15 @@
 /**
- * ViewModeSegmented - 管理视图 / 对话视图分段切换（v2 / 0522 胶囊版）
- * 对齐 Figma node 358:2376「切换」+ 0522 §8.6 Segmented Control：
- *   - 容器 bg-muted (#F5F5F5) + rounded-full
- *   - 选中态白底 + var(--shadow-segment)
- *   - 每段 padding 4px 12px，gap 4px，含图标 + 文本
+ * ViewModeSegmented - 管理视图 / 对话视图分段切换（v3 / [Figma 1116-6220]）
+ *
+ * 设计来源：Figma 节点 1116:6220「切换」
+ * 视觉规范：
+ *   - 容器：高 31px、bg rgba(228,232,241,0.4)、圆角 40px
+ *   - Active Tab（等高容器 31px）：bg #FFFFFF、border 1px #CDD4DC、
+ *     shadow 0px 1px 4px rgba(0,0,0,0.05)、圆角 40px、padding 8px 12px、gap 8px
+ *   - Normal Tab：padding 8px 12px、gap 8px、无背景
+ *   - 文字：14px / 22px / 400（两态均 400）
+ *   - Active 色 #020617、Normal 色 #334155
+ *   - 图标：16×16
  */
 import { LayoutGrid, MessageSquare } from "lucide-react";
 
@@ -22,7 +28,8 @@ const ITEMS: { key: ViewMode; label: string; Icon: typeof LayoutGrid }[] = [
 export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) => {
   return (
     <div
-      className="inline-flex items-center gap-1 p-1 rounded-full bg-muted"
+      className="inline-flex items-center h-[31px] rounded-[40px]"
+      style={{ background: "rgba(228, 232, 241, 0.4)" }}
       role="tablist"
       aria-label="视图切换"
     >
@@ -34,11 +41,12 @@ export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) =
             role="tab"
             aria-selected={active}
             onClick={() => onChange(key)}
-            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-all duration-150 ${
+            className={[
+              "inline-flex h-[31px] items-center gap-2 px-3 rounded-[40px] text-[14px] leading-[22px] tracking-[0.005em] font-normal whitespace-nowrap transition-all duration-150",
               active
-                ? "bg-white text-foreground shadow-[var(--shadow-segment)]"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+                ? "bg-white text-[#020617] outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+                : "text-[#334155] hover:text-[#020617]",
+            ].join(" ")}
           >
             <Icon className="w-4 h-4" />
             {label}

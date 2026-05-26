@@ -1,16 +1,15 @@
 /**
- * CenterTabs - 中央 segmented 切换控件（v3 / [Figma 1077-33929] 胶囊版）
+ * CenterTabs - 中央 segmented 切换控件（v5 / [Figma 1116-6184] 胶囊版）
  *
- * 设计来源：Figma 「公共组件/导航」中央 Frame（节点 1077:33933 / 历史 297:3468）
- * 视觉规范（[Figma 1077-33929] 修订）：
- *   - 容器：高 39px、padding 4px、bg rgba(219,221,228,0.32)（半透灰）、rounded-full（胶囊）
- *   - Tab：padding 7px 16px、字号 14、rounded-full（胶囊）
- *     - Active：bg #FFFFFF、color var(--foreground)、shadow var(--shadow-segment)、
- *               border 1px solid #CDD4DC（[Figma 1077-33929] 新增描边）
- *     - Normal：color var(--secondary-foreground)（= #334155）
- *
- * 阴影来源：index.css §5 阴影系统 L5 segment 滑块（var(--shadow-segment)），
- * 改 index.css 单变量即可批量影响全站所有 segmented 控件。
+ * 设计来源：Figma 「公共组件/导航」中央切换（节点 1116:6184）
+ * 视觉规范：
+ *   - 容器：高 36px、bg rgba(219,221,228,0.32)、圆角 80px、relative 定位
+ *   - 滑块（独立绝对定位 Rectangle）：与容器等高 36px、bg #FFFFFF、
+ *     border 1px solid #CDD4DC、shadow 0px 1px 4px rgba(0,0,0,0.05)、圆角 40px
+ *     → 根据 active tab 位置动态平移
+ *   - Tab 文字：padding 4px 12px、字号 14、行高 22px、z-10 浮于滑块之上
+ *     - Active：color #020617、font-weight 500
+ *     - Normal：color #334155、font-weight 400
  *
  * 用法：
  *   <CenterTabs
@@ -19,7 +18,7 @@
  *     onChange={(value) => navigate(value)}
  *   />
  */
-import React from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 
 export interface CenterTabItem<V extends string = string> {
   label: string;
@@ -44,34 +43,78 @@ export default function CenterTabs<V extends string = string>({
   isActive,
   className = "",
 }: CenterTabsProps<V>) {
+  const navRef = useRef<HTMLElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [sliderStyle, setSliderStyle] = useState<React.CSSProperties>({
+    opacity: 0,
+  });
+
   const checkActive = (item: CenterTabItem<V>) => {
     if (item.matches) return item.matches(activeValue);
     if (isActive) return isActive(item, activeValue);
     return item.value === activeValue;
   };
 
+  const activeIndex = items.findIndex((item) => checkActive(item));
+
+  const updateSlider = useCallback(() => {
+    const nav = navRef.current;
+    const activeTab = tabRefs.current[activeIndex];
+    if (!nav || !activeTab) {
+      setSliderStyle({ opacity: 0 });
+      return;
+    }
+    const navRect = nav.getBoundingClientRect();
+    const tabRect = activeTab.getBoundingClientRect();
+    setSliderStyle({
+      left: tabRect.left - navRect.left,
+      width: tabRect.width,
+      opacity: 1,
+    });
+  }, [activeIndex]);
+
+  useEffect(() => {
+    updateSlider();
+  }, [updateSlider]);
+
+  // 首次渲染后跳过动画
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <nav
-      // [Figma 1077-33929] 容器底色 rgba(219,221,228,0.32) — 半透灰，区别于 bg-muted 的 #F5F5F5
-      className={`flex items-center gap-1 p-1 rounded-full ${className}`}
+      ref={navRef}
+      className={`relative inline-flex items-center h-9 rounded-[80px] ${className}`}
       style={{ background: "rgba(219, 221, 228, 0.32)" }}
       role="tablist"
     >
+      {/* 滑块：绝对定位，与容器等高，描边用 outline 不内缩 */}
+      <div
+        className="absolute top-0 h-full rounded-[40px] bg-white outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+        style={{
+          ...sliderStyle,
+          transition: mounted ? "left 200ms ease, width 200ms ease" : "none",
+        }}
+      />
+      {/* Tab 文字层 */}
       {items.map((item, idx) => {
         const active = checkActive(item);
         return (
           <button
             key={item.value}
+            ref={(el) => { tabRefs.current[idx] = el; }}
             type="button"
             role="tab"
             aria-selected={active}
             onClick={() => onChange?.(item.value, idx)}
             className={[
-              "px-4 py-[7px] rounded-full text-[14px] leading-[22px] transition-all duration-150 whitespace-nowrap",
+              "relative z-10 px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] whitespace-nowrap transition-colors duration-150",
               active
-                // [Figma 1077-33929] Active 滑块新增 1px #CDD4DC 描边
-                ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)] border border-[#CDD4DC]"
-                : "text-secondary-foreground hover:text-foreground font-normal border border-transparent",
+                ? "text-[#020617] font-medium"
+                : "text-[#334155] hover:text-[#020617] font-normal",
             ].join(" ")}
           >
             {item.label}

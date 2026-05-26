@@ -677,16 +677,16 @@ export default function FileSpace({
                 <span>上传中 {uploadProgress}%</span>
               </div>
             )}
-            {/* 视图切换（§8.6 Segmented Control，0522 胶囊版） */}
-            <div className="inline-flex items-center gap-1 p-1 rounded-full bg-muted">
+            {/* 视图切换（统一 segment 样式） */}
+            <div className="inline-flex items-center h-8 rounded-[40px]" style={{ background: "rgba(228, 232, 241, 0.4)" }}>
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
                 aria-label="列表视图"
-                className={`flex items-center justify-center w-7 h-7 rounded-full transition-all duration-150 ${
+                className={`flex items-center justify-center w-7 h-7 rounded-[40px] transition-all duration-150 ${
                   viewMode === "list"
-                    ? "bg-white text-foreground shadow-[var(--shadow-segment)]"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-white text-[#020617] outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+                    : "text-[#334155] hover:text-[#020617]"
                 }`}
               >
                 <List className="w-4 h-4" />
@@ -695,10 +695,10 @@ export default function FileSpace({
                 type="button"
                 onClick={() => setViewMode("grid")}
                 aria-label="网格视图"
-                className={`flex items-center justify-center w-7 h-7 rounded-full transition-all duration-150 ${
+                className={`flex items-center justify-center w-7 h-7 rounded-[40px] transition-all duration-150 ${
                   viewMode === "grid"
-                    ? "bg-white text-foreground shadow-[var(--shadow-segment)]"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-white text-[#020617] outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+                    : "text-[#334155] hover:text-[#020617]"
                 }`}
               >
                 <Grid3X3 className="w-4 h-4" />

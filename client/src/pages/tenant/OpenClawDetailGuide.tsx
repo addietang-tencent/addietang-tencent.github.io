@@ -1154,25 +1154,20 @@ export default function OpenClawDetailGuide() {
             {/* 内容主体 —— flex-1 + flex-col 保证不满一屏时底部吸底，超出一屏时跟随 */}
             <div className="relative flex flex-col flex-1">
               {/* ======== Header ======== */}
-              <header className="relative flex items-end justify-between gap-6 py-6">
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-3">
-                  {/* 返回按钮 */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => navigate("/my-openclaw")}
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-[4px] hover:bg-[#f5f5f5] transition-colors"
-                          style={{ color: "#525252" }}
-                        >
-                          <ArrowLeft className="w-5 h-5" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>返回</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+              <header className="relative flex flex-col gap-4 py-6">
+                {/* 返回行：icon + 文字 */}
+                <button
+                  onClick={() => navigate("/my-openclaw")}
+                  className="inline-flex items-center gap-1.5 text-[#525252] hover:text-[#1447E6] transition-colors self-start"
+                  style={{ fontSize: 14, lineHeight: "20px" }}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>返回</span>
+                </button>
 
+                {/* 主信息行：头像顶对齐标题 + 右侧按钮 */}
+                <div className="flex items-start justify-between gap-6">
+                <div className="flex items-start gap-3">
                   {/* 头像 */}
                   <AgentAvatar
                     roleName="设计师"
@@ -1261,10 +1256,9 @@ export default function OpenClawDetailGuide() {
                     </div>
                   </div>
                 </div>
-                </div>
 
                 {/* 右：操作按钮 */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {allowSelfUpgrade ? (
                     <Button
                       variant="tenant-outline"
@@ -1331,12 +1325,14 @@ export default function OpenClawDetailGuide() {
                     </svg>
                   </Button>
                 </div>
+                </div>
               </header>
 
-              {/* ======== 横向 Segmented Tab（§8.6 规范，0522 胶囊版）======== */}
+              {/* ======== 横向 Segment Tab（灰底容器 + 白色选中滑块）======== */}
               <div className="relative py-4">
                 <div
-                  className="inline-flex items-center gap-1 p-1 rounded-full bg-muted"
+                  className="inline-flex items-center h-9 rounded-[40px]"
+                  style={{ background: "rgba(228, 232, 241, 0.4)" }}
                   role="tablist"
                   aria-label="详情页 Tab 切换"
                 >
@@ -1348,11 +1344,12 @@ export default function OpenClawDetailGuide() {
                         role="tab"
                         aria-selected={active}
                         onClick={() => setActiveTab(t.id)}
-                        className={`px-3 py-1.5 text-sm rounded-full transition-all duration-150 ${
+                        className={[
+                          "inline-flex h-[31px] items-center px-3 rounded-[40px] text-[14px] leading-[22px] tracking-[0.005em] font-normal whitespace-nowrap transition-all duration-150",
                           active
-                            ? "bg-white text-foreground font-medium shadow-[var(--shadow-segment)]"
-                            : "text-muted-foreground hover:text-foreground font-normal"
-                        }`}
+                            ? "bg-white text-[#020617] outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+                            : "text-[#334155] hover:text-[#020617]",
+                        ].join(" ")}
                       >
                         {t.label}
                       </button>
@@ -2129,7 +2126,7 @@ export default function OpenClawDetailGuide() {
                     </ul>
                     <div className="pt-4" style={{ borderTop: "1px solid #E5E5E5" }}>
                       {quickFixState === "idle" && (
-                        <Button variant="tenant-primary" size="claw-sm" onClick={runQuickFixMock}>
+                        <Button variant="tenant-ghost" size="claw-sm" onClick={runQuickFixMock}>
                           一键修复
                         </Button>
                       )}

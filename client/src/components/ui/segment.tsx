@@ -168,12 +168,12 @@ function SegmentOption({
 }
 
 /* ============================================================== */
-/*  用户端｜TenantSegment 胶囊版（0523 §8.6 修订）                    */
+/*  用户端｜TenantSegment 胶囊版（0525 对齐 Figma 1077-33424）        */
 /*  与上方管理端组件接口完全一致，仅视觉差异：                          */
-/*    - 容器圆角 6px → rounded-full（胶囊）                          */
-/*    - 滑块圆角 4px → rounded-full                                 */
-/*    - 容器底色 #f3f3f4 → var(--muted)（与设计令牌系统对齐）          */
-/*    - 滑块阴影 写死 → var(--shadow-segment)                        */
+/*    - 容器：h-36px、圆角 80px、bg rgba(219,221,228,0.32)           */
+/*    - Tab：px-12 py-4、圆角 80px、14/22/500                       */
+/*    - Active：bg #FFF、border #CDD4DC、shadow 0 1px 4px 0.05     */
+/*    - Normal：color #334155、font-weight 400                      */
 /*  仅供 client/src/pages/tenant/** 使用，管理端禁用。               */
 /* ============================================================== */
 
@@ -198,9 +198,10 @@ function TenantSegmentList({
     <TabsPrimitive.List
       data-slot="tenant-segment-list"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-full p-[3px]",
+        "relative text-muted-foreground inline-flex h-9 w-fit items-center rounded-[80px] p-0",
         className
       )}
+      style={{ background: "rgba(219, 221, 228, 0.32)" }}
       {...props}
     />
   );
@@ -214,10 +215,10 @@ function TenantSegmentItem({
     <TabsPrimitive.Trigger
       data-slot="tenant-segment-item"
       className={cn(
-        "text-muted-foreground font-normal inline-flex h-[calc(100%-1px)] items-center justify-center rounded-full border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
-          "data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:font-semibold data-[state=active]:shadow-[var(--shadow-segment)] " +
-          "hover:text-foreground " +
-          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 focus-visible:outline-none " +
+        "relative z-10 text-[#334155] font-normal inline-flex h-full items-center justify-center rounded-[40px] px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] whitespace-nowrap transition-all " +
+          "data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-medium data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] " +
+          "hover:text-[#020617] " +
+          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 " +
           "disabled:pointer-events-none disabled:text-[#d3d6db]",
         className
       )}
@@ -248,9 +249,10 @@ function TenantSegmentGroup({
       data-slot="tenant-segment-group"
       role="tablist"
       className={cn(
-        "bg-muted text-muted-foreground inline-flex h-9 w-fit items-center justify-center rounded-full p-[3px]",
+        "relative text-muted-foreground inline-flex h-9 w-fit items-center rounded-[80px] p-0",
         className
       )}
+      style={{ background: "rgba(219, 221, 228, 0.32)" }}
       {...props}
     />
   );
@@ -272,12 +274,12 @@ function TenantSegmentOption({
       aria-selected={active}
       data-state={active ? "active" : "inactive"}
       className={cn(
-        "inline-flex h-[calc(100%-1px)] items-center justify-center rounded-full border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
-          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 focus-visible:outline-none " +
+        "relative z-10 inline-flex h-full items-center justify-center gap-2 rounded-[40px] px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] whitespace-nowrap transition-all " +
+          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 " +
           "disabled:pointer-events-none disabled:text-[#d3d6db]",
         active
-          ? "bg-white text-foreground font-semibold shadow-[var(--shadow-segment)]"
-          : "text-muted-foreground font-normal hover:text-foreground",
+          ? "bg-white text-[#020617] font-medium outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+          : "text-[#334155] font-normal hover:text-[#020617]",
         className
       )}
       {...props}

@@ -50,10 +50,10 @@ description: >
 
 | `tone` | Tailwind token | 色值 | 用途 |
 |--------|----------------|------|------|
-| `primary` | `text-gray-900` | `#0A0A0A` | 标题、卡片标题、主内容 |
-| `emphasis` | `text-gray-950` | `#020617` | 强调文字、按钮文字、关键字段 |
-| `body` | `text-gray-900` | `#0A0A0A` | 正文主内容、表格内容（与卡片标题一致） |
-| `secondary` | `text-gray-700` | `#334155` | 同字号描述性正文、补充说明、次级信息 |
+| `primary` | `text-gray-900` | `#171717` | 标题、卡片标题、主内容 |
+| `emphasis` | `text-gray-950` | `#0A0A0A` | 强调文字、按钮文字、关键字段 |
+| `body` | `text-gray-900` | `#171717` | 正文主内容、表格内容 |
+| `secondary` | `text-gray-700` | `#404040` | 同字号描述性正文、补充说明、次级信息 |
 | `muted` | `text-gray-500` | `#737373` | 时间、描述、辅助说明、表头 |
 | `weak` | `text-gray-400` | `#A3A3A3` | 占位、空状态、极弱提示 |
 | `brand` | `text-[var(--brand-blue)]` | `#1447E6` | 链接、活跃态、步骤标识、英文 Badge |
@@ -73,9 +73,10 @@ description: >
 | `BodyText` | `p` | 14px / Regular / 1.5 | `body` | 普通正文、表格内容；描述行用 `tone="secondary"` |
 | `BodyMedium` | `span` | 14px / Medium / 1.5 | `emphasis` | 按钮、Tab、Label、列表主字段 |
 | `CompactText` | `span` | 13px / Regular / 1.5 | `secondary` | 紧凑列表、空间不足的轻量描述 |
+| `MiniBodyText` | `span` | 12px / Regular / 1.5 | `body` | 紧凑表格正文、高密度列表主内容 |
 | `MetaText` | `span` | 12px / Regular / 1.5 | `muted` | 时间、ID、Tooltip、辅助说明、空状态 |
 | `MetaMedium` | `span` | 12px / Medium / 1.5 | `muted` | 表头、次级强调 |
-| `SmallBodyText` | `span` | 12px / Medium / 12px / tracking 0.18px | `emphasis` | `StatusTag` 内文字、小型信息标签、紧凑表格内轻量正文 |
+| `SmallBodyText` | `span` | 12px / Medium / 12px / tracking 0.18px | `emphasis` | `StatusTag` 内文字、小型信息标签 |
 | `TinyText` | `span` | 10px / Semibold / Open Sans | `brand` | `New` / `Beta` / 小角标 |
 | `StatNumber` | `span` | 24px / Bold / DIN | `emphasis` | 统计数字、额度数字 |
 | `InlineNumber` | `span` | 14px / DIN / tabular | `body` | 表格内 Token 数、请求数、百分比 |
@@ -118,8 +119,8 @@ import {
 | Button / Tab / Segment item | `BodyMedium` 对应规格：14px / Medium / `emphasis`；组件内部可直接写等效 class，但不得偏离 Typography token |
 | Dialog / Sheet 标题 | `PanelTitle` |
 | Card 标题 | `CardTitle` |
-| 表格表头 | `MetaMedium` |
-| 表格内容 | `BodyText` 或 `InlineNumber`（默认 `body`）；同字号描述行用 `BodyText tone="secondary"` |
+| 表格表头 | 标准版用 `BodyMedium`（14px / Medium / `emphasis`）；紧凑版用 `MetaMedium` |
+| 表格内容 | 标准版用 `BodyText` 或 `InlineNumber`（默认 `body`）；紧凑版用 `MiniBodyText`；同字号描述行用对应组件的 `tone="secondary"` |
 | 空状态说明 | `MetaText tone="weak"` |
 | Badge / New / Beta | `TinyText` 或 `MetaMedium`，英文 Badge 优先 `TinyText` |
 | StatusTag / 小型信息标签 | `SmallBodyText` 对应规格：12px / Medium / `emphasis` / tracking 0.18px |
@@ -218,7 +219,7 @@ import {
 允许特殊场景例外，但必须满足以下条件：
 
 1. **说明原因**：现有 Typography 层级为什么不适合该场景。
-2. **不破坏色阶**：仍应使用 `#0A0A0A / #020617 / #334155 / #737373 / #A3A3A3 / #1447E6` 等既有 token。
+2. **不破坏色阶**：仍应使用 `#0A0A0A / #171717 / #404040 / #737373 / #A3A3A3 / #1447E6` 等既有 token。
 3. **不新增无说明的字体族**：禁止新增 inline `fontFamily`；数字 / 代码 / 英文 Badge 优先使用 `font-din` / `font-mono` / `font-en`。
 4. **不扩大豁免范围**：特殊内容区只豁免内容正文，不豁免页面标题、模块标题、Meta、数字、ID / Token / 路径。
 5. **形成通用模式时反向沉淀**：如果某个例外被多个页面复用，应补充到 `Typography.tsx` 与本规范，而不是长期散落在页面里。
@@ -232,9 +233,9 @@ import {
 | 色值 | 变量/用途 |
 |------|----------|
 | `#355EF1` | 品牌蓝（`--color-blue-500`），hover/focus/选中态统一用色 |
-| `#020617` | 主文字色（gray-950） |
-| `#0A0A0A` | 标题色（gray-900） |
-| `#334155` | 次级文字（gray-700） |
+| `#0A0A0A` | 强调文字（gray-950） |
+| `#171717` | 主文字 / 正文（gray-900） |
+| `#404040` | 次级文字（gray-700） |
 | `#737373` | 辅助文字（gray-500） |
 | `#b0b6c3` | placeholder 色 |
 | `#d3d6db` | 默认描边色 |
@@ -459,7 +460,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 |------|----------|----------|
 | Input | `client/src/components/ui/input.tsx`（见第 5 节） | 默认状态**禁止加底色**（无 `bg-gray-*` / `bg-[#FAFAFA]` 等），统一 `border-[#d3d6db]` + 白底 |
 | Select / 下拉 | `client/src/components/ui/select.tsx`（见第 6 节） | Trigger 与 Input 完全一致，默认状态**禁止加底色**；`Content` 面板沿用统一阴影 |
-| Table / 表格 | 见第 11.1 节 Table 表格组件规范 | 表头、行高、分割线、空状态等必须沿用全局 Table 规范，禁止在弹窗内自定义新表格样式 |
+| Table / 表格 | 见第 11.6 节 Table 表格组件规范 | 表头、行高、分割线、空状态等必须沿用全局 Table 规范，禁止在弹窗内自定义新表格样式 |
 
 **强制条款**：
 
@@ -601,6 +602,87 @@ import { SmallIconStateButton } from "@/components/ui/button";
 | 页面标题下方一级导航 | ✅ 使用本组件 |
 | 弹窗/卡片内切换 | ❌ 用 §11 Tab 切换卡（黑底白字按钮式） |
 | 表格工具栏筛选 | ❌ 用 §11 Tab 切换卡 |
+
+---
+
+## 11.6 Table 表格组件规范
+
+**文件**: `client/src/components/ui/table.tsx`  
+**展示台**: `client/src/pages/DesignSystemComponents.tsx` 的 Table 示例
+
+### 设计原则
+
+1. 表格统一使用 `@/components/ui/table` 的 `Table / TableHeader / TableBody / TableRow / TableHead / TableCell / TableActionCell`，禁止在业务页面用原生 `<table>` + 临时 class 拼装。
+2. 表格支持两种信息密度：标准版与紧凑版。`density="compact"` 只调整文字规格、纵向高度与纵向 padding；**左右两端内容到表格边框的安全距离固定为 16px**，圆角、边框、分割线、hover、selected 状态必须与标准版完全一致。
+3. 圆角由表格外壳容器统一控制，保持 `rounded-[4px]` / `--radius` 风格；表格组件内部不因密度变化新增圆角。
+4. 边框与分割线统一使用 `border-gray-200` / `#E5E5E5`，紧凑版不得单独换色或减弱。
+5. 表格正文颜色统一使用 `text-gray-900` / `#171717`，对齐 Typography 的 `body` 正文 token；关键字段可使用 `text-gray-950` / `#0A0A0A`。
+
+### 密度规格
+
+| 属性 | 标准版（默认） | 紧凑版 `density="compact"` |
+|------|----------------|------------------------------|
+| 表格字号 | `text-sm`（14px） | `text-xs`（12px） |
+| 表头高度 | `h-12`（48px） | `h-10`（40px，参考 shadcn Data Table） |
+| 表头文字 | `BodyMedium` 对应：14px / Medium / `text-gray-900` | `MetaMedium` 对应：12px / Medium / `text-gray-500` |
+| 表头 padding | `px-4`（左右 16px） | `px-4`（左右 16px） |
+| 正文单元格 | `px-4 py-3 text-sm` | `px-4 py-[9px] text-xs` |
+| 正文颜色 | `text-gray-900` / `#171717` | 同标准版 |
+| 纯文本行高 | 约 45px | 约 36px |
+| 行分割线 | `border-gray-200` | 同标准版 |
+| hover / selected | 全局 TableRow 状态 | 同标准版 |
+
+### 使用方式
+
+```tsx
+import {
+  Table,
+  TableActionCell,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+// 标准版（默认）
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead>组件</TableHead>
+      <TableHead>分类</TableHead>
+      <TableHead className="text-right">数量</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>Button</TableCell>
+      <TableCell>操作组件</TableCell>
+      <TableCell className="text-right tabular-nums">42</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+
+// 紧凑版：只改变密度，不改变圆角 / 边框 / 分割线 / 状态色
+<Table density="compact">
+  {/* 同样的 TableHeader / TableBody 结构 */}
+</Table>
+```
+
+### 外壳写法
+
+```tsx
+<div className="overflow-hidden rounded-[4px] border border-gray-200 bg-white">
+  <Table density="compact">...</Table>
+</div>
+```
+
+### 禁止事项
+
+- 禁止为紧凑版单独设置新的圆角、边框色、分割线色、hover 色或 selected 色。
+- 禁止把紧凑版首尾列横向 padding 缩到 `px-2`、`px-3` 等小于 16px 的值；标准版与紧凑版的左右贴边距离都必须保持 16px。
+- 禁止在业务页面通过覆盖 `TableHead` / `TableCell` 的 padding 来临时制造第三种密度；如确有新密度需求，必须先扩展全局 Table 规范。
+- 禁止将紧凑版正文改为 `text-gray-500` / `#737373`，紧凑正文仍是正文主内容，必须保持 `#0A0A0A`。
 
 ---
 
@@ -894,7 +976,7 @@ import { Badge } from "@/components/ui/badge";
 | header / border | `border-b border-[#f0f0f0]` |
 | head cell / height | `54px` |
 | head cell / padding | `px-4` |
-| head cell / font | `text-[14px] font-semibold text-[#09090b]` |
+| head cell / font | 标准版：`BodyMedium` 对应 `text-sm font-medium text-gray-900`；紧凑版：`MetaMedium` 对应 `text-xs font-medium text-gray-500` |
 | body row / border | `border-b border-[#f0f0f0]` |
 | body row / hover | `hover:bg-[#fafafa]` |
 | body row / selected | `bg-[rgba(53,94,241,0.06)]` |
@@ -980,10 +1062,11 @@ import {
 
 **表头规则（强制，参照 /admin/audit-log 页面视觉）：**
 - `TableHeader` 强制灰色背景 `bg-[#fafafa]`，不允许覆盖
-- `TableHead` 强制样式：`text-[#09090b] font-semibold text-[14px] h-[54px] px-4 text-left`
+- `TableHead` 强制样式：标准版对齐 `BodyMedium`（`text-sm font-medium text-gray-900 h-12 px-4 text-left`）；紧凑版对齐 `MetaMedium`（`text-xs font-medium text-gray-500 h-10 px-4 text-left`）
 - `TableCell` 强制样式：`text-[#09090b] text-[14px] px-4 py-3`
-- **表头与单元格 padding 必须一致**：均为 `px-4`（16px），确保列对齐；禁止表头用 `px-4` 而单元格用 `px-6` 等不一致写法
+- **表头与单元格横向 padding 必须一致**：标准版和紧凑版都使用 `px-4`（16px），确保左右内容到边框的距离一致；禁止紧凑版改成 `px-2` / `px-3`
 - **每列标题和内容必须左对齐**，禁止使用 `text-center` 或 `text-right`（数字列除外）
+- **标准表格分页器推荐使用 Pagination 默认尺寸**：页面级表格底部分页默认沿用 `size="default"`，如无空间压力不建议切到 `small`
 - 禁止通过 className 覆盖表头的字体颜色、字号、字重、对齐方式
 - className 仅用于布局属性：宽度 `w-[xx%]`、sticky 定位
 - 禁止在 TableHead 上使用 `text-xs`、`text-gray-500`、`uppercase`、`tracking-wide` 等非标准样式
@@ -995,6 +1078,7 @@ import {
 - 禁止自定义行 hover 效果（如 `hover:bg-gray-50/50`），使用 TableRow 内置 `hover:bg-[#fafafa]`
 - 禁止在操作列使用非 link-dark 按钮或自定义 `<button>`
 - 分页器必须放在 Table 外部、容器内部，用 `<div className="px-4 py-3 border-t border-[#f0f0f0]">` 包裹
+- 不建议把页面级标准表格分页器切到 `size="small"`；`small` 更适合 Dialog 内空间受限场景
 
 ---
 
@@ -1429,7 +1513,11 @@ import { Pagination } from "@/components/ui/pagination";
 | `size="default"`（默认） | **32px** (h-8) | 页面级表格底部分页，所有常规列表 |
 | `size="small"` | **24px** (h-6) | **仅限**弹窗（Dialog）内的表格分页 |
 
-> ⚠️ 页面表格一律使用 32px 默认尺寸，不允许使用 small。只有 Dialog 内空间受限时才用 24px。
+> 页面级表格通常使用 32px 默认尺寸；Dialog 内空间受限时优先考虑 24px small。
+
+**表格场景补充规则：**
+- 标准表格底部分页默认沿用 `size="default"`。
+- Dialog / Drawer 等空间受限浮层内的表格分页，可按空间情况使用 `size="small"`。
 
 **禁止事项：**
 - 禁止在页面中自行实现分页按钮逻辑（内联 prev/next button、Array.from 页码循环等）

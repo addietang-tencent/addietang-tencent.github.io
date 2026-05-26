@@ -54,6 +54,10 @@ import { cn } from "@/lib/utils";
  *
  * 4. 迷你尺寸：
  *   <Pagination total={50} size="small" />
+ *
+ * 5. 表格场景约束：
+ *   - 页面级标准表格底部分页通常使用默认尺寸 `size="default"`
+ *   - `size="small"` 更适合 Dialog / Drawer 等空间受限浮层中的表格分页
  */
 
 /* ─── Types ─────────────────────────────────────────────────────────── */

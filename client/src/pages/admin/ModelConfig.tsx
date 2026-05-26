@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
+import { AllUsersTag } from "@/components/ui/all-users-tag";
 import {
   Plus, Trash2, Info, Pencil,
   Check, X, ChevronRight, ChevronDown, Minus,
@@ -345,17 +346,13 @@ function ScopePopover({
   const renderBadges = () => {
     if (model.visibilityScope === "all") {
       return (
-        <StatusTag mode="fill" variant="blue">
-          全部用户
-        </StatusTag>
+        <AllUsersTag />
       );
     }
 
     if (selectedGroupPaths.length === 0) {
       return (
-        <StatusTag mode="fill" variant="blue">
-          全部用户
-        </StatusTag>
+        <AllUsersTag />
       );
     }
 
@@ -729,7 +726,7 @@ export default function ModelConfig() {
         </div>
 
         {/* Part 1: Model List */}
-        <div className="space-y-16">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-[#0A0A0A]">模型列表</h2>
             <Button size="sm" onClick={openAddDialog}>

@@ -12,6 +12,7 @@ import { useState, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StatusTag } from "@/components/ui/status-tag";
+import { AllUsersTag } from "@/components/ui/all-users-tag";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -202,9 +203,7 @@ export function ScopeEditPopover({
 
     if (scope === "all") {
       return (
-        <StatusTag variant="gray">
-          全部用户
-        </StatusTag>
+        <AllUsersTag />
       );
     }
 

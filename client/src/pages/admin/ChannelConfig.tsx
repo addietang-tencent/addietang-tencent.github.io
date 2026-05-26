@@ -667,7 +667,7 @@ export default function ChannelConfig() {
             <span className="sr-only">关闭</span>
           </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">确认删除</AlertDialogTitle>
+            <AlertDialogTitle className="text-[#0A0A0A]">删除通道</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <p className="text-sm text-[#0A0A0A]">
                 删除后，该自定义通道将从用户端通道列表中移除，已接入该通道的 Agent 配置不受影响。

@@ -16,16 +16,18 @@
  *   - 创建 native（自研）类型必须勾选确认"允许用户进入终端"
  */
 import { useMemo, useRef, useState } from "react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle, AlertInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
+import { RadioCard } from "@/components/ui/radio-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -63,7 +65,6 @@ import {
   ChevronDown,
   ChevronRight,
   Pencil,
-  Minus,
   Users,
   Bell,
 } from "lucide-react";
@@ -91,7 +92,7 @@ import {
 import { pruneOnVersionChange, listActivePushes } from "@/lib/upgradePushStore";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
-import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
+import { ScopeEditPopover } from "@/components/ScopeEditPopover";
 
 // ─── 系统预设 Agent 类型 ────────────────────────────────────────────────
 interface AgentTypeConfig {
@@ -1095,6 +1096,25 @@ export default function ImageManagement() {
           <div className="mb-4">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
+              {(() => {
+                const total = pushable.filter(p => !p.allUpToDate).length;
+                const pushed = listActivePushes().length;
+                if (total === 0) return null;
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setShowAllRecordsDrawer(true)}
+                        className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-amber-200 bg-amber-50 text-[13px] text-amber-700 hover:bg-amber-100 transition-colors shrink-0"
+                      >
+                        <Bell className="w-3.5 h-3.5" />
+                        <span>当前有 {total} 个生效镜像有新版本，{pushed} 个正在提醒员工更新</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="text-xs">打开更新详情</TooltipContent>
+                  </Tooltip>
+                );
+              })()}
             </div>
             <p className="text-sm text-[#737373] mt-1">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
@@ -1110,51 +1130,6 @@ export default function ImageManagement() {
                 typeCount={views.length}
                 enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
               />
-              {(() => {
-                const hasActivePush = listActivePushes().length > 0;
-                const hasNewVersion = true;
-                if (!hasNewVersion && !hasActivePush) {
-                  return (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => setShowAllRecordsDrawer(true)}
-                          className="relative inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-[#E5E5E5] bg-white text-[13px] text-[#525252] hover:border-[#1447E6] hover:text-[#020617] transition-colors shrink-0"
-                        >
-                          <Bell className="w-3.5 h-3.5 text-[#737373]" />
-                          查看历史更新记录
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent className="text-xs">打开更新记录</TooltipContent>
-                    </Tooltip>
-                  );
-                }
-                return (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setShowAllRecordsDrawer(true)}
-                        className="relative inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-[#E5E5E5] bg-white text-[13px] text-[#525252] hover:border-[#1447E6] hover:text-[#020617] transition-colors shrink-0"
-                      >
-                        <Bell className="w-3.5 h-3.5 text-[#737373]" />
-                        {(() => {
-                          const total = pushable.filter(p => !p.allUpToDate).length;
-                          const pushed = listActivePushes().length;
-                          const pending = total - pushed;
-                          return <span>{pending > 0 ? pending : 0} 个待发布，{pushed} 个更新中</span>;
-                        })()}
-                        {(() => {
-                          const total = pushable.filter(p => !p.allUpToDate).length;
-                          const pushed = listActivePushes().length;
-                          const pending = total - pushed;
-                          return pending > 0 ? <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" /> : null;
-                        })()}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="text-xs">打开更新详情</TooltipContent>
-                  </Tooltip>
-                );
-              })()}
             </div>
             <div className="flex items-center gap-2">
             <Button
@@ -1166,7 +1141,7 @@ export default function ImageManagement() {
               全部更新记录
             </Button>
             <Button
-              variant="dialog-confirm"
+              variant="claw-primary"
               size="claw-sm"
               onClick={() => setShowCreateCustomDialog(true)}
               className="shrink-0"
@@ -1195,6 +1170,8 @@ export default function ImageManagement() {
             })}
             onSetDefaultType={handleSetDefaultType}
             onRemoveCustomType={handleRemoveType}
+            onPushUpgrade={(agentType) => openPushDialog(agentType)}
+            pushableByType={new Map(pushable.map(p => [p.agentType, { outdatedInstanceCount: p.outdatedInstanceCount, allUpToDate: p.allUpToDate }]))}
             onEnableImage={(imageId, agentType) => handleEnableImage(imageId, agentType)}
             onDisableImage={handleDisableImage}
             onSelectImage={(imageId, agentType) => handleEnableImage(imageId, agentType)}
@@ -1202,13 +1179,17 @@ export default function ImageManagement() {
             onDeleteImage={handleDeleteImage}
             onViewPublicHistory={openPublicHistoryByImage}
             onImportCustom={(agentType) => openImportFor(agentType)}
-            renderScope={(agentType) => (
-              <ImageScopePopover
-                scopeData={getTypeScope(agentType)}
-                groups={ALL_GROUPS}
-                onSave={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
-              />
-            )}
+            renderScope={(agentType) => {
+              const scopeData = getTypeScope(agentType);
+              return (
+                <ScopeEditPopover
+                  scope={scopeData.visibilityScope}
+                  selectedGroupIds={scopeData.visibilityGroupIds}
+                  groups={ALL_GROUPS}
+                  onConfirm={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
+                />
+              );
+            }}
           />
           </div>
         </div>
@@ -1480,8 +1461,8 @@ export default function ImageManagement() {
       {/* ─── 添加自定义 Agent 类型弹窗 ─── */}
       <Dialog open={showCreateCustomDialog} onOpenChange={(o) => { if (!o) resetCreateDialog(); setShowCreateCustomDialog(o); }}>
         <DialogContent
-          className="sm:max-w-md overflow-y-auto"
-          style={{ maxHeight: 'min(90vh, 780px)' }}
+          size="lg"
+          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
         >
           <DialogHeader>
             <DialogTitle>添加自定义 Agent 类型</DialogTitle>
@@ -1490,7 +1471,8 @@ export default function ImageManagement() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 py-2">
+          <DialogBody className="flex-1">
+          <div className="space-y-4">
             {/* 类型名称 */}
             <div>
               <Label className="text-xs">类型名称 <span className="text-red-400">*</span></Label>
@@ -1523,37 +1505,17 @@ export default function ImageManagement() {
                 {KERNEL_OPTIONS.map((opt) => {
                   const isSelected = newKernelBase === opt.value;
                   const isNative = opt.value === "native";
-                  const inputId = `kernel-opt-${opt.value}`;
                   return (
-                    <Label
+                    <RadioCard
                       key={opt.value}
-                      htmlFor={inputId}
-                      className="block cursor-pointer"
-                    >
-                      <Card
-                        className={cn(
-                          "flex-row items-start gap-2.5 rounded-[4px] border-2 p-3 py-3 gap-y-0 transition-colors",
-                          isSelected
-                            ? isNative
-                              ? "border-orange-400 bg-orange-50/60"
-                              : "border-[#1447E6] bg-[#1447E6]/5"
-                            : "border-[#E5E5E5] hover:border-[#1447E6]/40 bg-white",
-                        )}
-                      >
-                        <RadioGroupItem
-                          id={inputId}
-                          value={opt.value}
-                          className={cn(
-                            "mt-0.5",
-                            isSelected && isNative && "border-orange-500 data-[state=checked]:border-orange-500 [&_svg]:fill-orange-500 [&_svg]:text-orange-500",
-                          )}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[#0A0A0A] mb-0.5">{opt.title}</div>
-                          <p className="text-xs text-[#737373] leading-relaxed">{opt.description}</p>
-                        </div>
-                      </Card>
-                    </Label>
+                      id={`kernel-opt-${opt.value}`}
+                      value={opt.value}
+                      checked={isSelected}
+                      title={opt.title}
+                      description={opt.description}
+                      checkedClassName={isNative ? "border-orange-400 bg-orange-50/60" : undefined}
+                      radioCheckedClassName={isNative ? "border-orange-500 data-[state=checked]:border-orange-500 [&_svg]:fill-orange-500 [&_svg]:text-orange-500" : undefined}
+                    />
                   );
                 })}
               </RadioGroup>
@@ -1561,14 +1523,12 @@ export default function ImageManagement() {
 
             {/* 兼容内核：温馨提示 */}
             {newKernelBase && newKernelBase !== "native" && (
-              <div className="bg-[#1447E6]/5 border border-[#1447E6]/20 rounded-[4px] px-3 py-2.5 flex items-start gap-2">
-                <Check className="w-4 h-4 text-[#1447E6] shrink-0 mt-0.5" />
-                <div className="text-xs text-[#1447E6] leading-relaxed">
-                  将直接复用
-                  <strong className="mx-1">{kernelBaseLabel(newKernelBase)}</strong>
-                  的全部管控能力，无需额外配置。创建后可直接导入镜像使用
-                </div>
-              </div>
+              <Alert variant="info">
+                <AlertInfoIcon />
+                <AlertDescription>
+                  将直接复用 <strong>{kernelBaseLabel(newKernelBase)}</strong> 的全部管控能力，无需额外配置。创建后可直接导入镜像使用
+                </AlertDescription>
+              </Alert>
             )}
 
             {/* 自研（native）：风险提示 + 必勾选确认 */}
@@ -1595,14 +1555,14 @@ export default function ImageManagement() {
               </div>
             )}
           </div>
+          </DialogBody>
 
           <DialogFooter>
-            <Button variant="claw-outline" size="claw-sm" onClick={() => { resetCreateDialog(); setShowCreateCustomDialog(false); }}>
+            <Button variant="outline" onClick={() => { resetCreateDialog(); setShowCreateCustomDialog(false); }}>
               取消
             </Button>
             <Button
               variant="dialog-confirm"
-              size="claw-sm"
               onClick={handleCreateCustomType}
               disabled={!canCreateCustom}
             >

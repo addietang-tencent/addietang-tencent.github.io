@@ -79,43 +79,9 @@ import { PUBLIC_SKILLS, type PublicSkill } from "./SkillLibrary/publicSkillMockD
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from "./SkillLibrary/mockData";
 import type { SkillScope } from "./SkillLibrary/types";
 
-// ── 应用范围展示徽章 ──────────────────────────────────────
-function ScopeBadges({ role }: { role: Role }) {
-  const isPublic = role.scope === 'public' || !role.groupIds || role.groupIds.length === 0;
-  if (isPublic) {
-    return (
-      <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-blue-50 text-[#355EF1] text-xs font-medium rounded-full">
-        全部用户
-      </span>
-    );
-  }
-  const groupNames = role.groupIds.map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid);
-  const firstName = groupNames[0] || '';
-  const rest = groupNames.length - 1;
-  const tooltipText = groupNames.join('，');
+// ── 编辑应用范围（使用通用 ScopeEditPopover）──────────────────────
+import { ScopeEditPopover, type ScopeType } from "@/components/ScopeEditPopover";
 
-  return (
-    <Tooltip delayDuration={300}>
-      <TooltipTrigger asChild>
-        <span className="inline-flex items-center gap-1 cursor-default">
-          <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full max-w-[100px] truncate">
-            {firstName}
-          </span>
-          {rest > 0 && (
-            <span className="inline-block px-2 py-0.5 bg-gray-100 text-[#737373] text-xs rounded-full whitespace-nowrap">
-              +{rest}
-            </span>
-          )}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
-        {tooltipText}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
-
-// ── 编辑应用范围 Popover（列表行内编辑）──────────────────────
 function EditRoleScopePopover({
   role,
   onConfirm,
@@ -123,149 +89,23 @@ function EditRoleScopePopover({
   role: Role;
   onConfirm: (scope: SkillScope, groupIds: string[]) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [draftScope, setDraftScope] = useState<SkillScope>('public');
-  const [draftGroupIds, setDraftGroupIds] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const isPublic = role.scope === 'public' || !role.groupIds || role.groupIds.length === 0;
+  const groupNames = (role.groupIds || []).map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid);
 
-  const handleOpenChange = (v: boolean) => {
-    if (v) {
-      setDraftScope(role.scope || 'public');
-      setDraftGroupIds([...(role.groupIds || [])]);
-      setSearchQuery('');
-    }
-    setOpen(v);
-  };
-
-  const filteredGroups = MOCK_GROUPS.filter(g =>
-    g.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const toggleGroup = (gid: string) => {
-    setDraftGroupIds(prev =>
-      prev.includes(gid) ? prev.filter(id => id !== gid) : [...prev, gid]
-    );
-  };
-
-  const isConfirmDisabled = draftScope === 'private' && draftGroupIds.length === 0;
-
-  const handleConfirm = () => {
-    if (isConfirmDisabled) return;
-    onConfirm(draftScope, draftScope === 'public' ? [] : draftGroupIds);
-    setOpen(false);
-  };
+  const mapScope = (s: SkillScope): ScopeType => (s === "public" ? "all" : "groups");
+  const reverseScope = (s: ScopeType): SkillScope => (s === "all" ? "public" : "private");
 
   return (
-    <div className="inline-flex items-center gap-1.5">
-      <ScopeBadges role={role} />
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <Tooltip delayDuration={1000}>
-          <TooltipTrigger asChild>
-            <PopoverTrigger asChild>
-              <button
-                onClick={(e) => e.stopPropagation()}
-                className="p-0.5 text-[#A3A3A3] hover:text-[#0A0A0A] rounded transition-colors flex-shrink-0"
-              >
-                <Edit2 className="w-3 h-3" />
-              </button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent side="top">编辑应用范围</TooltipContent>
-        </Tooltip>
-        <PopoverContent
-          className="w-68 p-0"
-          align="start"
-          sideOffset={6}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5">
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => setDraftScope('public')}
-                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  draftScope === 'public'
-                    ? 'border-blue-200 bg-blue-50 text-[#355EF1]'
-                    : 'border-gray-200 bg-white text-[#737373] hover:bg-gray-50'
-                }`}
-              >
-                全部用户
-              </button>
-              <button
-                onClick={() => setDraftScope('private')}
-                className={`flex-1 px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  draftScope === 'private'
-                    ? 'border-blue-200 bg-blue-50 text-[#355EF1]'
-                    : 'border-gray-200 bg-white text-[#737373] hover:bg-gray-50'
-                }`}
-              >
-                按分组
-              </button>
-            </div>
-            {draftScope === 'private' && (
-              <div className="space-y-1.5">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                  <input
-                    type="text"
-                    placeholder="搜索分组…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-100 transition-colors"
-                  />
-                  {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-                <div className="max-h-[200px] overflow-y-auto space-y-0.5">
-                  {filteredGroups.length === 0 ? (
-                    <p className="text-[11px] text-[#A3A3A3] text-center py-3">无匹配分组</p>
-                  ) : (
-                    filteredGroups.map((group) => {
-                      const checked = draftGroupIds.includes(group.id);
-                      return (
-                        <button
-                          key={group.id}
-                          onClick={() => toggleGroup(group.id)}
-                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors text-left"
-                        >
-                          <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-                            checked ? 'bg-blue-500 border-blue-500' : 'border-gray-300 bg-white'
-                          }`}>
-                            {checked && <Check className="w-2.5 h-2.5 text-white" />}
-                          </span>
-                          <span className="text-xs text-[#334155] truncate">{group.name}</span>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-                <div className="flex items-center justify-between px-1">
-                  <p className="text-[11px] text-[#A3A3A3]">已选 {draftGroupIds.length} 个分组</p>
-                  {draftGroupIds.length > 0 && (
-                    <button onClick={() => { setDraftGroupIds([]); setSearchQuery(''); }} className="text-[11px] text-[#355EF1] hover:text-[#355EF1] hover:underline">
-                      清除筛选
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5]">
-            <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
-            <Button
-              size="sm"
-              className="h-7 text-xs px-3"
-              disabled={isConfirmDisabled}
-              onClick={handleConfirm}
-            >
-              确认
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </div>
+    <ScopeEditPopover
+      scope={mapScope(role.scope || "public")}
+      selectedGroupIds={role.groupIds || []}
+      groups={MOCK_GROUPS}
+      scopeLabels={groupNames}
+      showBadges={true}
+      onConfirm={(scope, groupIds) => {
+        onConfirm(reverseScope(scope), groupIds);
+      }}
+    />
   );
 }
 

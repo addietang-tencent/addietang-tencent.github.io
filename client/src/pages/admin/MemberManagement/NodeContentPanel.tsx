@@ -13,7 +13,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
-import { Badge } from "@/components/ui/badge";
 import { StatusTag } from "@/components/ui/status-tag";
 import {
   Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableActionCell,
@@ -699,13 +698,13 @@ export default function NodeContentPanel({
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span className="inline-flex items-center gap-1 cursor-default max-w-full">
-                                          <span className="text-[14px] text-[#09090b] max-w-[200px] truncate inline-block align-middle">
+                                          <StatusTag variant="gray" className="max-w-[200px] truncate">
                                             {firstName}
-                                          </span>
+                                          </StatusTag>
                                           {displayGroups.length > 1 && (
-                                            <span className="text-[14px] text-[#737373] whitespace-nowrap">
+                                            <StatusTag variant="gray">
                                               +{displayGroups.length - 1}
-                                            </span>
+                                            </StatusTag>
                                           )}
                                         </span>
                                       </TooltipTrigger>
@@ -737,17 +736,17 @@ export default function NodeContentPanel({
 
                             {/* 角色 */}
                             <TableCell>
-                              <span className="text-[14px] text-[#09090b]">
+                              <StatusTag variant={u.role === "admin" ? "blue" : "gray"}>
                                 {u.role === "admin" ? "管理员" : "用户"}
-                              </span>
+                              </StatusTag>
                             </TableCell>
 
                             {/* 状态 */}
                             <TableCell>
                               {u.status === "active" ? (
-                                <StatusTag variant="green">正常</StatusTag>
+                                <StatusTag variant="green" dot>正常</StatusTag>
                               ) : (
-                                <StatusTag variant="red">禁用</StatusTag>
+                                <StatusTag variant="red" dot>禁用</StatusTag>
                               )}
                             </TableCell>
 
@@ -927,26 +926,13 @@ export default function NodeContentPanel({
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
-                        <Badge
-                          variant="outline"
-                          className={
-                            m.role === "admin"
-                              ? "border-blue-200 text-blue-600 bg-blue-50 text-xs"
-                              : "border-gray-200 text-gray-500 text-xs"
-                          }
-                        >
+                        <StatusTag variant={m.role === "admin" ? "blue" : "gray"}>
                           {m.role === "admin" ? "管理员" : "用户"}
-                        </Badge>
+                        </StatusTag>
                         {m.status === "active" ? (
-                          <span className="badge-running text-xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                            正常
-                          </span>
+                          <StatusTag variant="green" dot>正常</StatusTag>
                         ) : (
-                          <span className="badge-stopped text-xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-                            禁用
-                          </span>
+                          <StatusTag variant="red" dot>禁用</StatusTag>
                         )}
                       </div>
                     </label>

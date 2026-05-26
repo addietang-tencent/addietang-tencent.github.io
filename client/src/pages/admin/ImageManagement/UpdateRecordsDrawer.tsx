@@ -1,13 +1,13 @@
 /**
- * UpdateRecordsDrawer - 「查看全部更新记录」弹窗
+ * UpdateRecordsDrawer - 「版本更新」侧边栏
  *
- * 注：组件名保留 Drawer 仅为兼容历史 import，实际形态已改为 Dialog 弹窗
- * （与公共镜像更新记录弹窗 PublicImageHistoryDialog 保持一致的呈现方式）
+ * 注：组件名保留 Drawer 仅为兼容历史 import，实际形态为右侧 Sheet 面板。
  *
  * 展示所有 Agent 类型的镜像更新历史，让管理员能在一个地方浏览全部版本变化。
  *
  * 功能：
- *   - 按 Agent 类型筛选
+ *   - 顶部开关：「查看可推送版本」—— 仅显示当前可推送给员工的版本记录
+ *   - 按 Agent 类型 / 镜像筛选
  *   - 时间线展示（首次上线 / 更新到 vX.Y.Z）
  *   - 推送状态徽章 + 撤回入口
  *   - 未推送的当前版本可点击"推送此类型最新版本"
@@ -18,16 +18,14 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
   SheetFooter,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
+import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Megaphone, Calendar, RotateCcw, Sparkles, Disc3, Bell } from "lucide-react";
+import { Megaphone, Calendar, RotateCcw, Sparkles, Disc3 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  setActivePush,
   listActivePushes,
   clearActivePush,
   type ActivePush,
@@ -55,8 +53,6 @@ interface Props {
   onPush: (defaultAgentType?: string) => void;
   /** 可推送的 Agent 类型列表 */
   pushable?: PushableItem[];
-  /** 默认打开的 tab */
-  defaultTab?: "current" | "history";
 }
 
 // ─── 镜像彩色徽章：稳定 hash → 颜色，使同一镜像在视觉上保持一致 ────
@@ -75,10 +71,11 @@ function hashImageColor(imageId: string): typeof IMAGE_COLOR_PALETTE[number] {
   return IMAGE_COLOR_PALETTE[h % IMAGE_COLOR_PALETTE.length];
 }
 
-export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushable = [], defaultTab = "current" }: Props) {
-  const [activeTab, setActiveTab] = useState<"current" | "history">(defaultTab);
+export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushable = [] }: Props) {
+  /** 仅显示当前可推送给员工的版本记录 */
+  const [showPushableOnly, setShowPushableOnly] = useState(false);
 
-  useEffect(() => { if (open) setActiveTab(defaultTab); }, [open, defaultTab]);
+  useEffect(() => { if (open) setShowPushableOnly(false); }, [open]);
 
   // 活跃推送列表
   const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
@@ -116,11 +113,24 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
     return grouped;
   }, [records]);
 
+  /** 当前可推送版本的命中集合：agentType -> enabledVersion（仅含尚有过期 Agent 的类型） */
+  const pushableVersionByType = useMemo(() => {
+    const map = new Map<string, string>();
+    pushable.filter((p) => !p.allUpToDate).forEach((p) => {
+      map.set(p.agentType, p.enabledVersion);
+    });
+    return map;
+  }, [pushable]);
+
   const filtered = useMemo(() => {
-    if (filter.kind === "all") return records;
-    if (filter.kind === "type") return records.filter((r) => r.agentType === filter.value);
-    return records.filter((r) => r.imageId === filter.value);
-  }, [records, filter]);
+    let list = records;
+    if (filter.kind === "type") list = list.filter((r) => r.agentType === filter.value);
+    else if (filter.kind === "image") list = list.filter((r) => r.imageId === filter.value);
+    if (showPushableOnly) {
+      list = list.filter((r) => pushableVersionByType.get(r.agentType) === r.version);
+    }
+    return list;
+  }, [records, filter, showPushableOnly, pushableVersionByType]);
 
   /**
    * 计算"每个镜像的最新一条记录索引"——按镜像聚合时，
@@ -164,77 +174,24 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
           </SheetTitle>
         </SheetHeader>
 
-        {/* Tab 切换 */}
-        <div className="px-6 pb-3">
-          <SegmentGroup>
-            <SegmentOption active={activeTab === "current"} onClick={() => setActiveTab("current")}>
-              新版本推送
-              {pushable.filter(p => !p.allUpToDate).length > 0 && (
-                <span className="ml-1 text-[#A3A3A3]">({pushable.filter(p => !p.allUpToDate).length})</span>
+        {/* 顶部开关：查看可推送版本 */}
+        <div className="px-6 pb-3 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-sm text-[#0A0A0A]">查看可推送版本</span>
+            <span className="text-[11px] text-[#A3A3A3]">
+              仅显示当前可推送给员工的版本
+              {pushableVersionByType.size > 0 && (
+                <span className="ml-1 tabular-nums">({pushableVersionByType.size})</span>
               )}
-            </SegmentOption>
-            <SegmentOption active={activeTab === "history"} onClick={() => setActiveTab("history")}>
-              全部更新记录
-            </SegmentOption>
-          </SegmentGroup>
+            </span>
+          </div>
+          <Switch
+            checked={showPushableOnly}
+            onCheckedChange={setShowPushableOnly}
+            aria-label="查看可推送版本"
+          />
         </div>
 
-        {/* 当前更新 Tab */}
-        {activeTab === "current" && (
-          <div className="px-6 pb-4 space-y-3">
-            {pushable.filter(p => !p.allUpToDate).length === 0 ? (
-              <p className="text-xs text-[#A3A3A3] text-center py-6">当前没有版本更新</p>
-            ) : (
-              pushable.filter(p => !p.allUpToDate).map(p => {
-                const isPushing = activePushes.some(ap => ap.agentType === p.agentType);
-                return (
-                  <div key={p.agentType} className="px-3 py-2.5 rounded-[4px] border border-[#E5E5E5] bg-white hover:bg-[#FAFAFA] transition-colors">
-                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E5E5E5]">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-sm font-medium text-[#0A0A0A] truncate">{p.agentTypeLabel}</span>
-                        <span className="text-xs text-[#A3A3A3] font-mono tabular-nums">v{p.enabledVersion}</span>
-                        {isPushing && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-[3px] bg-[#1447E6]/10 text-[10px] font-medium text-[#1447E6]">
-                            正在提醒员工更新
-                          </span>
-                        )}
-                      </div>
-                      {isPushing ? (
-                        <button
-                          onClick={() => { clearActivePush(p.agentType); setActivePushes(listActivePushes()); toast.success(`已撤回「${p.agentTypeLabel}」的推送提醒`); }}
-                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[11px] text-[#737373] border border-[#E5E5E5] hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
-                        >
-                          <RotateCcw className="w-2.5 h-2.5" />
-                          撤回
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => {
-                            const ts = new Date().toISOString().slice(0, 19).replace("T", " ");
-                            setActivePush({ agentType: p.agentType, agentTypeLabel: p.agentTypeLabel, version: p.enabledVersion, imageName: p.imageName, imageSource: p.imageSource, pushedAt: ts, message: `管理员推荐更新到 v${p.enabledVersion}` } as ActivePush);
-                            setActivePushes(listActivePushes());
-                            toast.success(`已向「${p.agentTypeLabel}」推送更新提醒`);
-                          }}
-                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[11px] font-medium text-[#1447E6] border border-[#1447E6]/30 hover:bg-[#1447E6]/5 transition-colors shrink-0"
-                        >
-                          <Megaphone className="w-2.5 h-2.5" />
-                          推送提醒
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-[#737373] leading-relaxed">
-                      推送后，使用 <span className="font-medium text-[#0A0A0A]">{p.agentTypeLabel}</span> 且版本低于 <span className="font-mono text-[#1447E6]">v{p.enabledVersion}</span> 的 <span className="font-medium text-[#0A0A0A]">{p.outdatedInstanceCount}</span> 个 Agent，将在用户端收到更新提醒。
-                    </p>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        )}
-
-        {/* 历史更新 Tab */}
-        {activeTab === "history" && (
-          <>
         {/* 筛选区 */}
         <div className="px-6 pb-3 space-y-2 shrink-0">
           {/* 第一级：Agent 类型 */}
@@ -449,8 +406,6 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
             关闭
           </Button>
         </SheetFooter>
-          </>
-        )}
       </SheetContent>
     </Sheet>
   );

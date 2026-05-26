@@ -4,6 +4,7 @@
  */
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -288,17 +289,17 @@ export function ScopePopover({
   const renderBadges = () => {
     if (visibilityScope === "all") {
       return (
-        <span className="badge-loading whitespace-nowrap">
+        <StatusTag variant="gray">
           全部用户
-        </span>
+        </StatusTag>
       );
     }
 
     if (selectedGroupPaths.length === 0) {
       return (
-        <span className="badge-loading whitespace-nowrap">
+        <StatusTag variant="gray">
           全部用户
-        </span>
+        </StatusTag>
       );
     }
 

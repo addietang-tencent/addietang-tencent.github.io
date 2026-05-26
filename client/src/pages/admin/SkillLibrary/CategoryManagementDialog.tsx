@@ -11,7 +11,7 @@
  */
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -29,8 +29,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableActionCell,
+} from '@/components/ui/table';
 import { Category, Skill } from './types';
 import AddCategoryDialog from './AddCategoryDialog';
 
@@ -141,59 +150,62 @@ export default function CategoryManagementDialog({
             </Button>
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex-1 overflow-y-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap w-16">序号</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap" style={{ width: '240px' }}>分类名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap">描述</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap w-24">技能数量</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-[#0A0A0A] whitespace-nowrap w-20">操作</th>
-                </tr>
-              </thead>
-              <tbody>
+          <div className="bg-white rounded-xl border border-[#f0f0f0] overflow-hidden flex-1 overflow-y-auto">
+            <Table>
+              <TableHeader className="sticky top-0 z-10">
+                <TableRow>
+                  <TableHead className="w-16">序号</TableHead>
+                  <TableHead style={{ width: 240 }}>分类名称</TableHead>
+                  <TableHead>描述</TableHead>
+                  <TableHead className="w-24">技能数量</TableHead>
+                  <TableHead className="w-20">操作</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {draftCategories.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center text-sm text-[#737373]">
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={5} className="text-center text-[#737373] py-12">
                       暂无分类，点击右上角「新增分类」开始添加
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   draftCategories.map((category, index) => (
-                    <tr key={category.id} className="border-b border-gray-200 hover:bg-gray-50/60 last:border-0">
-                      <td className="px-4 py-3 text-sm text-[#0A0A0A] align-middle">{index + 1}</td>
-                      <td className="px-4 py-3 align-middle">
+                    <TableRow key={category.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>
                         <Input
                           value={category.name}
                           onChange={(e) => updateCategoryField(category.id, 'name', e.target.value)}
                           placeholder="请输入分类名称"
                           className="h-8"
                         />
-                      </td>
-                      <td className="px-4 py-3 align-middle">
+                      </TableCell>
+                      <TableCell className="whitespace-normal">
                         <Input
                           value={category.description || ''}
                           onChange={(e) => updateCategoryField(category.id, 'description', e.target.value)}
                           placeholder="请输入分类描述"
                           className="h-8"
                         />
-                      </td>
-                      <td className="px-4 py-3 text-sm text-[#737373] align-middle">{getSkillCountByCategory(category.id)}</td>
-                      <td className="px-4 py-3 text-sm align-middle">
-                        <button
+                      </TableCell>
+                      <TableCell className="text-[#737373]">
+                        {getSkillCountByCategory(category.id)}
+                      </TableCell>
+                      <TableActionCell>
+                        <Button
+                          variant="link-dark"
+                          size="sm"
                           onClick={() => openDeleteConfirm(category)}
-                          className="text-[#A3A3A3] hover:text-red-600 transition-colors"
-                          title="删除"
+                          className="text-red-600 hover:text-red-700"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
+                          删除
+                        </Button>
+                      </TableActionCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
           <DialogFooter>

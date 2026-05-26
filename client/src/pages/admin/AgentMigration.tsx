@@ -128,7 +128,7 @@ function CopyBtn({ text }: { text: string }) {
   const [ok, setOk] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setOk(true); toast.success("已复制"); setTimeout(() => setOk(false), 2000); }}
-      className="p-1 rounded hover:bg-gray-100 text-[#A3A3A3] hover:text-[#737373] transition-colors">
+      className="p-1 rounded hover:bg-[#f5f5f5] text-[#A3A3A3] hover:text-[#737373] transition-colors">
       {ok ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
   );
@@ -497,7 +497,7 @@ rm -f /tmp/openclaw-state.tgz`;
           </div>
           <div className="text-xs text-[#A3A3A3] leading-relaxed">
             <Database className="w-3 h-3 inline mr-1 -mt-0.5" />
-            系统自动创建临时 COS 桶 <code className="bg-gray-100 px-1 rounded font-mono">{cosBucket}/{batchId}/</code> 作为数据中转，迁移数据保留 24 小时后自动清理。COS
+            系统自动创建临时 COS 桶 <code className="bg-[#f5f5f5] px-1 rounded font-mono">{cosBucket}/{batchId}/</code> 作为数据中转，迁移数据保留 24 小时后自动清理。COS
             按量计费，<a href="https://cloud.tencent.com/document/product/436/53482#.E5.AD.98.E5.82.A8.E5.AE.B9.E9.87.8F.E5.AE.9A.E4.BB.B7" target="_blank" rel="noopener noreferrer"
               className="text-[#355EF1] hover:text-[#355EF1] hover:underline inline-flex items-center gap-0.5">
               费用详见腾讯云定价文档 <ExternalLink className="w-2.5 h-2.5" />
@@ -606,7 +606,7 @@ rm -f /tmp/openclaw-state.tgz`;
               </label>
             </div>
             <div className="text-xs text-[#A3A3A3]">
-              CSV 格式：<code className="bg-gray-100 px-1 rounded">源端标识,ClawPro用户名,Agent名</code>（第一行为表头）
+              CSV 格式：<code className="bg-[#f5f5f5] px-1 rounded">源端标识,ClawPro用户名,Agent名</code>（第一行为表头）
             </div>
             {rows.length > 0 && (
               <div className="bg-green-50 border border-green-200 rounded-[4px] p-2.5">
@@ -732,7 +732,7 @@ rm -f /tmp/openclaw-state.tgz`;
           <>
             {/* Pre-execution info */}
             <div className="flex items-center gap-4 mb-3 text-xs text-[#737373]">
-              <span className="flex items-center gap-1"><Database className="w-3 h-3" /> COS 中转桶: <code className="bg-gray-100 px-1 rounded font-mono">{cosBucket}/{batchId}/</code></span>
+              <span className="flex items-center gap-1"><Database className="w-3 h-3" /> COS 中转桶: <code className="bg-[#f5f5f5] px-1 rounded font-mono">{cosBucket}/{batchId}/</code></span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> 临时数据保留 24 小时后自动清理</span>
             </div>
 
@@ -788,7 +788,7 @@ rm -f /tmp/openclaw-state.tgz`;
                 <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-[4px] text-xs ${
                   t.status === "success" ? "bg-green-50" :
                   t.status === "failed" ? "bg-red-50" :
-                  t.status === "pending" ? "bg-gray-50" : "bg-blue-50"
+                  t.status === "pending" ? "bg-[#fafafa]" : "bg-[#eff4ff]"
                 }`}>
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {t.status === "success" && <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />}

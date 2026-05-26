@@ -205,7 +205,7 @@ const CustomLegend = (props: any) => {
               className="w-3 h-3 rounded-full inline-block"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-xs text-gray-600 inline-block">{entry.name}</span>
+            <span className="text-xs text-[#737373] inline-block">{entry.name}</span>
             {legendTooltips[entry.name] && (
               <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 w-max whitespace-nowrap">
                 {legendTooltips[entry.name]}
@@ -438,14 +438,14 @@ export default function OpsObservation() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">运维观测</h1>
+            <h1 className="text-2xl font-bold text-[#09090b]">运维观测</h1>
           </div>
           <div className="flex items-center gap-2">
             <DatePicker
               value={dateFrom}
               onChange={handleFromChange}
             />
-            <span className="text-gray-400 text-sm">—</span>
+            <span className="text-[#A3A3A3] text-sm">—</span>
             <DatePicker
               value={dateTo}
               onChange={handleToChange}
@@ -462,7 +462,7 @@ export default function OpsObservation() {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+        <p className="text-sm text-[#737373] mt-1 leading-relaxed">
           全方位守护系统稳定运行，从被动救火到主动防御
         </p>
         
@@ -504,8 +504,8 @@ export default function OpsObservation() {
                     onCheckedChange={(checked) => setClsAgreed(checked === true)}
                     className="mt-1"
                   />
-                  <Label htmlFor="cls-agreement" className="text-sm text-gray-700 cursor-pointer flex-1 font-normal leading-relaxed">
-                    为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
+                  <Label htmlFor="cls-agreement" className="text-sm text-[#525252] cursor-pointer flex-1 font-normal leading-relaxed">
+                    为您赠送三个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 700 台 Agent 机器的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:text-[#355EF1] inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a>
                   </Label>
                 </div>
               </div>
@@ -667,7 +667,7 @@ export default function OpsObservation() {
 
       {/* CLS 开启成功提示 */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
+        <div className="fixed top-4 right-4 bg-green-50 border border-green-200 rounded-[4px] px-4 py-3 shadow-lg z-50 animate-in fade-in slide-in-from-top-2 max-w-md">
           <div className="flex items-start gap-3">
             <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">✓</div>
             <div>
@@ -682,7 +682,7 @@ export default function OpsObservation() {
         <div className="flex items-start justify-between mb-6 gap-4">
           {/* 左侧：Agent 名称筛选 */}
           <div className="flex-1">
-            <label className="text-xs font-medium text-gray-700 block mb-2">Agent名称：</label>
+            <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
             <AgentCombobox
               value={selectedAgent}
               onValueChange={setSelectedAgent}
@@ -694,7 +694,7 @@ export default function OpsObservation() {
             <Button
               onClick={() => setShowPluginUpgradeDialog(true)}
               variant="outline"
-              className="text-xs h-8 px-3 text-blue-600 border-blue-200 hover:bg-blue-50 bg-white"
+              className="text-xs h-8 px-3 text-[#355EF1] border-[#355EF1] hover:bg-[#f5f5f5] bg-white"
             >
               升级CLS采集插件
             </Button>
@@ -716,15 +716,15 @@ export default function OpsObservation() {
         {METRIC_CARDS.map((card, idx) => {
           const Icon = card.icon;
           return (
-            <div key={idx} className="bg-white rounded-xl border border-[#e5e5e5] p-4">
+            <div key={idx} className="bg-white rounded-[4px] border border-[#e5e5e5] p-4">
               <div className="flex items-start justify-between mb-3">
-                <span className="text-xs text-gray-500">{card.title}</span>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: card.color }}>
+                <span className="text-xs text-[#737373]">{card.title}</span>
+                <div className="w-8 h-8 rounded-[4px] flex items-center justify-center" style={{ background: card.color }}>
                   <Icon className="w-4 h-4 text-white" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-1">{card.value}</div>
-              <div className="text-xs text-gray-400">{card.unit}</div>
+              <div className="text-2xl font-bold text-[#09090b] mb-1">{card.value}</div>
+              <div className="text-xs text-[#A3A3A3]">{card.unit}</div>
             </div>
           );
         })}
@@ -732,12 +732,12 @@ export default function OpsObservation() {
 
       {/* Application Logs Dashboard */}
       <div className="mb-8">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">应用日志大盘</h2>
+        <h2 className="text-lg font-bold text-[#09090b] mb-4">应用日志大盘</h2>
         <div className="grid grid-cols-2 gap-6">
           {/* Log Level Distribution */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">日志级别分布</h3>
+              <h3 className="text-sm font-semibold text-[#09090b]">日志级别分布</h3>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={logLevelData}>
@@ -751,9 +751,9 @@ export default function OpsObservation() {
           </div>
 
           {/* Log Module Distribution */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-gray-900">日志模块分布</h3>
+              <h3 className="text-sm font-semibold text-[#09090b]">日志模块分布</h3>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={logModuleData} layout="vertical" margin={{ left: 20, right: 30, top: 0, bottom: 0 }}>
@@ -770,15 +770,15 @@ export default function OpsObservation() {
 
       {/* OTEL Metrics Dashboard */}
       <div>
-        <h2 className="text-lg font-bold text-gray-900 mb-4">OTEL 指标大盘</h2>
+        <h2 className="text-lg font-bold text-[#09090b] mb-4">OTEL 指标大盘</h2>
         <TooltipProvider delayDuration={150}>
         <div className="grid grid-cols-3 gap-6">
           {/* Message Processing */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <UITooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-sm font-semibold text-gray-900 cursor-help">消息处理</h3>
+                  <h3 className="text-sm font-semibold text-[#09090b] cursor-help">消息处理</h3>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="start">
                   已处理完成：已成功处理完成的消息数量；等待处理：等待处理的消息数量
@@ -800,7 +800,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
-                    <span className="text-gray-600">已处理完成的消息数量</span>
+                    <span className="text-[#737373]">已处理完成的消息数量</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">已成功处理完成的消息数量</TooltipContent>
@@ -809,7 +809,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3B82F6' }} />
-                    <span className="text-gray-600">等待处理的消息数量</span>
+                    <span className="text-[#737373]">等待处理的消息数量</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">等待处理的消息数量</TooltipContent>
@@ -818,11 +818,11 @@ export default function OpsObservation() {
           </div>
 
           {/* Queue Status */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <UITooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-sm font-semibold text-gray-900 cursor-help">队列状态</h3>
+                  <h3 className="text-sm font-semibold text-[#09090b] cursor-help">队列状态</h3>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="start">
                   <div>队列长度 P95：95% 的时间队列长度不超过此值，反映队列拥堵程度</div>
@@ -845,7 +845,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8B5CF6' }} />
-                    <span className="text-gray-600">队列长度 P95</span>
+                    <span className="text-[#737373]">队列长度 P95</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">95% 的时间队列长度不超过此值，反映队列拥堵程度</TooltipContent>
@@ -854,7 +854,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#06B6D4' }} />
-                    <span className="text-gray-600">等待时间 P95</span>
+                    <span className="text-[#737373]">等待时间 P95</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">95% 的消息等待时间不超过此值，反映队列延迟</TooltipContent>
@@ -863,11 +863,11 @@ export default function OpsObservation() {
           </div>
 
           {/* Run Duration */}
-          <div className="bg-white rounded-xl border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
             <div className="flex items-center justify-between mb-4">
               <UITooltip>
                 <TooltipTrigger asChild>
-                  <h3 className="text-sm font-semibold text-gray-900 cursor-help">执行耗时</h3>
+                  <h3 className="text-sm font-semibold text-[#09090b] cursor-help">执行耗时</h3>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="start">
                   <div>处理耗时 P50：50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</div>
@@ -890,7 +890,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F59E0B' }} />
-                    <span className="text-gray-600">处理耗时 P50</span>
+                    <span className="text-[#737373]">处理耗时 P50</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</TooltipContent>
@@ -899,7 +899,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444' }} />
-                    <span className="text-gray-600">处理耗时 P95</span>
+                    <span className="text-[#737373]">处理耗时 P95</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</TooltipContent>
@@ -920,20 +920,20 @@ export default function OpsObservation() {
           </DialogHeader>
           <div className="space-y-4 my-4">
             {!isCheckingAuth && !authCompleted && (
-              <p className="text-sm text-gray-700">开启CLS日志服务后您可以获取会话数据和观测数据</p>
+              <p className="text-sm text-[#525252]">开启CLS日志服务后您可以获取会话数据和观测数据</p>
             )}
             <div className="space-y-3 flex flex-col items-center min-h-16 justify-center">
               {isCheckingAuth ? (
                 <>
                   {/* 检测中的旋转动画 */}
-                  <div className="w-8 h-8 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin"></div>
-                  <p className="text-xs text-gray-500 text-center">检测中...</p>
+                  <div className="w-8 h-8 border-2 border-[#355EF1] border-t-[#355EF1] rounded-full animate-spin"></div>
+                  <p className="text-xs text-[#737373] text-center">检测中...</p>
                 </>
               ) : authCompleted ? (
                 <>
                   {/* 检测完成后显示完成 icon */}
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  <p className="text-xs text-gray-500 text-center">检测到已授权</p>
+                  <p className="text-xs text-[#737373] text-center">检测到已授权</p>
                 </>
               ) : null}
             </div>
@@ -959,16 +959,16 @@ export default function OpsObservation() {
             <DialogTitle>免费额度说明</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 my-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-2">
-              <p className="text-sm text-gray-700">
-                为您赠送<span className="font-semibold text-blue-600">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-blue-600">3000U</span>），预估可覆盖 <span className="font-semibold text-blue-600">500台</span> Agent 机器<span className="font-semibold text-blue-600">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-blue-600">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
+            <div className="bg-[#eff4ff] border border-[#355EF1] rounded-[4px] p-4 space-y-2">
+              <p className="text-sm text-[#525252]">
+                为您赠送<span className="font-semibold text-[#355EF1]">3个月</span>ClawPro 专属 CLS 日志服务免费额度（共<span className="font-semibold text-[#355EF1]">3000U</span>），预估可覆盖 <span className="font-semibold text-[#355EF1]">500台</span> Agent 机器<span className="font-semibold text-[#355EF1]">3个月</span>的日志用量；超过免费额度达到上限或<span className="font-semibold text-[#355EF1]">3个月</span>到期后，CLS 将按量计费。计费详情请参考{' '}
                 <a
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
                     handleGoToCalcDetail();
                   }}
-                  className="text-blue-600 hover:text-blue-700 underline"
+                  className="text-[#355EF1] hover:text-[#355EF1] underline"
                 >
                   计费详情
                 </a>
@@ -981,7 +981,7 @@ export default function OpsObservation() {
                 checked={freeQuotaAgreed}
                 onCheckedChange={(checked) => setFreeQuotaAgreed(checked === true)}
               />
-              <Label htmlFor="free-quota-agreement" className="text-sm text-gray-700 cursor-pointer font-normal">我已阅读并同意免费额度说明</Label>
+              <Label htmlFor="free-quota-agreement" className="text-sm text-[#525252] cursor-pointer font-normal">我已阅读并同意免费额度说明</Label>
             </label>
           </div>
           <DialogFooter className="flex gap-2 justify-end">

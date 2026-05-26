@@ -14,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Badge } from "@/components/ui/badge";
+import { StatusTag } from "@/components/ui/status-tag";
+import {
+  Table, TableHeader, TableBody, TableHead, TableRow, TableCell, TableActionCell,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -559,53 +563,50 @@ export default function NodeContentPanel({
           <>
             {/* 卡片 */}
             <div
-              className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+              className="bg-white rounded-[4px] border border-[#f0f0f0] overflow-hidden"
             >
               {/* 表格 */}
               <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={ncpTableScrollRef}>
-                <table className="text-sm" style={{ width: "max-content", minWidth: "100%" }}>
-                  <thead>
-                    <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "160px" }}>
+                <Table style={{ width: "max-content", minWidth: "100%" }}>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead style={{ minWidth: "160px" }}>
                         用户 ID
-                      </th>
+                      </TableHead>
                       {hasOneid && (
-                        <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
+                        <TableHead style={{ minWidth: "180px" }}>
                           部门
-                        </th>
+                        </TableHead>
                       )}
-                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap" style={{ minWidth: "180px" }}>
+                      <TableHead style={{ minWidth: "180px" }}>
                         分组
-                      </th>
-                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      </TableHead>
+                      <TableHead>
                         角色
-                      </th>
-                      <th className="text-left px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                      </TableHead>
+                      <TableHead>
                         状态
-                      </th>
+                      </TableHead>
                       {isManualMode && nodeId !== "__unassigned__" && (
-                        <th className="text-center px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide whitespace-nowrap sticky right-0 z-10 w-[1%] relative" style={{ backgroundColor: "#fbfbfd" }}>
-                          {ncpTableCanScrollRight && (
-                            <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
-                          )}
+                        <TableHead>
                           操作
-                        </th>
+                        </TableHead>
                       )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {pagedUsers.length === 0 ? (
-                      <tr>
-                        <td
+                      <TableRow>
+                        <TableCell
                           colSpan={
                             (hasOneid ? 5 : 4) +
                             (isManualMode && nodeId !== "__unassigned__" ? 1 : 0)
                           }
-                          className="px-6 py-12 text-center text-sm text-gray-400"
+                          className="px-6 py-12 text-center text-[14px] text-[#A3A3A3]"
                         >
                           暂无用户
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       pagedUsers.map((u) => {
                         const userGroups = u.groupIds
@@ -614,25 +615,24 @@ export default function NodeContentPanel({
                         const manualGroups = userGroups.filter((g) => g.source === "manual");
                         const deptPaths = hasOneid ? getUserDeptPaths(u, groups) : [];
                         return (
-                          <tr
+                          <TableRow
                             key={u.userId}
-                            className="hover:bg-gray-50/50 transition-colors"
                           >
                             {/* 用户 ID */}
-                            <td className="px-4 py-4 whitespace-nowrap">
-                              <span className="text-sm font-medium text-gray-900">
+                            <TableCell>
+                              <span className="text-[14px] font-medium text-[#09090b]">
                                 {u.userId}
                               </span>
-                            </td>
+                            </TableCell>
 
                             {/* 部门（仅 OneID 模式） */}
                             {hasOneid && (
-                              <td className="px-3 py-4">
+                              <TableCell>
                                 {deptPaths.length === 0 ? (
-                                  <span className="text-sm text-gray-300">—</span>
+                                  <span className="text-[14px] text-[#A3A3A3]">—</span>
                                 ) : deptPaths.length === 1 ? (
                                   <span
-                                    className="text-sm text-gray-600 truncate block max-w-[180px]"
+                                    className="text-[14px] text-[#09090b] truncate block max-w-[180px]"
                                     title={deptPaths[0].path}
                                   >
                                     {deptPaths[0].path}
@@ -675,18 +675,18 @@ export default function NodeContentPanel({
                                     </TooltipContent>
                                   </Tooltip>
                                 )}
-                              </td>
+                              </TableCell>
                             )}
 
                             {/* 分组 */}
-                            <td className="px-3 py-4">
+                            <TableCell>
                               {(() => {
                                 // OneID 模式：显示部门 + 用户组；普通模式：只显示自建分组
                                 const displayGroups = hasOneid
                                   ? userGroups.filter((g) => g.source === "oneid-dept" || g.source === "oneid-group")
                                   : manualGroups;
                                 if (displayGroups.length === 0)
-                                  return <span className="text-sm text-gray-300">—</span>;
+                                  return <span className="text-[14px] text-[#A3A3A3]">—</span>;
 
                                 // 统一使用完整路径（OneID 模式：部门/用户组；普通模式：自建分组层级）
                                 const getDisplayName = (g: UserGroup) =>
@@ -699,11 +699,11 @@ export default function NodeContentPanel({
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <span className="inline-flex items-center gap-1 cursor-default max-w-full">
-                                          <span className="badge-shutdown max-w-[200px] truncate inline-block align-middle">
+                                          <span className="text-[14px] text-[#09090b] max-w-[200px] truncate inline-block align-middle">
                                             {firstName}
                                           </span>
                                           {displayGroups.length > 1 && (
-                                            <span className="badge-shutdown whitespace-nowrap">
+                                            <span className="text-[14px] text-[#737373] whitespace-nowrap">
                                               +{displayGroups.length - 1}
                                             </span>
                                           )}
@@ -733,43 +733,27 @@ export default function NodeContentPanel({
                                   </div>
                                 );
                               })()}
-                            </td>
+                            </TableCell>
 
                             {/* 角色 */}
-                            <td className="px-3 py-4 whitespace-nowrap">
-                              <Badge
-                                variant="outline"
-                                className={
-                                  u.role === "admin"
-                                    ? "border-blue-200 text-blue-600 bg-blue-50"
-                                    : "border-gray-200 text-gray-500"
-                                }
-                              >
+                            <TableCell>
+                              <span className="text-[14px] text-[#09090b]">
                                 {u.role === "admin" ? "管理员" : "用户"}
-                              </Badge>
-                            </td>
+                              </span>
+                            </TableCell>
 
                             {/* 状态 */}
-                            <td className="px-3 py-4 whitespace-nowrap">
+                            <TableCell>
                               {u.status === "active" ? (
-                                <span className="badge-running text-xs">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                                  正常
-                                </span>
+                                <StatusTag variant="green">正常</StatusTag>
                               ) : (
-                                <span className="badge-stopped text-xs">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
-                                  禁用
-                                </span>
+                                <StatusTag variant="red">禁用</StatusTag>
                               )}
-                            </td>
+                            </TableCell>
 
                             {/* 操作（仅普通模式且非未分组） */}
                             {isManualMode && nodeId !== "__unassigned__" && (
-                              <td className="px-3 py-4 sticky right-0 bg-white z-10 w-[1%] relative">
-                                {ncpTableCanScrollRight && (
-                                  <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
-                                )}
+                              <TableCell>
                                 <div className="flex items-center justify-center gap-1">
                                   {nodeId !== "__unassigned__" && (
                                     <Tooltip>
@@ -791,19 +775,19 @@ export default function NodeContentPanel({
                                     </Tooltip>
                                   )}
                                 </div>
-                              </td>
+                              </TableCell>
                             )}
-                          </tr>
+                          </TableRow>
                         );
                       })
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               {/* 底部：共 N 名用户 + 分页 */}
-              <div className="flex items-center justify-between px-6 py-3 border-t border-gray-50">
-                <span className="text-xs text-blue-600">
+              <div className="flex items-center justify-between px-6 py-3 border-t border-[#f0f0f0]">
+                <span className="text-[12px] text-[#355EF1]">
                   共 {total} 名用户
                 </span>
                 <Pagination

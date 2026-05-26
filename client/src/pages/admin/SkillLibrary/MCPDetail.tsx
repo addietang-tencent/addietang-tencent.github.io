@@ -261,8 +261,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
     if (!content) {
       return (
         <>
-          <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
-            <p className="text-xs font-medium text-[#0A0A0A]">{selectedFile}</p>
+          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+            <p className="text-sm font-medium text-[#09090b]">{selectedFile}</p>
             {isMd && renderViewModeSwitch()}
           </div>
           <div className="flex items-center justify-center h-full text-[#A3A3A3]">
@@ -274,8 +274,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
     return (
       <>
-        <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
-          <p className="text-xs font-medium text-[#0A0A0A]">{selectedFile}</p>
+        <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+          <p className="text-sm font-medium text-[#09090b]">{selectedFile}</p>
           {isMd && renderViewModeSwitch()}
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -417,16 +417,16 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
       {/* Tab 区域 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
+          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-0 border-b border-[#e5e5e5] rounded-none">
             <TabsTrigger
               value="files"
-              className="rounded-xl px-4 py-1.5 text-sm text-[#737373] bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-[#355EF1] data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-xl px-4 py-1.5 text-sm text-[#737373] bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-[#355EF1] data-[state=active]:border-blue-200 transition-colors"
+              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -434,11 +434,11 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
           {/* 文件列表 Tab — 三栏布局 */}
           <TabsContent value="files" className="mt-4 p-0">
-            <div className="flex h-[47rem] border border-gray-200 rounded-xl overflow-hidden bg-white">
+            <div className="flex h-[47rem] border border-[#e5e5e5] rounded-xl overflow-hidden bg-white">
               {/* 左列：版本列表 */}
-              <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-[#0A0A0A]">版本</p>
+              <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
+                <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+                  <p className="text-sm font-medium text-[#09090b]">版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {versions.map((ver: string, idx: number) => {
@@ -448,28 +448,25 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                     const baseDate = mcp.updatedAt || mcp.createdAt;
                     const versionDate = new Date(baseDate);
                     versionDate.setDate(versionDate.getDate() - idx * 15);
+                    const dateStr = `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
                     return (
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-2.5 border-b border-[#e5e5e5] transition-colors ${
-                          isSelected ? 'bg-blue-50' : 'hover:bg-gray-50 cursor-pointer'
+                        className={`w-full text-left px-3 py-3.5 border-b border-[#f4f4f5] transition-colors ${
+                          isSelected ? 'bg-[#f4f4f5]' : 'hover:bg-[#f4f4f5] cursor-pointer'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-[11px] font-semibold ${isSelected ? 'text-[#0A0A0A]' : 'text-[#334155]'}`}>
+                          <span className="text-[14px] font-semibold text-[#09090b]">
                             {ver}
                           </span>
                           {isLatest && (
-                            <span className="text-[10px] font-medium text-[#355EF1] bg-blue-100 px-1.5 py-0.5 rounded">
-                              最新
+                            <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold leading-none tracking-[0.015em] text-[#355EF1]">
+                              New
                             </span>
                           )}
-                        </div>
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-[10px] text-[#A3A3A3]">
-                            {versionDate.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
-                          </span>
+                          <span className="text-[12px] text-[#a1a1aa]">{dateStr}</span>
                         </div>
                       </button>
                     );
@@ -478,9 +475,9 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
               </div>
 
               {/* 中列：文件列表 */}
-              <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
-                <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
-                  <p className="text-xs font-medium text-[#0A0A0A]">{selectedVersion || mcp.version}</p>
+              <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
+                <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+                  <p className="text-sm font-medium text-[#09090b]">{selectedVersion || mcp.version}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {MCP_FILES.map((file) => {

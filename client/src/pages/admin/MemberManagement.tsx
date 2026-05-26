@@ -2540,10 +2540,10 @@ export default function MemberManagement() {
         <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
          >
           <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={memberTableScrollRef}>
-          <table className="text-sm w-full" style={{ minWidth: hasOneid ? "1320px" : "100%" }}>
-            <thead>
-              <tr className="border-b border-[#f0f0f0] bg-[#fafafa]">
-                <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "220px" }}>
+          <Table density="compact" className="w-full" style={{ minWidth: hasOneid ? "1320px" : "100%" }}>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead style={{ minWidth: "220px" }}>
                   <div className="flex items-center gap-1.5">
                     用户 ID
                     <Tooltip>
@@ -2551,10 +2551,10 @@ export default function MemberManagement() {
                       <TooltipContent sideOffset={4}>企业用户的唯一 ID，例如企业邮箱或企业用户唯一名称</TooltipContent>
                     </Tooltip>
                   </div>
-                </th>
+                </TableHead>
                 {hasOneid && (
                   <>
-                    <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "200px" }}>
+                    <TableHead style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1.5">
                         部门
                         <Tooltip>
@@ -2562,16 +2562,16 @@ export default function MemberManagement() {
                           <TooltipContent sideOffset={4}>用户的部门信息来自腾讯统一身份管理平台</TooltipContent>
                         </Tooltip>
                       </div>
-                    </th>
-                    <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
+                    </TableHead>
+                    <TableHead style={{ minWidth: "200px" }}>分组</TableHead>
                   </>
                 )}
                 {!hasOneid && (
-                  <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "200px" }}>分组</th>
+                  <TableHead style={{ minWidth: "200px" }}>分组</TableHead>
                 )}
-                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "80px" }}>角色</th>
-                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "80px" }}>状态</th>
-                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "120px" }}>
+                <TableHead style={{ minWidth: "80px" }}>角色</TableHead>
+                <TableHead style={{ minWidth: "80px" }}>状态</TableHead>
+                <TableHead style={{ minWidth: "120px" }}>
                   <div className="flex items-center gap-1.5">
                     Agent 上限
                     <Tooltip>
@@ -2579,8 +2579,8 @@ export default function MemberManagement() {
                       <TooltipContent sideOffset={4}>单个企业用户最多可以创建的 Agent 数量</TooltipContent>
                     </Tooltip>
                   </div>
-                </th>
-                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap">
+                </TableHead>
+                <TableHead>
                   <div className="flex items-center gap-1.5">
                     每日 Tokens 上限
                     <Tooltip>
@@ -2588,17 +2588,17 @@ export default function MemberManagement() {
                       <TooltipContent sideOffset={4}>单个企业用户每日最多可消耗的 Tokens 数量</TooltipContent>
                     </Tooltip>
                   </div>
-                </th>
-                <th className="text-left px-3 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap" style={{ minWidth: "110px" }}>加入时间</th>
-                <th className="text-left px-4 py-3 text-[14px] font-semibold text-[#09090b] whitespace-nowrap sticky right-0 z-10 relative" style={{ backgroundColor: "#fafafa" }}>
+                </TableHead>
+                <TableHead style={{ minWidth: "110px" }}>加入时间</TableHead>
+                <TableHead className="sticky right-0 z-10 relative" style={{ backgroundColor: "#fafafa" }}>
                   {memberTableCanScrollRight && (
                     <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                   )}
                   操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {paginated.map((member) => {
                 const memberGroups = groups.filter((g) => g.memberIds.includes(member.id));
                 const groupNames = memberGroups.map((g) => g.name);
@@ -2608,24 +2608,24 @@ export default function MemberManagement() {
                 // 普通模式：从 MM_MOCK_USERS_MANUAL 获取分组完整路径
                 const manualGroupPaths = !hasOneid ? getManualUserGroupPaths(member.id) : [];
                 return (
-                <tr key={member.id} className="hover:bg-[#fafafa]/50 transition-colors">
-                  <td className="px-4 py-4" style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                <TableRow key={member.id}>
+                  <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-sm font-medium text-[#09090b] truncate block max-w-[180px] cursor-pointer">{member.id}</span>
+                        <span className="text-xs font-medium text-[#0A0A0A] truncate block max-w-[180px] cursor-pointer">{member.id}</span>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs max-w-xs break-all">{member.id}</TooltipContent>
                     </Tooltip>
-                  </td>
+                  </TableCell>
                   {hasOneid && (
                     <>
                       {/* 部门列 */}
-                      <td className="px-3 py-4" style={{ minWidth: "200px" }}>
+                      <TableCell style={{ minWidth: "200px" }}>
                         {mmDeptPaths.length === 0 ? (
-                          <span className="text-sm text-[#A3A3A3]">—</span>
+                          <span className="text-xs text-[#A3A3A3]">—</span>
                         ) : mmDeptPaths.length === 1 ? (
                           <span
-                            className="text-sm text-[#737373] truncate block max-w-[200px]"
+                            className="text-xs text-[#737373] truncate block max-w-[200px]"
                             title={mmDeptPaths[0].path}
                           >
                             {mmDeptPaths[0].path}
@@ -2634,7 +2634,7 @@ export default function MemberManagement() {
                           <HoverCard>
                             <HoverCardTrigger asChild>
                               <span className="inline-flex items-center gap-1 max-w-[200px] cursor-pointer">
-                                <span className="text-sm text-[#737373] truncate">
+                                <span className="text-xs text-[#737373] truncate">
                                   {mmDeptPaths[0].path}
                                 </span>
                                 <span className="text-xs text-[#A3A3A3] tabular-nums shrink-0">

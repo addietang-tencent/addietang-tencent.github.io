@@ -103,6 +103,7 @@ import {
   InlineNumber,
   MetaMedium,
   MetaText,
+  MiniBodyText,
   PanelTitle,
   SectionTitle,
   StatNumber,
@@ -611,8 +612,8 @@ const COMPONENTS: ComponentMeta[] = [
     instanceCount: 62,
     tags: ["已接入预览", "高频参考"],
     usage: ["管理端配置列表", "资源选择列表", "状态与数量数据展示"],
-    notes: ["表格结构统一使用 Table 系列组件。", "分页放在表格容器内部、Table 外部。"],
-    migration: ["原生 table + 自定义 class → Table 系列组件"],
+    notes: ["表格结构统一使用 Table 系列组件。", "分页放在表格容器内部、Table 外部。", "紧凑版使用 density=\"compact\"，仅改变密度，不改变圆角、边框和分割线。"],
+    migration: ["原生 table + 自定义 class → Table 系列组件", "高密度表格 → Table density=\"compact\""],
   },
   {
     id: "pagination",
@@ -879,6 +880,7 @@ function TypographyPreview() {
     ["CardTitle", <CardTitle key="card">Alice 的技术助手</CardTitle>, "卡片标题"],
     ["BodyText", <BodyText key="body">这里展示组件使用说明和推荐参考方式。</BodyText>, "正文主内容"],
     ["BodyText secondary", <BodyText key="body-secondary" tone="secondary">用于描述行、补充说明等同字号浅色正文。</BodyText>, "描述性正文"],
+    ["MiniBodyText", <MiniBodyText key="mini-body">紧凑表格正文使用 12px 深色正文。</MiniBodyText>, "紧凑正文"],
     ["MetaText", <MetaText key="meta">更新于 2026-05-24 00:00</MetaText>, "辅助信息"],
     ["StatNumber", <StatNumber key="stat">128,000</StatNumber>, "统计数字"],
     ["CodeText", <CodeText key="code">client/src/components/ui/button.tsx</CodeText>, "路径 / ID"],
@@ -1092,23 +1094,36 @@ function FloatingPreview({ id }: { id: ComponentId }) {
 
 function TablePreview() {
   const rows = [["Button", "操作组件", "已接入", 42], ["Input", "表单组件", "已接入", 39], ["Table", "数据展示", "高频参考", 26]] as const;
+  const renderTable = (density: "default" | "compact") => (
+    <div className="overflow-hidden rounded-[4px] border border-[#DDE7F2] bg-white">
+      <Table density={density}>
+        <TableHeader><TableRow><TableHead>组件</TableHead><TableHead>分类</TableHead><TableHead>状态</TableHead><TableHead className="text-right">应用范围</TableHead><TableHead className="w-[160px]">操作</TableHead></TableRow></TableHeader>
+        <TableBody>
+          {rows.map(([name, group, status, modules]) => (
+            <TableRow key={name}>
+              <TableCell className="font-medium">{name}</TableCell>
+              <TableCell>{group}</TableCell>
+              <TableCell><StatusTag mode="dot" variant={status === "高频参考" ? "blue" : "green"}>{status}</StatusTag></TableCell>
+              <TableCell className="text-right tabular-nums">约 {modules} 个页面/模块</TableCell>
+              <TableActionCell><div className="flex gap-3"><Button variant="link-dark" size="sm">查看</Button><Button variant="link-dark" size="sm">复制用法</Button></div></TableActionCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+
   return (
     <PreviewPanel title="Table / TableActionCell 表格结构与操作列" layout="wide">
-      <div className="overflow-hidden rounded-[4px] border border-[#DDE7F2] bg-white">
-        <Table>
-          <TableHeader><TableRow><TableHead>组件</TableHead><TableHead>分类</TableHead><TableHead>状态</TableHead><TableHead className="text-right">应用范围</TableHead><TableHead className="w-[160px]">操作</TableHead></TableRow></TableHeader>
-          <TableBody>
-            {rows.map(([name, group, status, modules]) => (
-              <TableRow key={name}>
-                <TableCell className="font-medium">{name}</TableCell>
-                <TableCell>{group}</TableCell>
-                <TableCell><StatusTag mode="dot" variant={status === "高频参考" ? "blue" : "green"}>{status}</StatusTag></TableCell>
-                <TableCell className="text-right tabular-nums">约 {modules} 个页面/模块</TableCell>
-                <TableActionCell><div className="flex gap-3"><Button variant="link-dark" size="sm">查看</Button><Button variant="link-dark" size="sm">复制用法</Button></div></TableActionCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="space-y-5">
+        <div>
+          <MetaMedium className="mb-2 block">标准版：表头 48px，正文 14px</MetaMedium>
+          {renderTable("default")}
+        </div>
+        <div>
+          <MetaMedium className="mb-2 block">紧凑版：表头 40px，正文 12px，圆角 / 边框 / 分割线保持一致</MetaMedium>
+          {renderTable("compact")}
+        </div>
       </div>
     </PreviewPanel>
   );

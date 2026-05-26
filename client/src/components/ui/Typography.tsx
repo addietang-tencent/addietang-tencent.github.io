@@ -129,6 +129,13 @@ export const CompactText = createTypography(
   "secondary",
 );
 
+export const MiniBodyText = createTypography(
+  "MiniBodyText",
+  "span",
+  "font-sans text-xs font-normal leading-[1.5]",
+  "body",
+);
+
 export const MetaText = createTypography(
   "MetaText",
   "span",

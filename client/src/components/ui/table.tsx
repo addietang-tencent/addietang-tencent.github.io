@@ -2,10 +2,19 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
+type TableDensity = "default" | "compact";
+
+const TableDensityContext = React.createContext<TableDensity>("default");
+
+function useTableDensity() {
+  return React.useContext(TableDensityContext);
+}
+
 type TableProps = React.ComponentProps<"table"> & {
   containerClassName?: string;
   containerRef?: React.Ref<HTMLDivElement>;
   containerStyle?: React.CSSProperties;
+  density?: TableDensity;
 };
 
 function Table({
@@ -13,21 +22,30 @@ function Table({
   containerClassName,
   containerRef,
   containerStyle,
+  density = "default",
   ...props
 }: TableProps) {
   return (
-    <div
-      ref={containerRef}
-      data-slot="table-container"
-      className={cn("relative w-full overflow-x-auto", containerClassName)}
-      style={containerStyle}
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom font-sans text-sm leading-[1.5] text-gray-900", className)}
-        {...props}
-      />
-    </div>
+    <TableDensityContext.Provider value={density}>
+      <div
+        ref={containerRef}
+        data-density={density}
+        data-slot="table-container"
+        className={cn("relative w-full overflow-x-auto", containerClassName)}
+        style={containerStyle}
+      >
+        <table
+          data-density={density}
+          data-slot="table"
+          className={cn(
+            "w-full caption-bottom font-sans leading-[1.5] text-gray-900",
+            density === "compact" ? "text-xs" : "text-sm",
+            className
+          )}
+          {...props}
+        />
+      </div>
+    </TableDensityContext.Provider>
   );
 }
 
@@ -52,11 +70,14 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 }
 
 function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+  const density = useTableDensity();
+
   return (
     <tfoot
       data-slot="table-footer"
       className={cn(
-        "bg-gray-50 border-t border-gray-200 font-sans text-sm font-medium leading-[1.5] text-gray-900 [&>tr]:last:border-b-0",
+        "bg-gray-50 border-t border-gray-200 font-sans font-medium leading-[1.5] text-gray-900 [&>tr]:last:border-b-0",
+        density === "compact" ? "text-xs" : "text-sm",
         className
       )}
       {...props}
@@ -83,19 +104,22 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
  * 强制规范：
  * - 背景色：继承 TableHeader 的 bg-gray-50（#FAFAFA）
  * - 文字：对齐 Typography MetaMedium（12px / Medium / #737373）
- * - 行高：h-12
- * - 内边距：px-4
+ * - 标准版行高：h-12；紧凑版行高：h-10
+ * - 标准版内边距：px-4；紧凑版内边距：px-2
  * - 默认对齐：text-left align-middle，可按列通过 className 覆盖 text-right
  * - 不换行：whitespace-nowrap
  *
  * className 主要用于控制宽度（w-[xx%]）、sticky 定位和必要的列对齐。
  */
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
+  const density = useTableDensity();
+
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "h-12 px-4 text-left align-middle font-sans text-xs font-medium leading-[1.5] text-gray-500 whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-left align-middle font-sans text-xs font-medium leading-[1.5] text-gray-500 whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        density === "compact" ? "h-10 px-2" : "h-12 px-4",
         className
       )}
       {...props}
@@ -104,11 +128,14 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
 }
 
 function TableCell({ className, ...props }: React.ComponentProps<"td">) {
+  const density = useTableDensity();
+
   return (
     <td
       data-slot="table-cell"
       className={cn(
-        "px-4 py-3 text-left align-middle whitespace-nowrap font-sans text-sm font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        density === "compact" ? "px-2 py-[9px] text-xs" : "px-4 py-3 text-sm",
         className
       )}
       {...props}
@@ -122,11 +149,14 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
  * 用法：<TableActionCell>操作按钮...</TableActionCell>
  */
 function TableActionCell({ className, ...props }: React.ComponentProps<"td">) {
+  const density = useTableDensity();
+
   return (
     <td
       data-slot="table-action-cell"
       className={cn(
-        "px-4 py-3 align-middle whitespace-nowrap font-sans text-sm font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0",
+        "align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0",
+        density === "compact" ? "px-2 py-[9px] text-xs" : "px-4 py-3 text-sm",
         "[&_[data-slot=button]]:text-[#020617] [&_[data-slot=button]]:font-normal [&_[data-slot=button]]:underline-offset-4 [&_[data-slot=button]]:bg-transparent [&_[data-slot=button]]:border-0 [&_[data-slot=button]]:shadow-none [&_[data-slot=button]]:p-0 [&_[data-slot=button]]:h-auto",
         "[&_[data-slot=button]:hover]:text-[#525252] [&_[data-slot=button]:hover]:bg-transparent",
         "[&_[data-slot=button]:active]:text-[#020617] [&_[data-slot=button]:active]:underline",

@@ -48,7 +48,6 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { StatusTag } from "@/components/ui/status-tag";
 import {
   Info,
   RefreshCw,
@@ -400,7 +399,7 @@ function ImageScopePopover({
     return effectiveIds.map((gid) => getGroupPath(gid, groups));
   }, [groups, scopeData.visibilityGroupIds, activeBuckets, treesMap]);
 
-  const renderBadges = () => {
+  const renderScopeText = () => {
     if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
       return (
         <StatusTag mode="fill" variant="blue">
@@ -434,7 +433,7 @@ function ImageScopePopover({
 
   return (
     <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[160px]">
-      {renderBadges()}
+      {renderScopeText()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <button className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors" title="编辑应用范围">

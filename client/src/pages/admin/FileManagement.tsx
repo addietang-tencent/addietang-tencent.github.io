@@ -1340,8 +1340,8 @@ export default function FileManagement() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[6%]">
-                  <div className="flex items-center gap-2 whitespace-nowrap">
+                <TableHead className="w-10 min-w-10 max-w-10 px-3">
+                  <div className="flex items-center justify-center">
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
@@ -1349,7 +1349,6 @@ export default function FileManagement() {
                       className={disabledInstancesCount === 0 ? "opacity-60 cursor-not-allowed pointer-events-none" : ""}
                       aria-label="全选"
                     />
-                    <span className={disabledInstancesCount === 0 ? "text-[#A3A3A3]" : ""}>全选</span>
                   </div>
                 </TableHead>
                 <TableHead className="w-[20%]">OpenClaw 实例</TableHead>
@@ -1382,7 +1381,7 @@ export default function FileManagement() {
                       key={item.id} 
                       className="hover:bg-[#fafafa]/50 transition-colors"
                     >
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <td className="w-10 min-w-10 max-w-10 px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={(checked) => handleSelectInstance(item.id, checked as boolean)}

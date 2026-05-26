@@ -3570,7 +3570,7 @@ export default function SecurityGroupManagement() {
                   <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
-              <tbody>
+              <TableBody>
                 {/* 显示顺序：预设策略（type === "enterprise"）固定排在表格首行（默认主线），
                     其余分组策略保持原有顺序（不影响 vpcList 状态本身的存储顺序） */}
                 {[...vpcList]
@@ -3587,9 +3587,9 @@ export default function SecurityGroupManagement() {
                   return (
                     <Fragment key={row.id}>
                       {/* 主行 */}
-                      <tr className={`hover:bg-[#f5f5f5]/30 transition-colors ${idx > 0 ? "border-t border-[#f0f0f0]" : ""}`}>
+                      <TableRow className={`hover:bg-[#f5f5f5]/30 transition-colors ${idx > 0 ? "border-t border-[#f0f0f0]" : ""}`}>
                         {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
-                        <td className="px-6 pt-4 pb-2">
+                        <TableCell className="px-6 pt-4 pb-2">
                           <div className="flex items-start gap-2 min-w-0">
                             <button
                               type="button"
@@ -3643,9 +3643,9 @@ export default function SecurityGroupManagement() {
                               })()}
                             </div>
                           </div>
-                        </td>
+                        </TableCell>
                         {/* 子网配置：仅展示已配置子网总数 */}
-                        <td className="px-4 pt-4 pb-2">
+                        <TableCell className="px-4 pt-4 pb-2">
                           {totalSubnets === 0 ? (
                             <span className="text-xs text-[#A3A3A3] whitespace-nowrap">未配置</span>
                           ) : (
@@ -3654,9 +3654,9 @@ export default function SecurityGroupManagement() {
                               <span className="text-[#737373]"> 个</span>
                             </span>
                           )}
-                        </td>
+                        </TableCell>
                         {/* 策略：胶囊式徽章（对齐 ModelConfig 风格）；预设策略额外带 tooltip 说明 */}
-                        <td className="px-4 pt-4 pb-2 whitespace-nowrap">
+                        <TableCell className="px-4 pt-4 pb-2 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
                               <StatusTag mode="fill" variant="blue">预设策略</StatusTag>
@@ -3676,9 +3676,9 @@ export default function SecurityGroupManagement() {
                             // 放不下时折叠成「…共 N 个分组」，Tooltip 列出全部路径
                             <GroupBadges groupNames={row.associatedGroups ?? []} />
                           )}
-                        </td>
+                        </TableCell>
                         {/* 操作：文字 ghost 按钮 */}
-                        <td className="px-4 pt-4 pb-2 whitespace-nowrap">
+                        <TableCell className="px-4 pt-4 pb-2 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <Button
                               variant="ghost"
@@ -3745,13 +3745,13 @@ export default function SecurityGroupManagement() {
                               </Button>
                             )}
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
 
                       {/* 次级详情行：仅展开时渲染，按可用区纵向展示（视觉弱化，作当前行补充说明） */}
                       {expandedVpcIds.has(row.id) && (
-                        <tr>
-                          <td colSpan={4} className="px-6 pb-3 pt-0">
+                        <TableRow>
+                          <TableCell colSpan={4} className="px-6 pb-3 pt-0">
                             <div className="rounded-[4px] bg-[#fafafa]/50 border border-[#e5e5e5] px-3 py-2">
                               <div className="text-[11px] text-[#A3A3A3] mb-1.5">子网配置明细</div>
                               <div className="flex flex-col gap-1">
@@ -3779,15 +3779,15 @@ export default function SecurityGroupManagement() {
                                 })}
                               </div>
                             </div>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       )}
                     </Fragment>
                   );
                 })}
                 {/* 表格末尾：添加分组网络策略入口（弱化为文字按钮，左对齐紧贴预设策略行下方） */}
-                <tr className="border-t border-gray-50">
-                  <td colSpan={4} className="px-6 py-2.5">
+                <TableRow className="border-t border-gray-50">
+                  <TableCell colSpan={4} className="px-6 py-2.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -3817,9 +3817,9 @@ export default function SecurityGroupManagement() {
                       <Plus className="w-3.5 h-3.5" />
                       添加分组网络策略
                     </button>
-                  </td>
-                </tr>
-              </tbody>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
             </Table>
 
             {/* 底部提示 */}

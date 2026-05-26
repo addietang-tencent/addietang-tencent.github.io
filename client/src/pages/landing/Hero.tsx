@@ -1,113 +1,139 @@
 /**
- * Hero - 首屏 + 卡片堆叠 + 滚动联动卡片1 滑入凹槽
- * 注意：滚动联动逻辑由父组件 index.tsx 集中处理，这里只负责结构
+ * Hero - 永辉版首屏
+ * 渐变背景 + 标题区 + CTA + 浮动装饰 + 视觉复合层
+ * 中央 Logo 与 Navbar、Footer 同步（来自 brandLogo store）
+ *
+ * 入场动画：所有 .yh-reveal 元素由父级 LandingPage 在挂载后统一触发，
+ * 各元素通过 inline style 的 --yh-d 控制错峰延迟。
  */
 import { useLocation } from "wouter";
-
-const ROLLING_TEXTS = ["工作任务", "信息问答", "资料整理", "设计改版", "调试代码", "工作任务", "信息问答"];
-
-const HERO_VISUAL_CARDS = [
-  { src: "/landing-assets/banner/卡片_虚框.png", alt: "" },
-  { src: "/landing-assets/banner/卡片2.png", alt: "" },
-  { src: "/landing-assets/banner/卡片3.png", alt: "" },
-  { src: "/landing-assets/banner/卡片4.png", alt: "" },
-  { src: "/landing-assets/banner/卡片5.png", alt: "" },
-  { src: "/landing-assets/banner/卡片6.png", alt: "" },
-];
+import { useBrandLogo } from "./useBrandLogo";
 
 export default function Hero() {
   const [, navigate] = useLocation();
-
-  const handleCta = () => {
-    // 立即体验 → 跳转到我的 Agent（未登录会被守卫拦截到登录）
-    navigate("/my-openclaw");
-  };
+  const logo = useBrandLogo();
 
   return (
-    <div className="hero-stage">
-      {/* 全屏背景视频 */}
-      <video
-        className="hero-stage-video"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
+    <section className="yh-hero">
+      {/* ========== 背景层：banner-bg.png 静态铺底 ========== */}
+      <img
+        className="yh-hero-bg"
+        src="/landing-assets/yh-features/banner-bg.png"
+        alt=""
+        aria-hidden="true"
+      />
+
+      {/* ========== 内容区（垂直 flex 居中） ========== */}
+      <div className="yh-hero-content">
+        {/* Badge: ClawPro Enterprise（距离导航 60px） */}
+        <div
+          className="yh-hero-badge yh-reveal"
+          style={{ ["--yh-d" as never]: "0.05s" }}
+        >
+          <img
+            src="/landing-assets/yonghui/1.svg"
+            alt=""
+            width={16}
+            height={16}
+          />
+          <span>ClawPro Enterprise</span>
+        </div>
+
+        {/* 中央图标卡片 148×148（图标使用全局共享 Logo） */}
+        <div
+          className="yh-hero-icon-card yh-reveal"
+          style={{ ["--yh-d" as never]: "0.20s" }}
+        >
+          <img
+            src={logo}
+            alt=""
+            className="yh-hero-icon-card-logo"
+          />
+        </div>
+
+        {/* 大标题（距离大图标 48px） - 整体淡入上移；保留原有渐变文字样式 */}
+        <h1
+          className="yh-hero-title yh-reveal"
+          style={{ ["--yh-d" as never]: "0.40s" }}
+        >
+          永辉 AI Agent 管控平台
+        </h1>
+
+        {/* 副标题（距离大标题 16px） */}
+        <p
+          className="yh-hero-subtitle yh-reveal"
+          style={{ ["--yh-d" as never]: "0.60s" }}
+        >
+          快速创建属于你的24小时 AI 私人助理，对话即可完成各种工作任务，随时随地提升工作效率
+        </p>
+
+        {/* CTA 按钮（距离副标题 48px） */}
+        <button
+          className="yh-hero-cta yh-reveal"
+          style={{ ["--yh-d" as never]: "0.80s" }}
+          onClick={() => navigate("/my-openclaw")}
+        >
+          立即创建
+          <img
+            src="/landing-assets/yh-features/arrow.png"
+            alt=""
+            width={24}
+            height={24}
+            className="yh-hero-cta-arrow"
+          />
+        </button>
+      </div>
+
+      {/* ========== 三步引导卡片（毛玻璃） ========== */}
+      <div
+        className="yh-steps-card yh-reveal"
+        style={{ ["--yh-d" as never]: "1.00s" }}
       >
-        <source src="/landing-assets/banner.mp4" type="video/mp4" />
-      </video>
+        {/* 装饰光晕 */}
+        <div className="yh-steps-glow yh-steps-glow-1" />
+        <div className="yh-steps-glow yh-steps-glow-2" />
 
-      <section className="hero">
-        {/* Hero Text */}
-        <div className="hero-text-area">
-          <div className="hero-badge">
-            <img className="hero-badge-icon" src="/landing-assets/arrow-black.png" alt="" />
-            <span>随时随地提升工作效率</span>
+        {/* Step 1 */}
+        <div className="yh-step">
+          <div className="yh-step-header">
+            <span className="yh-step-num">Step1</span>
+            <span className="yh-step-label">创建 Agent</span>
           </div>
-          <div className="hero-title">ClawPro 你的 AI 私人助理</div>
-          <div className="hero-title-sub">
-            <span>对话即可完成</span>
-            <span className="hero-title-cursor">_</span>
-            <div className="hero-rolling-text">
-              <div className="hero-rolling-inner">
-                {ROLLING_TEXTS.map((t, i) => (
-                  <span key={i}>{t}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="hero-cta" onClick={handleCta} role="button" tabIndex={0}>
-            <span>立即创建</span>
-            <img src="/landing-assets/59.svg" alt="" width={24} height={24} />
-          </div>
+          <p className="yh-step-desc">点击「创建 Agent」，为你的 Agent 取一个名字</p>
         </div>
 
-        {/* Hero Visual：卡片背景 + 6 张卡片 + 吉祥物 */}
-        <div className="hero-visual">
-          <img className="hero-visual-bg" src="/landing-assets/banner/卡片背景.png" alt="" />
-          <div className="hero-visual-cards">
-            {HERO_VISUAL_CARDS.map((c, i) => (
-              <img key={i} src={c.src} alt={c.alt} />
-            ))}
+        {/* 箭头 1→2 */}
+        <img
+          src="/landing-assets/yh-features/step-arrow.png"
+          alt=""
+          className="yh-step-arrow"
+        />
+
+        {/* Step 2 */}
+        <div className="yh-step">
+          <div className="yh-step-header">
+            <span className="yh-step-num">Step2</span>
+            <span className="yh-step-label">配置模型，在浏览器中对话</span>
           </div>
-          <img className="hero-visual-mascot" src="/landing-assets/banner/装饰2.png" alt="" />
+          <p className="yh-step-desc">进入「详细配置」，配置一个可用的 AI 模型</p>
         </div>
 
-        {/* Sarry 浮卡 */}
-        <div className="hero-visual-card-left">
-          <div className="hvc-title">提升工作效率</div>
-          <div className="hvc-bar hvc-bar-1">
-            <div className="hvc-bar-fill" />
+        {/* 箭头 2→3 */}
+        <img
+          src="/landing-assets/yh-features/step-arrow.png"
+          alt=""
+          className="yh-step-arrow"
+        />
+
+        {/* Step 3 */}
+        <div className="yh-step">
+          <div className="yh-step-header">
+            <span className="yh-step-num">Step3</span>
+            <span className="yh-step-label">开启通道，在聊天软件中对话</span>
           </div>
-          <div className="hvc-bar hvc-bar-2">
-            <div className="hvc-bar-fill" />
-          </div>
+          <p className="yh-step-desc">配置完成，即可在下方对话视图直接与 Agent 对话</p>
         </div>
-
-        {/* 左侧装饰_1 */}
-        <img className="hero-deco-1" src="/landing-assets/banner/装饰_1.png" alt="" />
-
-        {/* 卡片1 浮图（滚动联动） */}
-        <div className="hero-deco-card1" />
-
-        {/* 安装技能 浮卡 */}
-        <div className="hero-skill-card">
-          <div className="hero-skill-card-head">
-            <div className="hero-skill-card-title">安装技能</div>
-            <div className="hero-skill-spinner" />
-          </div>
-          <div className="hero-skill-list">
-            <span>obsidian 1.0.0</span>
-            <span>video-transcribe 0.7.0</span>
-            <span className="more">...</span>
-          </div>
-        </div>
-
-        <div className="hero-gradient-bottom" />
-      </section>
-
-      {/* 大标题下方投影 */}
-      <img className="hero-deco-shadow" src="/landing-assets/banner/投影.png" alt="" />
-    </div>
+      </div>
+    </section>
   );
 }

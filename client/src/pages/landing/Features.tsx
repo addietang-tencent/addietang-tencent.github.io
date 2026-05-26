@@ -1,143 +1,129 @@
 /**
- * Features - 平台功能与特色（4 卡 + 柱状图）
+ * Features - 永辉版特色功能区
+ * 布局：上 2 张大卡 + 下 3 张小卡
+ * 每张卡片插图：normal 显示静态图，hover 切换为视频播放
  */
-const CHART_BARS: Array<{ heights: [number, number, number] }> = [
-  { heights: [60, 80, 50] },
-  { heights: [75, 95, 75] },
-  { heights: [75, 55, 75] },
+import FeatureMedia from "./FeatureMedia";
+
+const FEATURES = [
+  {
+    num: "[01]",
+    tag: "永续在线",
+    title: "云端部署，7×24 随时可用",
+    desc: "Agent 运行在云端，无需安装任何软件，手机、电脑随时打开即用，出差途中也不中断",
+    staticSrc: "/landing-assets/yh-features/1_static.png",
+    videoSrc: "/landing-assets/yh-features/anim1.mp4",
+  },
+  {
+    num: "[02]",
+    tag: "开箱即用",
+    title: "3 分钟上手，步骤简单到不像话",
+    desc: "创建 Agent 后，只需配置好模型和对话通道，3 分钟内就能开始和 Agent 对话，全程不需要任何技术背景",
+    staticSrc: "/landing-assets/yh-features/2_static.png",
+    videoSrc: "/landing-assets/yh-features/anim2.mp4",
+  },
+  {
+    num: "[03]",
+    tag: "多端接入",
+    title: "多种通道，随时随地发起对话",
+    desc: "既可以直接在网页上对话，也可以接入企微、飞书、钉钉等聊天软件，在你最顺手的地方使用",
+    staticSrc: "/landing-assets/yh-features/3_static.png",
+    videoSrc: "/landing-assets/yh-features/anim3.mp4",
+  },
+  {
+    num: "[04]",
+    tag: "丰富技能",
+    title: "一个 Agent，搞定多种任务",
+    desc: "内置海量技能，从文档整理、数据分析到联网搜索，按需开启，让 Agent 真正接管你的重复劳动。",
+    staticSrc: "/landing-assets/yh-features/4_static.png",
+    videoSrc: "/landing-assets/yh-features/anim4.mp4",
+  },
+  {
+    num: "[05]",
+    tag: "持续学习",
+    title: "越用越懂你，持续积累工作记忆。",
+    desc: "Agent 能记住你的偏好、常用表达和工作习惯，用得越久，回答越贴合你的实际需求",
+    staticSrc: "/landing-assets/yh-features/5_static.png",
+    videoSrc: "/landing-assets/yh-features/anim5.mp4",
+  },
 ];
 
 export default function Features() {
   return (
-    <div className="section-wrapper features-section">
-      <div
-        className="section-inner"
-        style={{ border: "1px #E2E8F0 solid", background: "#FCFCFC", height: "100%", overflow: "hidden" }}
-      >
-        <div className="features-header">
-          <div className="section-label">功能简介</div>
-          <div className="section-title" style={{ marginTop: 8 }}>
-            ClawPro 平台的功能与特色
-          </div>
-          <div className="section-desc" style={{ marginTop: 8 }}>
-            专为企业场景设计，提供完善的管控能力和极致的使用体验
-          </div>
+    <section className="yh-features">
+      {/* ========== Section Header ========== */}
+      <div className="yh-section-header">
+        <div
+          className="yh-section-badge yh-reveal"
+          style={{ ["--yh-d" as never]: "1.00s" }}
+        >
+          Agent 基本概念与特色
         </div>
-
-        <div className="features-grid">
-          {/* 左大卡：云端部署 */}
-          <div className="feature-card feature-card-large-left">
-            <div className="feature-card-title">云端部署，24小时随时可用</div>
-            <div className="feature-card-desc">
-              部署在腾讯云服务器上，7×24 小时稳定运行，随时随地通过 IM 工具与你的 AI 助理对话。
-            </div>
-            <div className="cloud-illust">
-              <img className="cloud-illust-static" src="/landing-assets/banner/cloud-illust-static.png" alt="云端部署" />
-              <video
-                className="cloud-illust-video"
-                src="/landing-assets/banner/cloud-illust-video.mp4"
-                muted
-                loop
-                playsInline
-                preload="none"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-
-          {/* 中上卡：多用户协同 */}
-          <div className="feature-card feature-card-mid-top collab-card">
-            <div className="feature-card-title">多用户协同</div>
-            <div className="feature-card-desc">
-              支持企业内多名用户各自创建和管理专属 Agent，统一在企业账号体系下管理，互不干扰。
-            </div>
-            <div className="collab-illust">
-              <img
-                className="collab-illust-static"
-                src="/landing-assets/banner/collab-illust-static.png"
-                alt="多用户协同"
-              />
-              <video
-                className="collab-illust-video"
-                src="/landing-assets/banner/collab-illust.mp4"
-                muted
-                loop
-                playsInline
-                preload="none"
-                aria-hidden="true"
-              />
-            </div>
-          </div>
-
-          {/* 中下卡：集中化配置 */}
-          <div className="feature-card feature-card-mid-bottom">
-            <div className="feature-card-title">集中化配置管理</div>
-            <div className="feature-card-desc">
-              管理员可统一配置可用模型、通道和帮助文档，员工无需关心底层配置，专注于使用 AI 提升工作效率。
-            </div>
-            <div className="config-illust">
-              <img className="config-img-1" src="/landing-assets/banner/config-illust-1.png" alt="" />
-              <img className="config-img-2" src="/landing-assets/banner/config-illust-2.png" alt="" />
-              <img className="config-img-3" src="/landing-assets/banner/config-illust-3.png" alt="" />
-              <span className="config-line" aria-hidden="true" />
-            </div>
-          </div>
-
-          {/* 右大卡：实时监控 */}
-          <div className="feature-card feature-card-large-right">
-            <div className="feature-card-title">实时监控与审计</div>
-            <div className="feature-card-desc">
-              全面的运营监控面板，实时掌握 Agent 运行状态和 Tokens 消耗情况，操作记录全程可追溯。
-            </div>
-            <div style={{ marginTop: 32 }}>
-              <div className="chart-container">
-                <div className="chart-legend">
-                  <div className="chart-legend-item">
-                    <img src="/landing-assets/111.svg" alt="" width={12} height={12} /> kimi-k2.5
-                  </div>
-                  <div className="chart-legend-item">
-                    <img src="/landing-assets/112.svg" alt="" width={12} height={12} /> DeepSeek
-                  </div>
-                  <div className="chart-legend-item">
-                    <img src="/landing-assets/113.svg" alt="" width={12} height={12} /> Hy3 preview
-                  </div>
-                </div>
-                <div className="chart-plot">
-                  <div className="chart-y-axis">
-                    {[100, 80, 60, 40, 20, 0].map((v) => (
-                      <span className="chart-y-label" key={v}>
-                        {v}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="chart-bars">
-                    {CHART_BARS.map((g, i) => (
-                      <div className="chart-bar-group" key={i}>
-                        <div className="chart-bar chart-bar-green" style={{ height: `${g.heights[0]}%` }} />
-                        <div className="chart-bar chart-bar-blue" style={{ height: `${g.heights[1]}%` }} />
-                        <div className="chart-bar chart-bar-purple" style={{ height: `${g.heights[2]}%` }} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="chart-tooltip">
-                    <div className="chart-tooltip-bar" />
-                    <div className="chart-tooltip-label">Tookens 请求数：</div>
-                    <div className="chart-tooltip-value">52,250</div>
-                  </div>
-                </div>
-                <div className="chart-x-axis">
-                  <span />
-                  <div className="chart-x-axis-inner">
-                    <span className="chart-x-label">July</span>
-                    <span className="chart-x-label">August</span>
-                    <span className="chart-x-label">September</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2
+          className="yh-section-title yh-reveal"
+          style={{ ["--yh-d" as never]: "1.15s" }}
+        >
+          你的专属AI助手，随时待命
+        </h2>
+        <p
+          className="yh-section-desc yh-reveal"
+          style={{ ["--yh-d" as never]: "1.30s" }}
+        >
+          无需技术背景，3分钟创建属于你的智能工作伙伴
+        </p>
       </div>
-    </div>
+
+      {/* ========== 上排 2 大卡 ========== */}
+      <div className="yh-features-row yh-features-row-top">
+        {FEATURES.slice(0, 2).map((f, i) => (
+          <article
+            key={i}
+            className="yh-feature-card yh-feature-card-lg yh-reveal"
+            style={{ ["--yh-d" as never]: `${1.50 + i * 0.20}s` }}
+          >
+            <div className="yh-feature-card-header">
+              <span className="yh-feature-num">{f.num}</span>
+              <span className="yh-feature-tag">{f.tag}</span>
+            </div>
+            <div className="yh-feature-card-body">
+              <h3 className="yh-feature-title">{f.title}</h3>
+              <p className="yh-feature-desc">{f.desc}</p>
+            </div>
+            <FeatureMedia
+              staticSrc={f.staticSrc}
+              videoSrc={f.videoSrc}
+              alt={f.tag}
+              className="yh-feature-visual yh-feature-visual-lg"
+            />
+          </article>
+        ))}
+      </div>
+
+      {/* ========== 下排 3 小卡 ========== */}
+      <div className="yh-features-row yh-features-row-bottom">
+        {FEATURES.slice(2).map((f, i) => (
+          <article
+            key={i + 2}
+            className="yh-feature-card yh-feature-card-sm yh-reveal"
+            style={{ ["--yh-d" as never]: `${1.95 + i * 0.20}s` }}
+          >
+            <div className="yh-feature-card-header">
+              <span className="yh-feature-num">{f.num}</span>
+              <span className="yh-feature-tag">{f.tag}</span>
+            </div>
+            <div className="yh-feature-card-body-sm">
+              <h3 className="yh-feature-title-sm">{f.title}</h3>
+              <p className="yh-feature-desc-sm">{f.desc}</p>
+            </div>
+            <FeatureMedia
+              staticSrc={f.staticSrc}
+              videoSrc={f.videoSrc}
+              alt={f.tag}
+              className="yh-feature-visual yh-feature-visual-sm"
+            />
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }

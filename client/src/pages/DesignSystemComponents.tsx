@@ -1102,7 +1102,7 @@ function TablePreview() {
               <TableRow key={name}>
                 <TableCell className="font-medium">{name}</TableCell>
                 <TableCell>{group}</TableCell>
-                <TableCell><StatusTag variant={status === "高频参考" ? "blue" : "green"} dot>{status}</StatusTag></TableCell>
+                <TableCell><StatusTag mode="dot" variant={status === "高频参考" ? "blue" : "green"}>{status}</StatusTag></TableCell>
                 <TableCell className="text-right tabular-nums">约 {modules} 个页面/模块</TableCell>
                 <TableActionCell><div className="flex gap-3"><Button variant="link-dark" size="sm">查看</Button><Button variant="link-dark" size="sm">复制用法</Button></div></TableActionCell>
               </TableRow>
@@ -1153,7 +1153,28 @@ function StatusPreview({ id }: { id: ComponentId }) {
     return <PreviewPanel title="Badge variants"><div className="flex flex-wrap items-center gap-3"><Badge>Default</Badge><Badge variant="secondary">Secondary</Badge><Badge variant="outline">Outline</Badge><Badge variant="destructive">Destructive</Badge></div></PreviewPanel>;
   }
   if (id === "status-tag") {
-    return <PreviewPanel title="StatusTag variants"><div className="flex flex-wrap items-center gap-3"><StatusTag variant="green" dot>运行中</StatusTag><StatusTag variant="blue" dot>进行中</StatusTag><StatusTag variant="gray">待完成</StatusTag><StatusTag variant="red" dot>异常</StatusTag></div></PreviewPanel>;
+    return (
+      <PreviewPanel title="StatusTag variants">
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <StatusTag mode="dot" variant="green">运行中</StatusTag>
+            <StatusTag mode="dot" variant="blue">进行中</StatusTag>
+            <StatusTag mode="dot" variant="gray">待处理</StatusTag>
+            <StatusTag mode="dot" variant="red">异常</StatusTag>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusTag mode="fill" variant="blue">全部用户</StatusTag>
+            <StatusTag mode="fill" variant="gray">v1.2.0</StatusTag>
+            <StatusTag mode="fill" variant="green">已接入</StatusTag>
+            <StatusTag mode="fill" variant="red">高风险</StatusTag>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusTag preset="role-admin" />
+            <StatusTag preset="role-user" />
+          </div>
+        </div>
+      </PreviewPanel>
+    );
   }
   return (
     <PreviewPanel title="Empty 空状态">

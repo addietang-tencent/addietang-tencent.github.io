@@ -798,14 +798,14 @@ description: this is a skill creator.
                 <span className="text-sm font-medium text-[#0A0A0A]">提交后进行安全检测</span>
                 <Tooltip delayDuration={300}>
                   <TooltipTrigger asChild>
-                    <span><StatusTag variant="blue" className="cursor-default">限免</StatusTag></span>
+                    <span><StatusTag mode="fill" variant="blue" className="cursor-default">限免</StatusTag></span>
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs max-w-[260px] leading-relaxed">
                     限时免费，该检测能力正在公测中，暂不收费，后续如需收费，仅对增量检测收费，并及时与您同步收费方式。
                   </TooltipContent>
                 </Tooltip>
                 {!securityServiceActive && (
-                  <StatusTag variant="gray">未开通</StatusTag>
+                  <StatusTag mode="fill" variant="gray">未开通</StatusTag>
                 )}
               </div>
               <Tooltip delayDuration={300}>

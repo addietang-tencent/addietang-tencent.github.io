@@ -205,7 +205,7 @@ function AgentTypeRow({
           {isDefault && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span><StatusTag variant="blue">用户端首选</StatusTag></span>
+                <span><StatusTag mode="fill" variant="blue">用户端首选</StatusTag></span>
               </TooltipTrigger>
               <TooltipContent className="text-xs">
                 用户端首选 Agent 类型
@@ -218,7 +218,7 @@ function AgentTypeRow({
             {isNative && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span><StatusTag variant="gray">自定义内核</StatusTag></span>
+                  <span><StatusTag mode="fill" variant="gray">自定义内核</StatusTag></span>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
                   完全自研内核：管控台部分功能不可用，用户需通过终端配置
@@ -228,7 +228,7 @@ function AgentTypeRow({
             {customType && !isNative && kernelBaseLabel && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span><StatusTag variant="gray">兼容 {kernelBaseLabel}</StatusTag></span>
+                  <span><StatusTag mode="fill" variant="gray">兼容 {kernelBaseLabel}</StatusTag></span>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
                   与 {kernelBaseLabel} 完全兼容，管控台功能保持一致
@@ -411,7 +411,7 @@ function ImageCombinedCell({
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 flex-wrap">
-        <StatusTag variant={isPublic ? "blue" : "gray"} className="text-[10px] h-4 px-1.5">
+        <StatusTag mode="fill" variant={isPublic ? "blue" : "gray"} className="text-[10px] h-4 px-1.5">
           {isPublic ? "公共" : "自定义"}
         </StatusTag>
         <span className="text-sm font-medium text-gray-900 truncate">

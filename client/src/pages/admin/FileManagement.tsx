@@ -1260,7 +1260,7 @@ export default function FileManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <StatusTag variant="blue">
+                    <StatusTag mode="fill" variant="blue">
                       {item.type}
                     </StatusTag>
                   </td>
@@ -1960,7 +1960,7 @@ export default function FileManagement() {
                             <h4 className="text-sm font-medium text-[#0A0A0A] truncate">
                               {instance.instanceName}
                             </h4>
-                            <StatusTag variant="red">{instance.remainingDays} 天后永久删除</StatusTag>
+                            <StatusTag mode="fill" variant="red">{instance.remainingDays} 天后永久删除</StatusTag>
                           </div>
                           <div className="flex items-center gap-4 text-xs text-[#737373]">
                             <span>创建人：{instance.creator}</span>
@@ -2147,7 +2147,7 @@ export default function FileManagement() {
                                 <h4 className="text-sm font-medium text-[#0A0A0A] truncate">
                                   {item.instanceName}
                                 </h4>
-                                <StatusTag variant="gray">未启用</StatusTag>
+                                <StatusTag mode="fill" variant="gray">未启用</StatusTag>
                               </div>
                               <div className="flex items-center gap-3 text-xs text-[#737373]">
                                 <span>创建人：{item.creator}</span>

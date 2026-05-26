@@ -1789,7 +1789,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
-                              <StatusTag variant="green" dot>主模型</StatusTag>
+                              <StatusTag mode="dot" variant="green">主模型</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -1853,7 +1853,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                               </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0 ml-2">
-                              <StatusTag variant="gray">备用</StatusTag>
+                              <StatusTag mode="fill" variant="gray">备用</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <button
@@ -2001,7 +2001,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                             </button>
                           )}
                           <div className="flex items-center gap-2 shrink-0">
-                            <StatusTag variant="green" dot>运行中</StatusTag>
+                            <StatusTag mode="dot" variant="green">运行中</StatusTag>
                             <button
                               onClick={() => {
                                 setAppliedChannels(appliedChannels.filter((_, i) => i !== chIdx));

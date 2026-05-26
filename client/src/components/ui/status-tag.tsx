@@ -6,36 +6,40 @@ import { SmallBodyText } from "@/components/ui/Typography";
  * StatusTag 状态标签组件
  *
  * 分类：
- * - 状态类：variant + dot，例如 <StatusTag variant="green" dot>正常</StatusTag>
- * - 信息类：variant，例如 <StatusTag variant="blue">全部用户</StatusTag>
+ * - 状态类：mode="dot"，无底色，仅展示彩色圆点 + 文案
+ * - 信息类：mode="fill"，有浅色底，不展示圆点
  * - 角色类：preset，例如 <StatusTag preset="role-admin" />
  * - 图标类：variant="role" + icon，用于低频自定义 icon 标签
  */
 
-const variantStyles = {
+const statusTagColorTokens = {
   green: {
-    className: "bg-[#E9F8EB] text-[#008236]",
+    text: "text-[#008236]",
+    bg: "bg-[#E9F8EB]",
     dot: "bg-[#008236]",
   },
   red: {
-    className: "bg-[#FEF2F2] text-[#DC2626]",
+    text: "text-[#DC2626]",
+    bg: "bg-[#FEF2F2]",
     dot: "bg-[#DC2626]",
   },
   gray: {
-    className: "bg-[#F5F5F5] text-[#0A0A0A]",
+    text: "text-[#0A0A0A]",
+    bg: "bg-[#F5F5F5]",
     dot: "bg-[#0A0A0A]",
   },
   blue: {
-    className: "bg-[#E8ECFE] text-[#1447E6]",
+    text: "text-[#1447E6]",
+    bg: "bg-[#E8ECFE]",
     dot: "bg-[#1447E6]",
-  },
-  role: {
-    className: "h-[22px] border border-[#E5E5E5] bg-white px-2 text-[#020617]",
-    dot: "bg-[#020617]",
   },
 } as const;
 
-type StatusTagVariant = keyof typeof variantStyles;
+const roleTagClassName = "h-[22px] rounded-full border border-[#E5E5E5] bg-white px-2 text-[#020617]";
+
+type StatusTagColor = keyof typeof statusTagColorTokens;
+type StatusTagVariant = StatusTagColor | "role";
+type StatusTagMode = "dot" | "fill";
 type StatusTagPreset = "role-admin" | "role-user";
 type StatusTagIconComponent = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement;
 
@@ -62,6 +66,8 @@ const rolePresets: Record<StatusTagPreset, { label: string; icon: StatusTagIconC
 
 interface StatusTagProps extends React.ComponentProps<"span"> {
   variant?: StatusTagVariant;
+  mode?: StatusTagMode;
+  /** @deprecated 新代码请使用 mode="dot"；保留仅用于兼容旧调用 */
   dot?: boolean;
   icon?: React.ReactNode;
   preset?: StatusTagPreset;
@@ -69,6 +75,7 @@ interface StatusTagProps extends React.ComponentProps<"span"> {
 
 function StatusTag({
   variant,
+  mode,
   preset,
   dot = false,
   icon,
@@ -78,7 +85,9 @@ function StatusTag({
 }: StatusTagProps) {
   const presetConfig = preset ? rolePresets[preset] : undefined;
   const resolvedVariant: StatusTagVariant = presetConfig ? "role" : (variant ?? "gray");
-  const styles = variantStyles[resolvedVariant];
+  const isRole = resolvedVariant === "role" || Boolean(presetConfig) || Boolean(icon);
+  const resolvedMode: StatusTagMode | "role" = isRole ? "role" : (mode ?? (dot ? "dot" : "fill"));
+  const color = resolvedVariant === "role" ? statusTagColorTokens.gray : statusTagColorTokens[resolvedVariant];
   const PresetIcon = presetConfig?.icon;
   const resolvedChildren = children ?? presetConfig?.label;
 
@@ -86,16 +95,20 @@ function StatusTag({
     <span
       data-slot="status-tag"
       data-variant={resolvedVariant}
+      data-mode={resolvedMode}
       data-preset={preset}
       className={cn(
-        "inline-flex h-5 items-center justify-center gap-1 rounded-full px-2 py-[2px] whitespace-nowrap",
-        styles.className,
+        "inline-flex items-center justify-center gap-1 whitespace-nowrap",
+        resolvedMode === "dot" && "px-0 py-0 bg-transparent",
+        resolvedMode === "fill" && cn("h-5 rounded-full px-2 py-[2px]", color.bg),
+        resolvedMode === "role" && roleTagClassName,
+        color.text,
         className
       )}
       {...props}
     >
-      {dot && !PresetIcon && !icon && (
-        <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", styles.dot)} />
+      {resolvedMode === "dot" && (
+        <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", color.dot)} />
       )}
       {PresetIcon && (
         <span data-slot="status-tag-icon" className="inline-flex size-3 shrink-0 items-center justify-center text-current">
@@ -116,4 +129,4 @@ function StatusTag({
   );
 }
 
-export { StatusTag, variantStyles as statusTagVariants, rolePresets as statusTagRolePresets };
+export { StatusTag, statusTagColorTokens, rolePresets as statusTagRolePresets };

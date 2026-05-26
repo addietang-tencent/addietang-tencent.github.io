@@ -82,7 +82,7 @@ export default function PublicImageHistoryDialog({
                         <span className="font-mono font-semibold text-sm text-[#0A0A0A] tabular-nums">
                           v{r.version}
                         </span>
-                        {isCurrent && <StatusTag variant="green">当前版本</StatusTag>}
+                        {isCurrent && <StatusTag mode="fill" variant="green">当前版本</StatusTag>}
                         <span className="text-xs text-[#737373] font-mono ml-auto">
                           {r.releaseTime}
                         </span>

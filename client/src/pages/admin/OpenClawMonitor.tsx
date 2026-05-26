@@ -1836,17 +1836,17 @@ export default function AgentMonitor() {
                 <div>
                   <p className="text-xs font-medium text-[#020617] mb-2">需关注</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <StatusTag variant="red" dot>创建失败</StatusTag>
-                    <StatusTag variant="red" dot>加载失败</StatusTag>
-                    <StatusTag variant="gray" dot>维护中</StatusTag>
-                    <StatusTag variant="gray" dot>待处理</StatusTag>
+                    <StatusTag mode="dot" variant="red">创建失败</StatusTag>
+                    <StatusTag mode="dot" variant="red">加载失败</StatusTag>
+                    <StatusTag mode="dot" variant="gray">维护中</StatusTag>
+                    <StatusTag mode="dot" variant="gray">待处理</StatusTag>
                   </div>
                 </div>
                 <div className="border-t border-[#f0f0f0] pt-3">
                   <p className="text-xs font-medium text-[#020617] mb-2">处理中</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <StatusTag variant="blue" dot>创建中</StatusTag>
-                    <StatusTag variant="blue" dot>加载中</StatusTag>
+                    <StatusTag mode="dot" variant="blue">创建中</StatusTag>
+                    <StatusTag mode="dot" variant="blue">加载中</StatusTag>
                   </div>
                 </div>
               </div>
@@ -2242,7 +2242,7 @@ export default function AgentMonitor() {
                       </TableCell>
                       {/* 状态列 */}
                       <TableCell className="px-4 py-4">
-                        <StatusTag variant={statusConfig.tagVariant} dot>
+                        <StatusTag mode="dot" variant={statusConfig.tagVariant}>
                           {statusConfig.label}
                         </StatusTag>
                       </TableCell>
@@ -2308,7 +2308,7 @@ export default function AgentMonitor() {
                               <div className="flex items-center gap-1 max-w-[200px]">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <StatusTag variant="gray" className="max-w-[160px] truncate cursor-default">
+                                    <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate cursor-default">
                                       {item.path}
                                     </StatusTag>
                                   </TooltipTrigger>
@@ -2336,7 +2336,7 @@ export default function AgentMonitor() {
                               <div className="flex items-center gap-1 max-w-[200px]">
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <StatusTag variant="gray" className="max-w-[160px] truncate cursor-default">
+                                    <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate cursor-default">
                                       {item.path}
                                     </StatusTag>
                                   </TooltipTrigger>
@@ -2648,7 +2648,7 @@ export default function AgentMonitor() {
                         <span className="font-mono text-xs text-[#334155]">{c.version}</span>
                       </td>
                       <td className="px-3 py-3">
-                        <StatusTag variant={sc.tagVariant} dot>
+                        <StatusTag mode="dot" variant={sc.tagVariant}>
                           {sc.label}
                         </StatusTag>
                       </td>
@@ -3086,9 +3086,9 @@ export default function AgentMonitor() {
                               )}
                             </div>
                             {isOpenClaw && (isPrimary ? (
-                              <StatusTag variant="green" dot>主模型</StatusTag>
+                              <StatusTag mode="dot" variant="green">主模型</StatusTag>
                             ) : (
-                              <StatusTag variant="gray">备选模型</StatusTag>
+                              <StatusTag mode="fill" variant="gray">备选模型</StatusTag>
                             ))}
                             <div className="flex items-center gap-1 shrink-0">
                               {isOpenClaw && !isPrimary && (

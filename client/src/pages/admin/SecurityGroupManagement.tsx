@@ -1356,11 +1356,11 @@ function CreateSecurityGroupDialog({
                             <td className="px-3 py-2 text-gray-700">{rule.port}</td>
                             <td className="px-3 py-2">
                               {rule.policy === "允许" ? (
-                                <StatusTag variant="green" dot>
+                                <StatusTag mode="dot" variant="green">
                                   {rule.policy}
                                 </StatusTag>
                               ) : (
-                                <StatusTag variant="gray" dot>
+                                <StatusTag mode="dot" variant="gray">
                                   {rule.policy}
                                 </StatusTag>
                               )}
@@ -1970,7 +1970,7 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
           className="flex items-center gap-1 w-full max-w-[220px] overflow-hidden cursor-default"
         >
           {paths.slice(0, visibleCount).map((p, i) => (
-            <StatusTag
+            <StatusTag mode="fill"
               key={i}
               ref={(el) => { tagRefs.current[i] = el as HTMLSpanElement | null; }}
               variant="gray"
@@ -1987,7 +1987,7 @@ function GroupBadges({ groupNames }: { groupNames: string[] }) {
           {/* 隐藏测量区 */}
           <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
             {paths.map((p, i) => (
-              <StatusTag
+              <StatusTag mode="fill"
                 key={`m-${i}`}
                 ref={(el) => { tagRefs.current[i] = el as HTMLSpanElement | null; }}
                 variant="gray"
@@ -2975,11 +2975,11 @@ export default function SecurityGroupManagement() {
                   <td className="px-6 py-4 text-sm text-[#334155]">{rule.port}</td>
                   <td className="px-6 py-4">
                     {rule.policy === "允许" ? (
-                      <StatusTag variant="green" dot>
+                      <StatusTag mode="dot" variant="green">
                         {rule.policy}
                       </StatusTag>
                     ) : (
-                      <StatusTag variant="gray" dot>
+                      <StatusTag mode="dot" variant="gray">
                         {rule.policy}
                       </StatusTag>
                     )}
@@ -3659,7 +3659,7 @@ export default function SecurityGroupManagement() {
                         <td className="px-4 pt-4 pb-2 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
-                              <StatusTag variant="blue">预设策略</StatusTag>
+                              <StatusTag mode="fill" variant="blue">预设策略</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex items-center text-gray-400 hover:text-gray-500 cursor-default">

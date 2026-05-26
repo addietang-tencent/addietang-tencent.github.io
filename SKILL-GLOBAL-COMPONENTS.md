@@ -1008,30 +1008,61 @@ import {
 
 | 分类 | API | 适用场景 |
 |------|-----|----------|
-| 状态类 | `<StatusTag variant="green" dot>正常</StatusTag>` | 运行中、失败、禁用、处理中等真实状态 |
-| 信息类 | `<StatusTag variant="blue">全部用户</StatusTag>` | 范围、版本、类型、数量等辅助信息 |
+| 状态点类 | `<StatusTag mode="dot" variant="green">正常</StatusTag>` | 表格状态列、运行状态、开关状态、任务状态 |
+| 填充信息类 | `<StatusTag mode="fill" variant="blue">全部用户</StatusTag>` | 范围、版本、类型、数量等辅助信息 |
 | 角色类 | `<StatusTag preset="role-admin" />` / `<StatusTag preset="role-user" />` | 管控端「用户管理」表格角色列 |
 | 自定义 icon 类 | `<StatusTag variant="role" icon={<SomeIcon />}>自定义</StatusTag>` | 低频自定义带 icon 标签；高频语义应沉淀为 `preset` |
 
-### 16.2 基础状态 / 信息标签 token
+### 16.2 颜色 token
+
+> 同一颜色在 `mode="dot"` 与 `mode="fill"` 中保持近似语义：dot 使用主色，fill 使用同语义浅底色 + 主色文字。后续新增颜色（如 `amber` / `purple`）必须同时补齐 `text / bg / dot` 三个 token。
+
+| variant | text / dot | fill bg | 使用场景 |
+|---------|------------|---------|----------|
+| `green` | `#008236` | `#E9F8EB` | 正常、运行中、已完成、开启、生效 |
+| `blue` | `#1447E6` | `#E8ECFE` | 进行中、全部用户、推荐/提示 |
+| `gray` | `#0A0A0A` | `#F5F5F5` | 默认、待处理、关闭、版本、范围 |
+| `red` | `#DC2626` | `#FEF2F2` | 错误、失败、异常、风险 |
+
+### 16.3 状态点类 `mode="dot"`
+
+| Token | Value |
+|-------|-------|
+| background | 无 |
+| border | 无 |
+| padding | 无左右间距（`px-0 py-0`） |
+| layout | `inline-flex items-center gap-1` |
+| dot size | `6px` (`w-1.5 h-1.5 rounded-full`) |
+| font | `SmallBodyText`：12px / Medium / tracking 0.18px |
+| color | 使用当前 `variant` 的 text / dot 主色 |
+
+**表格状态列必须使用 `mode="dot"`。**
+
+```tsx
+<StatusTag mode="dot" variant="green">正常</StatusTag>
+<StatusTag mode="dot" variant="blue">进行中</StatusTag>
+<StatusTag mode="dot" variant="gray">待处理</StatusTag>
+<StatusTag mode="dot" variant="red">失败</StatusTag>
+```
+
+### 16.4 填充信息类 `mode="fill"`
 
 | Token | Value |
 |-------|-------|
 | height | `20px` (`h-5`) |
+| background | 使用当前 `variant` 的浅色 bg |
 | border-radius | `full` (`rounded-full`) |
 | padding | `px-2 py-[2px]` |
-| font | `SmallBodyText`：12px / Medium / tracking 0.18px |
-| dot size | `6px` (`w-1.5 h-1.5 rounded-full`) |
-| gap (dot ↔ text) | `4px` (`gap-1`) |
+| dot | 不展示 |
+| font | `SmallBodyText` |
 
-| variant | 背景 | 文字/圆点 | 使用场景 |
-|---------|------|-----------|----------|
-| `green` | `#E9F8EB` | `#008236` | 正常、运行中、已完成、开启 |
-| `gray` | `#F5F5F5` | `#0A0A0A` | 默认、待处理、关闭、信息标签 |
-| `blue` | `#E8ECFE` | `#1447E6` | 进行中、全部用户、类型标签 |
-| `red` | `#FEF2F2` | `#DC2626` | 错误、失败、异常 |
+```tsx
+<StatusTag mode="fill" variant="blue">全部用户</StatusTag>
+<StatusTag mode="fill" variant="gray">v1.2.0</StatusTag>
+<StatusTag mode="fill" variant="green">已接入</StatusTag>
+```
 
-### 16.3 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
+### 16.5 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
 
 | Token | 管理员 | 用户 |
 |-------|--------|------|
@@ -1046,40 +1077,35 @@ import {
 | padding / gap | `px-2` / `gap-1` | `px-2` / `gap-1` |
 | font | `SmallBodyText` | `SmallBodyText` |
 
-### 16.4 使用方式
-
 ```tsx
-import { StatusTag } from "@/components/ui/status-tag";
-
-// 状态类：带 dot
-<StatusTag variant="green" dot>运行中</StatusTag>
-<StatusTag variant="gray" dot>已停止</StatusTag>
-<StatusTag variant="red" dot>异常</StatusTag>
-
-// 信息类：不带 dot
-<StatusTag variant="blue">全部用户</StatusTag>
-<StatusTag variant="gray">v1.2.0</StatusTag>
-
-// 角色类：固定业务语义，优先使用 preset
 <StatusTag preset="role-admin" />
 <StatusTag preset="role-user" />
-
-// 低频自定义 icon：只传 icon 形状，颜色/尺寸由 StatusTag 控制
-<StatusTag variant="role" icon={<SomeIcon />}>自定义</StatusTag>
 ```
 
-### 16.5 使用规则
+### 16.6 兼容规则
 
-- 表格中状态列必须使用 `StatusTag`，禁止自定义 `<span>` + 颜色 class。
-- 开启/关闭状态：`variant="green" dot` / `variant="gray" dot`。
-- 错误/失败状态：`variant="red" dot`。
+旧写法仍兼容，但新代码不再推荐：
+
+```tsx
+// 旧：兼容，会自动等价为 mode="dot"
+<StatusTag variant="green" dot>正常</StatusTag>
+
+// 新：推荐
+<StatusTag mode="dot" variant="green">正常</StatusTag>
+```
+
+### 16.7 使用规则
+
+- 表格状态列必须使用 `mode="dot"`，禁止使用有底色胶囊表达状态列。
+- 信息/分类/版本/范围类标签必须使用 `mode="fill"`，不带 dot。
 - 角色列必须使用 `preset="role-admin"` / `preset="role-user"`，禁止业务侧自行拼 icon、描边和文字。
 - `icon` 插槽只用于低频自定义标签；同一语义复用 2 次以上，应沉淀为 `preset`。
 - 传入 `icon` 时，业务侧只提供形状；icon 必须支持 `currentColor`，不要在业务侧写颜色和尺寸。
 
-### 16.6 禁止事项
+### 16.8 禁止事项
 
 - 禁止使用自定义的 `bg-blue-50 text-blue-600 rounded-xl` 或 `bg-green-50 text-green-600` 等样式替代 StatusTag。
+- 禁止在表格状态列使用 `mode="fill"` 或旧的有底色 dot 胶囊。
 - 禁止使用红/绿色纯文字（如 `text-green-600` / `text-red-500`）表示开关状态。
 - 禁止自定义标签圆角（如 `rounded-xl`），统一使用组件内置圆角。
 - 禁止在用户管理角色列自行拼装 `span + icon + border`，统一使用 `StatusTag preset`。

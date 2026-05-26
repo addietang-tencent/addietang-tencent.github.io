@@ -693,7 +693,7 @@ function LabeledOptionIndicator<T extends string>({
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="text-gray-400">{label}</span>
-      <StatusTag variant="gray">{currentLabel}</StatusTag>
+      <StatusTag mode="fill" variant="gray">{currentLabel}</StatusTag>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button variant="link-dark" size="sm" className="h-auto px-0" title={`编辑${label}`}>编辑</Button>
@@ -1082,7 +1082,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   );
   // 分组规则编辑态：展示静态文字（值固定为例外值，不可改）
   const renderGroupRuleStaticValue = () => (
-    <StatusTag variant={groupRuleValue ? "green" : "gray"} dot>{groupRuleValue ? "开启" : "关闭"}</StatusTag>
+    <StatusTag mode="dot" variant={groupRuleValue ? "green" : "gray"}>{groupRuleValue ? "开启" : "关闭"}</StatusTag>
   );
   // 行内 loading 文字
   const renderLoading = () => (
@@ -1115,7 +1115,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
             <span className="flex-1" />
             {loadingRuleId === fallbackRule.id
               ? renderLoading()
-              : <StatusTag variant={fallbackRule.value ? "green" : "gray"} dot>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
+              : <StatusTag mode="dot" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
             <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0 text-[14px]" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
           </div>
         )}
@@ -1155,7 +1155,7 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
                     <div className={`${valueColClass} text-right`}>
                       {loadingRuleId === rule.id
                         ? renderLoading()
-                        : <StatusTag variant={rule.value ? "green" : "gray"} dot>{rule.value ? "开启" : "关闭"}</StatusTag>}
+                        : <StatusTag mode="dot" variant={rule.value ? "green" : "gray"}>{rule.value ? "开启" : "关闭"}</StatusTag>}
                     </div>
                     <div className="w-16 flex items-center justify-end gap-3">
                       <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => startEdit(rule)} disabled={!!loadingRuleId}>编辑</Button>

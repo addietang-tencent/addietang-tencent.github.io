@@ -142,9 +142,9 @@ function StepCard({
           <div className="flex items-center gap-2.5 flex-wrap">
             <p className="text-base font-medium text-[#020617] leading-6">{title}</p>
             {done ? (
-              <StatusTag variant="green" dot>已完成</StatusTag>
+              <StatusTag mode="dot" variant="green">已完成</StatusTag>
             ) : (
-              <StatusTag variant="gray" dot>待完成</StatusTag>
+              <StatusTag mode="dot" variant="gray">待完成</StatusTag>
             )}
           </div>
           <p className="text-xs text-[#0A0A0A]/70 leading-5 tracking-[0.18px]">{description}</p>
@@ -776,7 +776,7 @@ export default function StandardBasicInfo() {
                         alt=""
                         className="w-[18px] h-[18px]"
                       />
-                      <StatusTag variant={item.type === "feature" ? "green" : "blue"}>
+                      <StatusTag mode="fill" variant={item.type === "feature" ? "green" : "blue"}>
                         {item.type === "feature" ? "功能上新" : "体验优化"}
                       </StatusTag>
                     </div>

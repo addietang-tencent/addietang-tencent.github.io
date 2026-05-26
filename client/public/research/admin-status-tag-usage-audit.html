@@ -264,11 +264,11 @@
               <li>管控端共 <strong>19 个模块 / 84 处</strong> 使用 `StatusTag`。</li>
               <li>使用最集中：技能配置、成员管理、OpenClaw 监控、镜像管理。</li>
               <li>当前变体覆盖 `green / blue / gray / red`，暂不需要新增黄/紫等颜色。</li>
-              <li>信息标签如版本号、范围、分组数量不建议带 dot。</li>
+              <li>信息标签如版本号、范围、分组数量不建议使用 mode="dot"。</li>
             </ul>
           </div>
           <div class="card">
-            <div class="callout">建议先在使用规范上达成一致：真实状态才带 dot；辅助信息不带 dot。后续再逐步把高频枚举沉淀为模块内的 `STATUS_TAG_MAP`，减少散落判断。</div>
+            <div class="callout">建议先在使用规范上达成一致：真实状态使用 mode="dot"；辅助信息使用 mode="fill"。后续再逐步把高频枚举沉淀为模块内的 `STATUS_TAG_MAP`，减少散落判断。</div>
           </div>
         </div>
       </section>
@@ -281,12 +281,12 @@
           </div>
         </div>
         <div class="rule-list">
-          <div class="rule-item"><div class="rule-scene">成功 / 正常 / 开启 / 生效</div><div><span class="tag green"><span class="tag-dot"></span>正常</span></div><div class="rule-note"><code>variant="green" dot</code>，真实状态，建议带 dot。</div></div>
-          <div class="rule-item"><div class="rule-scene">进行中 / 创建中 / 加载中</div><div><span class="tag blue"><span class="tag-dot"></span>创建中</span></div><div class="rule-note"><code>variant="blue" dot</code>，真实进行态，建议带 dot。</div></div>
-          <div class="rule-item"><div class="rule-scene">失败 / 异常 / 加载失败</div><div><span class="tag red"><span class="tag-dot"></span>失败</span></div><div class="rule-note"><code>variant="red" dot</code>，真实异常态，必须带 dot。</div></div>
-          <div class="rule-item"><div class="rule-scene">关闭 / 禁用 / 待处理 / 维护中</div><div><span class="tag gray"><span class="tag-dot"></span>禁用</span></div><div class="rule-note"><code>variant="gray" dot</code>，真实状态，建议带 dot。</div></div>
-          <div class="rule-item"><div class="rule-scene">全部用户 / 公共 / 推荐 / 限免</div><div><span class="tag blue">全部用户</span></div><div class="rule-note"><code>variant="blue"</code>，信息标签，不带 dot。</div></div>
-          <div class="rule-item"><div class="rule-scene">版本号 / 分组名 / 路径 / +N</div><div><span class="tag gray">v1.2.0</span></div><div class="rule-note"><code>variant="gray"</code>，信息标签，不带 dot。</div></div>
+          <div class="rule-item"><div class="rule-scene">成功 / 正常 / 开启 / 生效</div><div><span class="tag green"><span class="tag-dot"></span>正常</span></div><div class="rule-note"><code>variant="green" dot</code>，真实状态，建议使用 mode="dot"。</div></div>
+          <div class="rule-item"><div class="rule-scene">进行中 / 创建中 / 加载中</div><div><span class="tag blue"><span class="tag-dot"></span>创建中</span></div><div class="rule-note"><code>variant="blue" dot</code>，真实进行态，建议使用 mode="dot"。</div></div>
+          <div class="rule-item"><div class="rule-scene">失败 / 异常 / 加载失败</div><div><span class="tag red"><span class="tag-dot"></span>失败</span></div><div class="rule-note"><code>variant="red" dot</code>，真实异常态，必须使用 mode="dot"。</div></div>
+          <div class="rule-item"><div class="rule-scene">关闭 / 禁用 / 待处理 / 维护中</div><div><span class="tag gray"><span class="tag-dot"></span>禁用</span></div><div class="rule-note"><code>variant="gray" dot</code>，真实状态，建议使用 mode="dot"。</div></div>
+          <div class="rule-item"><div class="rule-scene">全部用户 / 公共 / 推荐 / 限免</div><div><span class="tag blue">全部用户</span></div><div class="rule-note"><code>variant="blue"</code>，信息标签，使用 mode="fill"。</div></div>
+          <div class="rule-item"><div class="rule-scene">版本号 / 分组名 / 路径 / +N</div><div><span class="tag gray">v1.2.0</span></div><div class="rule-note"><code>variant="gray"</code>，信息标签，使用 mode="fill"。</div></div>
         </div>
       </section>
 

@@ -295,9 +295,9 @@ export default function AuditLog() {
                   <TableCell>{log.responseTime}</TableCell>
                   <TableCell>
                     {log.success ? (
-                      <StatusTag mode="dot" variant="green">成功</StatusTag>
+                      <StatusTag mode="fill" variant="green">成功</StatusTag>
                     ) : (
-                      <StatusTag mode="dot" variant="red">失败</StatusTag>
+                      <StatusTag mode="fill" variant="red">失败</StatusTag>
                     )}
                   </TableCell>
                 </TableRow>

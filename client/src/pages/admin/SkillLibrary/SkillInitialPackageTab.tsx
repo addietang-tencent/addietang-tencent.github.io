@@ -1243,7 +1243,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className="text-sm font-semibold text-gray-900">{pkg.name}</h2>
               {pkg.isActive && (
-                <StatusTag mode="dot" variant="green">生效中</StatusTag>
+                <StatusTag mode="fill" variant="green">生效中</StatusTag>
               )}
             </div>
             <div className="flex items-center gap-1.5 text-xs text-gray-400">

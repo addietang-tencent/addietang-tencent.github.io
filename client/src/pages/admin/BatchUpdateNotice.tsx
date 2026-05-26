@@ -275,7 +275,7 @@ export default function BatchUpdateNotice({
                     </p>
                     {push && (
                       <div className="mt-2 flex items-center gap-2 flex-wrap">
-                        <StatusTag mode="dot" variant="blue">正在提醒员工更新</StatusTag>
+                        <StatusTag mode="fill" variant="blue">正在提醒员工更新</StatusTag>
                         <button
                           onClick={() => handleRevoke(item)}
                           className="text-[12px] text-[#737373] hover:text-[#020617] transition-colors"

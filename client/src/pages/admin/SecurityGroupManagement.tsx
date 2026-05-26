@@ -1356,11 +1356,11 @@ function CreateSecurityGroupDialog({
                             <td className="px-3 py-2 text-gray-700">{rule.port}</td>
                             <td className="px-3 py-2">
                               {rule.policy === "允许" ? (
-                                <StatusTag mode="dot" variant="green">
+                                <StatusTag mode="fill" variant="green">
                                   {rule.policy}
                                 </StatusTag>
                               ) : (
-                                <StatusTag mode="dot" variant="gray">
+                                <StatusTag mode="fill" variant="gray">
                                   {rule.policy}
                                 </StatusTag>
                               )}
@@ -2975,11 +2975,11 @@ export default function SecurityGroupManagement() {
                   <td className="px-6 py-4 text-sm text-[#334155]">{rule.port}</td>
                   <td className="px-6 py-4">
                     {rule.policy === "允许" ? (
-                      <StatusTag mode="dot" variant="green">
+                      <StatusTag mode="fill" variant="green">
                         {rule.policy}
                       </StatusTag>
                     ) : (
-                      <StatusTag mode="dot" variant="gray">
+                      <StatusTag mode="fill" variant="gray">
                         {rule.policy}
                       </StatusTag>
                     )}

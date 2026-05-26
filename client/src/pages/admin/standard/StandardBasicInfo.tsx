@@ -142,9 +142,9 @@ function StepCard({
           <div className="flex items-center gap-2.5 flex-wrap">
             <p className="text-base font-medium text-[#020617] leading-6">{title}</p>
             {done ? (
-              <StatusTag mode="dot" variant="green">已完成</StatusTag>
+              <StatusTag mode="fill" variant="green">已完成</StatusTag>
             ) : (
-              <StatusTag mode="dot" variant="gray">待完成</StatusTag>
+              <StatusTag mode="fill" variant="gray">待完成</StatusTag>
             )}
           </div>
           <p className="text-xs text-[#0A0A0A]/70 leading-5 tracking-[0.18px]">{description}</p>

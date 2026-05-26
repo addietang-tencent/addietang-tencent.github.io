@@ -671,8 +671,8 @@ const COMPONENTS: ComponentMeta[] = [
     instanceCount: 84,
     tags: ["已接入预览", "常用", "Admin 管控端已拉取"],
     usage: ["green：成功 / 开启 / 生效", "blue：进行中 / 全部用户 / 推荐信息", "gray：待处理 / 关闭 / 版本 / 范围", "red：失败 / 异常"],
-    notes: ["优先使用已有 green / blue / gray / red 语义色，不要新增随意色。", "dot 只用于真实状态，不用于版本号、范围、价格等信息标签。", "详细使用清单见 admin-status-tag-usage-audit.md。"],
-    migration: ["手写状态胶囊 → StatusTag", "状态类标签加 dot", "信息类标签不加 dot"],
+    notes: ["优先使用已有 green / blue / gray / red 语义色，不要新增随意色。", "mode=\"dot\" 只用于真实状态，不用于版本号、范围、价格等信息标签。", "详细使用清单见 admin-status-tag-usage-audit.md。"],
+    migration: ["手写状态胶囊 → StatusTag", "状态类标签使用 mode=\"dot\"", "信息类标签使用 mode=\"fill\""],
     applicationPages: [
       { name: "OpenClaw 监控", path: "/admin/openclaw-monitor", platform: "Admin 管控端", priority: "高", usage: "实例生命周期、异常/处理中状态、模型主备状态 · 12 处" },
       { name: "成员管理", path: "/admin/members", platform: "Admin 管控端", priority: "高", usage: "成员角色、账号状态、分组/配置摘要 · 12 处" },
@@ -1157,10 +1157,10 @@ function StatusPreview({ id }: { id: ComponentId }) {
       <PreviewPanel title="StatusTag variants">
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-4">
-            <StatusTag mode="dot" variant="green">运行中</StatusTag>
-            <StatusTag mode="dot" variant="blue">进行中</StatusTag>
-            <StatusTag mode="dot" variant="gray">待处理</StatusTag>
-            <StatusTag mode="dot" variant="red">异常</StatusTag>
+            <StatusTag mode="fill" variant="green">运行中</StatusTag>
+            <StatusTag mode="fill" variant="blue">进行中</StatusTag>
+            <StatusTag mode="fill" variant="gray">待处理</StatusTag>
+            <StatusTag mode="fill" variant="red">异常</StatusTag>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <StatusTag mode="fill" variant="blue">全部用户</StatusTag>

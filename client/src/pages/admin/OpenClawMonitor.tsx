@@ -1836,17 +1836,17 @@ export default function AgentMonitor() {
                 <div>
                   <p className="text-xs font-medium text-[#020617] mb-2">需关注</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <StatusTag mode="dot" variant="red">创建失败</StatusTag>
-                    <StatusTag mode="dot" variant="red">加载失败</StatusTag>
-                    <StatusTag mode="dot" variant="gray">维护中</StatusTag>
-                    <StatusTag mode="dot" variant="gray">待处理</StatusTag>
+                    <StatusTag mode="fill" variant="red">创建失败</StatusTag>
+                    <StatusTag mode="fill" variant="red">加载失败</StatusTag>
+                    <StatusTag mode="fill" variant="gray">维护中</StatusTag>
+                    <StatusTag mode="fill" variant="gray">待处理</StatusTag>
                   </div>
                 </div>
                 <div className="border-t border-[#f0f0f0] pt-3">
                   <p className="text-xs font-medium text-[#020617] mb-2">处理中</p>
                   <div className="flex flex-wrap gap-1.5">
-                    <StatusTag mode="dot" variant="blue">创建中</StatusTag>
-                    <StatusTag mode="dot" variant="blue">加载中</StatusTag>
+                    <StatusTag mode="fill" variant="blue">创建中</StatusTag>
+                    <StatusTag mode="fill" variant="blue">加载中</StatusTag>
                   </div>
                 </div>
               </div>
@@ -3086,7 +3086,7 @@ export default function AgentMonitor() {
                               )}
                             </div>
                             {isOpenClaw && (isPrimary ? (
-                              <StatusTag mode="dot" variant="green">主模型</StatusTag>
+                              <StatusTag mode="fill" variant="green">主模型</StatusTag>
                             ) : (
                               <StatusTag mode="fill" variant="gray">备选模型</StatusTag>
                             ))}

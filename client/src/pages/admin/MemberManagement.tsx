@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatusTag } from "@/components/ui/status-tag";
 import { SurfaceInner } from "@/components/ui/Surface";
 import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell,
 } from "@/components/ui/table";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody,
@@ -2540,7 +2540,7 @@ export default function MemberManagement() {
         <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
          >
           <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={memberTableScrollRef}>
-          <Table density="compact" className="w-full" style={{ minWidth: hasOneid ? "1320px" : "100%" }}>
+          <Table className="w-full" style={{ minWidth: hasOneid ? "1320px" : "100%" }}>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead style={{ minWidth: "220px" }}>
@@ -2612,7 +2612,7 @@ export default function MemberManagement() {
                   <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="text-xs font-medium text-[#0A0A0A] truncate block max-w-[180px] cursor-pointer">{member.id}</span>
+                        <span className="block max-w-[180px] truncate font-medium text-gray-950 cursor-pointer">{member.id}</span>
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs max-w-xs break-all">{member.id}</TooltipContent>
                     </Tooltip>
@@ -2622,10 +2622,10 @@ export default function MemberManagement() {
                       {/* 部门列 */}
                       <TableCell style={{ minWidth: "200px" }}>
                         {mmDeptPaths.length === 0 ? (
-                          <span className="text-xs text-[#A3A3A3]">—</span>
+                          <span className="text-gray-400">—</span>
                         ) : mmDeptPaths.length === 1 ? (
                           <span
-                            className="text-xs text-[#737373] truncate block max-w-[200px]"
+                            className="block max-w-[200px] truncate text-gray-700"
                             title={mmDeptPaths[0].path}
                           >
                             {mmDeptPaths[0].path}
@@ -2634,10 +2634,10 @@ export default function MemberManagement() {
                           <HoverCard>
                             <HoverCardTrigger asChild>
                               <span className="inline-flex items-center gap-1 max-w-[200px] cursor-pointer">
-                                <span className="text-xs text-[#737373] truncate">
+                                <span className="truncate text-gray-700">
                                   {mmDeptPaths[0].path}
                                 </span>
-                                <span className="text-xs text-[#A3A3A3] tabular-nums shrink-0">
+                                <span className="shrink-0 tabular-nums text-gray-400">
                                   +{mmDeptPaths.length - 1}
                                 </span>
                               </span>
@@ -2659,12 +2659,12 @@ export default function MemberManagement() {
                             </HoverCardContent>
                           </HoverCard>
                         )}
-                      </td>
+                      </TableCell>
                       {/* 分组列（OneID 模式：紧跟部门列） */}
-                      <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
+                      <TableCell style={{ minWidth: "200px" }}>
                         <div className="flex items-center gap-1 max-w-[200px]">
                           {mmGroupItems.length === 0 ? (
-                            <span className="text-sm text-[#A3A3A3]">—</span>
+                            <span className="text-gray-400">—</span>
                           ) : (
                           <HoverCard>
                             <HoverCardTrigger asChild>
@@ -2698,15 +2698,15 @@ export default function MemberManagement() {
                           </HoverCard>
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                     </>
                   )}
                   {!hasOneid && (
                     /* 普通模式分组列：紧跟用户ID，完整路径 + hover tooltip */
-                    <td className="px-3 py-4 whitespace-nowrap" style={{ minWidth: "200px" }}>
+                    <TableCell style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1 max-w-[200px]">
                         {manualGroupPaths.length === 0 ? (
-                          <span className="text-sm text-[#A3A3A3]">—</span>
+                          <span className="text-gray-400">—</span>
                         ) : (
                           <HoverCard>
                             <HoverCardTrigger asChild>
@@ -2729,28 +2729,28 @@ export default function MemberManagement() {
                           </HoverCard>
                         )}
                       </div>
-                    </td>
+                    </TableCell>
                   )}
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <StatusTag preset={member.role === "admin" ? "role-admin" : "role-user"} />
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
+                  <TableCell className="text-gray-950">
+                    {member.role === "admin" ? "管理员" : "用户"}
+                  </TableCell>
+                  <TableCell>
                     {member.status === "active" ? (
                       <StatusTag mode="dot" variant="green">正常</StatusTag>
                     ) : (
                       <StatusTag mode="dot" variant="red">禁用</StatusTag>
                     )}
-                  </td>
-                  <td className="px-3 py-4">
+                  </TableCell>
+                  <TableCell>
                     {(() => {
                       const quotas = getMemberGroupQuotas(member.id, hasOneid);
                       if (quotas.length > 0) {
                         return (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-sm text-[#525252] cursor-default border-b border-dashed border-gray-300">按分组</span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs max-w-[240px]">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                              <span className="cursor-default border-b border-dashed border-gray-300">按分组</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-[240px]">
                               <div className="space-y-1">
                                 {quotas.map((q) => (
                                   <div key={q.groupId} className="flex items-center justify-between gap-3">
@@ -2763,19 +2763,19 @@ export default function MemberManagement() {
                           </Tooltip>
                         );
                       }
-                      return <span className="text-sm text-[#525252]">{member.clawLimit}</span>;
+                      return <span>{member.clawLimit}</span>;
                     })()}
-                  </td>
-                  <td className="px-3 py-4">
+                  </TableCell>
+                  <TableCell>
                     {(() => {
                       const quotas = getMemberGroupQuotas(member.id, hasOneid);
                       if (quotas.length > 0) {
                         return (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="text-sm text-[#525252] cursor-default border-b border-dashed border-gray-300">按分组</span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs max-w-[240px]">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                              <span className="cursor-default border-b border-dashed border-gray-300">按分组</span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs max-w-[240px]">
                               <div className="space-y-1">
                                 {quotas.map((q) => (
                                   <div key={q.groupId} className="flex items-center justify-between gap-3">
@@ -2788,21 +2788,19 @@ export default function MemberManagement() {
                           </Tooltip>
                         );
                       }
-                      return <span className="text-sm text-[#525252]">{member.tokenLimit.toLocaleString()}</span>;
+                      return <span>{member.tokenLimit.toLocaleString()}</span>;
                     })()}
-                  </td>
-                  <td className="px-3 py-4 whitespace-nowrap">
-                    <span className="text-sm text-[#737373]">{member.joinTime}</span>
-                  </td>
-                  <td className="px-4 py-4 sticky right-0 bg-white z-10 relative">
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-gray-500">{member.joinTime}</span>
+                  </TableCell>
+                  <TableActionCell className="sticky right-0 bg-white z-10 relative">
                     {memberTableCanScrollRight && (
                       <div className="absolute left-0 top-0 bottom-0" style={{ width: "6px", marginLeft: "-6px", background: "linear-gradient(to right, transparent, rgba(0,0,0,0.04))" }} />
                     )}
                     <div className="flex items-center gap-2">
                       <Button
                         variant="link-dark"
-                        size="sm"
-                        className="h-auto px-0"
                         onClick={() => openEditDialog(member)}
                       >
                         编辑
@@ -2810,7 +2808,7 @@ export default function MemberManagement() {
                       {!hasOneid && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="link-dark" size="sm" className="h-auto px-0 !ring-0 !outline-none focus-visible:!ring-0 focus-visible:!border-transparent">
+                          <Button variant="link-dark">
                             更多
                           </Button>
                         </DropdownMenuTrigger>
@@ -2865,12 +2863,12 @@ export default function MemberManagement() {
                         </DropdownMenu>
                       )}
                     </div>
-                  </td>
-                </tr>
+                  </TableActionCell>
+                </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           </div>
 
           {/* 底部翻页 */}
@@ -2879,6 +2877,7 @@ export default function MemberManagement() {
               total={filtered.length}
               current={currentPage}
               pageSize={PAGE_SIZE}
+              size="default"
               showTotal={(total) => `共 ${total} 名用户`}
               className="w-full justify-between"
               hideOnSinglePage
@@ -4223,8 +4222,8 @@ export default function MemberManagement() {
                                   </TableCell>
                                 )}
                                 <TableCell className="text-xs text-[#737373]">{groupDisplay}</TableCell>
-                                <TableCell className="w-24">
-                                  <StatusTag preset={m.role === "admin" ? "role-admin" : "role-user"} />
+                                <TableCell className="w-24 text-xs text-[#0A0A0A]">
+                                  {m.role === "admin" ? "管理员" : "用户"}
                                 </TableCell>
                                 <TableCell className="w-20">
                                   {m.status === "active" ? (

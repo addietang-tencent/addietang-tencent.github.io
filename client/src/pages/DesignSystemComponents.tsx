@@ -612,7 +612,7 @@ const COMPONENTS: ComponentMeta[] = [
     instanceCount: 62,
     tags: ["已接入预览", "高频参考"],
     usage: ["管理端配置列表", "资源选择列表", "状态与数量数据展示"],
-    notes: ["表格结构统一使用 Table 系列组件。", "分页放在表格容器内部、Table 外部。", "紧凑版使用 density=\"compact\"，仅改变密度，不改变圆角、边框和分割线。"],
+    notes: ["表格结构统一使用 Table 系列组件。", "分页放在表格容器内部、Table 外部，页面级标准表格通常搭配默认尺寸 Pagination。", "紧凑版使用 density=\"compact\"，仅改变密度，不改变圆角、边框和分割线。"],
     migration: ["原生 table + 自定义 class → Table 系列组件", "高密度表格 → Table density=\"compact\""],
   },
   {
@@ -632,7 +632,7 @@ const COMPONENTS: ComponentMeta[] = [
     instanceCount: 36,
     tags: ["已接入预览", "高频参考"],
     usage: ["页面级表格底部分页", "弹窗内资源列表", "简洁翻页"],
-    notes: ["页面级使用默认尺寸，弹窗内可用 small。", "不建议页面内自行实现分页按钮。"],
+    notes: ["页面级标准表格通常使用默认尺寸，弹窗内可按空间使用 small。", "不建议页面内自行实现分页按钮。"],
     migration: ["手写分页按钮 → Pagination"],
   },
   {
@@ -887,10 +887,10 @@ function TypographyPreview() {
     ["StepText", <StepText key="step">Step 1</StepText>, "步骤标识"],
   ] as const;
   const toneCards = [
-    { token: "primary", name: "标题色", value: "#0A0A0A", color: "#0A0A0A" },
-    { token: "emphasis", name: "强调", value: "#020617", color: "#020617" },
-    { token: "body", name: "正文", value: "#0A0A0A", color: "#0A0A0A" },
-    { token: "secondary", name: "描述正文", value: "#334155", color: "#334155" },
+    { token: "primary", name: "标题色", value: "#171717", color: "#171717" },
+    { token: "emphasis", name: "强调", value: "#0A0A0A", color: "#0A0A0A" },
+    { token: "body", name: "正文", value: "#171717", color: "#171717" },
+    { token: "secondary", name: "描述正文", value: "#404040", color: "#404040" },
     { token: "muted", name: "辅助", value: "#737373", color: "#737373" },
     { token: "weak", name: "极弱", value: "#A3A3A3", color: "#A3A3A3" },
     { token: "brand", name: "活跃", value: "#1447E6", color: "#1447E6" },

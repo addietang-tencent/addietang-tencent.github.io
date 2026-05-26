@@ -16,9 +16,9 @@
   --font-en: 'Open Sans', 'Helvetica Neue', sans-serif;
 
   /* v2 文字色阶（对齐 Figma 设计系统） */
-  --color-gray-950: #020617; /* 强调（数字、关键标题） */
-  --color-gray-900: #0A0A0A; /* 主文字 */
-  --color-gray-700: #334155; /* 次级文字（正文、ID、分组） */
+  --color-gray-950: #0A0A0A; /* 强调（数字、关键标题） */
+  --color-gray-900: #171717; /* 主文字 / 正文 */
+  --color-gray-700: #404040; /* 次级文字（描述正文、补充说明） */
   --color-gray-600: #475569; /* 中等文字 */
   --color-gray-500: #737373; /* 辅助文字（时间、描述） */
   --color-gray-400: #A3A3A3; /* 极弱文字（占位、空状态） */
@@ -136,7 +136,7 @@
   --popover: #FFFFFF;             /* Popover/Dropdown/Tooltip 底 */
   --popover-foreground: #0A0A0A;
   --secondary: #F5F5F5;           /* 次级背景 */
-  --secondary-foreground: #334155;
+  --secondary-foreground: #404040;
   --muted: #F5F5F5;               /* Tab 容器、Disabled 背景 */
   --muted-foreground: #737373;    /* 辅助文字（v2 §1） */
   --accent: #F5F5F5;              /* hover 浅灰 */

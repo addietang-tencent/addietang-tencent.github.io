@@ -4,6 +4,13 @@ import { cn } from "@/lib/utils";
 
 type TableDensity = "default" | "compact";
 
+/**
+ * Table 组件只负责表格结构与密度。
+ * 分页器不属于 Table 内部能力。
+ * 约定上，页面级标准表格通常搭配 Pagination 默认尺寸 `size="default"`；
+ * `size="small"` 更适合 Dialog / Drawer 等空间受限浮层中的表格分页。
+ */
+
 const TableDensityContext = React.createContext<TableDensity>("default");
 
 function useTableDensity() {
@@ -103,9 +110,11 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
  *
  * 强制规范：
  * - 背景色：继承 TableHeader 的 bg-gray-50（#FAFAFA）
- * - 文字：对齐 Typography MetaMedium（12px / Medium / #737373）
+ * - 标准版表头：对齐 Typography BodyMedium（14px / Medium / #171717）
+ * - 紧凑版表头：对齐 Typography MetaMedium（12px / Medium / #737373）
  * - 标准版行高：h-12；紧凑版行高：h-10
- * - 标准版内边距：px-4；紧凑版内边距：px-2
+ * - 标准版与紧凑版横向内边距统一：px-4（16px）
+ * - 紧凑版只收缩纵向空间，不收缩左右贴边安全距离
  * - 默认对齐：text-left align-middle，可按列通过 className 覆盖 text-right
  * - 不换行：whitespace-nowrap
  *
@@ -118,8 +127,10 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-left align-middle font-sans text-xs font-medium leading-[1.5] text-gray-500 whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        density === "compact" ? "h-10 px-2" : "h-12 px-4",
+        "text-left align-middle font-sans whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        density === "compact"
+          ? "h-10 px-4 text-xs font-medium leading-[1.5] text-gray-500"
+          : "h-12 px-4 text-sm font-medium leading-[1.5] text-gray-900",
         className
       )}
       {...props}
@@ -135,7 +146,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
       data-slot="table-cell"
       className={cn(
         "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        density === "compact" ? "px-2 py-[9px] text-xs" : "px-4 py-3 text-sm",
+        density === "compact" ? "px-4 py-[9px] text-xs" : "px-4 py-3 text-sm",
         className
       )}
       {...props}
@@ -156,7 +167,7 @@ function TableActionCell({ className, ...props }: React.ComponentProps<"td">) {
       data-slot="table-action-cell"
       className={cn(
         "align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-900 [&:has([role=checkbox])]:pr-0",
-        density === "compact" ? "px-2 py-[9px] text-xs" : "px-4 py-3 text-sm",
+        density === "compact" ? "px-4 py-[9px] text-xs" : "px-4 py-3 text-sm",
         "[&_[data-slot=button]]:text-[#020617] [&_[data-slot=button]]:font-normal [&_[data-slot=button]]:underline-offset-4 [&_[data-slot=button]]:bg-transparent [&_[data-slot=button]]:border-0 [&_[data-slot=button]]:shadow-none [&_[data-slot=button]]:p-0 [&_[data-slot=button]]:h-auto",
         "[&_[data-slot=button]:hover]:text-[#525252] [&_[data-slot=button]:hover]:bg-transparent",
         "[&_[data-slot=button]:active]:text-[#020617] [&_[data-slot=button]:active]:underline",

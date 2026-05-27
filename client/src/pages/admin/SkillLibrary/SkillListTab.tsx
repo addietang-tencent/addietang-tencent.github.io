@@ -688,11 +688,11 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               <div className="px-2 pb-1.5 pt-1">
                 <div className="relative">
                   <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                  <Input
+                  <input
                     placeholder="搜索..."
                     value={scopeSearchQuery}
                     onChange={(e) => setScopeSearchQuery(e.target.value)}
-                    className="pl-7 pr-2 h-8 text-sm"
+                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>

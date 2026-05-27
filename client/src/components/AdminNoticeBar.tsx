@@ -13,6 +13,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight, CircleAlert, ExternalLink } from "lucide-react";
 import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/alert";
+import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // ─── 基础配置项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
 // 说明：

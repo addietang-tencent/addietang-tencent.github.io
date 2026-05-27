@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import {
-  Plus, Info, Pencil,
+  Plus, Info, Pencil, Trash2,
   Check, X, ChevronRight, ChevronDown, Minus,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
@@ -751,7 +751,7 @@ export default function ModelConfig() {
           <Table scrollX={1280}>
             <TableHeader>
               <TableRow>
-                <TableHead fixed="left" className="w-[260px]">模型信息</TableHead>
+                <TableHead fixed="left" style={{ width: 260, minWidth: 260, maxWidth: 260 }}>模型信息</TableHead>
                 <TableHead className="w-[280px]">接入地址</TableHead>
                 <TableHead className="w-[150px]">每日配额</TableHead>
                 <TableHead className="w-[180px]">启用策略</TableHead>
@@ -771,7 +771,7 @@ export default function ModelConfig() {
                     </Tooltip>
                   </div>
                 </TableHead>
-                <TableHead fixed="right" className="w-[96px]">操作</TableHead>
+                <TableHead fixed="right" style={{ width: 96, minWidth: 96, maxWidth: 96 }}>操作</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -780,7 +780,7 @@ export default function ModelConfig() {
 
                 return (
                   <TableRow key={model.id}>
-                    <TableCell fixed="left" className="w-[260px]">
+                    <TableCell fixed="left" style={{ width: 260, minWidth: 260, maxWidth: 260 }}>
                       <div className="min-w-0 space-y-2">
                         <div className="flex min-w-0 items-center gap-2">
                           <p className="truncate text-sm font-medium text-[#0A0A0A]">{model.name}</p>
@@ -872,7 +872,7 @@ export default function ModelConfig() {
                         }}
                       />
                     </TableCell>
-                    <TableActionCell fixed="right" className="w-[96px]" actionsClassName="justify-start">
+                    <TableActionCell fixed="right" style={{ width: 96, minWidth: 96, maxWidth: 96 }} actionsClassName="justify-start">
                       <Button variant="link" size="sm" className="text-xs" onClick={() => setDeleteConfirmModel(model)}>
                         删除
                       </Button>

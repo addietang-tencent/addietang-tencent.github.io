@@ -226,16 +226,16 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
 
 /* ────────────────────────────────────────────────────────────────────
  * 固定列样式 token
- *   - left:  z-index 较高、靠左 sticky；右侧加竖向分隔阴影
- *   - right: 同上对称；左侧加分隔阴影
+ *   - left:  z-index 较高、靠左 sticky；右侧加竖向分隔线 + 投影
+ *   - right: 同上对称；左侧加分隔线 + 投影
  *
- *  分隔与阴影使用与 SKILL §15 一致的 token：
- *    after  → 1px 内嵌分割线 #f0f0f0（仅在对应方向需要 sticky 分隔时显示）
- *    before → 6px 渐变滚动阴影（仅边界列：fixedShadow !== false，且仅在对应方向需要 sticky 分隔时显示）
+ *  分隔与投影使用与 SKILL §15 一致的 token：
+ *    after      → 1px 内嵌分割线 #f0f0f0（仅在对应方向需要 sticky 分隔时显示）
+ *    box-shadow → 6px 边缘投影（不使用 before 伪元素，避免横向滚动/hover 时出现灰色块状错层）
  *
- *  注：分隔线与阴影根据横向滚动状态显示（left 仅在已向右滚动时出现；right 仅在右侧仍有内容时出现）。
- *      表头（FIXED_*_CLS）与 body 单元格（FIXED_*_CELL_CLS）的 before/after
- *      写法必须**完全一致**，否则会出现表头有线、body 有阴影的视觉割裂。
+ *  注：分隔线与投影根据横向滚动状态显示（left 仅在已向右滚动时出现；right 仅在右侧仍有内容时出现）。
+ *      表头（FIXED_*_CLS）与 body 单元格（FIXED_*_CELL_CLS）的 after / shadow
+ *      写法必须**完全一致**，否则会出现表头/body 边界视觉割裂。
  *
  *  多列固定（如复选框列 + 名称列同时 fixed="left"）：
  *      只在最右侧那个左固定列（或最左侧那个右固定列）保留阴影。
@@ -245,13 +245,11 @@ const FIXED_BASE = "sticky";
 // 表头固定列：z-50 必须高于业务表头里常见的 `relative z-40`（如带筛选 Popover 的列）以及任何 body cell
 const FIXED_LEFT_CLS = "left-0 z-50 bg-gray-50";
 const FIXED_RIGHT_CLS = "right-0 z-50 bg-gray-50";
-// 边界列的 1px 分隔线 + 6px 滚动阴影（仅 fixedShadow !== false 时附加）
+// 边界列的 1px 分隔线 + 6px box-shadow 投影（仅 fixedShadow !== false 时附加）
 const FIXED_LEFT_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100 " +
-  "before:content-[''] before:absolute before:top-0 before:bottom-0 before:right-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_right,rgba(0,0,0,0.06),transparent)] [[data-scroll-left=true]_&]:before:opacity-100";
+  "shadow-none transition-[box-shadow] after:content-[''] after:absolute after:top-0 after:bottom-0 after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100 [[data-scroll-left=true]_&]:shadow-[6px_0_6px_-6px_rgba(0,0,0,0.14)]";
 const FIXED_RIGHT_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:left-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100 " +
-  "before:content-[''] before:absolute before:top-0 before:bottom-0 before:left-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_left,rgba(0,0,0,0.06),transparent)] [[data-scroll-right=true]_&]:before:opacity-100";
+  "shadow-none transition-[box-shadow] after:content-[''] after:absolute after:top-0 after:bottom-0 after:left-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100 [[data-scroll-right=true]_&]:shadow-[-6px_0_6px_-6px_rgba(0,0,0,0.14)]";
 
 // body 单元格的固定列样式：白底 + 跟随行 hover/selected
 // z-20 高于普通 body cell（z auto），避免横向滚动时被相邻列内容穿透
@@ -261,13 +259,11 @@ const FIXED_LEFT_CELL_CLS =
 const FIXED_RIGHT_CELL_CLS =
   "right-0 z-20 bg-white transition-colors " +
   "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
-// body 边界列的 1px 分隔线 + 6px 滚动阴影
+// body 边界列的 1px 分隔线 + 6px box-shadow 投影
 const FIXED_LEFT_CELL_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100 " +
-  "before:content-[''] before:absolute before:top-0 before:bottom-[-1px] before:right-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_right,rgba(0,0,0,0.06),transparent)] [[data-scroll-left=true]_&]:before:opacity-100";
+  "shadow-none transition-[box-shadow] after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100 [[data-scroll-left=true]_&]:shadow-[6px_0_6px_-6px_rgba(0,0,0,0.14)]";
 const FIXED_RIGHT_CELL_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:left-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100 " +
-  "before:content-[''] before:absolute before:top-0 before:bottom-[-1px] before:left-[-6px] before:w-[6px] before:pointer-events-none before:opacity-0 before:transition-opacity before:bg-[linear-gradient(to_left,rgba(0,0,0,0.06),transparent)] [[data-scroll-right=true]_&]:before:opacity-100";
+  "shadow-none transition-[box-shadow] after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:left-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100 [[data-scroll-right=true]_&]:shadow-[-6px_0_6px_-6px_rgba(0,0,0,0.14)]";
 
 /**
  * TableHead - 表头单元格（强制样式）

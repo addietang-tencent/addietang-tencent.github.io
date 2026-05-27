@@ -516,10 +516,126 @@ interface PublicSkillLibraryTabProps {
   onAddSkillToPackage: (skillId: string, packageId: string) => void;
 }
 
+const PAGE_SIZE = 24;
+
 export default function PublicSkillLibraryTab({
   packages,
   onAddSkillToPackage,
 }: PublicSkillLibraryTabProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('featured');
+  const [favorites, setFavorites] = useState<FavoriteSkill[]>([]);
+  const [inPackageSkills, setInPackageSkills] = useState<Set<string>>(new Set());
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [addToPackageSkillId, setAddToPackageSkillId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 精选 Top 50：按下载量+收藏量综合排序
+  const featuredSkills = useMemo(() => {
+    return [...PUBLIC_SKILLS]
+      .sort((a, b) => (b.downloads + b.stars) - (a.downloads + a.stars))
+      .slice(0, 50);
+  }, []);
+
+  // 过滤技能
+  const filteredSkills = useMemo(() => {
+    let list: PublicSkill[] = [];
+
+    if (activeCategory === 'all') {
+      list = [...PUBLIC_SKILLS];
+    } else if (activeCategory === 'featured') {
+      list = featuredSkills;
+    } else if (activeCategory === 'favorites') {
+      const favIds = new Set(favorites.map(f => f.skillId));
+      list = PUBLIC_SKILLS.filter(s => favIds.has(s.id));
+    } else {
+      list = PUBLIC_SKILLS.filter(s => s.category === activeCategory);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.nameZh.includes(q) ||
+        s.descriptionZh.includes(q)
+      );
+    }
+
+    return list;
+  }, [activeCategory, searchQuery, favorites, featuredSkills]);
+
+  // 收藏操作
+  const handleFavorite = useCallback((skillId: string) => {
+    setFavorites(prev => {
+      const exists = prev.find(f => f.skillId === skillId);
+      if (exists) {
+        return prev.filter(f => f.skillId !== skillId);
+      }
+      return [...prev, { skillId, tags: [], addedAt: new Date() }];
+    });
+  }, []);
+
+  // 加入初始技能包
+  const handleAddToPackage = useCallback((skillId: string) => {
+    setAddToPackageSkillId(skillId);
+  }, []);
+
+  const handlePackageSelected = useCallback((packageId: string) => {
+    if (addToPackageSkillId) {
+      onAddSkillToPackage(addToPackageSkillId, packageId);
+      setInPackageSkills(prev => { const next = new Set(prev); next.add(addToPackageSkillId); return next; });
+    }
+    setAddToPackageSkillId(null);
+  }, [addToPackageSkillId, onAddSkillToPackage]);
+
+  const isFavorited = useCallback(
+    (skillId: string) => favorites.some(f => f.skillId === skillId),
+    [favorites]
+  );
+
+  // 分页计算
+  const pagedSkills = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredSkills.slice(start, start + PAGE_SIZE);
+  }, [filteredSkills, currentPage]);
+
+  // 切换分类或搜索时重置到第一页
+  const handleCategoryChange = useCallback((catId: string) => {
+    setActiveCategory(catId);
+    setCurrentPage(1);
+  }, []);
+  const handleSearchChange = useCallback((q: string) => {
+    setSearchQuery(q);
+    setCurrentPage(1);
+  }, []);
+
+  // 如果选中了技能，显示详情页
+  if (selectedSkillId) {
+    const skill = PUBLIC_SKILLS.find(s => s.id === selectedSkillId);
+    if (skill) {
+      return (
+        <>
+          <SkillDetailView
+            skill={skill}
+            isFavorited={isFavorited(skill.id)}
+            isInPackage={inPackageSkills.has(skill.id)}
+            onFavorite={handleFavorite}
+            onAddToPackage={handleAddToPackage}
+            onBack={() => setSelectedSkillId(null)}
+          />
+          <AddToPackageDialog
+            open={!!addToPackageSkillId}
+            skillName={PUBLIC_SKILLS.find(s => s.id === addToPackageSkillId)?.nameZh || ''}
+            packages={packages}
+            onConfirm={handlePackageSelected}
+            onCancel={() => setAddToPackageSkillId(null)}
+          />
+        </>
+      );
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* 搜索框 + 刷新按钮 */}

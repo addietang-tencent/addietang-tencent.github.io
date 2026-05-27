@@ -54,6 +54,40 @@ import type { UserOverrideInfo as MMUserOverrideInfo, UserOrg as MMUserOrg, User
 const PAGE_SIZE = 10;
 
 // ─── 分组选择框触发器（自适应截断） ──────────────────────────────────────────
+function OverflowTooltipText({ text, className }: { text: string; className?: string }) {
+  const textRef = React.useRef<HTMLSpanElement | null>(null);
+  const [isOverflow, setIsOverflow] = React.useState(false);
+
+  const checkOverflow = React.useCallback(() => {
+    const el = textRef.current;
+    if (!el) return;
+    setIsOverflow(el.scrollWidth > el.clientWidth);
+  }, []);
+
+  React.useEffect(() => {
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [checkOverflow, text]);
+
+  const node = (
+    <span ref={textRef} className={className}>
+      {text}
+    </span>
+  );
+
+  if (!isOverflow) return node;
+
+  return (
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>{node}</TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[320px] text-xs">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { names: string[]; onRemove?: (name: string) => void; onClear?: () => void; lockedNames?: string[] }) {
   const [hover, setHover] = React.useState(false);
   const lockedSet = React.useMemo(() => new Set(lockedNames), [lockedNames]);
@@ -2641,38 +2675,16 @@ export default function MemberManagement() {
                       <TableCell style={{ minWidth: "200px" }}>
                         <div className="flex items-center gap-1 max-w-[200px]">
                           {mmGroupItems.length === 0 ? (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-[#A3A3A3]">—</span>
                           ) : (
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <span className="inline-flex items-center gap-1 cursor-pointer max-w-full">
-                                <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate">
-                                  {mmGroupItems[0].path}
-                                </StatusTag>
-                                {mmGroupItems.length > 1 && (
-                                  <StatusTag mode="fill" variant="gray">
-                                    +{mmGroupItems.length - 1}
-                                  </StatusTag>
-                                )}
+                          <span className="inline-flex items-center gap-1 max-w-full text-sm text-[#0A0A0A]">
+                            <OverflowTooltipText text={mmGroupItems[0].path} className="block truncate max-w-[160px]" />
+                            {mmGroupItems.length > 1 && (
+                              <span className="shrink-0 tabular-nums text-[#0A0A0A]">
+                                +{mmGroupItems.length - 1}
                               </span>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="text-xs max-w-[380px]">
-                              {mmGroupItems.map((gi, idx) => (
-                                <div key={idx} className="flex items-center gap-2">
-                                  <span
-                                    className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
-                                      gi.kind === "oneid-dept"
-                                        ? "text-blue-400 bg-blue-500/20"
-                                        : "text-purple-400 bg-purple-500/20"
-                                    }`}
-                                  >
-                                    {gi.kind === "oneid-dept" ? "部门" : "自定义分组"}
-                                  </span>
-                                  <span>{gi.path}</span>
-                                </div>
-                              ))}
-                            </HoverCardContent>
-                          </HoverCard>
+                            )}
+                          </span>
                           )}
                         </div>
                       </TableCell>
@@ -2683,27 +2695,16 @@ export default function MemberManagement() {
                     <TableCell style={{ minWidth: "200px" }}>
                       <div className="flex items-center gap-1 max-w-[200px]">
                         {manualGroupPaths.length === 0 ? (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-[#A3A3A3]">—</span>
                         ) : (
-                          <HoverCard>
-                            <HoverCardTrigger asChild>
-                              <span className="inline-flex items-center gap-1 cursor-pointer max-w-full">
-                                <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate">
-                                  {manualGroupPaths[0].path}
-                                </StatusTag>
-                                {manualGroupPaths.length > 1 && (
-                                  <StatusTag mode="fill" variant="gray">
-                                    +{manualGroupPaths.length - 1}
-                                  </StatusTag>
-                                )}
+                          <span className="inline-flex items-center gap-1 max-w-full text-sm text-[#0A0A0A]">
+                            <OverflowTooltipText text={manualGroupPaths[0].path} className="block truncate max-w-[160px]" />
+                            {manualGroupPaths.length > 1 && (
+                              <span className="shrink-0 tabular-nums text-[#0A0A0A]">
+                                +{manualGroupPaths.length - 1}
                               </span>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="text-xs">
-                              {manualGroupPaths.map((gp, idx) => (
-                                <div key={idx}>{gp.path}</div>
-                              ))}
-                            </HoverCardContent>
-                          </HoverCard>
+                            )}
+                          </span>
                         )}
                       </div>
                     </TableCell>
@@ -2713,9 +2714,9 @@ export default function MemberManagement() {
                   </TableCell>
                   <TableCell>
                     {member.status === "active" ? (
-                      <StatusTag mode="dot" variant="green">正常</StatusTag>
+                      <span className="text-sm font-medium text-[#008236]">正常</span>
                     ) : (
-                      <StatusTag mode="dot" variant="red">禁用</StatusTag>
+                      <span className="text-sm font-medium text-[#DC2626]">禁用</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -2769,7 +2770,7 @@ export default function MemberManagement() {
                     })()}
                   </TableCell>
                   <TableCell>
-                    <span className="text-gray-500">{member.joinTime}</span>
+                    <span className="text-[#0A0A0A]">{member.joinTime}</span>
                   </TableCell>
                   <TableActionCell fixed="right" style={{ width: "112px", minWidth: "112px" }}>
                     <Button
@@ -2843,14 +2844,16 @@ export default function MemberManagement() {
           </Table>
 
           {/* 底部翻页 */}
-          <div className="px-6 py-3 border-t border-gray-50">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+            <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
+              共 {filtered.length} 名用户
+            </span>
             <Pagination
               total={filtered.length}
               current={currentPage}
               pageSize={PAGE_SIZE}
               size="default"
-              showTotal={(total) => `共 ${total} 名用户`}
-              className="w-full justify-between"
+              className="justify-self-end justify-end flex-nowrap"
               hideOnSinglePage
               onChange={(page) => { setPage(page); }}
             />

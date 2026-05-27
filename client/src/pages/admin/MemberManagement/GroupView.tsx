@@ -216,10 +216,10 @@ export default function GroupView({
   }, [directUninitializedGroupIds, groups]);
 
   /**
-   * 网络配置待更新分组 id 集合（橙色小圆点）
+   * 网络配置待更新分组 id 集合（红色小圆点）
    *
    * 仅命中分组自身（不冒泡到父分组、不下发到子分组、不影响兄弟分组）。
-   * 用于：左侧分组树该分组行的橙点提示。
+   * 用于：左侧分组树该分组行的红点提示。
    */
   const networkOutdatedGroupIds = useMemo(() => {
     const ids = new Set<string>();

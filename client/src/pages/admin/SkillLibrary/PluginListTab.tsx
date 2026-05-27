@@ -7,7 +7,18 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 import { Input } from '@/components/ui/input';
-import { Search, Grid3x3, List, Send, Trash2, Loader } from 'lucide-react';
+import { SurfaceCard } from '@/components/ui/Surface';
+import { StatusTag } from '@/components/ui/status-tag';
+import {
+  Table,
+  TableActionCell,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Search, Grid3x3, List, Send, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
@@ -318,10 +329,10 @@ export default function PluginListTab() {
           {sortedPlugins.map(plugin => {
             const dist = isDistributing(plugin.id);
             return (
-              <div key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer flex flex-col">
+              <SurfaceCard key={plugin.id} hover onClick={() => setSelectedPluginId(plugin.id)} className="p-4 cursor-pointer flex flex-col">
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-[#0A0A0A] flex-1 truncate">{plugin.name}</h3>
-                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full shrink-0">v{plugin.version}</span>
+                  <StatusTag mode="fill" variant="gray" className="shrink-0">v{plugin.version}</StatusTag>
                 </div>
                 <Tooltip delayDuration={1000}>
                   <TooltipTrigger asChild>
@@ -334,15 +345,15 @@ export default function PluginListTab() {
                   )}
                 </Tooltip>
                 <div className="flex items-center gap-1 mt-auto" onClick={(e) => e.stopPropagation()}>
-                  <Button variant="outline" size="sm" onClick={() => handleDistribute(plugin.id)} disabled={dist} className={`h-7 text-xs ${dist ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                    <Send className="w-3 h-3 mr-1" />
+                  <Button variant="claw-outline" size="claw-sm" onClick={() => handleDistribute(plugin.id)} disabled={dist} className={`h-7 text-xs ${dist ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <Send className="w-3 h-3" />
                     {dist ? '下发中' : '下发'}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDelete(plugin.id)} className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
-                    <Trash2 className="w-3 h-3 mr-1" />删除
+                  <Button variant="claw-outline" size="claw-sm" onClick={() => handleDelete(plugin.id)} className="h-7 text-xs">
+                    <Trash2 className="w-3 h-3" />删除
                   </Button>
                 </div>
-              </div>
+              </SurfaceCard>
             );
           })}
         </div>
@@ -350,98 +361,62 @@ export default function PluginListTab() {
 
       {/* 列表视图 */}
       {viewMode === 'list' && sortedPlugins.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '18%' }}>
-                  名称/Slug
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] tracking-wide" style={{ width: '15%' }}>状态/下发动态</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '7%' }}>版本号</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '30%' }}>描述</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '12%' }}>发布时间</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '18%' }}>操作</th>
-              </tr>
-            </thead>
-            <tbody>
+        <SurfaceCard className="overflow-hidden">
+          <Table scrollX={1120}>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: 240, minWidth: 240 }}>名称/SLUG</TableHead>
+                <TableHead style={{ width: 180, minWidth: 180 }}>状态/下发动态</TableHead>
+                <TableHead style={{ width: 104, minWidth: 104 }}>版本号</TableHead>
+                <TableHead style={{ width: 360, minWidth: 360 }}>描述</TableHead>
+                <TableHead style={{ width: 140, minWidth: 140 }}>发布时间</TableHead>
+                <TableHead fixed="right" style={{ width: 128, minWidth: 128, maxWidth: 128 }}>操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {sortedPlugins.map((plugin) => {
                 const dist = isDistributing(plugin.id);
                 const summary = distributionSummaries[plugin.id];
-
                 const hasDistribution = summary && summary.lastDistributionStatus !== 'not_distributed';
-                let statusLine1 = '正常';
-                let statusLine2 = '未下发';
-                let statusLine1Color = 'text-[#334155]';
-                let statusLine2Color = 'text-[#A3A3A3]';
-                let statusLine2Bg = '';
-                let statusLine2HoverBg = '';
-                if (summary) {
-                  if (summary.lastDistributionStatus === 'distributing') {
-                    statusLine1 = '下发中';
-                    statusLine1Color = 'text-[#355EF1]';
-                    statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                    statusLine2Color = 'text-[#355EF1]';
-                    statusLine2Bg = 'bg-blue-50';
-                    statusLine2HoverBg = 'hover:bg-blue-100';
-                  } else if (hasDistribution) {
-                    statusLine1 = '正常';
-                    statusLine1Color = 'text-[#334155]';
-                    const total = summary.lastDistributionInstanceCount || 0;
-                    const success = summary.lastDistributionSuccessCount ?? total;
-                    statusLine2 = `已下发(${success}/${total}成功)`;
-                    if (success === total) {
-                      statusLine2Color = 'text-green-600';
-                      statusLine2Bg = 'bg-green-50';
-                      statusLine2HoverBg = 'hover:bg-green-100';
-                    } else {
-                      statusLine2Color = 'text-yellow-600';
-                      statusLine2Bg = 'bg-yellow-50';
-                      statusLine2HoverBg = 'hover:bg-yellow-100';
-                    }
-                  }
-                }
+                const isDistributionRunning = summary?.lastDistributionStatus === 'distributing';
+                const total = summary?.lastDistributionInstanceCount || 0;
+                const success = summary?.lastDistributionSuccessCount ?? total;
+                const statusLabel = isDistributionRunning ? '下发中' : '正常';
+                const statusVariant = isDistributionRunning ? 'blue' : 'green';
+                const distributionLabel = isDistributionRunning
+                  ? `${summary?.lastDistributionProgress || 0}%`
+                  : hasDistribution
+                    ? `已下发 ${success}/${total}`
+                    : '未下发';
+                const distributionVariant = isDistributionRunning ? 'blue' : success === total ? 'green' : 'red';
 
                 return (
-                  <tr key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="border-b border-[#e5e5e5] hover:bg-gray-50 cursor-pointer transition-colors group">
-                    {/* 名称 / Slug */}
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-[#0A0A0A] truncate">{plugin.name}</div>
-                      <div className="text-xs text-[#A3A3A3] font-mono mt-0.5 truncate">{plugin.slug}</div>
-                    </td>
-                    {/* 状态/下发动态 */}
-                    <td className="pl-4 pr-2 py-3">
-                      <div className={`text-sm font-medium ${statusLine1Color}`}>{statusLine1}</div>
-                      <div
-                        className={hasDistribution
-                          ? `inline-flex items-center px-1.5 py-0.5 mt-0.5 rounded-full text-xs font-medium cursor-default transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
-                          : `text-xs mt-0.5 ${statusLine2Color}`
-                        }
-                      >
-                        {statusLine2}
+                  <TableRow key={plugin.id} onClick={() => setSelectedPluginId(plugin.id)} className="cursor-pointer">
+                    <TableCell>
+                      <div className="min-w-0 space-y-1">
+                        <p className="truncate text-sm font-medium text-[#0A0A0A]">{plugin.name}</p>
+                        <p className="truncate font-mono text-xs text-[#A3A3A3]">{plugin.slug}</p>
                       </div>
-                    </td>
-                    {/* 版本号 */}
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
-                        v{plugin.version}
-                      </span>
-                    </td>
-                    {/* 描述 */}
-                    <td className="px-4 py-3" style={{ overflow: 'hidden' }}>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col items-start gap-1.5">
+                        <StatusTag mode="dot" variant={statusVariant}>{statusLabel}</StatusTag>
+                        {hasDistribution ? (
+                          <StatusTag mode="fill" variant={distributionVariant}>{distributionLabel}</StatusTag>
+                        ) : (
+                          <span className="text-xs text-[#A3A3A3]">{distributionLabel}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <StatusTag mode="fill" variant="gray">v{plugin.version}</StatusTag>
+                    </TableCell>
+                    <TableCell className="whitespace-normal" style={{ overflow: 'hidden' }}>
                       <Tooltip delayDuration={1000}>
                         <TooltipTrigger asChild>
-                          <span
-                            className="text-sm text-[#737373] cursor-default block"
-                            style={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              wordBreak: 'break-all',
-                            }}
-                          >{plugin.description || '-'}</span>
+                          <span className="line-clamp-2 cursor-default text-sm leading-[1.5] text-[#334155] break-all">
+                            {plugin.description || '-'}
+                          </span>
                         </TooltipTrigger>
                         {plugin.description && plugin.description.length > 40 && (
                           <TooltipContent side="bottom" className="max-w-[400px]">
@@ -449,43 +424,31 @@ export default function PluginListTab() {
                           </TooltipContent>
                         )}
                       </Tooltip>
-                    </td>
-                    {/* 发布时间 */}
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-[#737373]">
+                    </TableCell>
+                    <TableCell>
+                      <span className="tabular-nums text-[#737373]">
                         {plugin.uploadTime.toLocaleDateString('zh-CN')}
                       </span>
-                    </td>
-                    {/* 操作 */}
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDistribute(plugin.id)}
-                          disabled={dist}
-                          className={`h-7 text-xs min-w-[62px] ${dist ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                          {dist ? <Loader className="w-3 h-3 mr-1 animate-spin" /> : <Send className="w-3 h-3 mr-1" />}
-                          {dist ? '下发中' : '下发'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(plugin.id)}
-                          className="h-7 text-xs"
-                        >
-                          <Trash2 className="w-3 h-3 mr-1" />
-                          删除
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                    <TableActionCell fixed="right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => handleDistribute(plugin.id)}
+                        disabled={dist}
+                      >
+                        {dist ? '下发中' : '下发'}
+                      </Button>
+                      <Button variant="link" size="sm" onClick={() => handleDelete(plugin.id)}>
+                        删除
+                      </Button>
+                    </TableActionCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </SurfaceCard>
       )}
 
       {/* 发布插件弹窗 */}

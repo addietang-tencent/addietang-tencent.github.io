@@ -32,7 +32,7 @@ const LABEL: Record<AdminMode, string> = {
 };
 
 export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
-  const { mode, setMode } = useAdminMode();
+  const { mode, setMode, isCustom } = useAdminMode();
 
   /** 折叠态：点击循环切换到下一个模式 */
   const cycleMode = () => {

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Eye, Code, ChevronDown, ChevronRight, Globe, Terminal, AlignLeft, Sparkles, CircleAlert } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 
 import { AnimatePresence, motion } from 'framer-motion';

@@ -612,7 +612,7 @@ function RoleAddPublicSkillDialog({
             <div className="grid grid-cols-2 gap-3">
               {MOCK_FAVORITES.map(skill => {
                 const isAlreadyAdded = existingSkillNames.includes(skill.name);
-                const isSelected = selectedIds.includes(skill.id);
+                const isSelected = selectedSkillIds.includes(skill.id);
                 return (
                   <div
                     key={skill.id}

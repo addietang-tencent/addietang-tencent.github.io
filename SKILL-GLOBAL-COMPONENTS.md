@@ -82,6 +82,7 @@ description: >
 | `InlineNumber` | `span` | 14px / DIN / tabular | `body` | 表格内 Token 数、请求数、百分比 |
 | `CodeText` | `code` | 12px / Menlo | `secondary` | ID、Token、路径、命令、代码片段 |
 | `StepText` | `span` | 14px / Medium / Menlo | `brand` | Step 1 / Step 2 / 步骤编号 |
+| `UrlText` | `span` | 12px / Regular / PingFang SC / 1.5 / `break-all` | `muted` | URL、回调地址、外链链接、版本号字符串等需要中性等宽呈现的引用文本 |
 
 ### 0.4 使用方式
 
@@ -96,6 +97,7 @@ import {
   SmallBodyText,
   StatNumber,
   CodeText,
+  UrlText,
 } from "@/components/ui/Typography";
 
 <TenantPageTitle>Agent 详情</TenantPageTitle>
@@ -108,6 +110,7 @@ import {
 <SmallBodyText>用户</SmallBodyText>
 <StatNumber>128,000</StatNumber>
 <CodeText>ins-g71c6vud</CodeText>
+<UrlText>https://api.example.com/v1/chat/completions</UrlText>
 ```
 
 ### 0.5 组件作者如何受影响
@@ -126,6 +129,7 @@ import {
 | StatusTag / 小型信息标签 | `SmallBodyText` 对应规格：12px / Medium / `emphasis` / tracking 0.18px |
 | 统计卡数字 | `StatNumber` |
 | ID / Token / 路径 | `CodeText` |
+| URL / 回调地址 / 外链 | `UrlText` |
 
 > 注意：基础组件源码里不一定必须直接 import Typography（避免 Button 等低层组件依赖过深），但视觉参数必须与 Typography token 保持一致。业务页面与业务组件应优先直接使用 Typography 组件。
 

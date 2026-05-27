@@ -191,3 +191,10 @@ export const StepText = createTypography(
   "font-mono text-sm font-medium leading-none",
   "brand",
 );
+
+export const UrlText = createTypography(
+  "UrlText",
+  "span",
+  "font-sans text-xs font-normal leading-[1.5] break-all",
+  "muted",
+);

@@ -145,7 +145,7 @@ function Table({
         data-scroll-left={scrollState.scrollLeft ? "true" : "false"}
         data-scroll-right={scrollState.scrollRight ? "true" : "false"}
         className={cn(
-          "relative w-full overflow-x-auto",
+          "relative isolate w-full overflow-x-auto",
           // 横向滚动模式下：滚动条默认隐藏，hover 表格区域或正在滚动时才出现（复用全局 .scrollbar-on-hover 工具类）
           tableMinWidth && "scrollbar-on-hover",
           containerClassName
@@ -256,10 +256,10 @@ const FIXED_RIGHT_SHADOW_CLS =
 // body 单元格的固定列样式：白底 + 跟随行 hover/selected
 // z-20 高于普通 body cell（z auto），避免横向滚动时被相邻列内容穿透
 const FIXED_LEFT_CELL_CLS =
-  "left-0 z-20 bg-white " +
+  "left-0 z-20 bg-white transition-colors " +
   "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
 const FIXED_RIGHT_CELL_CLS =
-  "right-0 z-20 bg-white " +
+  "right-0 z-20 bg-white transition-colors " +
   "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
 // body 边界列的 1px 分隔线 + 6px 滚动阴影
 const FIXED_LEFT_CELL_SHADOW_CLS =
@@ -417,7 +417,7 @@ function TableActionCell({
         children
       ) : (
         // 内置 flex 容器：项间距固定 24px (gap-6)，与 Figma 操作列规范对齐
-        <div className={cn("flex items-center gap-6 whitespace-nowrap", actionsClassName)}>
+        <div className={cn("relative z-10 flex items-center gap-6 whitespace-nowrap", actionsClassName)}>
           {children}
         </div>
       )}

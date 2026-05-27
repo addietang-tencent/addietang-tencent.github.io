@@ -407,11 +407,7 @@ function ImageScopePopover({
 
   const renderScopeText = () => {
     if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
-      return (
-        <StatusTag mode="fill" variant="blue">
-          全部用户
-        </StatusTag>
-      );
+      return <span className="text-sm font-normal text-[#0A0A0A]">全部用户</span>;
     }
     const firstName = selectedGroupPaths[0];
     const rest = selectedGroupPaths.length - 1;
@@ -419,15 +415,9 @@ function ImageScopePopover({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1 cursor-default">
-            <StatusTag mode="fill" variant="gray" className="max-w-[140px] truncate">
-              {firstName}
-            </StatusTag>
-            {rest > 0 && (
-              <StatusTag mode="fill" variant="gray">
-                +{rest}
-              </StatusTag>
-            )}
+          <span className="inline-flex max-w-full items-center gap-1 cursor-default text-sm font-normal text-[#0A0A0A]">
+            <span className="truncate">{firstName}</span>
+            {rest > 0 && <span className="shrink-0">+{rest}</span>}
           </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
@@ -1576,7 +1566,7 @@ export default function ImageManagement() {
           </Alert>
           <DialogFooter>
             <Button variant="claw-outline" size="claw-sm" onClick={() => setRemoveCustomConfirm(null)}>取消</Button>
-            <Button variant="destructive" size="claw-sm" onClick={confirmRemoveCustomType}>
+            <Button variant="dialog-confirm" size="claw-sm" onClick={confirmRemoveCustomType}>
               确认删除
             </Button>
           </DialogFooter>

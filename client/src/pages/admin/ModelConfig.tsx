@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Textarea } from "@/components/ui/textarea";
 import { SurfaceCard } from "@/components/ui/Surface";
 import {
@@ -341,21 +342,11 @@ function ScopePopover({
     return effectiveIds.map((gid) => getGroupPath(gid, groups));
   }, [groups, model.visibilityGroupIds, activeBuckets, treesMap]);
 
-  // 徽章区域
-  const renderBadges = () => {
-    if (model.visibilityScope === "all") {
-      return (
-        <AllUsersTag />
-      );
+  const renderScopeText = () => {
+    if (model.visibilityScope === "all" || selectedGroupPaths.length === 0) {
+      return <span className="text-sm font-normal text-[#0A0A0A]">全部用户</span>;
     }
 
-    if (selectedGroupPaths.length === 0) {
-      return (
-        <AllUsersTag />
-      );
-    }
-
-    // 按分组：第一个分组完整路径 + +N
     const firstName = selectedGroupPaths[0];
     const rest = selectedGroupPaths.length - 1;
     const tooltipText = selectedGroupPaths.join("\n");
@@ -363,15 +354,9 @@ function ScopePopover({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1 cursor-default">
-            <StatusTag mode="fill" variant="gray" className="max-w-[170px] truncate">
-              {firstName}
-            </StatusTag>
-            {rest > 0 && (
-              <StatusTag mode="fill" variant="gray">
-                +{rest}
-              </StatusTag>
-            )}
+          <span className="inline-flex max-w-full items-center gap-1 cursor-default text-sm font-normal text-[#0A0A0A]">
+            <span className="truncate">{firstName}</span>
+            {rest > 0 && <span className="shrink-0">+{rest}</span>}
           </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
@@ -383,7 +368,7 @@ function ScopePopover({
 
   return (
     <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[220px]">
-      {renderBadges()}
+      {renderScopeText()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <button
@@ -568,9 +553,10 @@ function EditQuotaDialog({
           </div>
         </DialogBody>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>取消</Button>
+          <Button variant="claw-outline" size="claw-sm" onClick={onClose}>取消</Button>
           <Button
-            variant="dialog-confirm"
+            variant="claw-primary"
+            size="claw-sm"
             onClick={() => { onSave(model.id, limit); onClose(); }}
           >
             保存
@@ -762,13 +748,14 @@ export default function ModelConfig() {
             </Button>
           </div>
 
-          <Table scrollX={1120}>
+          <Table scrollX={1280}>
             <TableHeader>
               <TableRow>
                 <TableHead fixed="left" className="w-[260px]">模型信息</TableHead>
                 <TableHead className="w-[280px]">接入地址</TableHead>
                 <TableHead className="w-[150px]">每日配额</TableHead>
                 <TableHead className="w-[180px]">启用策略</TableHead>
+                <TableHead className="w-[160px]">是否启用多模态</TableHead>
                 <TableHead className="w-[220px]">
                   <div className="flex items-center gap-1">
                     应用范围
@@ -788,111 +775,111 @@ export default function ModelConfig() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {models.map((model) => (
-                <TableRow key={model.id}>
-                  <TableCell fixed="left" className="w-[260px]">
-                    <div className="min-w-0 space-y-2">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <p className="truncate text-sm font-medium text-[#0A0A0A]">{model.name}</p>
-                        {model.isDefault && <StatusTag mode="fill" variant="blue">默认</StatusTag>}
+              {models.map((model) => {
+                const canToggleMultimodal = model.provider === CUSTOM_PROVIDER_VALUE;
+
+                return (
+                  <TableRow key={model.id}>
+                    <TableCell fixed="left" className="w-[260px]">
+                      <div className="min-w-0 space-y-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <p className="truncate text-sm font-medium text-[#0A0A0A]">{model.name}</p>
+                          {model.isDefault && <StatusTag mode="fill" variant="blue">默认</StatusTag>}
+                        </div>
+                        <p className="truncate text-xs text-[#737373]">{model.version}</p>
                       </div>
-                      <p className="truncate text-xs text-[#737373]">{model.version}</p>
-                      <div className="flex items-center gap-1.5">
-                        {model.provider === CUSTOM_PROVIDER_VALUE ? (
-                          <button
-                            onClick={() => setMultimodalConfirm({ model, enable: !model.isMultimodal })}
-                            className={model.isMultimodal
-                              ? "inline-flex items-center gap-1 rounded-full bg-[#E8ECFE] px-2 py-[2px] text-xs text-[#1447E6] transition-colors hover:bg-red-50 hover:text-[#DC2626]"
-                              : "inline-flex items-center gap-1 rounded-full border border-dashed border-[#D8E1FF] px-2 py-[2px] text-xs text-[#1447E6] transition-colors hover:bg-[#F2F5FF]"
-                            }
-                          >
-                            {model.isMultimodal ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                            {model.isMultimodal ? "关闭多模态" : "多模态"}
-                          </button>
-                        ) : model.isMultimodal ? (
-                          <StatusTag mode="fill" variant="blue">多模态</StatusTag>
-                        ) : null}
+                    </TableCell>
+                    <TableCell className="w-[280px]">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex max-w-[248px] cursor-default rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-[#334155]">
+                            <span className="truncate">{model.modelUrl}</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-[360px] text-xs font-mono break-all">
+                          {model.modelUrl}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell className="w-[150px]">
+                      <div className="flex items-center gap-3">
+                        <div>
+                          <p className="text-sm font-medium tabular-nums text-[#020617]">{model.dailyLimit.toLocaleString()}</p>
+                          <p className="text-xs text-[#A3A3A3]">tokens / day</p>
+                        </div>
+                        <Button variant="link-dark" size="sm" className="text-xs" onClick={() => openEditQuota(model)}>
+                          <Pencil className="w-3 h-3" />
+                          编辑
+                        </Button>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="w-[280px]">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="inline-flex max-w-[248px] cursor-default rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-[#334155]">
-                          <span className="truncate">{model.modelUrl}</span>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-[360px] text-xs font-mono break-all">
-                        {model.modelUrl}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell className="w-[150px]">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="text-sm font-medium tabular-nums text-[#020617]">{model.dailyLimit.toLocaleString()}</p>
-                        <p className="text-xs text-[#A3A3A3]">tokens / day</p>
+                    </TableCell>
+                    <TableCell className="w-[180px]">
+                      <div className="space-y-2.5">
+                        <div className="flex max-w-[150px] items-center justify-between gap-3">
+                          <span className="text-xs text-[#737373]">用户可见</span>
+                          <Switch
+                            checked={model.visible}
+                            onCheckedChange={(v) => handleToggleVisible(model.id, v)}
+                          />
+                        </div>
+                        <div className="flex max-w-[150px] items-center justify-between gap-3">
+                          <span className="text-xs text-[#737373]">默认配置</span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex">
+                                <Switch
+                                  checked={model.isDefault}
+                                  onCheckedChange={(v) => handleSetDefault(model.id, v)}
+                                  disabled={!model.visible && !model.isDefault}
+                                  aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
+                                />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent className="text-xs">
+                              {model.isDefault
+                                ? "当前默认模型"
+                                : model.visible
+                                  ? "点击设为默认模型"
+                                  : "需先开启「用户可见」才可设为默认"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                       </div>
-                      <Button variant="link-dark" size="sm" className="text-xs" onClick={() => openEditQuota(model)}>
-                        <Pencil className="w-3 h-3" />
-                        编辑
+                    </TableCell>
+                    <TableCell className="w-[160px]">
+                      <div className="flex min-h-9 items-center">
+                        {canToggleMultimodal ? (
+                          <Switch
+                            checked={model.isMultimodal}
+                            onCheckedChange={(value) => setMultimodalConfirm({ model, enable: value })}
+                            aria-label={model.isMultimodal ? "关闭多模态" : "开启多模态"}
+                          />
+                        ) : (
+                          <span className="text-sm font-normal text-[#737373]">-</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="w-[220px]">
+                      <ScopePopover
+                        model={model}
+                        groups={ALL_GROUPS}
+                        onSave={(id, scope, groupIds) => {
+                          setModels((prev) =>
+                            prev.map((m) =>
+                              m.id === id ? { ...m, visibilityScope: scope, visibilityGroupIds: groupIds } : m
+                            )
+                          );
+                        }}
+                      />
+                    </TableCell>
+                    <TableActionCell fixed="right" className="w-[96px]" actionsClassName="justify-start">
+                      <Button variant="link" size="sm" className="text-xs" onClick={() => setDeleteConfirmModel(model)}>
+                        删除
                       </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell className="w-[180px]">
-                    <div className="space-y-2.5">
-                      <div className="flex max-w-[150px] items-center justify-between gap-3">
-                        <span className="text-xs text-[#737373]">用户可见</span>
-                        <Switch
-                          checked={model.visible}
-                          onCheckedChange={(v) => handleToggleVisible(model.id, v)}
-                        />
-                      </div>
-                      <div className="flex max-w-[150px] items-center justify-between gap-3">
-                        <span className="text-xs text-[#737373]">默认配置</span>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="inline-flex">
-                              <Switch
-                                checked={model.isDefault}
-                                onCheckedChange={(v) => handleSetDefault(model.id, v)}
-                                disabled={!model.visible && !model.isDefault}
-                                aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
-                              />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="text-xs">
-                            {model.isDefault
-                              ? "当前默认模型"
-                              : model.visible
-                                ? "点击设为默认模型"
-                                : "需先开启「用户可见」才可设为默认"}
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="w-[220px]">
-                    <ScopePopover
-                      model={model}
-                      groups={ALL_GROUPS}
-                      onSave={(id, scope, groupIds) => {
-                        setModels((prev) =>
-                          prev.map((m) =>
-                            m.id === id ? { ...m, visibilityScope: scope, visibilityGroupIds: groupIds } : m
-                          )
-                        );
-                      }}
-                    />
-                  </TableCell>
-                  <TableActionCell fixed="right" className="w-[96px]" actionsClassName="justify-start">
-                    <Button variant="link" size="sm" className="text-xs" onClick={() => setDeleteConfirmModel(model)}>
-                      <Trash2 className="w-3.5 h-3.5" />
-                      删除
-                    </Button>
-                  </TableActionCell>
-                </TableRow>
-              ))}
+                    </TableActionCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </SurfaceCard>
@@ -1026,8 +1013,8 @@ export default function ModelConfig() {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button variant="dialog-confirm" onClick={handleAddModel}>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setShowAddDialog(false)}>取消</Button>
+            <Button variant="claw-primary" size="claw-sm" onClick={handleAddModel}>
               确认添加
             </Button>
           </DialogFooter>
@@ -1062,11 +1049,12 @@ export default function ModelConfig() {
           </AlertDialogHeader>
 
           <AlertDialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirmModel(null)}>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setDeleteConfirmModel(null)}>
               取消
             </Button>
             <Button
               variant="destructive"
+              size="claw-sm"
               onClick={() => {
                 if (deleteConfirmModel?.isDefault) {
                   localStorage.removeItem(DEFAULT_MODEL_STORAGE_KEY);
@@ -1110,7 +1098,7 @@ export default function ModelConfig() {
           <DialogFooter className="gap-2 pt-2">
             <Button variant="claw-outline" onClick={() => setMultimodalConfirm(null)}>取消</Button>
             <Button
-              variant="claw-primary"
+              variant="dialog-confirm"
               onClick={() => {
                 if (multimodalConfirm) {
                   handleToggleMultimodal(multimodalConfirm.model.id, multimodalConfirm.enable);

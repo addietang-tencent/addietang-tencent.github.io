@@ -36,6 +36,16 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -702,6 +712,25 @@ export default function ImageManagement() {
   const [showAllRecordsDrawer, setShowAllRecordsDrawer] = useState(false);
   // 抽屉打开时的初始筛选（点击表格中"版本更新记录"按钮时，自动定位到该镜像）
   const [drawerInitialFilter, setDrawerInitialFilter] = useState<DrawerInitialFilter | undefined>(undefined);
+  // 抽屉打开时是否默认开启「仅看可推送新版本」（点击黄色「新版本更新推送提醒」横幅触发时为 true）
+  const [drawerInitialPushableOnly, setDrawerInitialPushableOnly] = useState(false);
+
+  // 通过 URL ?openRecords=1 直接打开"全部更新记录"抽屉（供 Agent 列表页等其他页面跳转触发）
+  useEffect(() => {
+    const search = typeof window !== "undefined" ? window.location.search : "";
+    const params = new URLSearchParams(search);
+    if (params.get("openRecords") === "1") {
+      setDrawerInitialFilter(undefined);
+      setDrawerInitialPushableOnly(true);
+      setShowAllRecordsDrawer(true);
+      // 清掉 query 参数，避免再次刷新页面时重复弹出
+      params.delete("openRecords");
+      const next = params.toString();
+      const nextUrl = window.location.pathname + (next ? `?${next}` : "") + window.location.hash;
+      window.history.replaceState(null, "", nextUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 活跃推送订阅（用于在表格 / 顶部黄色提示中显示「正在提醒」状态）
   const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
@@ -949,6 +978,7 @@ export default function ImageManagement() {
     } else {
       setDrawerInitialFilter(undefined);
     }
+    setDrawerInitialPushableOnly(false);
     setShowAllRecordsDrawer(true);
   };
 
@@ -1116,7 +1146,17 @@ export default function ImageManagement() {
         <div className="min-w-0">
           {/* 页面标题 */}
           <div className="mb-4">
-            <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
+              <NewVersionPushNotice
+                pushable={pushable}
+                onViewAllRecords={() => {
+                  setDrawerInitialFilter(undefined);
+                  setDrawerInitialPushableOnly(true);
+                  setShowAllRecordsDrawer(true);
+                }}
+              />
+            </div>
             <p className="text-sm text-[#737373] mt-1">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
             </p>
@@ -1133,24 +1173,18 @@ export default function ImageManagement() {
               />
             </div>
             <div className="flex items-center gap-2">
-            <NewVersionPushNotice
-              pushable={pushable}
-              onViewAllRecords={() => {
-                setDrawerInitialFilter(undefined);
-                setShowAllRecordsDrawer(true);
-              }}
-            />
             <Button
               variant="claw-outline"
               size="claw-sm"
               onClick={() => {
                 setDrawerInitialFilter(undefined);
+                setDrawerInitialPushableOnly(false);
                 setShowAllRecordsDrawer(true);
               }}
               className="shrink-0"
             >
               <History className="w-3 h-3" />
-              全部更新记录
+              版本更新记录
             </Button>
             <Button
               variant="claw-primary"
@@ -1203,13 +1237,37 @@ export default function ImageManagement() {
             onImportCustom={(agentType) => openImportFor(agentType)}
             renderScope={(agentType) => {
               const scopeData = getTypeScope(agentType);
+              // 应用范围文字标签：参考模型配置列样式（纯文字 + 铅笔图标 + +N 折叠 + Tooltip）
+              const isAll = scopeData.visibilityScope === "all" || scopeData.visibilityGroupIds.length === 0;
+              const groupPaths = scopeData.visibilityGroupIds.map((gid) => getGroupPath(gid, ALL_GROUPS));
+              const firstName = groupPaths[0];
+              const rest = groupPaths.length - 1;
+              const tooltipText = groupPaths.join("\n");
               return (
-                <ScopeEditPopover
-                  scope={scopeData.visibilityScope}
-                  selectedGroupIds={scopeData.visibilityGroupIds}
-                  groups={ALL_GROUPS}
-                  onConfirm={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
-                />
+                <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[220px]">
+                  {isAll ? (
+                    <span className="text-sm font-normal text-[#0A0A0A]">全部用户</span>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex max-w-full items-center gap-1 cursor-default text-sm font-normal text-[#0A0A0A]">
+                          <span className="truncate">{firstName}</span>
+                          {rest > 0 && <span className="shrink-0">+{rest}</span>}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
+                        {tooltipText}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  <ScopeEditPopover
+                    scope={scopeData.visibilityScope}
+                    selectedGroupIds={scopeData.visibilityGroupIds}
+                    groups={ALL_GROUPS}
+                    showBadges={false}
+                    onConfirm={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
+                  />
+                </div>
               );
             }}
           />
@@ -1549,29 +1607,41 @@ export default function ImageManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* ─── 删除自定义类型 二次确认 ─── */}
-      <Dialog open={!!removeCustomConfirm} onOpenChange={(o) => { if (!o) setRemoveCustomConfirm(null); }}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle>删除自定义 Agent 类型</DialogTitle>
-          </DialogHeader>
-          <Alert variant="warning">
-            <CircleAlert />
-            <AlertTitle>
-              确认删除自定义类型「<span className="font-semibold">{removeCustomConfirm?.displayName}</span>」？
-            </AlertTitle>
-            <AlertDescription>
-              删除后该类型及其下镜像将不再展示，可重新添加。此操作不会影响已存在的腾讯云镜像数据。
-            </AlertDescription>
-          </Alert>
-          <DialogFooter>
-            <Button variant="claw-outline" size="claw-sm" onClick={() => setRemoveCustomConfirm(null)}>取消</Button>
-            <Button variant="dialog-confirm" size="claw-sm" onClick={confirmRemoveCustomType}>
-              确认删除
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ─── 删除自定义类型 二次确认（警示弹窗） ─── */}
+      <AlertDialog open={!!removeCustomConfirm} onOpenChange={(o) => { if (!o) setRemoveCustomConfirm(null); }}>
+        <AlertDialogContent className="sm:max-w-[420px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setRemoveCustomConfirm(null)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <XIcon className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#0A0A0A]">删除自定义 Agent 类型</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4">
+                <Alert variant="warning">
+                  <CircleAlert />
+                  <AlertTitle>注意事项</AlertTitle>
+                  <AlertDescription>
+                    删除后该类型及其下镜像将不再展示，可重新添加。此操作不会影响已存在的腾讯云镜像数据。
+                  </AlertDescription>
+                </Alert>
+                <p className="text-sm text-[#0A0A0A]">
+                  确定要删除自定义 Agent 类型 <span className="font-medium text-[#0A0A0A]">「{removeCustomConfirm?.displayName}」</span> 吗？
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRemoveCustomConfirm(null)}>取消</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemoveCustomType}>确认删除</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ─── 推送更新弹窗 ─── */}
       <PushUpgradeDialog
@@ -1586,6 +1656,7 @@ export default function ImageManagement() {
           setShowPushDialog(false);
           setPushDefaultType(undefined);
           setDrawerInitialFilter(undefined);
+          setDrawerInitialPushableOnly(false);
           setShowAllRecordsDrawer(true);
         }}
       />
@@ -1596,10 +1667,14 @@ export default function ImageManagement() {
         onOpenChange={(o) => {
           setShowAllRecordsDrawer(o);
           // 关闭时清掉初始筛选，避免下次"全部更新记录"按钮再被沿用上一次的筛选
-          if (!o) setDrawerInitialFilter(undefined);
+          if (!o) {
+            setDrawerInitialFilter(undefined);
+            setDrawerInitialPushableOnly(false);
+          }
         }}
         pushable={pushable}
         initialFilter={drawerInitialFilter}
+        initialPushableOnly={drawerInitialPushableOnly}
         onPush={(defaultType) => {
           setShowAllRecordsDrawer(false);
           setDrawerInitialFilter(undefined);

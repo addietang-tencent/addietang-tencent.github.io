@@ -32,6 +32,7 @@ import {
 
 // ─── 类型 ───────────────────────────────────────────
 interface ImageRowLite {
+  id?: string;
   agentType: string;
   agentVersion: string;
   active: boolean;
@@ -66,6 +67,8 @@ interface OutdatedTypeStat {
   agentTypeLabel: string;
   /** 启用版本 */
   enabledVersion: string;
+  /** 启用镜像 id（用于在版本更新记录侧边栏精确命中时间线卡片） */
+  enabledImageId?: string;
   /** 启用镜像名 */
   enabledImageName: string;
   /** 启用镜像来源 */
@@ -101,9 +104,9 @@ export function useOutdatedTypes(claws?: ClawLite[]): OutdatedTypeStat[] {
     // 用与 ImageManagement 一致的默认启用版本，保证红点可见
     if (images.length === 0) {
       images = [
-        { agentType: "OpenClaw",     agentVersion: "2026.4.23", active: true, type: "public", name: "OpenClaw on Ubuntu 24.04" },
-        { agentType: "HermesAgent",  agentVersion: "v0.12.0",   active: true, type: "public", name: "Hermes Agent on Ubuntu 24.04" },
-        { agentType: "LightClawACE", agentVersion: "v0.1.8",    active: true, type: "public", name: "LightClaw ACE on TencentOS Server 4" },
+        { id: "img-idzg74s9", agentType: "OpenClaw",     agentVersion: "2026.4.23", active: true, type: "public", name: "OpenClaw on Ubuntu 24.04" },
+        { id: "img-al484uhr", agentType: "HermesAgent",  agentVersion: "v0.12.0",   active: true, type: "public", name: "Hermes Agent on Ubuntu 24.04" },
+        { id: "img-0dvlda3b", agentType: "LightClawACE", agentVersion: "v0.1.8",    active: true, type: "public", name: "LightClaw ACE on TencentOS Server 4" },
       ];
     }
 
@@ -136,6 +139,7 @@ export function useOutdatedTypes(claws?: ClawLite[]): OutdatedTypeStat[] {
         agentType: imgAgentType,
         agentTypeLabel: AGENT_TYPE_DISPLAY[imgAgentType] ?? imgAgentType,
         enabledVersion: image.agentVersion,
+        enabledImageId: image.id,
         enabledImageName: image.name,
         imageSource: image.type,
         outdatedCount: outdated.length,

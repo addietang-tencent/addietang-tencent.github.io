@@ -43,8 +43,8 @@ export default function NewVersionPushNotice({
         agentType: o.agentType,
         agentTypeLabel: o.agentTypeLabel,
         enabledVersion: o.enabledVersion,
-        // 兜底 enabledImage：本组件已不消费此字段，给个最小可用对象避免类型断言
-        enabledImage: {} as PushableAgentType["enabledImage"],
+        // 兜底 enabledImage：仅消费 id 字段，给个最小可用对象避免类型断言
+        enabledImage: { id: o.enabledImageId ?? "" } as PushableAgentType["enabledImage"],
         imageName: o.enabledImageName,
         imageSource: o.imageSource,
         outdatedInstanceCount: o.outdatedCount,

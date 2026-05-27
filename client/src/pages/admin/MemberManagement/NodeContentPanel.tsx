@@ -743,9 +743,9 @@ export default function NodeContentPanel({
                             {/* 状态 */}
                             <TableCell>
                               {u.status === "active" ? (
-                                <span className="text-sm font-medium text-[#008236]">正常</span>
+                                <StatusTag mode="text" variant="green">正常</StatusTag>
                               ) : (
-                                <span className="text-sm font-medium text-[#DC2626]">禁用</span>
+                                <StatusTag mode="text" variant="red">禁用</StatusTag>
                               )}
                             </TableCell>
 

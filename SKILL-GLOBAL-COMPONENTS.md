@@ -996,28 +996,62 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 **文件**: `client/src/components/ui/badge.tsx`
 
+> 对齐 shadcn Radix UI 规范（https://ui.shadcn.com/docs/components/radix/badge）。
+> 用于 New / Beta / 标签语义、轻量信息标识。**不要用于表达运行状态**（运行状态请使用 `StatusTag`，详见 §16）。
+
+### 14.1 通用样式
+
 | 属性 | 值 |
 |------|-----|
 | 圆角 | `rounded-full` |
 | padding | `px-2.5 py-0.5` |
-| 字号 | `text-xs` |
-| 图标 | `size-3 gap-1` |
+| 字号 | `text-xs` / Medium |
+| 图标 | `[&>svg]:size-3` / `gap-1` |
+| focus ring | `ring-[3px] ring-ring/50` |
 
-**变体：**
+### 14.2 Variant（默认 4 种，严格对齐 shadcn 截图）
 
-| variant | 背景 | 文字 |
-|---------|------|------|
-| `default` | `#355EF1` | 白色 |
-| `secondary` | `#f3f3f4` | `#020617` |
-| `destructive` | `#d42a1e` | 白色 |
-| `outline` | 白色 + `border-[#E5E5E5]` | `#020617` |
+| variant | 背景 | 文字 | 描边 | hover |
+|---------|------|------|------|-------|
+| `default` | `#0A0A0A` | 白色 | 无 | `bg/90` |
+| `secondary` | `#F5F5F5` | `#0A0A0A` | 无 | `#EDEDED` |
+| `destructive` | `red-100/60` | `red-600` | 无 | `red-100` |
+| `outline` | 白色 | `#0A0A0A` | `#E5E5E5` | `#F5F5F5` |
 
 ```tsx
 import { Badge } from "@/components/ui/badge";
-<Badge>New</Badge>
-<Badge variant="secondary">Beta</Badge>
-<Badge variant="destructive">错误</Badge>
+
+<Badge>Badge</Badge>
+<Badge variant="secondary">Secondary</Badge>
+<Badge variant="destructive">Destructive</Badge>
+<Badge variant="outline">Outline</Badge>
 ```
+
+### 14.3 Custom Colors（仅四色，使用 `color` prop）
+
+设置 `color` 后会覆盖 `variant` 视觉样式，仅保留尺寸/字号；对应 shadcn 官方 Custom Colors 示例。
+
+| color | 背景 | 文字 | dark 模式 |
+|-------|------|------|-----------|
+| `blue` | `bg-blue-50` | `text-blue-700` | `bg-blue-950/40 text-blue-300` |
+| `green` | `bg-green-50` | `text-green-700` | `bg-green-950/40 text-green-300` |
+| `purple` | `bg-purple-50` | `text-purple-700` | `bg-purple-950/40 text-purple-300` |
+| `red` | `bg-red-50` | `text-red-700` | `bg-red-950/40 text-red-300` |
+
+```tsx
+<Badge color="blue">Blue</Badge>
+<Badge color="green">Green</Badge>
+<Badge color="purple">Purple</Badge>
+<Badge color="red">Red</Badge>
+```
+
+### 14.4 使用规则与禁止事项
+
+- Custom Colors **仅允许 blue / green / purple / red** 四种；新增颜色需先在组件层补 token，禁止在业务侧自拼 `bg-xxx-50 text-xxx-700`。
+- 表达运行/开关/任务状态（正常 / 禁用 / 失败 / 已弃用 / 当前版本 等）必须使用 `StatusTag`（详见 §16），禁止用 `Badge color="green"` 替代。
+- 表达类型/范围/版本/分类等"信息标签"建议优先使用 `StatusTag mode="fill"`；当语义偏向 New / Beta / 通用强调时使用 `Badge`。
+- 禁止覆盖组件圆角、字号、padding；如需自定义尺寸应在组件层扩展 `size` variant。
+- 禁止在业务侧使用 `Badge variant="default"` 配合 `className="bg-xxx"` 改色；改色统一通过 `color` prop。
 
 ---
 
@@ -1080,7 +1114,7 @@ import {
       {data.map((item) => (
         <TableRow key={item.id}>
           <TableCell className="font-medium">{item.name}</TableCell>
-          <TableCell><StatusTag variant="green" dot>运行中</StatusTag></TableCell>
+          <TableCell><StatusTag mode="text" variant="green">运行中</StatusTag></TableCell>
           <TableCell className="text-right tabular-nums">{item.count}</TableCell>
           <TableActionCell>
             <Button onClick={...}>编辑</Button>
@@ -1278,14 +1312,15 @@ import {
 
 | 分类 | API | 适用场景 |
 |------|-----|----------|
-| 状态点类 | `<StatusTag mode="dot" variant="green">正常</StatusTag>` | 表格状态列、运行状态、开关状态、任务状态 |
+| 文本状态类 | `<StatusTag mode="text" variant="green">正常</StatusTag>` | **表格状态列默认**：14px Medium 纯彩色文字，无底色、无圆点 |
+| 状态点类 | `<StatusTag mode="dot" variant="green">正常</StatusTag>` | 详情/卡片/列表中的运行状态、开关状态、任务状态（非表格） |
 | 填充信息类 | `<StatusTag mode="fill" variant="blue">全部用户</StatusTag>` | 范围、版本、类型、数量等辅助信息 |
 | 角色类 | `<StatusTag preset="role-admin" />` / `<StatusTag preset="role-user" />` | 管控端「用户管理」表格角色列 |
 | 自定义 icon 类 | `<StatusTag variant="role" icon={<SomeIcon />}>自定义</StatusTag>` | 低频自定义带 icon 标签；高频语义应沉淀为 `preset` |
 
 ### 16.2 颜色 token
 
-> 同一颜色在 `mode="dot"` 与 `mode="fill"` 中保持近似语义：dot 使用主色，fill 使用同语义浅底色 + 主色文字。后续新增颜色（如 `amber` / `purple`）必须同时补齐 `text / bg / dot` 三个 token。
+> 同一颜色在 `mode="text"`、`mode="dot"` 与 `mode="fill"` 中保持近似语义：text/dot 使用主色字，fill 使用同语义浅底色 + 主色文字。后续新增颜色（如 `amber` / `purple`）必须同时补齐 `text / bg / dot` 三个 token。
 
 | variant | text / dot | fill bg | 使用场景 |
 |---------|------------|---------|----------|
@@ -1294,7 +1329,27 @@ import {
 | `gray` | `#0A0A0A` | `#F5F5F5` | 默认、待处理、关闭、版本、范围 |
 | `red` | `#DC2626` | `#FEF2F2` | 错误、失败、异常、风险 |
 
-### 16.3 状态点类 `mode="dot"`
+### 16.3 文本状态类 `mode="text"`（表格状态列默认）
+
+| Token | Value |
+|-------|-------|
+| background | 无 |
+| border | 无 |
+| padding | 无（`px-0 py-0`） |
+| dot | 不展示 |
+| font | `14px` (`text-sm`) / Medium / `leading-[1.5]` |
+| color | 使用当前 `variant` 的 text 主色 |
+
+**表格状态列必须使用 `mode="text"`。** 表格内禁止再使用 `mode="dot"` 或 `mode="fill"` 表达运行状态。
+
+```tsx
+<StatusTag mode="text" variant="green">正常</StatusTag>
+<StatusTag mode="text" variant="red">禁用</StatusTag>
+<StatusTag mode="text" variant="green">当前版本</StatusTag>
+<StatusTag mode="text" variant="gray">已弃用</StatusTag>
+```
+
+### 16.4 状态点类 `mode="dot"`（详情/卡片场景）
 
 | Token | Value |
 |-------|-------|
@@ -1306,7 +1361,7 @@ import {
 | font | `SmallBodyText`：12px / Medium / tracking 0.18px |
 | color | 使用当前 `variant` 的 text / dot 主色 |
 
-**表格状态列必须使用 `mode="dot"`。**
+适用于详情页头部、设置卡片、运行状态弹窗等"非表格"场景；表格状态列禁止使用本模式。
 
 ```tsx
 <StatusTag mode="dot" variant="green">正常</StatusTag>
@@ -1315,7 +1370,7 @@ import {
 <StatusTag mode="dot" variant="red">失败</StatusTag>
 ```
 
-### 16.4 填充信息类 `mode="fill"`
+### 16.5 填充信息类 `mode="fill"`
 
 | Token | Value |
 |-------|-------|
@@ -1332,7 +1387,7 @@ import {
 <StatusTag mode="fill" variant="green">已接入</StatusTag>
 ```
 
-### 16.5 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
+### 16.6 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
 
 | Token | 管理员 | 用户 |
 |-------|--------|------|
@@ -1352,7 +1407,7 @@ import {
 <StatusTag preset="role-user" />
 ```
 
-### 16.6 兼容规则
+### 16.7 兼容规则
 
 旧写法仍兼容，但新代码不再推荐：
 
@@ -1360,23 +1415,27 @@ import {
 // 旧：兼容，会自动等价为 mode="dot"
 <StatusTag variant="green" dot>正常</StatusTag>
 
-// 新：推荐
+// 详情/卡片场景的推荐写法
 <StatusTag mode="dot" variant="green">正常</StatusTag>
+
+// 表格状态列的推荐写法
+<StatusTag mode="text" variant="green">正常</StatusTag>
 ```
 
-### 16.7 使用规则
+### 16.8 使用规则
 
-- 表格状态列必须使用 `mode="dot"`，禁止使用有底色胶囊表达状态列。
+- **表格状态列必须使用 `mode="text"`**（14px Medium 纯彩色文字），禁止使用 `mode="dot"` 或 `mode="fill"` 表达状态。
+- 详情页、卡片、Popover 等非表格场景的运行状态使用 `mode="dot"`。
 - 信息/分类/版本/范围类标签必须使用 `mode="fill"`，不带 dot。
 - 角色列必须使用 `preset="role-admin"` / `preset="role-user"`，禁止业务侧自行拼 icon、描边和文字。
 - `icon` 插槽只用于低频自定义标签；同一语义复用 2 次以上，应沉淀为 `preset`。
 - 传入 `icon` 时，业务侧只提供形状；icon 必须支持 `currentColor`，不要在业务侧写颜色和尺寸。
 
-### 16.8 禁止事项
+### 16.9 禁止事项
 
 - 禁止使用自定义的 `bg-blue-50 text-blue-600 rounded-xl` 或 `bg-green-50 text-green-600` 等样式替代 StatusTag。
-- 禁止在表格状态列使用 `mode="fill"` 或旧的有底色 dot 胶囊。
-- 禁止使用红/绿色纯文字（如 `text-green-600` / `text-red-500`）表示开关状态。
+- 禁止在表格状态列使用 `mode="dot"` 或 `mode="fill"`（有底色胶囊）。
+- 禁止使用自定义的红/绿色纯文字 `span`（如 `text-green-600` / `text-red-500` / `text-[#008236]`）表示开关或运行状态；统一改为 `<StatusTag mode="text">`。
 - 禁止自定义标签圆角（如 `rounded-xl`），统一使用组件内置圆角。
 - 禁止在用户管理角色列自行拼装 `span + icon + border`，统一使用 `StatusTag preset`。
 

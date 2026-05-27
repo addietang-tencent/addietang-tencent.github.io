@@ -803,16 +803,19 @@ export default function GroupList({
       {/* 底部固定：未分组 */}
       <div className="border-t border-[#e5e5e5] shrink-0">
         <div
-          className={`group flex items-center gap-1.5 h-8 px-4 text-sm cursor-pointer rounded-[4px] mx-3 mt-1 transition-colors ${
+          className={`group flex items-center gap-1.5 h-8 pr-3 text-sm cursor-pointer rounded-[4px] mx-3 mt-1 transition-colors ${
             isUnassignedActive
               ? "bg-[#f4f4f5] text-[#09090b] font-medium"
               : "text-[#09090b] hover:bg-[#f4f4f5]"
           }`}
+          style={{ paddingLeft: 8 }}
           onClick={() => onSelect(UNASSIGNED_GROUP_ID)}
         >
-          <UserX className={`w-3.5 h-3.5 shrink-0 ${isUnassignedActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`} />
+          <span className="w-4 h-4 shrink-0 flex items-center justify-center">
+            <UserX className={`w-3.5 h-3.5 ${isUnassignedActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`} />
+          </span>
           <span className="truncate">未分组</span>
-          <span className={`text-[11px] tabular-nums shrink-0 ${isUnassignedActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`}>
+          <span className={`text-[11px] tabular-nums shrink-0 ml-0.5 ${isUnassignedActive ? "text-[#71717a]" : "text-[#a1a1aa]"}`}>
             ({unassignedCount})
           </span>
         </div>

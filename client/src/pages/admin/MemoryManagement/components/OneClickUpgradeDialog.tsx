@@ -107,9 +107,6 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
           )}
           {status === 'has-upgradable' && (
             <div className="space-y-4">
-              <p className="text-sm text-[#0A0A0A] leading-relaxed">
-                检测到 <span className="font-semibold">{pendingCount}</span> 个 OpenClaw 类型 Pro 版 Agent 可升级至最新版本，升级后即可使用 <span className="font-medium">Pro 版最新能力</span>。
-              </p>
               <Alert variant="warning">
                 <CircleAlert />
                 <AlertTitle>升级影响说明</AlertTitle>
@@ -122,6 +119,9 @@ export const OneClickUpgradeDialog: React.FC<OneClickUpgradeDialogProps> = ({
                   </ul>
                 </AlertDescription>
               </Alert>
+              <p className="text-sm text-[#0A0A0A] leading-relaxed">
+                检测到 <span className="font-semibold">{pendingCount}</span> 个 OpenClaw 类型 Pro 版 Agent 可升级至最新版本，升级后即可使用 <span className="font-medium">Pro 版最新能力</span>。
+              </p>
             </div>
           )}
         </DialogBody>

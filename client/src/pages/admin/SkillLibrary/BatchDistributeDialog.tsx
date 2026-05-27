@@ -383,7 +383,7 @@ export default function BatchDistributeDialog({
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[920px]"
+        size="lg"
         style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
       >
         <DialogHeader>
@@ -747,9 +747,18 @@ export default function BatchDistributeDialog({
             pagedInstances.map(instance => (
               <div
                 key={instance.id}
-                className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F5] last:border-b-0 hover:bg-[#FAFAFA] transition-colors"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleSelectInstance(instance.id)}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSelectInstance(instance.id);
+                  }
+                }}
+                className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F5] last:border-b-0 hover:bg-[#FAFAFA] transition-colors cursor-pointer select-none"
               >
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                   <Checkbox
                     checked={selectedInstances.includes(instance.id)}
                     onCheckedChange={() => handleSelectInstance(instance.id)}

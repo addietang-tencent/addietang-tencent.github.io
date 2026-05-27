@@ -6,6 +6,8 @@ import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from 
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createPortal } from "react-dom";
 import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -3058,8 +3060,8 @@ export default function SecurityGroupManagement() {
       onOpenChange={onOpenChange}
     >
       <DialogContent
-        className="sm:max-w-[704px]"
-        style={{ height: "min(90vh, 820px)", display: "flex", flexDirection: "column" }}
+        className="sm:max-w-[704px] flex flex-col"
+        style={{ maxHeight: "min(90vh, 820px)" }}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
@@ -3077,98 +3079,82 @@ export default function SecurityGroupManagement() {
                   : "以下为您云端已有安全组的规则，可作为规则模板导入。确认后，所选规则将复制到当前 ClawPro 安全组，原云端安全组不受影响。"}
               </AlertDescription>
             </Alert>
-            <div className="space-y-3">
-                <div className="rounded-[4px] border border-[#E5E5E5] overflow-hidden bg-white">
-                  <div className="relative border-b border-[#E5E5E5] p-3">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3] z-10" />
-                    <Input
-                      type="text"
-                      placeholder="搜索规则模板名称或 ID"
-                      value={searchKeyword}
-                      onChange={(e) => onSearchChange(e.target.value)}
-                      className="pl-9 pr-9"
-                    />
-                    {searchKeyword && (
-                      <button
-                        onClick={onClearSearch}
-                        className="absolute right-6 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] z-10"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
 
-                  <div>
-                    {candidateSecurityGroups.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-10 text-[#A3A3A3]">
-                        <Shield className="w-10 h-10 mb-3 opacity-30" />
-                        <p className="text-sm">未找到匹配的规则模板</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex flex-col">
-                          {candidateSecurityGroups.map((sg) => {
-                            const isSelected = selectedSecurityGroup?.name === sg.name;
-                            return (
-                              <button
-                                key={sg.name}
-                                onClick={() => onSelectSecurityGroup(sg)}
-                                className={`w-full text-left px-4 py-2.5 border-b border-[#E5E5E5] last:border-b-0 transition-colors ${
-                                  isSelected
-                                    ? "bg-[#EFF6FF]"
-                                    : "hover:bg-[#FAFAFA]"
-                                }`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <div className="mt-0.5 shrink-0">
-                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${
-                                      isSelected
-                                        ? "border-[#1447E6] bg-[#1447E6]"
-                                        : "border-gray-300 bg-white"
-                                    }`}>
-                                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                                    </div>
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className={`text-sm font-medium truncate ${isSelected ? "text-[#1447E6]" : "text-[#0A0A0A]"}`}>{sg.name}</span>
-                                    </div>
-                                    <p className="text-xs text-[#737373] mt-0.5 truncate">{sg.remark || "—"}</p>
-                                  </div>
-                                  <div className="mt-0.5 flex items-center gap-1.5 shrink-0 text-xs text-[#A3A3A3] whitespace-nowrap">
-                                    <span>入站 {sg.inboundCount} 条</span>
-                                    <span className="text-gray-200">|</span>
-                                    <span>出站 {sg.outboundCount} 条</span>
-                                  </div>
-                                </div>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        {candidateTotalPages > 1 && (
-                          <div className="border-t border-[#E5E5E5] bg-[#FAFAFA] px-4 py-2.5">
-                            <Pagination
-                              total={candidateTotalPages * SECURITY_GROUP_DIALOG_PAGE_SIZE}
-                              current={candidatePage}
-                              pageSize={SECURITY_GROUP_DIALOG_PAGE_SIZE}
-                              size="small"
-                              className="w-full justify-between"
-                              hideOnSinglePage
-                              onChange={(page) => { onCandidatePageChange(page); }}
-                            />
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
+            {/* ── 规则模板 ── */}
+            <div className="space-y-3">
+              <div className="text-sm font-medium text-[#0A0A0A]">选择规则模板</div>
+              <div className="rounded-[4px] border border-[#E5E5E5] overflow-hidden bg-white">
+                <div className="relative border-b border-[#E5E5E5] p-3">
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3] z-10" />
+                  <Input
+                    type="text"
+                    placeholder="搜索规则模板名称或 ID"
+                    value={searchKeyword}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    className="pl-9 pr-9"
+                  />
+                  {searchKeyword && (
+                    <button
+                      onClick={onClearSearch}
+                      className="absolute right-6 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] z-10"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
+
+                {candidateSecurityGroups.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-[#A3A3A3]">
+                    <Shield className="w-10 h-10 mb-3 opacity-30" />
+                    <p className="text-sm">未找到匹配的规则模板</p>
+                  </div>
+                ) : (
+                  <RadioGroup
+                    value={selectedSecurityGroup?.name ?? ""}
+                    onValueChange={(name) => {
+                      const sg = candidateSecurityGroups.find((s) => s.name === name);
+                      if (sg) onSelectSecurityGroup(sg);
+                    }}
+                    className="gap-0 max-h-[280px] overflow-y-auto"
+                    style={{ scrollbarGutter: "stable" }}
+                  >
+                    {candidateSecurityGroups.map((sg) => {
+                      const isSelected = selectedSecurityGroup?.name === sg.name;
+                      return (
+                        <label
+                          key={sg.name}
+                          htmlFor={`tpl-${sg.name}`}
+                          className={`w-full text-left px-4 py-2.5 border-b border-[#E5E5E5] last:border-b-0 cursor-pointer transition-colors flex items-start gap-3 ${
+                            isSelected ? "bg-[#EFF6FF]" : "hover:bg-[#FAFAFA]"
+                          }`}
+                        >
+                          <RadioGroupItem
+                            value={sg.name}
+                            id={`tpl-${sg.name}`}
+                            className="mt-0.5 shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className={`text-sm font-medium truncate ${isSelected ? "text-[#1447E6]" : "text-[#0A0A0A]"}`}>{sg.name}</span>
+                            </div>
+                            <p className="text-xs text-[#737373] mt-0.5 truncate">{sg.remark || "—"}</p>
+                          </div>
+                          <div className="mt-0.5 flex items-center gap-1.5 shrink-0 text-xs text-[#A3A3A3] whitespace-nowrap">
+                            <span>入站 {sg.inboundCount} 条</span>
+                            <span className="text-gray-200">|</span>
+                            <span>出站 {sg.outboundCount} 条</span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </RadioGroup>
+                )}
+              </div>
             </div>
 
             {selectedSecurityGroup && (
-              <div>
-                <div className="mb-3">
-                  <Label className="text-sm font-medium text-[#0A0A0A]">规则预览</Label>
-                </div>
+              <div className="space-y-3">
+                <div className="text-sm font-medium text-[#0A0A0A]">规则预览</div>
                 <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
                   <div className="flex items-center px-4 border-b border-[#E5E5E5]" style={{ minHeight: "44px" }}>
                     {(["outbound", "inbound"] as const).map((tab) => (
@@ -3471,6 +3457,7 @@ export default function SecurityGroupManagement() {
                   variant="claw-outline"
                   size="claw-sm"
                   onClick={() => {
+                    setAddDraft({ policy: "允许" });
                     setShowAddDialog(securityTab);
                   }}
                 >
@@ -3874,482 +3861,468 @@ export default function SecurityGroupManagement() {
             }
           }}>
             <DialogContent
-              className="flex flex-col gap-0 p-0 overflow-hidden"
-              style={{ width: "min(92vw, 520px)", maxWidth: "520px", maxHeight: "min(90vh, 720px)" }}
+              className="sm:max-w-[720px] flex flex-col"
+              style={{ maxHeight: "min(90vh, 780px)" }}
               onInteractOutside={(e) => e.preventDefault()}
               onEscapeKeyDown={(e) => e.preventDefault()}
             >
-              <DialogHeader className="mx-0 gap-0 px-6 pt-6 pb-4 border-b border-[#e5e5e5] shrink-0">
-                <DialogTitle className="text-base font-semibold text-[#09090b]">
+              <DialogHeader>
+                <DialogTitle>
                   {showEditVpcDialog?.type === "enterprise"
                     ? "编辑预设策略"
                     : showEditVpcDialog?.id === NEW_GROUP_VPC_ID
                       ? "添加分组策略"
                       : "编辑分组策略"}
                 </DialogTitle>
-                {showEditVpcDialog?.type === "enterprise" ? (
-                  <Alert variant="info" className="mt-3 px-3 py-2.5">
-                    <Info />
-                    <AlertDescription>
-                      <ul className="space-y-1">
-                        <li className="flex gap-1.5">
-                          <span className="shrink-0">•</span>
-                          <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
-                        </li>
-                        <li className="flex gap-1.5">
-                          <span className="shrink-0">•</span>
-                          <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                        </li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                ) : showEditVpcDialog?.id === NEW_GROUP_VPC_ID ? (
-                  <Alert variant="info" className="mt-3 px-3 py-2.5">
-                    <Info />
-                    <AlertDescription>
-                      <ul className="space-y-1">
-                        <li className="flex gap-1.5">
-                          <span className="shrink-0">•</span>
-                          <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
-                        </li>
-                        <li className="flex gap-1.5">
-                          <span className="shrink-0">•</span>
-                          <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                        </li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <Alert variant="info" className="mt-3 px-3 py-2.5">
-                    <Info />
-                    <AlertDescription>
-                      <ul className="space-y-1">
-                        <li className="flex gap-1.5">
-                          <span className="shrink-0">•</span>
-                          <span>可修改该分组策略的应用范围、VPC 和子网。</span>
-                        </li>
-                        <li className="flex gap-1.5">
-                          <span className="shrink-0">•</span>
-                          <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
-                        </li>
-                      </ul>
-                    </AlertDescription>
-                  </Alert>
-                )}
-                {editAutoCleaned && showEditVpcDialog?.id !== NEW_GROUP_VPC_ID && (
-                  <Alert variant="warning" className="mt-2 px-3 py-2.5">
-                    <CircleAlert />
-                    <AlertDescription className="break-all">
-                      {(() => {
-                        const segs: string[] = [];
-                        if (editAutoCleaned.vpcId) {
-                          // 英文头 VPC 与前文衔接需要空格分隔，可读性更好
-                          segs.push(` VPC ${editAutoCleaned.vpcId}`);
-                        }
-                        if (editAutoCleaned.subnetIds.length > 0) {
-                          // 中文头"子网"与前文中文紧贴，不加空格
-                          segs.push(`子网 ${editAutoCleaned.subnetIds.join("、")}`);
-                        }
-                        return `检测到原配置中的${segs.join("、")} 已从腾讯云控制台被删除，已自动从本次编辑中移除。`;
-                      })()}
-                    </AlertDescription>
-                  </Alert>
-                )}
               </DialogHeader>
 
-              {/* 可滚动内容区 */}
-              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
-                {(() => {
-                  const isEnterprise = showEditVpcDialog?.type === "enterprise";
-                  // 企业级 VPC 的"自动分配"状态：vpcId = 系统默认 + subnetStrategy = auto
-                  const isAutoAssigned =
-                    isEnterprise &&
-                    editVpcDraft.vpcId === AUTO_ASSIGNED_VPC.id &&
-                    editVpcDraft.subnetStrategy === "auto";
-
-                  return (
-                    <>
-                      {/* ── 应用范围（仅分组网络） ── */}
-                      {showEditVpcDialog?.type === "group" && (
-                        <div className="space-y-3">
-                          <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider flex items-center gap-1">
-                            <span>应用范围</span>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-help">
-                                    <Info className="w-3 h-3" />
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed normal-case tracking-normal font-normal">
-                                  新建 Agent 实例时若选择该用户组，将使用此分组策略。
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                          {(() => {
-                            // 已被其他分组策略占用的分组 id 集合（置灰展示）。
-                            // 当前行已绑定的分组不算"被占用"——编辑时允许保留/取消。
-                            const currentRowNames = new Set(showEditVpcDialog?.associatedGroups ?? []);
-                            const occupiedNames = new Set<string>();
-                            vpcList.forEach((r) => {
-                              if (r.id === showEditVpcDialog?.id) return;
-                              (r.associatedGroups ?? []).forEach((name) => occupiedNames.add(name));
-                            });
-                            currentRowNames.forEach((name) => occupiedNames.delete(name));
-                            // [V5] 仅占用「分组自身 id」：父子节点彼此独立，可分别配置自己的策略
-                            //   - 业务约束：一个分组同一时刻只能存在一条策略（自己 id 不可被重复占用）
-                            //   - 父级被占用时，其子级仍可独立配置自己的策略；反之亦然
-                            //   - 在弹窗内的临时勾选交互（级联勾选父→子）仍由 ScopePopover 自身处理，与本处的"占用置灰"无关
-                            const nameToNode = new Map(ALL_GROUPS_SHARED.map((g) => [g.name, g]));
-                            const disabledIds = new Set<string>();
-                            occupiedNames.forEach((name) => {
-                              const node = nameToNode.get(name);
-                              if (!node) return;
-                              disabledIds.add(node.id);
-                            });
-                            const isNewRow = showEditVpcDialog?.id === NEW_GROUP_VPC_ID;
-                            const disabledTooltip = isNewRow
-                              ? "该用户组已配置策略，请编辑已有策略。"
-                              : "该用户组已配置策略，请选择其他用户组。";
-                            return (
-                              <GroupTagSelector
-                                value={editVpcDraft.associatedGroups}
-                                disabledIds={disabledIds}
-                                disabledTooltip={disabledTooltip}
-                                onChange={(next) => setEditVpcDraft((prev) => ({ ...prev, associatedGroups: next }))}
-                              />
-                            );
-                          })()}
-                        </div>
-                      )}
-
-                      {/* ── 私有网络（VPC） ── */}
-                      <div className="space-y-3">
-                        <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">私有网络（VPC）</div>
+              <DialogBody className="flex-1">
+                <div className="space-y-4">
+                  {/* Alert 提示统一放在内容区最上方 */}
+                  {showEditVpcDialog?.type === "enterprise" ? (
+                    <Alert variant="info">
+                      <Info />
+                      <AlertDescription>
+                        <ul className="space-y-1">
+                          <li className="flex gap-1.5">
+                            <span className="shrink-0">•</span>
+                            <span>预设策略作为企业默认网络配置，适用于未分组用户，以及未匹配到分组策略的场景。</span>
+                          </li>
+                          <li className="flex gap-1.5">
+                            <span className="shrink-0">•</span>
+                            <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                          </li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  ) : showEditVpcDialog?.id === NEW_GROUP_VPC_ID ? (
+                    <Alert variant="info">
+                      <Info />
+                      <AlertDescription>
+                        <ul className="space-y-1">
+                          <li className="flex gap-1.5">
+                            <span className="shrink-0">•</span>
+                            <span>为用户组添加分组策略后，新建 Agent 实例时若选择该用户组，将优先使用此策略。</span>
+                          </li>
+                          <li className="flex gap-1.5">
+                            <span className="shrink-0">•</span>
+                            <span>仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                          </li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  ) : (
+                    <Alert variant="info">
+                      <Info />
+                      <AlertDescription>
+                        <ul className="space-y-1">
+                          <li className="flex gap-1.5">
+                            <span className="shrink-0">•</span>
+                            <span>可修改该分组策略的应用范围、VPC 和子网。</span>
+                          </li>
+                          <li className="flex gap-1.5">
+                            <span className="shrink-0">•</span>
+                            <span>修改生效后，仅影响后续新建的 Agent 实例，已有 Agent 实例网络保持不变。</span>
+                          </li>
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  {editAutoCleaned && showEditVpcDialog?.id !== NEW_GROUP_VPC_ID && (
+                    <Alert variant="warning">
+                      <CircleAlert />
+                      <AlertDescription className="break-all">
                         {(() => {
-                          // 触发器展示值：优先展示选中 VPC 的完整信息；"自动分配"特殊态展示系统默认 VPC
-                          const triggerVpc = isAutoAssigned
-                            ? AUTO_ASSIGNED_VPC
-                            : MOCK_VPCS.find((v) => v.id === editVpcDraft.vpcId);
-                          // 下拉总条数：企业级场景含一条「自动分配」虚拟项
-                          const totalCount = MOCK_VPCS.length + (isEnterprise ? 1 : 0);
-                          return (
-                            <Popover open={editVpcPickerOpen} onOpenChange={setEditVpcPickerOpen}>
-                              <PopoverTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="w-full h-12 px-4 rounded-[4px] border border-[#e5e5e5] bg-[#fafafa]/40 text-sm text-gray-800 hover:border-[#e5e5e5] transition-colors data-[state=open]:border-[#355EF1] data-[state=open]:bg-white flex items-center justify-between gap-2"
-                                  data-state={editVpcPickerOpen ? "open" : "closed"}
-                                >
-                                  {triggerVpc ? (
-                                    isAutoAssigned ? (
-                                      // 后端尚未返回"实际命中的 VPC 标识"，与线上保持一致：仅展示"自动分配"四字，
-                                      // 不暴露任何具体 VPC ID/名称/CIDR
-                                      <span className="text-gray-800">自动分配</span>
+                          const segs: string[] = [];
+                          if (editAutoCleaned.vpcId) {
+                            segs.push(` VPC ${editAutoCleaned.vpcId}`);
+                          }
+                          if (editAutoCleaned.subnetIds.length > 0) {
+                            segs.push(`子网 ${editAutoCleaned.subnetIds.join("、")}`);
+                          }
+                          return `检测到原配置中的${segs.join("、")} 已从腾讯云控制台被删除，已自动从本次编辑中移除。`;
+                        })()}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {(() => {
+                    const isEnterprise = showEditVpcDialog?.type === "enterprise";
+                    const isAutoAssigned =
+                      isEnterprise &&
+                      editVpcDraft.vpcId === AUTO_ASSIGNED_VPC.id &&
+                      editVpcDraft.subnetStrategy === "auto";
+
+                    return (
+                      <>
+                        {/* ── 应用范围（仅分组网络） ── */}
+                        {showEditVpcDialog?.type === "group" && (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm font-medium text-[#0A0A0A]">应用范围</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-help">
+                                      <Info className="w-3.5 h-3.5" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed normal-case tracking-normal font-normal">
+                                    新建 Agent 实例时若选择该用户组，将使用此分组策略。
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                            {(() => {
+                              const currentRowNames = new Set(showEditVpcDialog?.associatedGroups ?? []);
+                              const occupiedNames = new Set<string>();
+                              vpcList.forEach((r) => {
+                                if (r.id === showEditVpcDialog?.id) return;
+                                (r.associatedGroups ?? []).forEach((name) => occupiedNames.add(name));
+                              });
+                              currentRowNames.forEach((name) => occupiedNames.delete(name));
+                              const nameToNode = new Map(ALL_GROUPS_SHARED.map((g) => [g.name, g]));
+                              const disabledIds = new Set<string>();
+                              occupiedNames.forEach((name) => {
+                                const node = nameToNode.get(name);
+                                if (!node) return;
+                                disabledIds.add(node.id);
+                              });
+                              const isNewRow = showEditVpcDialog?.id === NEW_GROUP_VPC_ID;
+                              const disabledTooltip = isNewRow
+                                ? "该用户组已配置策略，请编辑已有策略。"
+                                : "该用户组已配置策略，请选择其他用户组。";
+                              return (
+                                <GroupTagSelector
+                                  value={editVpcDraft.associatedGroups}
+                                  disabledIds={disabledIds}
+                                  disabledTooltip={disabledTooltip}
+                                  onChange={(next) => setEditVpcDraft((prev) => ({ ...prev, associatedGroups: next }))}
+                                />
+                              );
+                            })()}
+                          </div>
+                        )}
+
+                        {/* ── 私有网络（VPC） ── */}
+                        <div className="space-y-3">
+                          <div className="text-sm font-medium text-[#0A0A0A]">私有网络（VPC）</div>
+                          {(() => {
+                            const triggerVpc = isAutoAssigned
+                              ? AUTO_ASSIGNED_VPC
+                              : MOCK_VPCS.find((v) => v.id === editVpcDraft.vpcId);
+                            const totalCount = MOCK_VPCS.length + (isEnterprise ? 1 : 0);
+                            return (
+                              <Popover open={editVpcPickerOpen} onOpenChange={setEditVpcPickerOpen}>
+                                <PopoverTrigger asChild>
+                                  <button
+                                    type="button"
+                                    data-state={editVpcPickerOpen ? "open" : "closed"}
+                                    className="w-full h-9 px-3 py-[5px] rounded-[4px] border border-[#d3d6db] bg-white text-sm text-[#020617] hover:border-[#355EF1] data-[state=open]:border-[#355EF1] transition-colors flex items-center justify-between gap-2"
+                                  >
+                                    {triggerVpc ? (
+                                      isAutoAssigned ? (
+                                        <span className="text-[#020617]">自动分配</span>
+                                      ) : (
+                                        <span className="flex items-center gap-2 min-w-0 text-[#020617]">
+                                          <span className="font-mono shrink-0">{triggerVpc.id}</span>
+                                          <span className="text-[#A3A3A3] shrink-0">|</span>
+                                          <span className="truncate">{triggerVpc.name}</span>
+                                          <span className="text-[#A3A3A3] shrink-0">|</span>
+                                          <span className="font-mono shrink-0">{triggerVpc.cidr}</span>
+                                        </span>
+                                      )
                                     ) : (
-                                      <span className="flex items-center gap-2 min-w-0 text-gray-800">
-                                        <span className="font-mono shrink-0">{triggerVpc.id}</span>
-                                        <span className="text-[#A3A3A3] shrink-0">|</span>
-                                        <span className="truncate">{triggerVpc.name}</span>
-                                        <span className="text-[#A3A3A3] shrink-0">|</span>
-                                        <span className="font-mono shrink-0">{triggerVpc.cidr}</span>
-                                      </span>
-                                    )
-                                  ) : (
-                                    <span className="text-[#A3A3A3]">请选择 VPC</span>
-                                  )}
-                                  <ChevronDown className={`w-4 h-4 text-[#A3A3A3] shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="p-0 shadow-lg border border-[#e5e5e5] rounded-[4px] overflow-hidden"
-                                style={{ width: "var(--radix-popover-trigger-width)" }}
-                                align="start"
-                                sideOffset={4}
-                              >
-                                <Command>
-                                  <CommandInput placeholder="搜索 VPC ID / 名称…" className="text-sm" />
-                                  <CommandList className="max-h-72 overflow-y-auto">
-                                    <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的 VPC</CommandEmpty>
-                                    <CommandGroup>
-                                      {isEnterprise && (
-                                        <CommandItem
-                                          key="auto"
-                                          value="自动分配"
-                                          onSelect={() => {
-                                            setEditVpcDraft((prev) => ({
-                                              ...prev,
-                                              vpcId: AUTO_ASSIGNED_VPC.id,
-                                              subnetStrategy: "auto",
-                                              zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
-                                            }));
-                                            setEditVpcPickerOpen(false);
-                                          }}
-                                          className="cursor-pointer"
-                                        >
-                                          {/* 后端尚未返回"实际命中的 VPC 标识"，与线上保持一致：仅展示"自动分配"四字 */}
-                                          <div className="flex-1 min-w-0 flex items-center gap-2 text-sm">
-                                            <span className="text-gray-800">自动分配</span>
-                                          </div>
-                                          {isAutoAssigned && (
-                                            <Check className="w-4 h-4 text-blue-500 shrink-0 ml-2" />
-                                          )}
-                                        </CommandItem>
-                                      )}
-                                      {MOCK_VPCS.map((vpc) => {
-                                        const selected = !isAutoAssigned && editVpcDraft.vpcId === vpc.id;
-                                        return (
+                                      <span className="text-[#b0b6c3]">请选择 VPC</span>
+                                    )}
+                                    <ChevronDown className={`w-4 h-4 text-[#7b818f] shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
+                                  </button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  className="p-0 rounded-[4px] border-0 overflow-hidden"
+                                  style={{
+                                    width: "var(--radix-popover-trigger-width)",
+                                    boxShadow: "0px 0px 2px rgba(0,0,0,0.1), 0px 4px 16px rgba(0,0,0,0.12)",
+                                  }}
+                                  align="start"
+                                  sideOffset={4}
+                                >
+                                  <Command>
+                                    <CommandInput placeholder="搜索 VPC ID / 名称…" className="text-sm" />
+                                    <CommandList className="max-h-72 overflow-y-auto p-2">
+                                      <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的 VPC</CommandEmpty>
+                                      <CommandGroup className="p-0">
+                                        {isEnterprise && (
                                           <CommandItem
-                                            key={vpc.id}
-                                            value={`${vpc.id} ${vpc.name} ${vpc.cidr}`}
+                                            key="auto"
+                                            value="自动分配"
                                             onSelect={() => {
                                               setEditVpcDraft((prev) => ({
                                                 ...prev,
-                                                vpcId: vpc.id,
-                                                subnetStrategy: "specified",
+                                                vpcId: AUTO_ASSIGNED_VPC.id,
+                                                subnetStrategy: "auto",
                                                 zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
                                               }));
                                               setEditVpcPickerOpen(false);
                                             }}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer h-8 rounded-[6px] px-3 py-[9px] data-[selected=true]:bg-[#f3f3f4]"
                                           >
-                                            <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-gray-800">
-                                              <span className="font-mono shrink-0">{vpc.id}</span>
-                                              <span className="text-[#A3A3A3] shrink-0">|</span>
-                                              <span className="truncate">{vpc.name}</span>
-                                              <span className="text-[#A3A3A3] shrink-0">|</span>
-                                              <span className="font-mono shrink-0">{vpc.cidr}</span>
+                                            <div className="flex-1 min-w-0 flex items-center gap-2 text-sm">
+                                              <span className={isAutoAssigned ? "text-[#355EF1] font-medium" : "text-[#020617]"}>自动分配</span>
                                             </div>
-                                            {selected && (
-                                              <Check className="w-4 h-4 text-blue-500 shrink-0 ml-2" />
+                                            {isAutoAssigned && (
+                                              <Check className="w-4 h-4 text-[#355EF1] shrink-0 ml-2" />
                                             )}
                                           </CommandItem>
-                                        );
-                                      })}
-                                    </CommandGroup>
-                                  </CommandList>
-                                  <div className="border-t border-[#e5e5e5] px-3 py-2 text-xs text-[#A3A3A3] bg-[#fafafa]/50">
-                                    共 {totalCount} 条
-                                  </div>
-                                </Command>
-                              </PopoverContent>
-                            </Popover>
-                          );
-                        })()}
-                      </div>
+                                        )}
+                                        {MOCK_VPCS.map((vpc) => {
+                                          const selected = !isAutoAssigned && editVpcDraft.vpcId === vpc.id;
+                                          return (
+                                            <CommandItem
+                                              key={vpc.id}
+                                              value={`${vpc.id} ${vpc.name} ${vpc.cidr}`}
+                                              onSelect={() => {
+                                                setEditVpcDraft((prev) => ({
+                                                  ...prev,
+                                                  vpcId: vpc.id,
+                                                  subnetStrategy: "specified",
+                                                  zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                                                }));
+                                                setEditVpcPickerOpen(false);
+                                              }}
+                                              className="cursor-pointer h-8 rounded-[6px] px-3 py-[9px] data-[selected=true]:bg-[#f3f3f4]"
+                                            >
+                                              <div className={`flex-1 min-w-0 flex items-center gap-2 text-sm ${selected ? "text-[#355EF1] font-medium" : "text-[#020617]"}`}>
+                                                <span className="font-mono shrink-0">{vpc.id}</span>
+                                                <span className="text-[#A3A3A3] shrink-0">|</span>
+                                                <span className="truncate">{vpc.name}</span>
+                                                <span className="text-[#A3A3A3] shrink-0">|</span>
+                                                <span className="font-mono shrink-0">{vpc.cidr}</span>
+                                              </div>
+                                              {selected && (
+                                                <Check className="w-4 h-4 text-[#355EF1] shrink-0 ml-2" />
+                                              )}
+                                            </CommandItem>
+                                          );
+                                        })}
+                                      </CommandGroup>
+                                    </CommandList>
+                                    <div className="border-t border-[#f0f0f0] px-3 py-2 text-xs text-[#737373]">
+                                      共 {totalCount} 条
+                                    </div>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                            );
+                          })()}
+                        </div>
 
-                      {/* ── 可用区子网配置 ──
-                            正常展示条件：自动分配 / 已选 VPC / 新增分组场景；
-                            额外：VPC 已删除（editAutoCleaned.vpcId 非空）且尚未重选时也展示，
-                                  保持与"添加分组"一致：可用区固定，列出广州五/六/七区，
-                                  「+ 添加子网」按钮在 vpcId 为空时自带"请先选择 VPC"提示。 */}
-                      {(isAutoAssigned || editVpcDraft.vpcId || showEditVpcDialog?.id === NEW_GROUP_VPC_ID || !!editAutoCleaned?.vpcId) && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">可用区及子网配置</div>
-                            {!isAutoAssigned && (
-                              <span className="text-xs text-[#A3A3A3]">
-                                已分配 {AVAILABLE_ZONES.filter((z) => (editVpcDraft.zoneSubnets[z] ?? []).length > 0).length} / {AVAILABLE_ZONES.length} 个可用区
-                              </span>
-                            )}
-                          </div>
+                        {/* ── 可用区子网配置 ── */}
+                        {(isAutoAssigned || editVpcDraft.vpcId || showEditVpcDialog?.id === NEW_GROUP_VPC_ID || !!editAutoCleaned?.vpcId) && (
                           <div className="space-y-3">
-                            {AVAILABLE_ZONES.map((zone) => {
-                              // 自动分配模式：每个可用区只读，仅展示"自动分配"四字
-                              // （后端尚未返回实际命中的子网标识，与线上保持一致：不展示 subnet-id/name/cidr）
-                              if (isAutoAssigned) {
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-[#0A0A0A]">可用区及子网配置</div>
+                              {!isAutoAssigned && (
+                                <span className="text-xs text-[#737373]">
+                                  已分配 {AVAILABLE_ZONES.filter((z) => (editVpcDraft.zoneSubnets[z] ?? []).length > 0).length} / {AVAILABLE_ZONES.length} 个可用区
+                                </span>
+                              )}
+                            </div>
+                            <div className="space-y-3">
+                              {AVAILABLE_ZONES.map((zone) => {
+                                if (isAutoAssigned) {
+                                  return (
+                                    <div
+                                      key={zone}
+                                      className="rounded-[4px] border border-[#E5E5E5] bg-white"
+                                    >
+                                      <div className="flex items-center gap-3 px-4 py-3 min-w-0">
+                                        <span className="text-sm font-medium text-[#0A0A0A] shrink-0">{zone}</span>
+                                        <span className="text-xs text-[#737373]">自动分配</span>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+
+                                const selectedIds = editVpcDraft.zoneSubnets[zone] ?? [];
+                                const zoneAllSubnets = getSubnetsByVpcZone(editVpcDraft.vpcId, zone);
+                                const selectedSubnets = selectedIds
+                                  .map((id) => zoneAllSubnets.find((s) => s.id === id))
+                                  .filter((s): s is SubnetEntity => !!s);
+                                const selectableSubnets = zoneAllSubnets.filter((s) => !selectedIds.includes(s.id));
+                                const pickerKey = `${showEditVpcDialog?.id ?? ""}#${zone}`;
+                                const isPickerOpen = !!zoneSubnetPickerOpen[pickerKey];
+                                const isUnassigned = selectedIds.length === 0;
+
                                 return (
                                   <div
                                     key={zone}
-                                    className="rounded-[4px] border border-[#e5e5e5] bg-[#fafafa]/50"
+                                    className="rounded-[4px] border border-[#E5E5E5] bg-white"
                                   >
-                                    <div className="flex items-center gap-3 px-4 py-3 min-w-0">
-                                      <span className="text-sm font-medium text-[#525252] shrink-0">{zone}</span>
-                                      <span className="text-xs text-[#A3A3A3]">自动分配</span>
+                                    {/* 可用区头部 */}
+                                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#f0f0f0]">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-sm font-medium text-[#0A0A0A]">{zone}</span>
+                                        {isUnassigned ? (
+                                          <span className="text-xs text-[#737373]">未分配</span>
+                                        ) : (
+                                          <span className="text-xs text-[#737373]">{selectedSubnets.length} 个子网</span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        {!isUnassigned && (
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditVpcDraft((prev) => ({
+                                              ...prev,
+                                              zoneSubnets: { ...prev.zoneSubnets, [zone]: [] },
+                                            }))}
+                                            className="text-xs text-[#737373] hover:text-[#0A0A0A] transition-colors px-2 py-1 rounded-[4px] hover:bg-[#f5f5f5]"
+                                          >
+                                            不分配
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* 子网内容区 */}
+                                    {!isUnassigned && (
+                                      <div className="px-4 py-3 space-y-2">
+                                        {/* 已选子网 chips — 白底灰框标准 tag */}
+                                        <div className="flex flex-wrap gap-1.5">
+                                          {selectedSubnets.map((subnet) => {
+                                            const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
+                                            return (
+                                              <div
+                                                key={subnet.id}
+                                                className="inline-flex items-center gap-2 pl-2.5 pr-1 py-1 rounded-[4px] bg-white border border-[#E5E5E5] text-xs"
+                                              >
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                  <span className="font-medium text-[#0A0A0A] truncate max-w-[140px]">{subnet.name}</span>
+                                                  <span className="text-[#737373] font-mono">{subnet.cidr}</span>
+                                                  <span className={`tabular-nums ${remainingLow ? "text-[#F59E0B]" : "text-[#737373]"}`}>
+                                                    · 剩余 IP {subnet.remainingIp}/{subnet.totalIp}
+                                                  </span>
+                                                </div>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setEditVpcDraft((prev) => ({
+                                                    ...prev,
+                                                    zoneSubnets: {
+                                                      ...prev.zoneSubnets,
+                                                      [zone]: (prev.zoneSubnets[zone] ?? []).filter((id) => id !== subnet.id),
+                                                    },
+                                                  }))}
+                                                  className="w-4 h-4 flex items-center justify-center rounded-sm text-[#737373] hover:text-[#0A0A0A] hover:bg-[#f5f5f5] transition-colors"
+                                                  title="移除此子网"
+                                                >
+                                                  <X className="w-3 h-3" />
+                                                </button>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* 添加子网 */}
+                                    <div className={`px-4 ${isUnassigned ? "py-3" : "pb-3"}`}>
+                                      <Popover
+                                        open={isPickerOpen}
+                                        onOpenChange={(o) => setZoneSubnetPickerOpen((prev) => ({ ...prev, [pickerKey]: o }))}
+                                      >
+                                        <PopoverTrigger asChild>
+                                          <button
+                                            type="button"
+                                            disabled={selectableSubnets.length === 0}
+                                            className={`h-8 w-full flex items-center justify-center gap-1.5 rounded-[4px] border border-dashed text-xs transition-colors ${
+                                              selectableSubnets.length === 0
+                                                ? "border-[#E5E5E5] text-[#A3A3A3] cursor-not-allowed"
+                                                : "border-[#d3d6db] text-[#525252] hover:border-[#355EF1] hover:text-[#355EF1]"
+                                            }`}
+                                            title={!editVpcDraft.vpcId ? "请先选择 VPC" : selectableSubnets.length === 0 ? "该可用区下无可添加的子网" : "添加子网"}
+                                          >
+                                            <Plus className="w-3.5 h-3.5" />
+                                            <span>
+                                              {!editVpcDraft.vpcId
+                                                ? "请先选择 VPC"
+                                                : selectableSubnets.length === 0
+                                                  ? (zoneAllSubnets.length === 0 ? "该可用区暂无子网" : "已全部添加")
+                                                  : "添加子网"}
+                                            </span>
+                                          </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent
+                                          className="p-0 rounded-[4px] border-0 overflow-hidden"
+                                          style={{
+                                            width: "var(--radix-popover-trigger-width)",
+                                            boxShadow: "0px 0px 2px rgba(0,0,0,0.1), 0px 4px 16px rgba(0,0,0,0.12)",
+                                          }}
+                                          align="start"
+                                          sideOffset={4}
+                                        >
+                                          <Command>
+                                            <CommandInput placeholder="搜索子网 ID / 名称…" className="text-sm" />
+                                            <CommandList className="max-h-72 overflow-y-auto p-2">
+                                              <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的子网</CommandEmpty>
+                                              <CommandGroup className="p-0">
+                                                {selectableSubnets.map((subnet) => {
+                                                  const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
+                                                  return (
+                                                    <CommandItem
+                                                      key={subnet.id}
+                                                      value={`${subnet.id} ${subnet.name} ${subnet.cidr}`}
+                                                      onSelect={() => {
+                                                        setEditVpcDraft((prev) => ({
+                                                          ...prev,
+                                                          zoneSubnets: {
+                                                            ...prev.zoneSubnets,
+                                                            [zone]: [...(prev.zoneSubnets[zone] ?? []), subnet.id],
+                                                          },
+                                                        }));
+                                                        setZoneSubnetPickerOpen((prev) => ({ ...prev, [pickerKey]: false }));
+                                                      }}
+                                                      className="cursor-pointer h-8 rounded-[6px] px-3 py-[9px] data-[selected=true]:bg-[#f3f3f4]"
+                                                    >
+                                                      <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-[#020617]">
+                                                        <span className="font-mono shrink-0">{subnet.id}</span>
+                                                        <span className="text-[#A3A3A3] shrink-0">|</span>
+                                                        <span className="truncate">{subnet.name}</span>
+                                                        <span className="text-[#A3A3A3] shrink-0">|</span>
+                                                        <span className="font-mono shrink-0">{subnet.cidr}</span>
+                                                      </div>
+                                                      <span className={`shrink-0 text-xs tabular-nums ml-2 ${remainingLow ? "text-[#F59E0B]" : "text-[#737373]"}`}>
+                                                        剩余 IP {subnet.remainingIp}/{subnet.totalIp}
+                                                      </span>
+                                                    </CommandItem>
+                                                  );
+                                                })}
+                                              </CommandGroup>
+                                            </CommandList>
+                                            <div className="border-t border-[#f0f0f0] px-3 py-2 text-xs text-[#737373]">
+                                              共 {selectableSubnets.length} 条
+                                            </div>
+                                          </Command>
+                                        </PopoverContent>
+                                      </Popover>
                                     </div>
                                   </div>
                                 );
-                              }
-
-                              const selectedIds = editVpcDraft.zoneSubnets[zone] ?? [];
-                              const zoneAllSubnets = getSubnetsByVpcZone(editVpcDraft.vpcId, zone);
-                              const selectedSubnets = selectedIds
-                                .map((id) => zoneAllSubnets.find((s) => s.id === id))
-                                .filter((s): s is SubnetEntity => !!s);
-                              const selectableSubnets = zoneAllSubnets.filter((s) => !selectedIds.includes(s.id));
-                              const pickerKey = `${showEditVpcDialog?.id ?? ""}#${zone}`;
-                              const isPickerOpen = !!zoneSubnetPickerOpen[pickerKey];
-                              const isUnassigned = selectedIds.length === 0;
-
-                              return (
-                                <div
-                                  key={zone}
-                                  className={`rounded-[4px] border transition-colors ${
-                                    isUnassigned ? "border-[#e5e5e5] bg-[#fafafa]/40" : "border-[#e5e5e5] bg-white"
-                                  }`}
-                                >
-                                  {/* 可用区头部 */}
-                                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#e5e5e5]">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-gray-800">{zone}</span>
-                                      {isUnassigned ? (
-                                        <span className="text-xs text-[#A3A3A3]">未分配</span>
-                                      ) : (
-                                        <span className="text-xs text-[#737373]">{selectedSubnets.length} 个子网</span>
-                                      )}
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      {!isUnassigned && (
-                                        <button
-                                          type="button"
-                                          onClick={() => setEditVpcDraft((prev) => ({
-                                            ...prev,
-                                            zoneSubnets: { ...prev.zoneSubnets, [zone]: [] },
-                                          }))}
-                                          className="text-xs text-[#A3A3A3] hover:text-[#737373] transition-colors px-2 py-1 rounded-[4px] hover:bg-[#f5f5f5]"
-                                        >
-                                          不分配
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  {/* 子网内容区 */}
-                                  {!isUnassigned && (
-                                    <div className="px-4 py-3 space-y-2">
-                                      {/* 已选子网 chips */}
-                                      <div className="flex flex-wrap gap-1.5">
-                                        {selectedSubnets.map((subnet) => {
-                                          const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
-                                          return (
-                                            <div
-                                              key={subnet.id}
-                                              className="inline-flex items-center gap-2 pl-2.5 pr-1 py-1 rounded-[4px] bg-[#eff4ff] border border-blue-100 text-xs"
-                                            >
-                                              <div className="flex items-center gap-1.5 min-w-0">
-                                                <span className="font-medium text-blue-700 truncate max-w-[140px]">{subnet.name}</span>
-                                                <span className="text-blue-400 font-mono">{subnet.cidr}</span>
-                                                <span className={`tabular-nums ${remainingLow ? "text-orange-500" : "text-blue-400"}`}>
-                                                  · 剩余 IP {subnet.remainingIp}/{subnet.totalIp}
-                                                </span>
-                                              </div>
-                                              <button
-                                                type="button"
-                                                onClick={() => setEditVpcDraft((prev) => ({
-                                                  ...prev,
-                                                  zoneSubnets: {
-                                                    ...prev.zoneSubnets,
-                                                    [zone]: (prev.zoneSubnets[zone] ?? []).filter((id) => id !== subnet.id),
-                                                  },
-                                                }))}
-                                                className="w-4 h-4 flex items-center justify-center rounded-sm text-blue-400 hover:text-[#355EF1] hover:bg-[#e0e9ff] transition-colors"
-                                                title="移除此子网"
-                                              >
-                                                <X className="w-3 h-3" />
-                                              </button>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* 添加子网 */}
-                                  <div className={`px-4 ${isUnassigned ? "py-3" : "pb-3"}`}>
-                                    <Popover
-                                      open={isPickerOpen}
-                                      onOpenChange={(o) => setZoneSubnetPickerOpen((prev) => ({ ...prev, [pickerKey]: o }))}
-                                    >
-                                      <PopoverTrigger asChild>
-                                        <button
-                                          type="button"
-                                          disabled={selectableSubnets.length === 0}
-                                          className={`h-8 w-full flex items-center justify-center gap-1.5 rounded-[4px] border border-dashed text-xs transition-colors ${
-                                            selectableSubnets.length === 0
-                                              ? "border-[#e5e5e5] text-[#A3A3A3] cursor-not-allowed"
-                                              : "border-[#e5e5e5] text-[#737373] hover:border-[#355EF1] hover:text-blue-500 hover:bg-[#eff4ff]/40"
-                                          }`}
-                                          title={!editVpcDraft.vpcId ? "请先选择 VPC" : selectableSubnets.length === 0 ? "该可用区下无可添加的子网" : "添加子网"}
-                                        >
-                                          <Plus className="w-3.5 h-3.5" />
-                                          <span>
-                                            {!editVpcDraft.vpcId
-                                              ? "请先选择 VPC"
-                                              : selectableSubnets.length === 0
-                                                ? (zoneAllSubnets.length === 0 ? "该可用区暂无子网" : "已全部添加")
-                                                : "添加子网"}
-                                          </span>
-                                        </button>
-                                      </PopoverTrigger>
-                                      <PopoverContent
-                                        className="p-0 shadow-lg border border-[#e5e5e5] rounded-[4px] overflow-hidden"
-                                        style={{ width: "var(--radix-popover-trigger-width)" }}
-                                        align="start"
-                                        sideOffset={4}
-                                      >
-                                        <Command>
-                                          <CommandInput placeholder="搜索子网 ID / 名称…" className="text-sm" />
-                                          <CommandList className="max-h-72 overflow-y-auto">
-                                            <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的子网</CommandEmpty>
-                                            <CommandGroup>
-                                              {selectableSubnets.map((subnet) => {
-                                                const remainingLow = subnet.remainingIp / subnet.totalIp < 0.1;
-                                                return (
-                                                  <CommandItem
-                                                    key={subnet.id}
-                                                    value={`${subnet.id} ${subnet.name} ${subnet.cidr}`}
-                                                    onSelect={() => {
-                                                      setEditVpcDraft((prev) => ({
-                                                        ...prev,
-                                                        zoneSubnets: {
-                                                          ...prev.zoneSubnets,
-                                                          [zone]: [...(prev.zoneSubnets[zone] ?? []), subnet.id],
-                                                        },
-                                                      }));
-                                                      setZoneSubnetPickerOpen((prev) => ({ ...prev, [pickerKey]: false }));
-                                                    }}
-                                                    className="cursor-pointer"
-                                                  >
-                                                    <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-gray-800">
-                                                      <span className="font-mono shrink-0">{subnet.id}</span>
-                                                      <span className="text-[#A3A3A3] shrink-0">|</span>
-                                                      <span className="truncate">{subnet.name}</span>
-                                                      <span className="text-[#A3A3A3] shrink-0">|</span>
-                                                      <span className="font-mono shrink-0">{subnet.cidr}</span>
-                                                    </div>
-                                                    <span className={`shrink-0 text-xs tabular-nums ml-2 ${remainingLow ? "text-orange-500" : "text-[#A3A3A3]"}`}>
-                                                      剩余 IP {subnet.remainingIp}/{subnet.totalIp}
-                                                    </span>
-                                                  </CommandItem>
-                                                );
-                                              })}
-                                            </CommandGroup>
-                                          </CommandList>
-                                          <div className="border-t border-[#e5e5e5] px-3 py-2 text-xs text-[#A3A3A3] bg-[#fafafa]/50">
-                                            共 {selectableSubnets.length} 条
-                                          </div>
-                                        </Command>
-                                      </PopoverContent>
-                                    </Popover>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </DialogBody>
 
               {/* 底部按钮 */}
-              <div className="shrink-0 flex items-center justify-end gap-2 px-6 py-4 border-t border-[#e5e5e5] bg-white">
-                <Button variant="outline" size="sm" onClick={() => setShowEditVpcDialog(null)}>取消</Button>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowEditVpcDialog(null)}>取消</Button>
                 <Button
                   variant="dialog-confirm"
-                  size="sm"
                   onClick={() => {
                     if (!showEditVpcDialog) return;
                     const isEnterprise = showEditVpcDialog.type === "enterprise";
@@ -4449,13 +4422,13 @@ export default function SecurityGroupManagement() {
                 >
                   保存
                 </Button>
-              </div>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
 
           {/* ─── 删除确认弹窗 - 警示弹窗 ─── */}
           <AlertDialog open={!!showDeleteVpcDialog} onOpenChange={(open) => !open && setShowDeleteVpcDialog(null)}>
-            <AlertDialogContent className="sm:max-w-[560px]">
+            <AlertDialogContent className="sm:max-w-[420px]">
               <button
                 type="button"
                 aria-label="关闭"
@@ -4938,7 +4911,7 @@ export default function SecurityGroupManagement() {
         }}
       >
         <DialogContent
-          className="sm:max-w-md"
+          className="sm:max-w-[420px]"
           style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
@@ -4993,21 +4966,23 @@ export default function SecurityGroupManagement() {
                 </div>
               </div>
 
-              {/* 策略：下拉固定宽，与协议宽度对齐 */}
+              {/* 策略：Radio Group（允许 / 拒绝），默认值"允许" */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-[#525252]">策略</Label>
-                <Select
-                  value={addDraft.policy ?? ""}
+                <RadioGroup
+                  value={addDraft.policy ?? "允许"}
                   onValueChange={(v) => setAddDraft((prev) => ({ ...prev, policy: v }))}
+                  className="flex items-center gap-6"
                 >
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="请选择" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="允许">允许</SelectItem>
-                    <SelectItem value="拒绝">拒绝</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <label htmlFor="add-policy-allow" className="flex items-center gap-2 cursor-pointer">
+                    <RadioGroupItem value="允许" id="add-policy-allow" />
+                    <span className="text-sm text-[#0A0A0A]">允许</span>
+                  </label>
+                  <label htmlFor="add-policy-deny" className="flex items-center gap-2 cursor-pointer">
+                    <RadioGroupItem value="拒绝" id="add-policy-deny" />
+                    <span className="text-sm text-[#0A0A0A]">拒绝</span>
+                  </label>
+                </RadioGroup>
               </div>
 
               {/* 备注（可选） */}
@@ -5036,6 +5011,12 @@ export default function SecurityGroupManagement() {
             </Button>
             <Button
               variant="dialog-confirm"
+              disabled={
+                !addDraft.source?.trim()
+                || !addDraft.protocol
+                || !addDraft.port?.trim()
+                || !addDraft.policy
+              }
               onClick={() => {
                 if (!addDraft.source?.trim()) {
                   toast.error(showAddDialog === "inbound" ? "请填写来源" : "请填写目标");
@@ -5145,21 +5126,23 @@ export default function SecurityGroupManagement() {
                 </div>
               </div>
 
-              {/* 策略：下拉固定宽，与协议宽度对齐 */}
+              {/* 策略：Radio Group（允许 / 拒绝），默认值"允许" */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-[#525252]">策略</Label>
-                <Select
-                  value={editDraft.policy ?? ""}
+                <RadioGroup
+                  value={editDraft.policy ?? "允许"}
                   onValueChange={(v) => setEditDraft((prev) => ({ ...prev, policy: v }))}
+                  className="flex items-center gap-6"
                 >
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="请选择" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="允许">允许</SelectItem>
-                    <SelectItem value="拒绝">拒绝</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <label htmlFor="edit-policy-allow" className="flex items-center gap-2 cursor-pointer">
+                    <RadioGroupItem value="允许" id="edit-policy-allow" />
+                    <span className="text-sm text-[#0A0A0A]">允许</span>
+                  </label>
+                  <label htmlFor="edit-policy-deny" className="flex items-center gap-2 cursor-pointer">
+                    <RadioGroupItem value="拒绝" id="edit-policy-deny" />
+                    <span className="text-sm text-[#0A0A0A]">拒绝</span>
+                  </label>
+                </RadioGroup>
               </div>
 
               {/* 备注（可选） */}
@@ -5188,6 +5171,12 @@ export default function SecurityGroupManagement() {
             </Button>
             <Button
               variant="dialog-confirm"
+              disabled={
+                !editDraft.source?.trim()
+                || !editDraft.protocol
+                || !editDraft.port?.trim()
+                || !editDraft.policy
+              }
               onClick={() => {
                 if (!editDraft.source?.trim()) {
                   toast.error(editingRule?.type === "inbound" ? "请填写来源" : "请填写目标");
@@ -5233,7 +5222,7 @@ export default function SecurityGroupManagement() {
       {MigrationProgressDialog}
       {/* ─── 删除规则二次确认弹窗 - 警示弹窗 ─── */}
       <AlertDialog open={showDeleteDialog !== null} onOpenChange={(open) => !open && setShowDeleteDialog(null)}>
-        <AlertDialogContent className="sm:max-w-[560px]">
+        <AlertDialogContent className="sm:max-w-[420px]">
           <button
             type="button"
             aria-label="关闭"

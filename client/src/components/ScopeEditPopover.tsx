@@ -46,6 +46,8 @@ export interface ScopeEditPopoverProps {
   showBadges?: boolean;
   /** 已选范围的展示标签（默认使用 group name） */
   scopeLabels?: string[];
+  /** 最多展示几个分组 tag，超出折叠为 +N（默认 1） */
+  maxVisibleBadges?: number;
 }
 
 // ─── 树结构工具 ────────────────────────────────────────────
@@ -79,6 +81,7 @@ export function ScopeEditPopover({
   align = "start",
   showBadges = true,
   scopeLabels,
+  maxVisibleBadges = 1,
 }: ScopeEditPopoverProps) {
   const [open, setOpen] = useState(false);
   const [draftScope, setDraftScope] = useState<ScopeType>("all");
@@ -220,16 +223,23 @@ export function ScopeEditPopover({
       );
     }
 
-    const firstName = labels[0];
-    const rest = labels.length - 1;
+    const visibleCount = Math.max(1, maxVisibleBadges);
+    const visibleLabels = labels.slice(0, visibleCount);
+    const rest = labels.length - visibleLabels.length;
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1 cursor-default">
-            <StatusTag variant="gray" className="max-w-[120px] truncate">
-              {firstName}
-            </StatusTag>
+          <span className="inline-flex items-center gap-1 cursor-default flex-wrap">
+            {visibleLabels.map((label, idx) => (
+              <StatusTag
+                key={`${label}-${idx}`}
+                variant="gray"
+                className="max-w-[120px] truncate"
+              >
+                {label}
+              </StatusTag>
+            ))}
             {rest > 0 && (
               <StatusTag variant="gray">
                 +{rest}

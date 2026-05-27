@@ -22,7 +22,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogB
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, AlertTriangle, ChevronDown, ChevronRight, Loader, FileText, Download, Trash2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { AlertCircle, ChevronDown, ChevronRight, Loader, FileText, Download, Trash2, CircleAlert } from 'lucide-react';
 import JSZip from 'jszip';
 import { type SkillScope } from './types';
 
@@ -246,86 +248,146 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-[720px]" style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }} onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>发布新插件</DialogTitle>
         </DialogHeader>
 
         <DialogBody className="flex-1">
           <div className="space-y-5">
+            {/* 顶部提示：未上传文件时提示先上传 */}
+            {uploadedFiles.length === 0 && (
+              <Alert variant="warning">
+                <CircleAlert />
+                <AlertDescription>请先上传插件文件，然后再填写下方出现的插件信息。</AlertDescription>
+              </Alert>
+            )}
+
             {/* 文件上传区域 */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium text-[#0A0A0A]">选择上传方式</Label>
-
-              <div
-                onDragOver={uploadedFiles.length > 0 ? undefined : handleDragOver}
-                onDrop={uploadedFiles.length > 0 ? undefined : handleDrop}
-                className={`border border-dashed rounded-[4px] p-4 text-center transition-colors ${
-                  uploadedFiles.length > 0
-                    ? 'border-[#E5E5E5] bg-[#FAFAFA] cursor-not-allowed'
-                    : 'border-[#E5E5E5] hover:border-[#1447E6]'
-                }`}
-              >
-                <p className={`text-sm mb-3 ${uploadedFiles.length > 0 ? 'text-[#A3A3A3]' : 'text-[#737373]'}`}>
-                  {uploadedFiles.length > 0 ? '如需替换，请先删除下方文件' : '点击或拖拽 ZIP 文件上传'}
-                </p>
-
-                <div className="flex gap-3 justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadedFiles.length > 0}
-                  >
-                    上传 ZIP
-                  </Button>
-                </div>
-
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".zip"
-                  onChange={handleFileSelect}
-                  className="hidden"
-                />
+              <div className="space-y-1">
+                <Label className="text-sm font-medium text-[#0A0A0A]">
+                  {uploadedFiles.length > 0 ? '文件（可选替换）' : '选择上传方式'}
+                </Label>
+                {uploadedFiles.length > 0 && (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-[#737373]">如需替换，请先删除当前文件</span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="text-[#1447E6] hover:underline focus:outline-none"
+                        >
+                          查看上传要求
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent align="start" className="w-[420px] p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-medium text-[#0A0A0A]">上传要求</p>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const link = document.createElement('a');
+                              link.href = '/system-info-plugin.zip';
+                              link.download = 'system-info-plugin.zip';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              toast.success('样例文件下载中...');
+                            }}
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            下载样例
+                          </Button>
+                        </div>
+                        <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
+                          <li className="leading-relaxed">
+                            插件 ZIP 包<strong>根目录</strong>必须包含
+                            <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
+                            与
+                            <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">package.json</code>
+                            文件，系统据此识别插件
+                          </li>
+                          <li className="leading-relaxed">
+                            建议压缩包（或内部文件夹）名称与下方"唯一标识"保持一致
+                          </li>
+                        </ol>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                )}
               </div>
 
-              {/* 上传要求卡片（含下载样例） */}
-              <div className="border border-[#E5E5E5] rounded-[4px] p-4 text-left bg-white">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-[#0A0A0A]">上传要求</p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const link = document.createElement('a');
-                      link.href = '/system-info-plugin.zip';
-                      link.download = 'system-info-plugin.zip';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      toast.success('样例文件下载中...');
-                    }}
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    下载样例
-                  </Button>
+              {/* 上传按钮区（仅未上传时显示） */}
+              {uploadedFiles.length === 0 && (
+                <div
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
+                  className="border border-dashed rounded-[4px] p-4 text-center transition-colors border-[#E5E5E5] hover:border-[#1447E6]"
+                >
+                  <p className="text-sm mb-3 text-[#737373]">点击或拖拽 ZIP 文件上传</p>
+
+                  <div className="flex gap-3 justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      上传 ZIP
+                    </Button>
+                  </div>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
                 </div>
-                <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
-                  <li className="leading-relaxed">
-                    插件 ZIP 包<strong>根目录</strong>必须包含
-                    <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
-                    与
-                    <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">package.json</code>
-                    文件，系统据此识别插件
-                  </li>
-                  <li className="leading-relaxed">
-                    建议压缩包（或内部文件夹）名称与下方"唯一标识"保持一致
-                  </li>
-                </ol>
-              </div>
+              )}
+
+              {/* 上传要求卡片（仅未上传时显示，含下载样例） */}
+              {uploadedFiles.length === 0 && (
+                <div className="border border-[#E5E5E5] rounded-[4px] p-4 text-left bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium text-[#0A0A0A]">上传要求</p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const link = document.createElement('a');
+                        link.href = '/system-info-plugin.zip';
+                        link.download = 'system-info-plugin.zip';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        toast.success('样例文件下载中...');
+                      }}
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      下载样例
+                    </Button>
+                  </div>
+                  <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
+                    <li className="leading-relaxed">
+                      插件 ZIP 包<strong>根目录</strong>必须包含
+                      <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
+                      与
+                      <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">package.json</code>
+                      文件，系统据此识别插件
+                    </li>
+                    <li className="leading-relaxed">
+                      建议压缩包（或内部文件夹）名称与下方"唯一标识"保持一致
+                    </li>
+                  </ol>
+                </div>
+              )}
             </div>
 
             {/* 已上传文件列表 */}
@@ -415,77 +477,62 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
               </div>
             )}
 
-            {/* 提示文字 - 只有在没有上传文件时显示 */}
-            {uploadedFiles.length === 0 && (
-              <div
-                role="alert"
-                className="relative w-full rounded-[4px] border px-4 py-3 flex items-start gap-2 text-xs border-[#FCD28C] bg-[#FFFBED] text-[#181818] [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:mt-0.5 [&>svg]:text-[#FCA004]"
-              >
-                <AlertTriangle className="w-4 h-4" />
-                <div className="flex-1 min-w-0 leading-5">
-                  <p>请先上传插件文件，然后填写插件信息。</p>
+            {/* 插件信息表单 - 上传成功后才显示 */}
+            {hasSuccessfulUpload && (
+              <div className="space-y-5">
+                <div>
+                  <Label htmlFor="p-slug" className="text-sm font-medium text-[#0A0A0A]">
+                    唯一标识 (slug) <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="p-slug"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
+                    placeholder="e.g., my-plugin-1"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-[#737373] mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="p-name" className="text-sm font-medium text-[#0A0A0A]">
+                    显示名称 <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="p-name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., 我的自定义插件"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="p-desc" className="text-sm font-medium text-[#0A0A0A]">描述</Label>
+                  <Textarea
+                    id="p-desc"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="插件的简要描述"
+                    className="mt-1"
+                    rows={2}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="p-version" className="text-sm font-medium text-[#0A0A0A]">
+                    版本号 <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="p-version"
+                    value={formData.version}
+                    onChange={(e) => setFormData({ ...formData, version: e.target.value })}
+                    placeholder="e.g., 1.0.0"
+                    className="mt-1"
+                  />
                 </div>
               </div>
             )}
-
-            {/* 插件信息表单 - 只有在上传成功后才启用 */}
-            <div className={`space-y-5 ${!hasSuccessfulUpload ? 'opacity-50 pointer-events-none' : ''}`}>
-              <div>
-                <Label htmlFor="p-slug" className="text-sm font-medium text-[#0A0A0A]">
-                  唯一标识 (slug) <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="p-slug"
-                  disabled={!hasSuccessfulUpload}
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })}
-                  placeholder="e.g., my-plugin-1"
-                  className="mt-1"
-                />
-                <p className="text-xs text-[#737373] mt-1">仅支持小写字母/数字/连字符 - 。企业内唯一，发布后不可修改。</p>
-              </div>
-
-              <div>
-                <Label htmlFor="p-name" className="text-sm font-medium text-[#0A0A0A]">
-                  显示名称 <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="p-name"
-                  disabled={!hasSuccessfulUpload}
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., 我的自定义插件"
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="p-desc" className="text-sm font-medium text-[#0A0A0A]">描述</Label>
-                <Textarea
-                  id="p-desc"
-                  disabled={!hasSuccessfulUpload}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="插件的简要描述"
-                  className="mt-1"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="p-version" className="text-sm font-medium text-[#0A0A0A]">
-                  版本号 <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="p-version"
-                  disabled={!hasSuccessfulUpload}
-                  value={formData.version}
-                  onChange={(e) => setFormData({ ...formData, version: e.target.value })}
-                  placeholder="e.g., 1.0.0"
-                  className="mt-1"
-                />
-              </div>
-            </div>
           </div>
         </DialogBody>
 

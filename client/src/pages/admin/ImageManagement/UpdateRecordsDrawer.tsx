@@ -7,8 +7,9 @@
  *
  * 功能：
  *   - 顶部开关：「查看可推送版本」—— 仅显示当前可推送给员工的版本记录
- *   - 按 Agent 类型 / 镜像筛选
+ *   - 按 Agent 类型 / 镜像筛选（支持外部传入 initialFilter，进入时自动定位到指定镜像）
  *   - 时间线展示（首次上线 / 更新到 vX.Y.Z）
+ *   - 卡片合并展示：版本号 + 当前版本徽章 + 发布说明（合并自原弹窗"版本更新记录"内容）
  *   - 推送状态徽章 + 撤回入口
  *   - 未推送的当前版本可点击"推送此类型最新版本"
  */
@@ -18,16 +19,16 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { SmallIconStateButton } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Megaphone, Calendar, RotateCcw, Sparkles, Disc3 } from "lucide-react";
+import { Megaphone, RotateCcw, Disc3 } from "lucide-react";
 import { toast } from "sonner";
 import {
   listActivePushes,
   clearActivePush,
+  setActivePush,
   type ActivePush,
 } from "@/lib/upgradePushStore";
 import {
@@ -46,6 +47,12 @@ export interface PushableItem {
   imageName: string;
 }
 
+/** 外部传入的初始筛选条件：进入侧边栏时自动定位 */
+export type DrawerInitialFilter =
+  | { kind: "all"; value?: string }
+  | { kind: "type"; value: string }
+  | { kind: "image"; value: string };
+
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -53,6 +60,8 @@ interface Props {
   onPush: (defaultAgentType?: string) => void;
   /** 可推送的 Agent 类型列表 */
   pushable?: PushableItem[];
+  /** 进入侧边栏时的初始筛选（如：从某行的"版本更新记录"按钮触发，自动筛选到该镜像） */
+  initialFilter?: DrawerInitialFilter;
 }
 
 // ─── 镜像彩色徽章：稳定 hash → 颜色，使同一镜像在视觉上保持一致 ────
@@ -71,7 +80,7 @@ function hashImageColor(imageId: string): typeof IMAGE_COLOR_PALETTE[number] {
   return IMAGE_COLOR_PALETTE[h % IMAGE_COLOR_PALETTE.length];
 }
 
-export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushable = [] }: Props) {
+export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPush, pushable = [], initialFilter }: Props) {
   /** 仅显示当前可推送给员工的版本记录 */
   const [showPushableOnly, setShowPushableOnly] = useState(false);
 
@@ -90,6 +99,16 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
     kind: "all",
     value: "",
   });
+
+  // 外部传入初始筛选时（如点击表格中的"版本更新记录"按钮），打开抽屉自动定位
+  useEffect(() => {
+    if (!open) return;
+    if (initialFilter) {
+      setFilter({ kind: initialFilter.kind, value: initialFilter.value ?? "" });
+    } else {
+      setFilter({ kind: "all", value: "" });
+    }
+  }, [open, initialFilter]);
 
   const records = useMemo(() => buildUpdateRecords(), []);
 
@@ -148,6 +167,26 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
   const findPush = (r: UpdateRecord): ActivePush | undefined =>
     activePushes.find((p) => p.agentType === r.agentType && p.version === r.version);
 
+  /** 直接推送：不弹窗，立即写入推送状态并刷新 */
+  const handleDirectPush = (r: UpdateRecord) => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const pushedAt = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    setActivePush({
+      agentType: r.agentType,
+      agentTypeLabel: r.agentTypeLabel,
+      version: r.version,
+      imageName: r.imageName,
+      imageSource: "public",
+      pushedAt,
+      pushedBy: "admin@company.com",
+      message: `管理员推荐升级到 v${r.version}`,
+    });
+    setActivePushes(listActivePushes());
+    toast.success(`已推送「${r.agentTypeLabel} v${r.version}」更新提醒`);
+  };
+
   const handleRevoke = (push: ActivePush) => {
     clearActivePush(push.agentType);
     toast.success(`已撤回「${push.agentTypeLabel} v${push.version}」的推送提醒`);
@@ -170,27 +209,9 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
       <SheetContent side="right" showOverlay={false} className="sm:max-w-[420px] overflow-y-auto p-0">
         <SheetHeader className="px-6 pt-6 pb-3 shrink-0">
           <SheetTitle className="text-base">
-            版本更新
+            全部更新记录
           </SheetTitle>
         </SheetHeader>
-
-        {/* 顶部开关：查看可推送版本 */}
-        <div className="px-6 pb-3 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm text-[#0A0A0A]">查看可推送版本</span>
-            <span className="text-[11px] text-[#A3A3A3]">
-              仅显示当前可推送给员工的版本
-              {pushableVersionByType.size > 0 && (
-                <span className="ml-1 tabular-nums">({pushableVersionByType.size})</span>
-              )}
-            </span>
-          </div>
-          <Switch
-            checked={showPushableOnly}
-            onCheckedChange={setShowPushableOnly}
-            aria-label="查看可推送版本"
-          />
-        </div>
 
         {/* 筛选区 */}
         <div className="px-6 pb-3 space-y-2 shrink-0">
@@ -280,7 +301,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
           {filtered.length === 0 ? (
             <div className="py-12 text-center text-sm text-[#A3A3A3]">暂无更新记录</div>
           ) : (
-            <ol className="relative space-y-3 ml-2 border-l-2 border-[#F5F5F5] pl-5">
+            <ol className="relative space-y-3 ml-2 border-l border-[#E5E5E5] pl-5">
               {filtered.map((r, idx) => {
                 const push = findPush(r);
                 const isFirstRelease = r.type === "firstRelease";
@@ -289,12 +310,12 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
                 return (
                   <li key={`${r.imageId}-${r.version}-${r.releaseDate}-${idx}`} className="relative">
                     <span
-                      className={`absolute -left-[26px] top-2 w-3 h-3 rounded-full border-2 ${
+                      className={`absolute -left-[26px] top-2 w-2.5 h-2.5 rounded-full ${
                         push
-                          ? "bg-[#1447E6] border-[#1447E6]/30"
+                          ? "bg-[#1447E6]"
                           : isFirstRelease
-                            ? "bg-purple-500 border-purple-200"
-                            : "bg-white border-[#A3A3A3]"
+                            ? "bg-purple-500"
+                            : "bg-[#D4D4D4]"
                       }`}
                     />
                     <div
@@ -304,8 +325,8 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
                           : "bg-white border-[#E5E5E5]"
                       }`}
                     >
-                      {/* 第一行：镜像彩色徽章 + 版本号 + 首次上线 + 日期 */}
-                      <div className="flex items-center gap-2 flex-wrap">
+                      {/* 第一行：镜像彩色徽章（左）+ 状态标签（右上角：当前版本） */}
+                      <div className="flex items-center justify-between gap-2">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span
@@ -323,40 +344,43 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
                             </div>
                           </TooltipContent>
                         </Tooltip>
-                        <span className="font-mono font-semibold text-sm text-[#0A0A0A] tabular-nums">
-                          {formatVersion(r.version)}
-                        </span>
-                        {isFirstRelease && (
-                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-100">
-                            <Sparkles className="w-2.5 h-2.5" />
-                            首次上线
-                          </span>
+                        {isLatestOfImage && !isFirstRelease && (
+                          <Badge variant="outline" className="shrink-0">当前版本</Badge>
                         )}
-                        <span className="inline-flex items-center gap-1 text-[11px] text-[#A3A3A3] ml-auto">
-                          <Calendar className="w-2.5 h-2.5" />
-                          <span className="font-mono tabular-nums">{r.releaseDate}</span>
-                        </span>
                       </div>
 
-                      {/* 第二行：所属 Agent 类型 + 镜像 ID（弱化为副标识） */}
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <span className="text-[11px] text-[#737373]">
-                          属于 <span className="font-medium text-[#334155]">{r.agentTypeLabel}</span>
-                        </span>
-                        <span className="text-[#A3A3A3] text-[11px]">·</span>
-                        <span className="text-[11px] text-[#A3A3A3] font-mono">{r.imageId}</span>
+                      {/* 第二行：版本号 */}
+                      <div className="text-base font-semibold text-[#0A0A0A] mt-1.5">
+                        {formatVersion(r.version)}
                       </div>
 
-                      {/* 第三行：发布说明 */}
-                      <div className="text-[11px] text-[#737373] mt-1 leading-relaxed">
-                        {isFirstRelease
-                          ? "镜像首次上线"
-                          : `更新到 ${formatVersion(r.version)} 版本`}
+                      {/* 第三行：所属 Agent 类型 | 镜像 ID | 发布日期 */}
+                      <div className="flex items-center gap-2 mt-1 flex-wrap text-[11px] text-[#737373]">
+                        <span>
+                          属于 <span className="font-medium">{r.agentTypeLabel}</span>
+                        </span>
+                        <span className="text-gray-200">|</span>
+                        <span className="font-mono">{r.imageId}</span>
+                        <span className="text-gray-200">|</span>
+                        <span>{r.releaseDate}</span>
                       </div>
+
+                      {/* 第四行：发布说明（合并自原"版本更新记录"弹窗的 description） */}
+                      {r.description ? (
+                        <p className="text-[11px] text-[#525252] mt-1.5 leading-relaxed">
+                          {r.description}
+                        </p>
+                      ) : (
+                        <div className="text-[11px] text-[#A3A3A3] mt-1.5 leading-relaxed italic">
+                          {isFirstRelease
+                            ? "镜像首次上线"
+                            : `更新到 ${formatVersion(r.version)} 版本`}
+                        </div>
+                      )}
 
                       {push ? (
                         <div className="mt-2 flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#1447E6]/10 text-[#1447E6] border border-[#1447E6]/20">
+                          <span className="inline-flex items-center gap-1 text-[10px] text-[#1447E6]">
                             <Megaphone className="w-2.5 h-2.5" />
                             正在提醒员工更新此版本
                           </span>
@@ -379,16 +403,15 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
                         <div className="mt-2">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <button
-                                onClick={() => onPush(r.agentType)}
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] text-[#1447E6] hover:bg-[#1447E6]/10 transition-colors"
-                              >
-                                <Megaphone className="w-2.5 h-2.5" />
-                                推送 {r.agentTypeLabel} 最新版本
-                              </button>
+                              <SmallIconStateButton
+                                icon={Megaphone}
+                                label={`推送 ${r.agentTypeLabel} 最新版本`}
+                                onClick={() => handleDirectPush(r)}
+                                className="h-5 px-1.5 text-[10px] gap-1 [&_svg]:w-2.5 [&_svg]:h-2.5"
+                              />
                             </TooltipTrigger>
                             <TooltipContent side="top" className="text-xs max-w-[280px]">
-                              推送会基于该 Agent 类型的当前启用版本进行（启用版本由「Agent 类型」管理页决定）
+                              点击后将直接推送该版本更新提醒给员工
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -401,11 +424,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush, pushab
           )}
         </div>
 
-        <SheetFooter className="px-6 pb-4 pt-3 border-t border-[#F5F5F5] shrink-0">
-          <Button variant="claw-outline" size="claw-sm" onClick={() => onOpenChange(false)}>
-            关闭
-          </Button>
-        </SheetFooter>
+
       </SheetContent>
     </Sheet>
   );

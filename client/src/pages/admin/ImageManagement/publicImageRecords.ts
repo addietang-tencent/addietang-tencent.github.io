@@ -20,6 +20,8 @@ export interface PublicImageRecord {
   version: string;
   /** 发布日期（yyyy-MM-dd） */
   releaseDate: string;
+  /** 该次发布的关键变更说明（可选，用于版本更新记录卡片二级展示） */
+  description?: string;
 }
 
 export interface PublicImageMeta {
@@ -43,15 +45,15 @@ export const PUBLIC_IMAGE_METAS: PublicImageMeta[] = [
     os: "Ubuntu 24.04 x86_64",
     agentType: "OpenClaw",
     records: [
-      { type: "update",       version: "2026.4.23", releaseDate: "2026-05-11" },
-      { type: "update",       version: "2026.4.23", releaseDate: "2026-04-30" },
-      { type: "update",       version: "2026.4.15", releaseDate: "2026-04-23" }, // 已回滚版本
-      { type: "update",       version: "2026.4.11", releaseDate: "2026-04-16" },
-      { type: "update",       version: "2026.4.2",  releaseDate: "2026-04-11" },
-      { type: "update",       version: "2026.3.28", releaseDate: "2026-04-04" },
-      { type: "update",       version: "2026.3.13", releaseDate: "2026-03-22" },
-      { type: "update",       version: "2026.3.13", releaseDate: "2026-03-21" },
-      { type: "firstRelease", version: "2026.3.8",  releaseDate: "2026-03-13" },
+      { type: "update",       version: "2026.4.23", releaseDate: "2026-05-11", description: "增强终端响应性能，修复偶发崩溃问题" },
+      { type: "update",       version: "2026.4.23", releaseDate: "2026-04-30", description: "升级 memory-tencentdb 插件到 0.2.3" },
+      { type: "update",       version: "2026.4.15", releaseDate: "2026-04-23", description: "Node 运行时升级到 22.22（该版本已回滚）" },
+      { type: "update",       version: "2026.4.11", releaseDate: "2026-04-16", description: "通道适配器优化，提升大文件传输稳定性" },
+      { type: "update",       version: "2026.4.2",  releaseDate: "2026-04-11", description: "接入 Mimo 模型，新增多模态调用支持" },
+      { type: "update",       version: "2026.3.28", releaseDate: "2026-04-04", description: "鉴权链路重构，支持企业 SSO 单点登录" },
+      { type: "update",       version: "2026.3.13", releaseDate: "2026-03-22", description: "插件子系统初版迭代修复 + 日志格式统一" },
+      { type: "update",       version: "2026.3.13", releaseDate: "2026-03-21", description: "插件子系统初版上线" },
+      { type: "firstRelease", version: "2026.3.8",  releaseDate: "2026-03-13", description: "首次上线，提供基础 Agent 能力" },
     ],
   },
   // ─── Hermes Agent on Ubuntu 24.04 ────────────────────────
@@ -61,9 +63,9 @@ export const PUBLIC_IMAGE_METAS: PublicImageMeta[] = [
     os: "Ubuntu 24.04 x86_64",
     agentType: "HermesAgent",
     records: [
-      { type: "update",       version: "v0.12.0", releaseDate: "2026-05-09" },
-      { type: "update",       version: "v0.10.0", releaseDate: "2026-04-21" },
-      { type: "firstRelease", version: "v0.9.0",  releaseDate: "2026-04-16" },
+      { type: "update",       version: "v0.12.0", releaseDate: "2026-05-09", description: "增强插件子系统，开放更多企业自建插件接入" },
+      { type: "update",       version: "v0.10.0", releaseDate: "2026-04-21", description: "Gateway 启动修复，新增健康检查端点" },
+      { type: "firstRelease", version: "v0.9.0",  releaseDate: "2026-04-16", description: "首次上线，提供 Hermes 网关与基础 Agent 能力" },
     ],
   },
   // ─── OpenClaw on TencentOS Server 4 ──────────────────────
@@ -73,8 +75,8 @@ export const PUBLIC_IMAGE_METAS: PublicImageMeta[] = [
     os: "TencentOS Server 4 x86_64",
     agentType: "OpenClaw",
     records: [
-      { type: "update",       version: "2026.4.23", releaseDate: "2026-04-30" },
-      { type: "firstRelease", version: "2026.4.11", releaseDate: "2026-04-16" },
+      { type: "update",       version: "2026.4.23", releaseDate: "2026-04-30", description: "升级 memory-tencentdb 插件到 0.2.3" },
+      { type: "firstRelease", version: "2026.4.11", releaseDate: "2026-04-16", description: "首次上线，适配 TencentOS Server 4 内核" },
     ],
   },
   // ─── Hermes Agent on TencentOS Server 4 ──────────────────
@@ -84,9 +86,9 @@ export const PUBLIC_IMAGE_METAS: PublicImageMeta[] = [
     os: "TencentOS Server 4 x86_64",
     agentType: "HermesAgent",
     records: [
-      { type: "update",       version: "v0.12.0", releaseDate: "2026-05-09" },
-      { type: "update",       version: "v0.10.0", releaseDate: "2026-04-22" },
-      { type: "firstRelease", version: "v0.9.0",  releaseDate: "2026-04-16" },
+      { type: "update",       version: "v0.12.0", releaseDate: "2026-05-09", description: "增强插件子系统，开放更多企业自建插件接入" },
+      { type: "update",       version: "v0.10.0", releaseDate: "2026-04-22", description: "Gateway 启动修复，新增健康检查端点" },
+      { type: "firstRelease", version: "v0.9.0",  releaseDate: "2026-04-16", description: "首次上线，适配 TencentOS Server 4 内核" },
     ],
   },
   // ─── OpenClaw on TencentOS Server 4 For Tencent ──────────
@@ -96,10 +98,10 @@ export const PUBLIC_IMAGE_METAS: PublicImageMeta[] = [
     os: "TencentOS Server 4 (TKernel5) x86_64",
     agentType: "OpenClaw",
     records: [
-      { type: "update",       version: "2026.4.23", releaseDate: "2026-04-30" },
-      { type: "update",       version: "2026.4.11", releaseDate: "2026-04-16" },
-      { type: "update",       version: "2026.4.2",  releaseDate: "2026-04-11" },
-      { type: "firstRelease", version: "2026.3.13", releaseDate: "2026-04-04" },
+      { type: "update",       version: "2026.4.23", releaseDate: "2026-04-30", description: "升级 memory-tencentdb 插件到 0.2.3" },
+      { type: "update",       version: "2026.4.11", releaseDate: "2026-04-16", description: "通道适配器优化，提升大文件传输稳定性" },
+      { type: "update",       version: "2026.4.2",  releaseDate: "2026-04-11", description: "接入 Mimo 模型，新增多模态调用支持" },
+      { type: "firstRelease", version: "2026.3.13", releaseDate: "2026-04-04", description: "首次上线，适配 TKernel5 内核" },
     ],
   },
   // ─── LightClaw ACE on TencentOS Server 4 ─────────────────
@@ -109,9 +111,9 @@ export const PUBLIC_IMAGE_METAS: PublicImageMeta[] = [
     os: "TencentOS Server 4 x86_64",
     agentType: "LightClawACE",
     records: [
-      { type: "update",       version: "v0.1.8", releaseDate: "2026-04-29" },
-      { type: "update",       version: "v0.1.5", releaseDate: "2026-04-27" },
-      { type: "firstRelease", version: "v0.1.1", releaseDate: "2026-04-16" },
+      { type: "update",       version: "v0.1.8", releaseDate: "2026-04-29", description: "多租户隔离修复，提升并发场景下的稳定性" },
+      { type: "update",       version: "v0.1.5", releaseDate: "2026-04-27", description: "镜像精简，启动速度提升 30%" },
+      { type: "firstRelease", version: "v0.1.1", releaseDate: "2026-04-16", description: "首次上线，提供 LightClaw ACE 轻量级 Agent" },
     ],
   },
 ];

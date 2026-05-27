@@ -79,6 +79,10 @@ import type { Role, RoleSkill } from "@/lib/mockData";
 import { PUBLIC_SKILLS, type PublicSkill } from "./SkillLibrary/publicSkillMockData";
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from "./SkillLibrary/mockData";
 import type { SkillScope } from "./SkillLibrary/types";
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
+
+/** 与 agent 类型页一致的应用范围数据源（OneID 部门 + 自建分组），保证下拉面板与 agent 类型页完全一致 */
+const ALL_GROUPS = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
 
 // ── 编辑应用范围（使用通用 ScopeEditPopover）──────────────────────
 import { ScopeEditPopover, type ScopeType } from "@/components/ScopeEditPopover";
@@ -325,12 +329,16 @@ function BatchUpdateDialog({
               </div>
 
               {/* 分页控件 */}
-              <div className="flex items-center justify-between text-sm text-[#737373]">
+              <div className="text-sm text-[#737373]">
                 <Pagination
                   total={updatableSkills.length}
                   current={currentPage}
                   pageSize={pageSize}
-                  showTotal={(total) => `共 ${total} 条`}
+                  showTotal={(total) =>
+                    selectedIndices.size > 0
+                      ? `共 ${total} 条，已选 ${selectedIndices.size} 条记录`
+                      : `共 ${total} 条`
+                  }
                   showSizeChanger
                   pageSizeOptions={PAGE_SIZE_OPTIONS}
                   className="w-full justify-between"
@@ -343,11 +351,6 @@ function BatchUpdateDialog({
                     }
                   }}
                 />
-                {selectedIndices.size > 0 && (
-                  <span className="text-[#737373] ml-1.5">
-                    已选 {selectedIndices.size} 条记录
-                  </span>
-                )}
               </div>
             </div>
           )}
@@ -1007,7 +1010,6 @@ function RoleEditModal({
   const [visible, setVisible] = useState(true);
   const [scope, setScope] = useState<SkillScope>('public');
   const [groupIds, setGroupIds] = useState<string[]>([]);
-  const [groupSearchQuery, setGroupSearchQuery] = useState('');
   const [showAddPublicDialog, setShowAddPublicDialog] = useState(false);
   const [showAddEnterpriseDialog, setShowAddEnterpriseDialog] = useState(false);
   const [showBatchUpdateDialog, setShowBatchUpdateDialog] = useState(false);
@@ -1024,7 +1026,6 @@ function RoleEditModal({
     setVisible(role?.visible ?? true);
     setScope(role?.scope ?? 'public');
     setGroupIds(role?.groupIds ? [...role.groupIds] : []);
-    setGroupSearchQuery('');
     setInitialized(true);
   }
   if (!open && initialized) {
@@ -1118,10 +1119,6 @@ function RoleEditModal({
     toast.success(`已更新 ${selectedIndices.length} 个技能`);
   };
 
-  const filteredGroupsForEdit = MOCK_GROUPS.filter(g =>
-    g.name.toLowerCase().includes(groupSearchQuery.toLowerCase())
-  );
-
   return (
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -1186,125 +1183,24 @@ function RoleEditModal({
               />
             </div>
 
-            {/* 应用范围 — 放在角色技能上面 */}
+            {/* 应用范围 — 完全复用 agent 类型页的 ScopeEditPopover（同款数据源 + 同款默认 props） */}
             <div>
               <Label className="text-sm font-medium text-[#0A0A0A]">应用范围</Label>
-              <div className="mt-2 space-y-3">
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    type="button"
-                    variant="claw-outline"
-                    size="claw-sm"
-                    onClick={() => { setScope('public'); setGroupIds([]); }}
-                    className={`h-8 px-3 text-xs ${
-                      scope === 'public'
-                        ? 'border-[#1447E6] bg-[#EFF6FF] text-[#1447E6] hover:bg-[#EFF6FF] hover:text-[#1447E6]'
-                        : ''
-                    }`}
-                  >
-                    全部用户
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="claw-outline"
-                    size="claw-sm"
-                    onClick={() => setScope('private')}
-                    className={`h-8 px-3 text-xs ${
-                      scope === 'private'
-                        ? 'border-[#1447E6] bg-[#EFF6FF] text-[#1447E6] hover:bg-[#EFF6FF] hover:text-[#1447E6]'
-                        : ''
-                    }`}
-                  >
-                    按分组
-                  </Button>
-
-                  {/* 选择按分组后，右侧出现下拉选择器 */}
-                  {scope === 'private' && (
-                    <Popover>
-                      <Tooltip delayDuration={1000}>
-                        <TooltipTrigger asChild>
-                          <PopoverTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="claw-outline"
-                              size="claw-sm"
-                              className="h-8 px-3 text-xs font-normal text-[#334155] min-w-[120px] justify-between"
-                            >
-                              <span className="truncate">
-                                {groupIds.length > 0
-                                  ? `已选 ${groupIds.length} 个分组`
-                                  : '选择分组…'}
-                              </span>
-                              <ChevronDown className="w-3 h-3 text-[#A3A3A3] shrink-0" />
-                            </Button>
-                          </PopoverTrigger>
-                        </TooltipTrigger>
-                        {groupIds.length > 0 && (
-                          <TooltipContent side="bottom" className="max-w-[280px]">
-                            <p className="text-xs leading-relaxed">
-                              {groupIds.map(gid => MOCK_GROUPS.find(g => g.id === gid)?.name || gid).join('，')}
-                            </p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                      <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                        <div className="p-2 border-b border-[#E5E5E5]">
-                          <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                            <Input
-                              placeholder="搜索分组…"
-                              value={groupSearchQuery}
-                              onChange={(e) => setGroupSearchQuery(e.target.value)}
-                              className="pl-8 pr-3 h-8 text-xs rounded-[4px]"
-                            />
-                          </div>
-                        </div>
-                        <div className="max-h-[200px] overflow-y-auto p-1">
-                          {filteredGroupsForEdit.map(group => {
-                            const checked = groupIds.includes(group.id);
-                            return (
-                              <button
-                                key={group.id}
-                                type="button"
-                                onClick={() => {
-                                  setGroupIds(prev =>
-                                    prev.includes(group.id)
-                                      ? prev.filter(id => id !== group.id)
-                                      : [...prev, group.id]
-                                  );
-                                }}
-                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-[#F5F5F5] transition-colors text-left"
-                              >
-                                <Checkbox
-                                  checked={checked}
-                                  className="h-3.5 w-3.5 pointer-events-none"
-                                />
-                                <span className="text-xs text-[#334155] truncate">{group.name}</span>
-                              </button>
-                            );
-                          })}
-                          {filteredGroupsForEdit.length === 0 && (
-                            <p className="text-[11px] text-[#A3A3A3] py-3 text-center">无匹配分组</p>
-                          )}
-                        </div>
-                        <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5]">
-                          <p className="text-[11px] text-[#A3A3A3]">
-                            已选 {groupIds.length} 个分组
-                          </p>
-                          {groupIds.length > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => setGroupIds([])}
-                              className="text-[11px] text-[#1447E6] hover:opacity-80 transition-opacity"
-                            >
-                              清除
-                            </button>
-                          )}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
+              <div className="mt-2">
+                <ScopeEditPopover
+                  scope={scope === 'public' ? 'all' : 'groups'}
+                  selectedGroupIds={groupIds}
+                  groups={ALL_GROUPS}
+                  onConfirm={(s, ids) => {
+                    if (s === 'all') {
+                      setScope('public');
+                      setGroupIds([]);
+                    } else {
+                      setScope('private');
+                      setGroupIds(ids);
+                    }
+                  }}
+                />
               </div>
             </div>
 

@@ -15,7 +15,7 @@
  *   - 公共镜像不可删除 / 不可编辑
  *   - 创建 native（自研）类型必须勾选确认"允许用户进入终端"
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, AlertDescription, AlertTitle, AlertInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,11 +50,8 @@ import {
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Info,
   RefreshCw,
   ExternalLink,
-  Search,
-  ChevronsUpDown,
   Plus,
   Sparkles,
   Star,
@@ -66,17 +63,19 @@ import {
   ChevronRight,
   Pencil,
   Users,
-  Bell,
+  History,
 } from "lucide-react";
 
 import AgentTypesTable, {
   type AgentTypeRowData,
 } from "./ImageManagement/AgentTypesTable";
-import PublicImageHistoryDialog from "./ImageManagement/PublicImageHistoryDialog";
-import UpdateRecordsDrawer from "./ImageManagement/UpdateRecordsDrawer";
+import UpdateRecordsDrawer, {
+  type DrawerInitialFilter,
+} from "./ImageManagement/UpdateRecordsDrawer";
 import PushUpgradeDialog, {
   type PushableAgentType,
 } from "./ImageManagement/PushUpgradeDialog";
+import NewVersionPushNotice from "./ImageManagement/NewVersionPushNotice";
 import { loadCustomTypes, saveCustomTypes, nowStr } from "./ImageManagement/customAgentStore";
 import type { CustomAgentType, KernelBase } from "./ImageManagement/types";
 import {
@@ -89,7 +88,13 @@ import {
   getHardenedImageId,
   type ImageRow,
 } from "./ImageManagement/deriveAgentTypeView";
-import { pruneOnVersionChange, listActivePushes } from "@/lib/upgradePushStore";
+import {
+  pruneOnVersionChange,
+  listActivePushes,
+  setActivePush,
+  clearActivePush,
+  type ActivePush,
+} from "@/lib/upgradePushStore";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import { ScopeEditPopover } from "@/components/ScopeEditPopover";
@@ -690,10 +695,7 @@ export default function ImageManagement() {
   const [importAgentType, setImportAgentType] = useState("");
   const [importAgentVersion, setImportAgentVersion] = useState("");
   const [versionError, setVersionError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const [showImageList, setShowImageList] = useState(false);
-  const imageListRef = useRef<HTMLDivElement>(null);
 
   // 编辑单个镜像弹窗
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -702,19 +704,22 @@ export default function ImageManagement() {
   const [editAgentVersion, setEditAgentVersion] = useState("");
   const [editVersionError, setEditVersionError] = useState("");
 
-  // 公共镜像版本更新记录
-  const [publicHistoryCtx, setPublicHistoryCtx] = useState<{
-    imageId: string;
-    imageName: string;
-    agentType: string;
-  } | null>(null);
-
   // 推送更新弹窗
   const [showPushDialog, setShowPushDialog] = useState(false);
   const [pushDefaultType, setPushDefaultType] = useState<string | undefined>(undefined);
 
   // 「查看全部更新记录」抽屉
   const [showAllRecordsDrawer, setShowAllRecordsDrawer] = useState(false);
+  // 抽屉打开时的初始筛选（点击表格中"版本更新记录"按钮时，自动定位到该镜像）
+  const [drawerInitialFilter, setDrawerInitialFilter] = useState<DrawerInitialFilter | undefined>(undefined);
+
+  // 活跃推送订阅（用于在表格 / 顶部黄色提示中显示「正在提醒」状态）
+  const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
+  useEffect(() => {
+    const onChange = () => setActivePushes(listActivePushes());
+    window.addEventListener("upgrade-push-changed", onChange);
+    return () => window.removeEventListener("upgrade-push-changed", onChange);
+  }, []);
 
   const openPushDialog = (defaultType?: string) => {
     setPushDefaultType(defaultType);
@@ -941,13 +946,20 @@ export default function ImageManagement() {
   };
 
   const openPublicHistoryByImage = (imageId: string) => {
+    // 优先使用表格里的实际镜像 ID；虚拟（安全加固版等）则取解析后的真实 ID
     const existing = images.find((i) => i.id === imageId);
-    if (existing) {
-      setPublicHistoryCtx({ imageId: existing.id, imageName: existing.name, agentType: existing.agentType });
-      return;
+    let resolvedId = existing?.id;
+    if (!resolvedId) {
+      const virtual = resolveVirtualPublicImage(imageId);
+      resolvedId = virtual?.imageId;
     }
-    const virtual = resolveVirtualPublicImage(imageId);
-    if (virtual) setPublicHistoryCtx({ imageId: virtual.imageId, imageName: virtual.imageName, agentType: virtual.agentType });
+    // 唤起全部更新记录侧边栏，并自动筛选到对应 agent 镜像
+    if (resolvedId) {
+      setDrawerInitialFilter({ kind: "image", value: resolvedId });
+    } else {
+      setDrawerInitialFilter(undefined);
+    }
+    setShowAllRecordsDrawer(true);
   };
 
   const openImportFor = (agentType: string) => {
@@ -963,26 +975,13 @@ export default function ImageManagement() {
     setShowImportDialog(open);
     if (!open) {
       setSelectedImageId(""); setImportAgentType(""); setImportAgentVersion("");
-      setVersionError(""); setSearchQuery(""); setShowImageList(false); setImportTargetAgentType("");
+      setVersionError(""); setImportTargetAgentType("");
     }
   };
-
-  const handleClickOutsideImageList = (e: React.MouseEvent) => {
-    if (imageListRef.current && !imageListRef.current.contains(e.target as Node)) setShowImageList(false);
-  };
-
-  const filteredImportImages = CUSTOM_IMAGES.filter((img) =>
-    img.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    img.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   const handleRefresh = () => {
     setRefreshing(true);
     setTimeout(() => { setRefreshing(false); toast.success("镜像列表已刷新"); }, 1000);
-  };
-
-  const handleSelectImage = (imgId: string) => {
-    setSelectedImageId(imgId); setShowImageList(false); setSearchQuery("");
   };
 
   const handleVersionChange = (v: string) => {
@@ -1087,6 +1086,39 @@ export default function ImageManagement() {
     toast.success(`已将「${getTypeLabel(agentType)}」设为用户端首选类型`);
   };
 
+  /** 直接推送某 Agent 类型当前启用版本（不弹窗，立即生效） */
+  const handleDirectPush = (agentType: string) => {
+    const item = pushable.find((p) => p.agentType === agentType);
+    if (!item) {
+      toast.error("无法获取当前用户可见镜像信息");
+      return;
+    }
+    if (item.allUpToDate) {
+      toast.info(`「${item.agentTypeLabel}」所有 Agent 已是最新版，无需推送`);
+      return;
+    }
+    setActivePush({
+      agentType: item.agentType,
+      agentTypeLabel: item.agentTypeLabel,
+      version: item.enabledVersion,
+      imageName: item.imageName,
+      imageSource: item.imageSource,
+      pushedAt: nowStr(),
+      pushedBy: "alice@acompany.com",
+      message: `管理员推荐更新到 v${item.enabledVersion}`,
+    });
+    toast.success(
+      `已向「${item.agentTypeLabel}」共 ${item.outdatedInstanceCount} 个旧版本 Agent 推送更新提醒`,
+    );
+  };
+
+  /** 撤回某 Agent 类型当前的推送 */
+  const handleRevokePush = (agentType: string) => {
+    const label = getTypeLabel(agentType);
+    clearActivePush(agentType);
+    toast.success(`已撤回「${label}」的更新推送提醒`);
+  };
+
   // ── 渲染 ──────────────────────────────────────────────────────────
   return (
     <>
@@ -1094,28 +1126,7 @@ export default function ImageManagement() {
         <div className="min-w-0">
           {/* 页面标题 */}
           <div className="mb-4">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
-              {(() => {
-                const total = pushable.filter(p => !p.allUpToDate).length;
-                const pushed = listActivePushes().length;
-                if (total === 0) return null;
-                return (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setShowAllRecordsDrawer(true)}
-                        className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-amber-200 bg-amber-50 text-[13px] text-amber-700 hover:bg-amber-100 transition-colors shrink-0"
-                      >
-                        <Bell className="w-3.5 h-3.5" />
-                        <span>当前有 {total} 个生效镜像有新版本，{pushed} 个正在提醒员工更新</span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent className="text-xs">打开更新详情</TooltipContent>
-                  </Tooltip>
-                );
-              })()}
-            </div>
+            <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
             <p className="text-sm text-[#737373] mt-1">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
             </p>
@@ -1132,12 +1143,23 @@ export default function ImageManagement() {
               />
             </div>
             <div className="flex items-center gap-2">
+            <NewVersionPushNotice
+              pushable={pushable}
+              onViewAllRecords={() => {
+                setDrawerInitialFilter(undefined);
+                setShowAllRecordsDrawer(true);
+              }}
+            />
             <Button
               variant="claw-outline"
               size="claw-sm"
-              onClick={() => setShowAllRecordsDrawer(true)}
+              onClick={() => {
+                setDrawerInitialFilter(undefined);
+                setShowAllRecordsDrawer(true);
+              }}
               className="shrink-0"
             >
+              <History className="w-3 h-3" />
               全部更新记录
             </Button>
             <Button
@@ -1170,8 +1192,18 @@ export default function ImageManagement() {
             })}
             onSetDefaultType={handleSetDefaultType}
             onRemoveCustomType={handleRemoveType}
-            onPushUpgrade={(agentType) => openPushDialog(agentType)}
-            pushableByType={new Map(pushable.map(p => [p.agentType, { outdatedInstanceCount: p.outdatedInstanceCount, allUpToDate: p.allUpToDate }]))}
+            onPushUpgrade={(agentType) => handleDirectPush(agentType)}
+            onRevokePush={(agentType) => handleRevokePush(agentType)}
+            pushableByType={new Map(pushable.map(p => {
+              const ap = activePushes.find(
+                (x) => x.agentType === p.agentType && x.version === p.enabledVersion,
+              );
+              return [p.agentType, {
+                outdatedInstanceCount: p.outdatedInstanceCount,
+                allUpToDate: p.allUpToDate,
+                isActivePushing: !!ap,
+              }];
+            }))}
             onEnableImage={(imageId, agentType) => handleEnableImage(imageId, agentType)}
             onDisableImage={handleDisableImage}
             onSelectImage={(imageId, agentType) => handleEnableImage(imageId, agentType)}
@@ -1212,116 +1244,73 @@ export default function ImageManagement() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="rounded-[4px] bg-purple-50/40 border border-purple-100 px-3 py-2.5 -mt-1">
-            <p className="text-xs text-purple-900/80 leading-relaxed mb-1.5">
-              自定义镜像由企业自行制作和维护：
-            </p>
-            <ul className="space-y-1 text-[11px]">
-              <li className="flex items-start gap-1.5 text-[#334155]">
-                <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
-                <span>版本固定不变，便于合规审计与稳定性管理</span>
-              </li>
-              <li className="flex items-start gap-1.5 text-[#334155]">
-                <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
-                <span>可基于业务需要预装技能、插件、企业内部依赖</span>
-              </li>
-              <li className="flex items-start gap-1.5 text-[#737373]">
-                <XIcon className="w-3 h-3 mt-0.5 text-[#A3A3A3] shrink-0" />
-                <span>需要企业自行跟进版本更新与维护</span>
-              </li>
-            </ul>
-          </div>
+          <Alert variant="info">
+            <AlertInfoIcon />
+            <AlertTitle>自定义镜像由企业自行制作和维护</AlertTitle>
+            <AlertDescription>
+              <ul className="space-y-1 text-[11px]">
+                <li className="flex items-start gap-1.5">
+                  <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
+                  <span>版本固定不变，便于合规审计与稳定性管理</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <Check className="w-3 h-3 mt-0.5 text-green-600 shrink-0" />
+                  <span>可基于业务需要预装技能、插件、企业内部依赖</span>
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <XIcon className="w-3 h-3 mt-0.5 text-[#A3A3A3] shrink-0" />
+                  <span>需要企业自行跟进版本更新与维护</span>
+                </li>
+              </ul>
+              <p className="mt-2 pt-2 border-t border-[var(--alert-info-border)]/60 text-[11px] leading-relaxed">
+                以下镜像均为已在腾讯云创建好的镜像。若需要创建新镜像，请前往{" "}
+                <a
+                  href="https://console.cloud.tencent.com/cvm/image"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#1447E6] hover:opacity-80 inline-flex items-center gap-0.5"
+                >
+                  腾讯云云服务器控制台 <ExternalLink className="w-3 h-3" />
+                </a>{" "}
+                操作后，再回此处刷新并关联。
+              </p>
+            </AlertDescription>
+          </Alert>
 
-          <div className="flex items-start gap-2 bg-[#FAFAFA] rounded-[4px] px-3 py-2">
-            <Info className="w-3.5 h-3.5 text-[#A3A3A3] mt-0.5 shrink-0" />
-            <p className="text-[11px] text-[#737373] leading-relaxed">
-              以下镜像均为已在腾讯云创建好的镜像。若需要创建新镜像，请前往{" "}
-              <a
-                href="https://console.cloud.tencent.com/cvm/image"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#1447E6] hover:opacity-80 inline-flex items-center gap-0.5"
-              >
-                腾讯云云服务器控制台 <ExternalLink className="w-3 h-3" />
-              </a>{" "}
-              操作后，再回此处刷新并关联。
-            </p>
-          </div>
-
-          <div className="space-y-4 py-1" onClick={handleClickOutsideImageList}>
+          <div className="mt-4 space-y-4 py-1">
             <div className="space-y-2">
               <Label>选择镜像 <span className="text-red-400">*</span></Label>
-              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => setShowImageList(!showImageList)}
-                  className="flex-1 px-3 py-2 border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-sm text-[#334155] hover:bg-[#F5F5F5] transition-colors text-left flex items-center justify-between"
+              <div className="flex items-center gap-2">
+                <Select
+                  value={selectedImageId}
+                  onValueChange={(v) => setSelectedImageId(v)}
                 >
-                  <span>
-                    {selectedImageId
-                      ? CUSTOM_IMAGES.find((i) => i.id === selectedImageId)?.name
-                      : "请选择要关联的镜像"}
-                  </span>
-                  <ChevronsUpDown className="w-4 h-4 text-[#A3A3A3]" />
-                </button>
-                <button
+                  <SelectTrigger className="bg-white flex-1">
+                    <SelectValue placeholder="请选择要关联的镜像" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CUSTOM_IMAGES.map((img) => (
+                      <SelectItem key={img.id} value={img.id}>
+                        <span className="inline-flex items-center gap-2">
+                          <span>{img.name}</span>
+                          <span className="text-xs text-[#A3A3A3] font-mono">{img.id}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="claw-outline"
+                  size="icon"
                   onClick={handleRefresh}
                   disabled={refreshing}
-                  className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-[4px] border border-[#E5E5E5] bg-white text-[#A3A3A3] hover:text-[#1447E6] hover:border-[#1447E6]/40 transition-colors disabled:opacity-50"
                   title="刷新镜像列表"
+                  className="flex-shrink-0"
                 >
-                  <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                </button>
+                  <RefreshCw className={refreshing ? "animate-spin" : ""} />
+                </Button>
               </div>
               <p className="text-xs text-[#A3A3A3]">镜像大小不允许超过 50 GiB</p>
-              {showImageList && (
-                <div
-                  ref={imageListRef}
-                  className="border border-[#E5E5E5] rounded-[4px] bg-white overflow-hidden"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="relative p-2 border-b border-[#F5F5F5]">
-                    <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
-                    <input
-                      type="text"
-                      placeholder="搜索镜像 ID..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] text-sm placeholder-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-[#1447E6]/30 focus:border-transparent"
-                      autoFocus
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {filteredImportImages.length > 0 ? (
-                      <div>
-                        <div className="px-3 py-2 bg-[#FAFAFA] text-xs font-medium text-[#737373] sticky top-0">
-                          自定义镜像 <span className="text-[#A3A3A3] font-normal">（企业维护）</span>
-                        </div>
-                        {filteredImportImages.map((img) => (
-                          <div
-                            key={img.id}
-                            onClick={(e) => { e.stopPropagation(); handleSelectImage(img.id); }}
-                            className={`px-3 py-2.5 cursor-pointer hover:bg-[#1447E6]/5 transition-colors ${
-                              selectedImageId === img.id
-                                ? "bg-[#1447E6]/5 border-l-2 border-[#1447E6]"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="text-sm text-[#0A0A0A] truncate">{img.name}</span>
-                              <span className="text-xs text-[#A3A3A3] font-mono shrink-0">{img.id}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="px-3 py-8 text-center text-sm text-[#A3A3A3]">
-                        未找到匹配的镜像
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="space-y-2">
@@ -1351,14 +1340,12 @@ export default function ImageManagement() {
                       {customTypes.map((t) => (
                         <SelectItem key={t.id} value={t.id}>
                           <span className="inline-flex items-center gap-1.5">
-                            {t.kernelBase === "native" ? (
-                              <Sparkles className="w-3 h-3 text-orange-500" />
-                            ) : (
-                              <span className="text-[10px] text-[#355EF1] font-medium">
-                                [兼容 {kernelBaseLabel(t.kernelBase)}]
-                              </span>
+                            <span>{t.displayName}</span>
+                            {t.kernelBase !== "native" && (
+                              <StatusTag mode="fill" variant="gray">
+                                兼容 {kernelBaseLabel(t.kernelBase)}
+                              </StatusTag>
                             )}
-                            {t.displayName}
                           </span>
                         </SelectItem>
                       ))}
@@ -1374,7 +1361,7 @@ export default function ImageManagement() {
                 value={importAgentVersion}
                 onChange={(e) => handleVersionChange(e.target.value)}
                 placeholder={getEffectiveTypeConfig(importAgentType)?.versionPlaceholder ?? "请先选择 Agent 类型"}
-                className={`bg-gray-50 ${versionError ? "border-red-300 focus-visible:ring-red-500" : ""}`}
+                className={versionError ? "border-red-300 focus-visible:ring-red-500" : ""}
                 disabled={!importAgentType}
               />
               {versionError && <p className="text-xs text-red-500">{versionError}</p>}
@@ -1440,7 +1427,7 @@ export default function ImageManagement() {
                 value={editAgentVersion}
                 onChange={(e) => handleEditVersionChange(e.target.value)}
                 placeholder={getEffectiveTypeConfig(editAgentType)?.versionPlaceholder ?? ""}
-                className={`bg-gray-50 ${editVersionError ? "border-red-300 focus-visible:ring-red-500" : ""}`}
+                className={editVersionError ? "border-red-300 focus-visible:ring-red-500" : ""}
               />
               {editVersionError && <p className="text-xs text-red-500">{editVersionError}</p>}
             </div>
@@ -1596,17 +1583,6 @@ export default function ImageManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* ─── 公共镜像版本更新记录 ─── */}
-      {publicHistoryCtx && (
-        <PublicImageHistoryDialog
-          open={!!publicHistoryCtx}
-          imageId={publicHistoryCtx.imageId}
-          imageName={publicHistoryCtx.imageName}
-          agentType={publicHistoryCtx.agentType}
-          onClose={() => setPublicHistoryCtx(null)}
-        />
-      )}
-
       {/* ─── 推送更新弹窗 ─── */}
       <PushUpgradeDialog
         open={showPushDialog}
@@ -1616,15 +1592,27 @@ export default function ImageManagement() {
         }}
         pushable={pushable}
         defaultAgentType={pushDefaultType}
+        onViewAllRecords={() => {
+          setShowPushDialog(false);
+          setPushDefaultType(undefined);
+          setDrawerInitialFilter(undefined);
+          setShowAllRecordsDrawer(true);
+        }}
       />
 
       {/* ─── 镜像更新记录抽屉 ─── */}
       <UpdateRecordsDrawer
         open={showAllRecordsDrawer}
-        onOpenChange={setShowAllRecordsDrawer}
+        onOpenChange={(o) => {
+          setShowAllRecordsDrawer(o);
+          // 关闭时清掉初始筛选，避免下次"全部更新记录"按钮再被沿用上一次的筛选
+          if (!o) setDrawerInitialFilter(undefined);
+        }}
         pushable={pushable}
+        initialFilter={drawerInitialFilter}
         onPush={(defaultType) => {
           setShowAllRecordsDrawer(false);
+          setDrawerInitialFilter(undefined);
           openPushDialog(defaultType);
         }}
       />

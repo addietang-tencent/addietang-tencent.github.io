@@ -28,6 +28,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import {
   History,
   ArrowLeftRight,
+  Megaphone,
+  RotateCcw,
 } from "lucide-react";
 import { Button, SmallIconStateButton } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -45,6 +47,7 @@ import {
 import SwitchImageDialog from "./SwitchImageDialog";
 import { ImageStatusBadge } from "./ImageStatusBadge";
 import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
+import { IMG_TO_VERSION_KEY } from "./deriveAgentTypeView";
 import type { CustomAgentType } from "./types";
 import { AGENT_VERSIONS } from "../VersionManagement/mockData";
 
@@ -66,6 +69,8 @@ interface Props {
   onSetDefaultType: (agentType: string) => void;
   onRemoveCustomType: (agentType: string) => void;
   onPushUpgrade: (agentType: string) => void;
+  /** 撤回某 Agent 类型当前正在生效的推送 */
+  onRevokePush?: (agentType: string) => void;
 
   // 镜像级操作
   onEnableImage: (imageId: string, agentType: string) => void;
@@ -76,8 +81,11 @@ interface Props {
   onViewPublicHistory: (publicImageId: string) => void;
   onImportCustom: (agentType: string) => void;
 
-  /** 各 Agent 类型的可推送状态（agentType -> 过期实例信息） */
-  pushableByType?: Map<string, { outdatedInstanceCount: number; allUpToDate: boolean }>;
+  /** 各 Agent 类型的可推送状态（agentType -> 过期实例信息 + 是否在推送中） */
+  pushableByType?: Map<
+    string,
+    { outdatedInstanceCount: number; allUpToDate: boolean; isActivePushing?: boolean }
+  >;
 
   // 应用范围渲染槽：由父组件按 agentType 渲染各自的 Popover
   renderScope: (agentType: string) => ReactNode;
@@ -88,6 +96,7 @@ export default function AgentTypesTable({
   onSetDefaultType,
   onRemoveCustomType,
   onPushUpgrade,
+  onRevokePush,
   onEnableImage,
   onDisableImage,
   onSelectImage,
@@ -116,8 +125,8 @@ export default function AgentTypesTable({
             <TableHead fixed="left" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
               Agent 类型
             </TableHead>
-            <TableHead style={{ minWidth: 220 }}>镜像</TableHead>
-            <TableHead style={{ minWidth: 170 }}>版本</TableHead>
+            <TableHead style={{ minWidth: 170 }}>Agent 版本</TableHead>
+            <TableHead style={{ minWidth: 320 }}>镜像</TableHead>
             <TableHead style={{ minWidth: 160 }}>应用范围</TableHead>
             <TableHead style={{ minWidth: 100 }}>用户可见</TableHead>
             <TableHead fixed="right" style={{ minWidth: 220, width: "1%" }}>操作</TableHead>
@@ -132,6 +141,7 @@ export default function AgentTypesTable({
               onSetDefaultType={() => onSetDefaultType(row.agentType)}
               onRemoveCustomType={() => onRemoveCustomType(row.agentType)}
               onPushUpgrade={() => onPushUpgrade(row.agentType)}
+              onRevokePush={onRevokePush ? () => onRevokePush(row.agentType) : undefined}
               onEnableImage={(imgId) => onEnableImage(imgId, row.agentType)}
               onDisableImage={onDisableImage}
               onViewPublicHistory={onViewPublicHistory}
@@ -171,6 +181,7 @@ function AgentTypeRow({
   onSetDefaultType,
   onRemoveCustomType,
   onPushUpgrade,
+  onRevokePush,
   onEnableImage,
   onDisableImage,
   onViewPublicHistory,
@@ -182,10 +193,11 @@ function AgentTypeRow({
   onSetDefaultType: () => void;
   onRemoveCustomType: () => void;
   onPushUpgrade: () => void;
+  onRevokePush?: () => void;
   onEnableImage: (imgId: string) => void;
   onDisableImage: (imgId: string) => void;
   onViewPublicHistory: (imgId: string) => void;
-  pushableInfo?: { outdatedInstanceCount: number; allUpToDate: boolean };
+  pushableInfo?: { outdatedInstanceCount: number; allUpToDate: boolean; isActivePushing?: boolean };
   scopeSlot: ReactNode;
 }) {
   const { view, label, isDefault, customType, kernelBaseLabel } = row;
@@ -254,7 +266,25 @@ function AgentTypeRow({
         )}
       </TableCell>
 
-      {/* 2. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID + 导入时间 + 状态） */}
+      {/* 2. Agent 版本 */}
+      <TableCell className="py-4 align-top">
+        {selected ? (
+          <AgentVersionCell
+            image={selected}
+            agentType={view.agentType}
+            agentLabel={label}
+            isEnabled={isEnabled}
+            onViewHistory={() => onViewPublicHistory(selected.id)}
+            onPushUpgrade={onPushUpgrade}
+            onRevokePush={onRevokePush}
+            pushableInfo={pushableInfo}
+          />
+        ) : (
+          <span className="text-[12px] text-gray-400">—</span>
+        )}
+      </TableCell>
+
+      {/* 3. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID + 导入时间 + 状态） */}
       <TableCell className="py-4 align-top whitespace-normal">
         {selected ? (
           <ImageCombinedCell
@@ -263,23 +293,6 @@ function AgentTypeRow({
           />
         ) : (
           <span className="text-[12px] text-gray-400">尚未选择镜像</span>
-        )}
-      </TableCell>
-
-      {/* 3. 版本 */}
-      <TableCell className="py-4 align-top">
-        {selected ? (
-          <AgentVersionCell
-            image={selected}
-            isEnabled={isEnabled}
-            onViewHistory={
-              AGENT_VERSIONS.some((v) => v.agentType === view.agentType)
-                ? () => onViewPublicHistory(selected.id)
-                : undefined
-            }
-          />
-        ) : (
-          <span className="text-[12px] text-gray-400">—</span>
         )}
       </TableCell>
 
@@ -327,56 +340,9 @@ function AgentTypeRow({
         )}
       </TableCell>
 
-      {/* 6. 操作：「推送新版本 / 设为首选 / 删除」三枚文字按钮（条件不满足时禁用） */}
-      <TableActionCell fixed="right" className="py-4 align-top" rawChildren>
+      {/* 6. 操作：「设为首选 / 删除」两枚文字按钮（条件不满足时禁用） */}
+      <TableActionCell fixed="right" className="py-4 align-top">
         <div className="flex items-center gap-4">
-          {/* 推送新版本 — 未启用镜像 / 全员已是最新 时禁用并提示 */}
-          <span className="inline-flex shrink-0 justify-start">
-          {(() => {
-            const pushDisabledReason = !selected || !view.enabled.version
-              ? "请先选择镜像"
-              : !isEnabled
-                ? "用户不可见的 Agent 类型不可推送"
-                : !pushableInfo || pushableInfo.allUpToDate
-                  ? "所有 Agent 已是最新版本，无需推送"
-                  : null;
-            const outdated = pushableInfo?.outdatedInstanceCount ?? 0;
-            if (pushDisabledReason) {
-              return (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex">
-                      <Button variant="link" size="sm" disabled className="!px-0 justify-start w-auto">
-                        推送新版本
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-xs">
-                    {pushDisabledReason}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
-            return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={onPushUpgrade}
-                    className="!px-0 justify-start w-auto"
-                  >
-                    推送新版本
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="text-xs">
-                  向 {outdated} 个仍在使用旧版本的 Agent 推送 v{view.enabled.version} 更新提醒
-                </TooltipContent>
-              </Tooltip>
-            );
-          })()}
-          </span>
-
           {/* 设为首选 — 已是首选 / 尚未选择镜像 / 用户不可见 时禁用并提示 */}
           <span className="inline-flex shrink-0 justify-start">
           {(() => {
@@ -455,15 +421,39 @@ function AgentTypeRow({
 // ─── Agent 版本单元（版本号 + 维护标签 + 版本更新记录入口） ───────────
 function AgentVersionCell({
   image,
+  agentType,
+  agentLabel,
   isEnabled,
   onViewHistory,
+  onPushUpgrade,
+  onRevokePush,
+  pushableInfo,
 }: {
   image: ViewImage;
+  agentType: string;
+  agentLabel: string;
   isEnabled: boolean;
   onViewHistory?: () => void;
+  onPushUpgrade?: () => void;
+  onRevokePush?: () => void;
+  pushableInfo?: { outdatedInstanceCount: number; allUpToDate: boolean; isActivePushing?: boolean };
 }) {
-  const hasHistory = image.source === "public" && !!onViewHistory;
   const isPublic = image.source === "public";
+  // 是否存在该 agentType 的更新记录（仅系统预设公共镜像有）
+  const versionKey = IMG_TO_VERSION_KEY[agentType];
+  const versionList = versionKey
+    ? AGENT_VERSIONS.filter((v) => v.agentType === versionKey)
+    : [];
+  const hasHistory = isPublic && !!onViewHistory && versionList.length > 0;
+  // 是否存在更新（最新版本与当前镜像版本不一致即视为有更新）
+  const latestVersion = versionList.find((v) => v.isLatest)?.version;
+  const normalize = (s: string) => s.replace(/^v/i, "").trim();
+  const hasNewVersion =
+    hasHistory &&
+    !!latestVersion &&
+    normalize(latestVersion) !== normalize(image.agentVersion);
+  const isActivePushing = pushableInfo?.isActivePushing;
+  const canPush = isEnabled && !!pushableInfo && !pushableInfo.allUpToDate;
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -482,21 +472,47 @@ function AgentVersionCell({
             </span>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
-            {hasHistory ? "版本更新记录" : "暂无版本更新记录"}
+            {hasHistory
+              ? `查看 ${agentLabel} 更新记录`
+              : `暂无 ${agentLabel} 更新记录`}
           </TooltipContent>
         </Tooltip>
+        {/* 推送 / 撤回按钮（与「切换」按钮同款 SmallIconStateButton 默认尺寸） */}
+        {hasNewVersion && isActivePushing && onRevokePush ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SmallIconStateButton
+                icon={RotateCcw}
+                label="撤回推送"
+                onClick={onRevokePush}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs max-w-[220px]">
+              撤回后用户端的"可更新"徽章将立即消失
+            </TooltipContent>
+          </Tooltip>
+        ) : hasNewVersion && canPush && onPushUpgrade ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <SmallIconStateButton
+                icon={Megaphone}
+                label="推送最新版本"
+                onClick={onPushUpgrade}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs max-w-[260px]">
+              立即向使用旧版本的 Agent 推送 v{latestVersion} 更新提醒
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
       </div>
-      {isPublic && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="text-[11px] text-gray-400 mt-0.5 inline-block cursor-default underline decoration-dashed underline-offset-2 decoration-gray-300">
-              腾讯云维护
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" className="text-xs">
-            由腾讯云持续维护更新，自动跟随官方版本
-          </TooltipContent>
-        </Tooltip>
+      {/* 二级说明文字：有新版本 / 用户已更新到最新版本 */}
+      {hasNewVersion ? (
+        <div className="text-[12px] text-gray-500 mt-1 whitespace-nowrap">
+          有新版本 <span className="font-mono text-gray-900">v{latestVersion}</span>
+        </div>
+      ) : (
+        <div className="text-[12px] text-gray-400 mt-1">用户已更新到最新版本</div>
       )}
     </div>
   );
@@ -513,32 +529,49 @@ function ImageCombinedCell({
   const isPublic = image.source === "public";
   return (
     <div className="min-w-0">
-      <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="flex items-center gap-1.5 min-w-0">
         <StatusTag variant={isPublic ? "blue" : "gray"}>
           {isPublic ? "公共" : "自定义"}
         </StatusTag>
-        <span className="text-sm font-medium text-gray-900 truncate">
+        <span className="text-sm font-medium text-gray-900 truncate min-w-0">
           {image.name}
         </span>
         {/* 切换镜像 */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <SmallIconStateButton
-              state="default"
-              label="切换"
-              icon={ArrowLeftRight}
-              onClick={onSwitchImage}
-            />
+            <span className="shrink-0 inline-flex">
+              <SmallIconStateButton
+                state="default"
+                label="切换"
+                icon={ArrowLeftRight}
+                onClick={onSwitchImage}
+              />
+            </span>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
             切换镜像
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
+      <div className="flex items-center gap-2 text-[12px] text-gray-400 mt-0.5 flex-wrap">
         <span className="font-mono truncate">{image.id}</span>
         <span className="text-gray-200">|</span>
         <ImageStatusBadge status={image.status} />
+        {isPublic && (
+          <>
+            <span className="text-gray-200">|</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-[12px] text-gray-400 inline-block cursor-default underline decoration-dashed underline-offset-2 decoration-gray-300">
+                  腾讯云维护
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                由腾讯云持续维护更新，自动跟随官方版本
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
         {/* 仅自定义镜像展示导入时间，公共镜像不展示（公共镜像无"导入"语义） */}
         {!isPublic && image.createTime && (
           <>

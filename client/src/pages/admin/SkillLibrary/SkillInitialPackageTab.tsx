@@ -46,6 +46,7 @@ import {
   TableHead,
   TableRow,
   TableCell,
+  TableActionCell,
 } from '@/components/ui/table';
 import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
@@ -1155,144 +1156,163 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
         </button>
       </div>
 
-      {/* 技能包信息 */}
-      <div className="bg-white rounded-xl border border-[#e5e5e5] p-5"
-       >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#355EF1' }}>
-            <Package className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="text-sm font-semibold text-gray-900">{pkg.name}</h2>
+      {/* 技能包信息 + 操作栏 — 同一行，左右两端对齐 */}
+      <div className="flex items-center justify-between gap-4">
+        {/* 左侧：图标 + 标题 + 标签 */}
+        <div className="flex items-center gap-3 min-w-0">
+          <img
+            src={getSkillPackageIconSrc(pkg)}
+            alt=""
+            aria-hidden="true"
+            className="h-10 w-10 shrink-0"
+          />
+          <div className="flex flex-col gap-2 min-w-0">
+            <h2 className="text-base font-semibold text-gray-900 leading-none truncate">{pkg.name}</h2>
+            <div className="flex items-center gap-2">
               {pkg.isActive && (
                 <StatusTag mode="fill" variant="green">生效中</StatusTag>
               )}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <StatusTag mode="fill" variant={isPublicScope(pkg) ? "blue" : "gray"}>
-                {isPublicScope(pkg) ? '全部用户' : scopeLabels.join('、')}
-              </StatusTag>
+              {isPublicScope(pkg) ? (
+                <AllUsersTag />
+              ) : (
+                <StatusTag mode="fill" variant="gray">{scopeLabels.join('、')}</StatusTag>
+              )}
             </div>
           </div>
+        </div>
+
+        {/* 右侧：操作按钮组 */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Button variant="claw-outline" size="claw-sm" onClick={() => setShowAddPublicDialog(true)}>
+            <Plus className="w-3.5 h-3.5" />
+            从公共技能库添加
+          </Button>
+          <Button variant="claw-outline" size="claw-sm" onClick={() => setShowAddEnterpriseDialog(true)}>
+            <Plus className="w-3.5 h-3.5" />
+            从企业技能库添加
+          </Button>
+          <Tooltip delayDuration={300}>
+            <TooltipTrigger asChild>
+              <Button
+                variant="claw-outline"
+                size="claw-sm"
+                onClick={() => setShowBatchRefreshDialog(true)}
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                批量刷新{updatableCount > 0 ? `（${updatableCount}）` : ''}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              检查并批量刷新技能到最新版本
+            </TooltipContent>
+          </Tooltip>
+          {isDirty && (
+            <>
+              <Button
+                variant="claw-outline"
+                size="claw-sm"
+                onClick={handleDiscard}
+              >
+                取消
+              </Button>
+              <Button
+                variant="claw-primary"
+                size="claw-sm"
+                onClick={handleSave}
+              >
+                保存
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       {/* 技能列表 */}
-      <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-       >
-        <div className="px-4 border-b border-[#e5e5e5] flex items-center justify-between" style={{ minHeight: '48px' }}>
-          <span className="text-sm font-medium text-gray-700">
-            技能列表（共 {localSkills.length} 个）
-          </span>
-          <div className="flex items-center gap-2">
-            {/* 批量刷新按钮 */}
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowBatchRefreshDialog(true)}
-                  className="h-7 px-3 text-xs gap-1.5"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  批量刷新
-                  {updatableCount > 0 && (
-                    <span className="ml-0.5 px-1.5 py-0 rounded-full text-[10px] bg-green-100 text-green-600 font-medium">
-                      {updatableCount}
-                    </span>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                检查并批量刷新技能到最新版本
-              </TooltipContent>
-            </Tooltip>
-            {isDirty && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDiscard}
-                  className="h-7 px-3 text-xs text-gray-500"
-                >
-                  取消
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleSave}
-                  className="h-7 px-3 text-xs"
-                >
-                  保存
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
+      <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
         {localSkills.length > 0 ? (
-          <div className="divide-y divide-gray-50">
-            {localSkills.map(skill => {
-              const canUpdate = hasUpdate(skill);
-              const wasRefreshed = !!skill.originalVersion;
-              return (
-                <div key={skill.skillId} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
-                  <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                    <Package className="w-4 h-4 text-gray-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-medium text-gray-800">
-                        {skill.source === 'enterprise' && skill.skillNameZh ? skill.skillNameZh : skill.skillName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <StatusTag mode="fill" variant={skill.source === 'public' ? 'blue' : 'gray'}>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>技能名称</TableHead>
+                <TableHead className="w-[120px]">来源</TableHead>
+                <TableHead className="w-[140px]">版本</TableHead>
+                <TableHead className="w-[160px]">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {localSkills.map(skill => {
+                const canUpdate = hasUpdate(skill);
+                const wasRefreshed = !!skill.originalVersion;
+                const skillName = skill.source === 'enterprise' && skill.skillNameZh
+                  ? skill.skillNameZh
+                  : skill.skillName;
+                return (
+                  <TableRow key={skill.skillId}>
+                    {/* 技能名称 */}
+                    <TableCell>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                          <Package className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <span className="text-sm text-gray-900 truncate">
+                          {skillName}
+                        </span>
+                      </div>
+                    </TableCell>
+
+                    {/* 来源 */}
+                    <TableCell className="w-[120px]">
+                      <StatusTag mode="fill" variant="gray">
                         {skill.source === 'public' ? '公共' : '企业'}
                       </StatusTag>
+                    </TableCell>
+
+                    {/* 版本 */}
+                    <TableCell className="w-[140px]">
                       {wasRefreshed ? (
-                        <span className="font-mono text-[10px]">
+                        <span className="text-sm">
                           <span className="text-green-600 font-medium">v{skill.version}</span>
-                          <span className="text-gray-400 ml-0.5">(原v{skill.originalVersion})</span>
+                          <span className="text-gray-400 ml-1">(原v{skill.originalVersion})</span>
                         </span>
                       ) : (
-                        <span className="font-mono text-[10px] text-gray-400">v{skill.version}</span>
+                        <span className="text-sm text-gray-900">v{skill.version}</span>
                       )}
-                    </div>
-                  </div>
-                  {/* 刷新按钮 */}
-                  <Tooltip delayDuration={300}>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => canUpdate ? handleRefreshSingle(skill.skillId) : undefined}
-                        className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
-                          canUpdate
-                            ? 'text-green-500 hover:text-green-600 hover:bg-green-50 cursor-pointer'
-                            : 'text-gray-300 cursor-default'
-                        }`}
-                        title={canUpdate ? '有新版本，点击刷新' : '已是最新'}
+                    </TableCell>
+
+                    {/* 操作：刷新 + 移除 */}
+                    <TableActionCell className="w-[160px]">
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex">
+                            <Button
+                              variant="link"
+                              size="sm"
+                              disabled={!canUpdate}
+                              onClick={() => canUpdate && handleRefreshSingle(skill.skillId)}
+                            >
+                              刷新
+                            </Button>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          {canUpdate
+                            ? `有新版本 v${getLatestVersion(skill)}，点击刷新`
+                            : '已是最新版本'}
+                        </TooltipContent>
+                      </Tooltip>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => handleRemoveLocal(skill.skillId)}
                       >
-                        <RefreshCw className="w-3.5 h-3.5" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      {canUpdate
-                        ? `有新版本 v${getLatestVersion(skill)}，点击刷新`
-                        : '已是最新版本'}
-                    </TooltipContent>
-                  </Tooltip>
-                  {/* 删除按钮 */}
-                  <button
-                    onClick={() => handleRemoveLocal(skill.skillId)}
-                    className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                    title="从技能包中移除"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                        移除
+                      </Button>
+                    </TableActionCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         ) : (
           <div className="text-center py-12 text-gray-400">
             <Package className="w-10 h-10 mx-auto mb-3 opacity-30" />
@@ -1301,16 +1321,20 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
           </div>
         )}
 
-        <div className="px-4 py-3 border-t border-[#e5e5e5] flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddPublicDialog(true)}>
-            <Plus className="w-3.5 h-3.5" />
-            从公共技能库添加
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setShowAddEnterpriseDialog(true)}>
-            <Plus className="w-3.5 h-3.5" />
-            从企业技能库添加
-          </Button>
-        </div>
+        {/* 表格底部：分页器（左侧显示总数，右侧分页控件） */}
+        {localSkills.length > 0 && (
+          <div className="px-4 py-3 border-t border-[#e5e5e5]">
+            <Pagination
+              total={localSkills.length}
+              current={1}
+              pageSize={20}
+              showTotal={(total) => `共 ${total} 个`}
+              size="default"
+              className="w-full justify-between"
+              onChange={() => { /* 当前不分页，预留 */ }}
+            />
+          </div>
+        )}
       </div>
 
       {/* 公共技能库添加弹窗 */}
@@ -1662,16 +1686,17 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   {selectedScopes.size > 0 && (
                     <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
                       <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
-                      <button
+                      <Button
                         type="button"
+                        variant="claw-outline"
+                        size="claw-sm"
                         onClick={() => {
                           setSelectedScopes(new Set());
                           setScopeSearchQuery('');
                         }}
-                        className="text-xs text-blue-500 hover:text-blue-600"
                       >
                         清除
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -1717,7 +1742,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           {isPinned && (
                             <Tooltip delayDuration={300}>
                               <TooltipTrigger asChild>
-                                <span className="text-blue-500 shrink-0">
+                                <span className="text-[#0A0A0A] shrink-0">
                                   <Pin className="w-3.5 h-3.5" />
                                 </span>
                               </TooltipTrigger>

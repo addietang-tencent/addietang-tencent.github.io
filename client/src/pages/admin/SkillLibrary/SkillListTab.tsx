@@ -776,16 +776,17 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               {selectedScopes.size > 0 && (
                 <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
                   <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="claw-outline"
+                    size="claw-sm"
                     onClick={() => {
                       setSelectedScopes(new Set());
                       setScopeSearchQuery('');
                     }}
-                    className="text-xs text-blue-500 hover:text-blue-600"
                   >
                     清除
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

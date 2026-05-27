@@ -3,12 +3,23 @@
  * 支持内置通道（微信/QQ/企业微信/钉钉/飞书）可见性管理
  * 以及自定义通道的添加、可见性控制（不支持编辑，仅删除）
  */
-import { useState, useEffect } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableActionCell,
+} from "@/components/ui/table";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   Dialog,
   DialogBody,
@@ -301,21 +312,25 @@ export default function ChannelConfig() {
 
       {/* ── 内置通道 Tab ── */}
       {activeTab === "builtin" && (
-        <div
-          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
-        >
-          <div className="divide-y divide-gray-50">
-            {BUILTIN_CHANNELS.map((ch) => (
-              <div key={ch.id} className="flex items-center justify-between px-6 py-5 hover:bg-[#f5f5f5]/50 transition-colors">
-                <div className="flex items-center gap-4">
-                  <img src={CHANNEL_ICON_SRC[ch.id]} alt="" aria-hidden="true" className="h-10 w-10 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-[#0A0A0A]">{ch.name}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-[#A3A3A3]">用户可见</span>
+        <SurfaceCard className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: "50%" }}>产品</TableHead>
+                <TableHead style={{ width: 160 }}>用户可见</TableHead>
+                <TableHead>分组</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {BUILTIN_CHANNELS.map((ch) => (
+                <TableRow key={ch.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <img src={CHANNEL_ICON_SRC[ch.id]} alt="" aria-hidden="true" className="h-8 w-8 shrink-0" />
+                      <span className="text-sm font-medium text-[#0A0A0A]">{ch.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <Switch
                       checked={builtinVisibility[ch.id] || false}
                       onCheckedChange={(v) => {
@@ -325,29 +340,29 @@ export default function ChannelConfig() {
                         toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
                       }}
                     />
-                  </div>
-                  <div className="w-px h-4 bg-gray-200" />
-                  <ScopeEditPopover
-                    scope={builtinScopes[ch.id]?.scope || "all"}
-                    selectedGroupIds={builtinScopes[ch.id]?.groupIds || []}
-                    groups={ALL_GROUPS}
-                    onConfirm={(scope, groupIds) => {
-                      setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    <ScopeEditPopover
+                      scope={builtinScopes[ch.id]?.scope || "all"}
+                      selectedGroupIds={builtinScopes[ch.id]?.groupIds || []}
+                      groups={ALL_GROUPS}
+                      onConfirm={(scope, groupIds) => {
+                        setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
+                      }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </SurfaceCard>
       )}
 
       {/* ── 自定义通道 Tab ── */}
       {activeTab === "custom" && (
-        <div
-          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+        <div className="space-y-3">
+          {/* 操作行（表格外）：自定义通道配置指引 + 添加通道 */}
+          <div className="flex items-center justify-between">
             <a
               href="#"
               className="inline-flex items-center gap-1 text-xs text-[#355EF1] hover:text-[#355EF1] underline underline-offset-2 transition-colors"
@@ -368,121 +383,134 @@ export default function ChannelConfig() {
           </div>
 
           {customChannels.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-[218px]">
-                <img
-                  src="/assets/admin-channel-icons/empty-custom-channel.svg"
-                  alt=""
-                  aria-hidden="true"
-                  className="mx-auto h-[60px] w-[60px]"
-                />
-                <div className="mt-1">
-                  <p className="text-sm font-semibold text-[#020617]">暂无自定义通道</p>
-                  <p className="mt-1 text-xs font-normal tracking-[0.015em] text-[#A3A3A3]">点击「添加通道」配置企业自研 IM 通道</p>
+            <SurfaceCard className="overflow-hidden">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-[218px]">
+                  <img
+                    src="/assets/admin-channel-icons/empty-custom-channel.svg"
+                    alt=""
+                    aria-hidden="true"
+                    className="mx-auto h-[60px] w-[60px]"
+                  />
+                  <div className="mt-1">
+                    <p className="text-sm font-semibold text-[#020617]">暂无自定义通道</p>
+                    <p className="mt-1 text-xs font-normal tracking-[0.015em] text-[#A3A3A3]">点击「添加通道」配置企业自研 IM 通道</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </SurfaceCard>
           ) : (
-            <div className="divide-y divide-gray-50">
-              {customChannels.map((ch) => (
-                <div key={ch.id} className="hover:bg-[#f5f5f5]/30 transition-colors">
-                  {/* 主行：仅展示通道名称 + Channel ID + 操作 */}
-                  <div className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <CustomChannelIcon name={ch.name} color={ch.color} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-[#0A0A0A] truncate">{ch.name}</p>
-                          <span className="text-xs text-[#A3A3A3] font-mono bg-[#f5f5f5] px-1.5 py-0.5 rounded shrink-0">
-                            {ch.channelId}
-                          </span>
-                        </div>
-                        {/* 详情展开按钮：放在通道名称下方 */}
-                        <button
-                          className="mt-1 text-xs text-[#A3A3A3] hover:text-[#355EF1] flex items-center gap-0.5 transition-colors"
-                          onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
-                          title="查看详情"
-                        >
-                          {expandedCustomId === ch.id
-                            ? <ChevronDown className="w-3 h-3" />
-                            : <ChevronRight className="w-3 h-3" />
-                          }
-                          <span>详情</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 shrink-0 ml-4">
-                      <span className="text-xs text-[#A3A3A3]">用户可见</span>
-                      <Switch
-                        checked={ch.visible}
-                        onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
-                      />
-                      <div className="w-px h-4 bg-gray-200" />
-                      <ScopeEditPopover
-                        scope={customScopes[ch.id]?.scope || "all"}
-                        selectedGroupIds={customScopes[ch.id]?.groupIds || []}
-                        groups={ALL_GROUPS}
-                        onConfirm={(scope, groupIds) => {
-                          setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
-                        }}
-                      />
-                      <div className="w-px h-4 bg-gray-200" />
-                      {/* 去掉编辑按钮，只保留删除 */}
-                      <button
-                        className="text-[#A3A3A3] hover:text-red-500 transition-colors"
-                        onClick={() => setDeleteConfirmId(ch.id)}
-                        title="删除"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 展开后展示两部分：IM 服务器地址 + 用户凭证字段 */}
-                  {expandedCustomId === ch.id && (
-                    <div className="px-6 pb-4">
-                      <div className="ml-14 space-y-3">
-                        {/* IM 服务器地址 */}
-                        <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3">
-                          <p className="text-xs font-medium text-[#737373] mb-2">IM 服务器地址</p>
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className="text-[#A3A3A3] w-24 shrink-0">Server URL</span>
-                              <span className="text-[#334155] font-mono break-all">{ch.serverUrl || "—"}</span>
+            <SurfaceCard className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead style={{ width: "45%" }}>通道名</TableHead>
+                    <TableHead style={{ width: 140 }}>用户可见</TableHead>
+                    <TableHead>分组</TableHead>
+                    <TableHead fixed="right" style={{ width: 96, minWidth: 96, maxWidth: 96 }}>操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {customChannels.map((ch) => (
+                    <Fragment key={ch.id}>
+                      <TableRow>
+                        <TableCell>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <p className="text-sm font-medium text-[#0A0A0A] truncate">{ch.name}</p>
+                              <Badge variant="secondary" className="shrink-0 font-mono">
+                                {ch.channelId}
+                              </Badge>
                             </div>
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className="text-[#A3A3A3] w-24 shrink-0">WebSocket URL</span>
-                              <span className="text-[#334155] font-mono break-all">{ch.wsUrl || "—"}</span>
-                            </div>
+                            <button
+                              className="mt-1 text-xs text-[#A3A3A3] hover:text-[#355EF1] flex items-center gap-0.5 transition-colors"
+                              onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
+                              title="查看详情"
+                            >
+                              {expandedCustomId === ch.id
+                                ? <ChevronDown className="w-3 h-3" />
+                                : <ChevronRight className="w-3 h-3" />
+                              }
+                              <span>详情</span>
+                            </button>
                           </div>
-                        </div>
-                        {/* 用户凭证字段 */}
-                        <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3">
-                          <p className="text-xs font-medium text-[#737373] mb-2">用户凭证字段</p>
-                          {ch.credentialFields.length === 0 ? (
-                            <p className="text-xs text-[#A3A3A3]">无凭证字段</p>
-                          ) : (
-                            <div className="flex flex-wrap gap-2">
-                              {ch.credentialFields.map((f, idx) => (
-                                <span
-                                  key={f.id}
-                                  className="inline-flex items-center gap-1 text-xs bg-white border border-[#e5e5e5] text-[#334155] px-2.5 py-1 rounded-full"
-                                >
-                                  <span className="text-[#A3A3A3]">{idx + 1}.</span>
-                                  <span className="font-mono text-[#737373]">{f.key}</span>
-                                  <span className="text-[#A3A3A3]">/</span>
-                                  {f.label}
-                                </span>
-                              ))}
+                        </TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={ch.visible}
+                            onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <ScopeEditPopover
+                            scope={customScopes[ch.id]?.scope || "all"}
+                            selectedGroupIds={customScopes[ch.id]?.groupIds || []}
+                            groups={ALL_GROUPS}
+                            onConfirm={(scope, groupIds) => {
+                              setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
+                            }}
+                          />
+                        </TableCell>
+                        <TableActionCell fixed="right">
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={() => setDeleteConfirmId(ch.id)}
+                          >
+                            删除
+                          </Button>
+                        </TableActionCell>
+                      </TableRow>
+
+                      {/* 展开详情行：横跨四列 */}
+                      {expandedCustomId === ch.id && (
+                        <TableRow className="hover:bg-transparent">
+                          <TableCell colSpan={4} className="bg-[#fafafa]/50">
+                            <div className="space-y-3 py-1">
+                              {/* IM 服务器地址 */}
+                              <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3">
+                                <p className="text-xs font-medium text-[#737373] mb-2">IM 服务器地址</p>
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <span className="text-[#A3A3A3] w-24 shrink-0">Server URL</span>
+                                    <span className="text-[#334155] font-mono break-all">{ch.serverUrl || "—"}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <span className="text-[#A3A3A3] w-24 shrink-0">WebSocket URL</span>
+                                    <span className="text-[#334155] font-mono break-all">{ch.wsUrl || "—"}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {/* 用户凭证字段 */}
+                              <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3">
+                                <p className="text-xs font-medium text-[#737373] mb-2">用户凭证字段</p>
+                                {ch.credentialFields.length === 0 ? (
+                                  <p className="text-xs text-[#A3A3A3]">无凭证字段</p>
+                                ) : (
+                                  <div className="flex flex-wrap gap-2">
+                                    {ch.credentialFields.map((f, idx) => (
+                                      <span
+                                        key={f.id}
+                                        className="inline-flex items-center gap-1 text-xs bg-white border border-[#e5e5e5] text-[#334155] px-2.5 py-1 rounded-full"
+                                      >
+                                        <span className="text-[#A3A3A3]">{idx + 1}.</span>
+                                        <span className="font-mono text-[#737373]">{f.key}</span>
+                                        <span className="text-[#A3A3A3]">/</span>
+                                        {f.label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
+                  ))}
+                </TableBody>
+              </Table>
+            </SurfaceCard>
           )}
         </div>
       )}

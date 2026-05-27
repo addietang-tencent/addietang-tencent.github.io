@@ -1082,16 +1082,17 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <SurfaceCard className="overflow-hidden">
-          <Table containerRef={tableScrollRef} scrollX={1500}>
+          <Table containerRef={tableScrollRef} scrollX={1620}>
             <TableHeader>
               <TableRow>
                 <TableHead fixed="left" className="w-[260px]" style={{ width: 260 }}>
                   技能信息
                 </TableHead>
                 <TableHead className="w-[170px]" style={{ width: 170 }}>状态 / 下发</TableHead>
+                <TableHead className="w-[110px]" style={{ width: 110 }}>安全等级</TableHead>
                 <TableHead className="w-[110px]" style={{ width: 110 }}>版本</TableHead>
                 <TableHead className="w-[360px]" style={{ width: 360 }}>描述</TableHead>
-                <TableHead className="w-[210px]" style={{ width: 210 }}>分类</TableHead>
+                <TableHead className="min-w-[160px]">分类</TableHead>
                 <TableHead className="w-[190px]" style={{ width: 190 }}>应用范围</TableHead>
                 <TableHead className="w-[130px]" style={{ width: 130 }}>最后更新</TableHead>
                 <TableHead fixed="right" className="w-[168px]" style={{ width: 168 }}>
@@ -1141,61 +1142,32 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         className="align-top"
                         style={{ width: 260 }}
                       >
-                        <div className="space-y-2">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <OverflowTooltip content={skill.name}>
-                                <div className="font-medium text-[#0A0A0A] truncate max-w-[180px]">{skill.name}</div>
-                              </OverflowTooltip>
-                              <OverflowTooltip content={skill.slug}>
-                                <div className="text-xs text-[#737373] font-mono mt-0.5 truncate max-w-[190px]">{skill.slug}</div>
-                              </OverflowTooltip>
-                            </div>
-                            {(() => {
-                              const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-                              const statusMeta = secStatus === 'not_scanned'
-                                ? { label: '未检测', Icon: ShieldCheck, className: 'bg-[#F5F5F5] text-[#737373]' }
-                                : secStatus === 'scanning'
-                                  ? { label: '检测中', Icon: Loader, className: 'bg-blue-50 text-[#355EF1]' }
-                                  : {
-                                      label: SECURITY_STATUS_MAP[secStatus].label,
-                                      Icon: secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX,
-                                      className: secStatus === 'safe'
-                                        ? 'bg-green-50 text-green-600'
-                                        : secStatus === 'suspicious'
-                                          ? 'bg-yellow-50 text-yellow-600'
-                                          : 'bg-red-50 text-red-600',
-                                    };
-                              const IconComp = statusMeta.Icon;
-                              return (
-                                <Tooltip delayDuration={300}>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${statusMeta.className}`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDefaultTabForDetail('overview');
-                                        setSelectedSkillId(skill.id);
-                                      }}
-                                    >
-                                      <IconComp className={`w-3 h-3 ${secStatus === 'scanning' ? 'animate-spin' : ''}`} />
-                                      {statusMeta.label}
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">
-                                    <span className="text-xs">安全检测：{statusMeta.label}</span>
-                                  </TooltipContent>
-                                </Tooltip>
-                              );
-                            })()}
-                          </div>
+                        <div className="min-w-0">
+                          <OverflowTooltip content={skill.name}>
+                            <div className="font-medium text-[#0A0A0A] truncate max-w-[230px]">{skill.name}</div>
+                          </OverflowTooltip>
+                          <OverflowTooltip content={skill.slug}>
+                            <div className="text-xs text-[#737373] font-mono mt-0.5 truncate max-w-[230px]">{skill.slug}</div>
+                          </OverflowTooltip>
                         </div>
                       </TableCell>
-                      {/* 状态/最近下发进度 */}
+                      {/* 状态/最近下发进度 — 单行：状态（变色）/ 下发结果 */}
                       <TableCell className="align-top">
-                        <div className="flex flex-col items-start gap-1.5">
-                          <StatusTag mode="dot" variant={statusVariant}>{statusLine1}</StatusTag>
+                        <div className="flex items-center gap-1 text-sm whitespace-nowrap">
+                          {/* 状态文本（无 dot），按状态变色 */}
+                          <span
+                            className={`font-medium ${
+                              statusVariant === 'green'
+                                ? 'text-[#16A34A]'
+                                : statusVariant === 'blue'
+                                  ? 'text-[#1447E6]'
+                                  : 'text-[#DC2626]'
+                            }`}
+                          >
+                            {statusLine1}
+                          </span>
+                          <span className="text-[#A3A3A3]">/</span>
+                          {/* 下发进度 */}
                           {hasDistribution ? (
                             <button
                               type="button"
@@ -1204,15 +1176,51 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                                 setDefaultTabForDetail('distribution');
                                 setSelectedSkillId(skill.id);
                               }}
-                              className="block max-w-[150px] truncate"
+                              className="inline-flex max-w-[150px] truncate"
                               title={statusLine2}
                             >
                               <StatusTag mode="fill" variant={distributionVariant}>{statusLine2}</StatusTag>
                             </button>
                           ) : (
-                            <span className="text-xs text-[#A3A3A3]">{statusLine2}</span>
+                            <span className="text-[#A3A3A3]">{statusLine2}</span>
                           )}
                         </div>
+                      </TableCell>
+                      {/* 安全等级 — 标准 Badge，按状态自动映射 */}
+                      <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
+                        {(() => {
+                          const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                          const handleClick = () => {
+                            setDefaultTabForDetail('overview');
+                            setSelectedSkillId(skill.id);
+                          };
+                          if (secStatus === 'not_scanned') {
+                            return (
+                              <Badge variant="secondary" className="cursor-pointer" onClick={handleClick}>未检测</Badge>
+                            );
+                          }
+                          if (secStatus === 'scanning') {
+                            return (
+                              <Badge color="blue" className="cursor-pointer" onClick={handleClick}>检测中</Badge>
+                            );
+                          }
+                          if (secStatus === 'safe') {
+                            return (
+                              <Badge color="green" className="cursor-pointer" onClick={handleClick}>安全</Badge>
+                            );
+                          }
+                          if (secStatus === 'suspicious') {
+                            return (
+                              <Badge color="red" className="cursor-pointer" onClick={handleClick}>
+                                可疑
+                              </Badge>
+                            );
+                          }
+                          // malicious
+                          return (
+                            <Badge color="red" className="cursor-pointer" onClick={handleClick}>恶意</Badge>
+                          );
+                        })()}
                       </TableCell>
                       {/* 版本号 */}
                       <TableCell className="align-top">
@@ -1241,52 +1249,45 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           )}
                         </Tooltip>
                       </TableCell>
-                      {/* 分类 — 灰色胶囊标签，最多两行，超出 +N，hover显示全部 */}
+                      {/* 分类 — 纯文本展示（用「/」分隔），自适应列宽，hover 展示全部，可点击编辑 */}
                       <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
                         {(() => {
-                          const maxVisible = 3;
-                          const total = skill.categories.length;
-                          const visible = skill.categories.slice(0, maxVisible);
-                          const overflow = total - maxVisible;
+                          const names = skill.categories.map((catId: string) => getCategoryName(catId));
+                          const fullText = names.join(' / ');
                           return (
-                            <div className="flex items-center gap-1 flex-wrap" style={{ maxHeight: '52px', overflow: 'hidden' }}>
-                              {visible.map((catId: string) => (
-                                <span key={catId} className="inline-flex items-center rounded-[2px] bg-[#F5F5F5] px-2 py-0.5 text-xs text-[#334155] whitespace-nowrap">
-                                  {getCategoryName(catId)}
-                                </span>
-                              ))}
-                              {overflow > 0 && (
-                                <Tooltip delayDuration={300}>
-                                    <TooltipTrigger asChild>
-                                      <span className="inline-flex items-center rounded-[2px] bg-[#F5F5F5] px-2 py-0.5 text-xs text-[#737373] cursor-default hover:bg-[#E5E5E5] transition-colors whitespace-nowrap">
-                                        +{overflow}
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="top" className="max-w-[320px]">
-                                      <span className="text-xs">
-                                        {skill.categories.map((catId: string) => getCategoryName(catId)).join('，')}
-                                      </span>
-                                    </TooltipContent>
+                            <div className="flex items-center gap-1 min-w-0">
+                              {names.length > 0 ? (
+                                <Tooltip delayDuration={500}>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-sm text-[#0A0A0A] whitespace-nowrap">
+                                      {fullText}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[320px]">
+                                    <span className="text-xs">{fullText}</span>
+                                  </TooltipContent>
                                 </Tooltip>
+                              ) : (
+                                <span className="text-sm text-[#A3A3A3]">—</span>
                               )}
                               <Tooltip delayDuration={1000}>
-                                  <TooltipTrigger asChild>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        scrollPositionRef.current = { x: window.scrollX, y: window.scrollY, tableScrollLeft: tableScrollRef.current?.scrollLeft };
-                                        setEditingSkillId(skill.id);
-                                        setEditingSkillCategories(skill.categories);
-                                        setEditCategoryDialogOpen(true);
-                                      }}
-                                      className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
-                                    >
-                                      <Edit2 className="w-3 h-3" />
-                                    </button>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">
-                                    编辑分类
-                                  </TooltipContent>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      scrollPositionRef.current = { x: window.scrollX, y: window.scrollY, tableScrollLeft: tableScrollRef.current?.scrollLeft };
+                                      setEditingSkillId(skill.id);
+                                      setEditingSkillCategories(skill.categories);
+                                      setEditCategoryDialogOpen(true);
+                                    }}
+                                    className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors flex-shrink-0"
+                                  >
+                                    <Edit2 className="w-3 h-3" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                  编辑分类
+                                </TooltipContent>
                               </Tooltip>
                             </div>
                           );
@@ -1310,7 +1311,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </TableCell>
                       {/* 最后更新时间 */}
                       <TableCell className="align-top">
-                        <span className="text-sm text-[#737373] tabular-nums">
+                        <span className="text-sm text-[#334155] tabular-nums">
                           {skill.uploadTime.toLocaleDateString('zh-CN')}
                         </span>
                       </TableCell>

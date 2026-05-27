@@ -82,7 +82,7 @@ description: >
 | `InlineNumber` | `span` | 14px / DIN / tabular | `body` | 表格内 Token 数、请求数、百分比 |
 | `CodeText` | `code` | 12px / Menlo | `secondary` | ID、Token、路径、命令、代码片段 |
 | `StepText` | `span` | 14px / Medium / Menlo | `brand` | Step 1 / Step 2 / 步骤编号 |
-| `UrlText` | `span` | 12px / Regular / PingFang SC / 1.5 / `break-all` | `muted` | URL、回调地址、外链链接、版本号字符串等需要中性等宽呈现的引用文本 |
+| `UrlText` | `span` | 14px / Regular / PingFang SC / 1.5 / `break-all` / `#020617` | `inherit` | URL、回调地址、外链链接、版本号字符串等需要中性等宽呈现的引用文本 |
 
 ### 0.4 使用方式
 

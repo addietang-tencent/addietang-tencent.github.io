@@ -823,7 +823,7 @@ function AddMemberFormFields({
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <SurfaceInner className="overflow-hidden">
-              <Table>
+              <Table density="compact">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead>分组</TableHead>
@@ -1129,7 +1129,7 @@ function EditMemberFormFields({
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <SurfaceInner className="overflow-hidden">
-              <Table>
+              <Table density="compact">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead>分组</TableHead>
@@ -1440,7 +1440,7 @@ function OneidEditMemberFormFields({
         {values.groupIds.length > 0 ? (
           <div className="space-y-3">
             <SurfaceInner className="overflow-hidden">
-              <Table>
+              <Table density="compact">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead>分组</TableHead>
@@ -2855,47 +2855,54 @@ export default function MemberManagement() {
                             {member.id === initialAdminId ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="flex items-center px-2 py-1.5 text-xs text-[#A3A3A3] cursor-not-allowed select-none rounded-sm">
-                                    <Key className="w-3.5 h-3.5 mr-2" />重置密码
+                                  {/* disabled 项不能直接放在 Tooltip 内（Radix 会吞 hover），用 span 包一层透传 */}
+                                  <span>
+                                    <DropdownMenuItem disabled onSelect={(e) => e.preventDefault()}>
+                                      <Key />重置密码
+                                    </DropdownMenuItem>
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">初始管理员账号不允许重置密码</TooltipContent>
                               </Tooltip>
                             ) : (
-                              <DropdownMenuItem className="text-xs text-[#737373] focus:text-[#525252] focus:bg-[#fafafa]" onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
-                                <Key className="w-3.5 h-3.5 mr-2" />重置密码
+                              <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                                <Key />重置密码
                               </DropdownMenuItem>
                             )}
                             {member.id === initialAdminId ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="flex items-center px-2 py-1.5 text-xs text-[#A3A3A3] cursor-not-allowed select-none rounded-sm">
-                                    <UserX className="w-3.5 h-3.5 mr-2" />禁用
+                                  <span>
+                                    <DropdownMenuItem disabled onSelect={(e) => e.preventDefault()}>
+                                      <UserX />禁用
+                                    </DropdownMenuItem>
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
                               </Tooltip>
                             ) : member.status === "active" ? (
-                              <DropdownMenuItem className="text-xs text-[#737373] focus:text-[#525252] focus:bg-[#fafafa]" onClick={() => openDisableConfirm(member)}>
-                                <UserX className="w-3.5 h-3.5 mr-2" />禁用
+                              <DropdownMenuItem onClick={() => openDisableConfirm(member)}>
+                                <UserX />禁用
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem className="text-xs text-[#737373] focus:text-[#525252] focus:bg-[#fafafa]" onClick={() => openEnableConfirm(member)}>
-                                <UserCheck className="w-3.5 h-3.5 mr-2" />启用
+                              <DropdownMenuItem onClick={() => openEnableConfirm(member)}>
+                                <UserCheck />启用
                               </DropdownMenuItem>
                             )}
                             {member.id === initialAdminId ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="flex items-center px-2 py-1.5 text-xs text-[#A3A3A3] cursor-not-allowed select-none rounded-sm">
-                                    <Trash2 className="w-3.5 h-3.5 mr-2" />删除
+                                  <span>
+                                    <DropdownMenuItem disabled variant="destructive" onSelect={(e) => e.preventDefault()}>
+                                      <Trash2 />删除
+                                    </DropdownMenuItem>
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent side="left">初始管理员账号不可删除</TooltipContent>
                               </Tooltip>
                             ) : (
-                              <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600 focus:bg-red-50" onClick={() => openDeleteCheck(member)}>
-                                <Trash2 className="w-3.5 h-3.5 mr-2" />删除
+                              <DropdownMenuItem variant="destructive" onClick={() => openDeleteCheck(member)}>
+                                <Trash2 />删除
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>

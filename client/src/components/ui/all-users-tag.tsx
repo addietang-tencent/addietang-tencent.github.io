@@ -2,15 +2,15 @@
  * AllUsersTag - 「全部用户」标签组件
  *
  * 管控端所有"全部用户"展示均使用此组件，确保全局样式一致。
- * 基于 StatusTag variant="gray"（灰底黑字）。
+ * 基于 Badge variant="outline"（白底描边）。
  *
  * 用法：
  *   <AllUsersTag />
  */
-import { StatusTag } from "@/components/ui/status-tag";
+import { Badge } from "@/components/ui/badge";
 
 function AllUsersTag() {
-  return <StatusTag variant="blue">全部用户</StatusTag>;
+  return <Badge variant="outline">全部用户</Badge>;
 }
 
 export { AllUsersTag };

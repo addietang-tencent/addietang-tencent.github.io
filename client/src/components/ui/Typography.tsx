@@ -195,6 +195,6 @@ export const StepText = createTypography(
 export const UrlText = createTypography(
   "UrlText",
   "span",
-  "font-sans text-xs font-normal leading-[1.5] break-all",
-  "muted",
+  "font-sans text-sm font-normal leading-[1.5] break-all text-[#020617]",
+  "inherit",
 );

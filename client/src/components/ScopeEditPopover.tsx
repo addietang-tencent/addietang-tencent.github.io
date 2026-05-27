@@ -235,9 +235,9 @@ export function ScopeEditPopover({
               <StatusTag
                 key={`${label}-${idx}`}
                 variant="gray"
-                className="max-w-[120px] truncate"
+                className="max-w-[140px]"
               >
-                {label}
+                <span className="block truncate max-w-[124px]">{label}</span>
               </StatusTag>
             ))}
             {rest > 0 && (

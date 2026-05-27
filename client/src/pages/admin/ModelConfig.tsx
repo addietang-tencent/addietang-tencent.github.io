@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { StatusTag } from "@/components/ui/status-tag";
-import { PanelTitle, MetaText } from "@/components/ui/Typography";
+import { PanelTitle, BodyText } from "@/components/ui/Typography";
 import { Textarea } from "@/components/ui/textarea";
 import { SurfaceCard } from "@/components/ui/Surface";
 import {
@@ -361,10 +361,10 @@ export default function ModelConfig() {
           </SurfaceCard>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between !mt-16">
           <div>
             <PanelTitle>模型列表</PanelTitle>
-            <MetaText as="p" className="mt-1">集中管理模型接入、配额、用户可见性与默认配置。</MetaText>
+            <BodyText as="p" tone="muted" className="mt-1">集中管理模型接入、配额、用户可见性与默认配置。</BodyText>
           </div>
           <Button variant="claw-primary" size="claw-sm" onClick={openAddDialog}>
             <Plus className="w-3.5 h-3.5" />

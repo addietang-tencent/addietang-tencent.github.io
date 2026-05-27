@@ -2714,9 +2714,9 @@ export default function MemberManagement() {
                   </TableCell>
                   <TableCell>
                     {member.status === "active" ? (
-                      <span className="text-sm font-medium text-[#008236]">正常</span>
+                      <StatusTag mode="text" variant="green">正常</StatusTag>
                     ) : (
-                      <span className="text-sm font-medium text-[#DC2626]">禁用</span>
+                      <StatusTag mode="text" variant="red">禁用</StatusTag>
                     )}
                   </TableCell>
                   <TableCell>
@@ -3363,7 +3363,7 @@ export default function MemberManagement() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <StatusTag mode="dot" variant="red">禁用</StatusTag>
+                            <StatusTag mode="text" variant="red">禁用</StatusTag>
                           </td>
                         </tr>
                       ))}
@@ -4209,9 +4209,9 @@ export default function MemberManagement() {
                                 </TableCell>
                                 <TableCell className="w-20">
                                   {m.status === "active" ? (
-                                    <StatusTag mode="dot" variant="green">正常</StatusTag>
+                                    <StatusTag mode="text" variant="green">正常</StatusTag>
                                   ) : (
-                                    <StatusTag mode="dot" variant="red">禁用</StatusTag>
+                                    <StatusTag mode="text" variant="red">禁用</StatusTag>
                                   )}
                                 </TableCell>
                               </TableRow>

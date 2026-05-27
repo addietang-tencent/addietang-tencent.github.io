@@ -6,7 +6,8 @@ import { SmallBodyText } from "@/components/ui/Typography";
  * StatusTag 状态标签组件
  *
  * 分类：
- * - 状态类：mode="dot"，无底色，仅展示彩色圆点 + 文案
+ * - 文本类：mode="text"，14px 彩色纯文本，无底色无圆点（表格内状态列默认）
+ * - 状态类：mode="dot"，无底色，仅展示彩色圆点 + 文案（详情/卡片场景）
  * - 信息类：mode="fill"，有浅色底，不展示圆点
  * - 角色类：preset，例如 <StatusTag preset="role-admin" />
  * - 图标类：variant="role" + icon，用于低频自定义 icon 标签
@@ -39,7 +40,7 @@ const roleTagClassName = "h-[22px] rounded-full border border-[#E5E5E5] bg-white
 
 type StatusTagColor = keyof typeof statusTagColorTokens;
 type StatusTagVariant = StatusTagColor | "role";
-type StatusTagMode = "dot" | "fill";
+type StatusTagMode = "text" | "dot" | "fill";
 type StatusTagPreset = "role-admin" | "role-user";
 type StatusTagIconComponent = (props: React.SVGProps<SVGSVGElement>) => React.ReactElement;
 
@@ -99,6 +100,7 @@ function StatusTag({
       data-preset={preset}
       className={cn(
         "inline-flex items-center justify-center gap-1 whitespace-nowrap",
+        resolvedMode === "text" && "px-0 py-0 bg-transparent text-sm font-medium leading-[1.5]",
         resolvedMode === "dot" && "px-0 py-0 bg-transparent",
         resolvedMode === "fill" && cn("h-5 rounded-full px-2 py-[2px]", color.bg),
         resolvedMode === "role" && roleTagClassName,
@@ -121,9 +123,13 @@ function StatusTag({
         </span>
       )}
       {resolvedChildren && (
-        <SmallBodyText as="span" tone="inherit">
-          {resolvedChildren}
-        </SmallBodyText>
+        resolvedMode === "text" ? (
+          <span>{resolvedChildren}</span>
+        ) : (
+          <SmallBodyText as="span" tone="inherit">
+            {resolvedChildren}
+          </SmallBodyText>
+        )
       )}
     </span>
   );

@@ -5,7 +5,7 @@
  */
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "wouter";
-import { MessageCircle, RotateCw, Zap, Globe, ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, X } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, RefreshCw, ArrowUp, ArrowDown, X } from "lucide-react";
 import { Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle, AlertOperationInfoIcon } from "@/components/ui/alert";
@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { SurfaceInner } from "@/components/ui/Surface";
+import { SurfaceCard, SurfaceInner } from "@/components/ui/Surface";
+import { StatNumber } from "@/components/ui/Typography";
 import { AgentCombobox } from "@/components/OpenClawCombobox";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -49,31 +50,35 @@ const STAT_CARDS = [
     label: "总会话数",
     value: 11,
     metric: "total_sessions",
-    icon: MessageCircle,
-    iconBg: "from-blue-500 to-blue-600",
   },
   {
     label: "平均轮次",
     value: "28.6",
     metric: "avg_rounds",
-    icon: RotateCw,
-    iconBg: "from-cyan-500 to-cyan-600",
   },
   {
     label: "工具调用",
     value: 206,
     metric: "tool_calls",
-    icon: Zap,
-    iconBg: "from-purple-500 to-purple-600",
   },
   {
     label: "活跃渠道",
     value: 0,
     metric: "active_channels",
-    icon: Globe,
-    iconBg: "from-orange-500 to-orange-600",
-    channels: [],
+    channels: [] as string[],
   },
+];
+
+/** 4 个设计系统标准 SVG icon（渐变黑→蓝，与 OpsObservation / TokensMonitor 统一风格）*/
+const STAT_ICONS: React.ReactNode[] = [
+  /* 对话气泡 - 总会话数 */
+  <svg key="s0" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1.6875C4.96992 1.6875 1.6875 4.66172 1.6875 8.32031C1.6875 9.83391 2.24297 11.2289 3.18516 12.3539C2.93437 13.3664 2.27109 14.2664 2.26055 14.2805C2.07187 14.4844 2.02266 14.7797 2.13633 15.0398C2.25 15.3 2.50781 15.4688 2.79141 15.4688C4.50703 15.4688 5.79023 14.6531 6.42773 14.1492C7.21992 14.4445 8.085 14.6133 9 14.6133C13.0301 14.6133 16.3125 11.6391 16.3125 7.98047C16.3125 4.32187 13.0301 1.6875 9 1.6875ZM5.20312 9.28125C4.68164 9.28125 4.25391 8.85352 4.25391 8.33203C4.25391 7.81055 4.68164 7.38281 5.20312 7.38281C5.72461 7.38281 6.15234 7.81055 6.15234 8.33203C6.15234 8.85352 5.72461 9.28125 5.20312 9.28125ZM9 9.28125C8.47852 9.28125 8.05078 8.85352 8.05078 8.33203C8.05078 7.81055 8.47852 7.38281 9 7.38281C9.52148 7.38281 9.94922 7.81055 9.94922 8.33203C9.94922 8.85352 9.52148 9.28125 9 9.28125ZM12.7969 9.28125C12.2754 9.28125 11.8477 8.85352 11.8477 8.33203C11.8477 7.81055 12.2754 7.38281 12.7969 7.38281C13.3184 7.38281 13.7461 7.81055 13.7461 8.33203C13.7461 8.85352 13.3184 9.28125 12.7969 9.28125Z" fill="url(#sm_icon_0)"/><defs><radialGradient id="sm_icon_0" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1.6875 8.578) scale(14.625 720)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>,
+  /* 循环 - 平均轮次 */
+  <svg key="s1" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7656 4.40039L13.0078 6.15234C12.8438 6.31641 12.6328 6.39844 12.4219 6.39844C12.2109 6.39844 12 6.31641 11.8359 6.15234C11.5078 5.82422 11.5078 5.30859 11.8359 4.98047L12.1992 4.61719C11.2734 4.13672 10.207 3.86719 9 3.86719C6.16406 3.86719 3.86719 6.16406 3.86719 9C3.86719 9.46172 3.49219 9.83672 3.03047 9.83672C2.56875 9.83672 2.19375 9.46172 2.19375 9C2.19375 5.25 5.25 2.19375 9 2.19375C10.7344 2.19375 12.2812 2.85234 13.4297 3.92812L13.5703 3.78867C13.8984 3.46055 14.4141 3.46055 14.7422 3.78867C15.0703 4.12148 15.0938 4.07344 14.7656 4.40039ZM14.9695 8.16328C14.5078 8.16328 14.1328 8.53828 14.1328 9C14.1328 11.8359 11.8359 14.1328 9 14.1328C7.79297 14.1328 6.72656 13.8633 5.80078 13.3828L6.16406 13.0195C6.49219 12.6914 6.49219 12.1758 6.16406 11.8477C5.83594 11.5195 5.32031 11.5195 4.99219 11.8477L3.23438 13.5996C2.90625 13.9277 2.90625 14.4434 3.23438 14.7715C3.5625 15.0996 4.07813 15.0996 4.40625 14.7715L4.57031 14.6074C5.71875 15.6797 7.26562 16.3383 9 16.3383C12.75 16.3383 15.8062 13.2727 15.8062 9.52266C15.8062 9.06094 15.4312 8.16328 14.9695 8.16328Z" fill="url(#sm_icon_1)"/><defs><radialGradient id="sm_icon_1" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(2.19375 9) scale(13.6125 600)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>,
+  /* 闪电 - 工具调用 */
+  <svg key="s2" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.1557 0.568474C11.2759 0.547602 11.3997 0.565694 11.5083 0.621208C11.6168 0.676751 11.7039 0.766463 11.7573 0.876091C11.8107 0.985788 11.8275 1.10986 11.8042 1.22961L10.77 6.39172L14.8227 7.91125C14.9089 7.94398 14.9857 7.99716 15.0464 8.06652C15.1071 8.13609 15.1505 8.2197 15.1714 8.30968C15.1922 8.39969 15.1905 8.4939 15.1665 8.58312C15.1425 8.67222 15.0968 8.75406 15.0337 8.8214H15.0366L7.1616 17.2589L7.09421 17.3204C7.0224 17.3757 6.9373 17.4131 6.84714 17.4288L6.7573 17.4366C6.69672 17.4373 6.63627 17.4288 6.57859 17.4103L6.49461 17.3751C6.386 17.3195 6.29798 17.2299 6.24461 17.1202C6.20472 17.0381 6.18625 16.9479 6.18894 16.8575L6.19871 16.7667L7.22996 11.6105L3.17722 10.089C3.11208 10.0646 3.05213 10.0285 3.00046 9.98254L2.95164 9.93273C2.9057 9.8803 2.86992 9.82011 2.84617 9.755L2.82664 9.68859C2.80577 9.59809 2.80709 9.50378 2.83152 9.41418C2.85597 9.32456 2.90234 9.2423 2.96629 9.17492L10.8413 0.737419C10.9247 0.648358 11.0355 0.589437 11.1557 0.568474ZM5.34324 9.09972L9.1655 10.5353L8.63035 13.2111L11.1528 10.5089H11.1401L12.6479 8.89758L8.83445 7.46789L9.37058 4.78527L5.34324 9.09972Z" fill="url(#sm_icon_2)"/><defs><radialGradient id="sm_icon_2" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(2.81201 8.99836) scale(12.3738 747.725)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>,
+  /* 地球 - 活跃渠道 */
+  <svg key="s3" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 0.84375C4.49648 0.84375 0.84375 4.49648 0.84375 9C0.84375 13.5035 4.49648 17.1562 9 17.1562C13.5035 17.1562 17.1562 13.5035 17.1562 9C17.1562 4.49648 13.5035 0.84375 9 0.84375ZM2.53125 9C2.53125 8.4082 2.60859 7.83633 2.75273 7.29023L4.92188 9.45937V10.4062C4.92188 10.9301 5.34492 11.3531 5.86875 11.3531H7.78125V14.1563H6.83438V12.2438C6.83438 11.7199 6.41133 11.2969 5.8875 11.2969C5.36367 11.2969 4.94063 10.8738 4.94063 10.35V9.6L2.5793 7.23867C3.05156 5.95195 3.94336 4.86562 5.10117 4.15523L5.86875 5.04141V5.625C5.86875 6.14883 6.29179 6.57187 6.81562 6.57187H10.5938C11.1176 6.57187 11.5406 6.99492 11.5406 7.51875V8.46562C11.5406 8.98945 11.9637 9.4125 12.4875 9.4125H13.4344V11.3531H14.1187V14.0414C12.973 15.0676 11.4609 15.4688 9.94688 15.4688H9V12.3094C9 11.7855 8.57695 11.3625 8.05312 11.3625L7.875 11.3531V9.45937L9.94688 9.45937L9.94688 8.51016L7.875 8.51016V6.61875C8.39414 6.10547 9.21758 5.65195 10.0688 5.4082L9 4.05L9.62578 3.42422L11.4844 5.28281V5.625C12.0996 5.625 13.0078 5.625 13.6113 6.1875L13.7836 6.34922L14.85 5.28281C15.5613 6.4125 15.4688 7.76953 15.4688 9C15.4688 12.5719 12.5719 15.4688 9 15.4688C5.42812 15.4688 2.53125 12.5719 2.53125 9Z" fill="url(#sm_icon_3)"/><defs><radialGradient id="sm_icon_3" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.84375 9) scale(16.3125 720)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>,
 ];
 
 // 按渠道分布数据
@@ -639,25 +644,23 @@ export default function SessionManagement() {
       {/* 仪表板 - 仅在 CLS 启用时显示 */}
       {clsEnabled && (
         <div className="space-y-8">
-          {/* 顶部指标卡 */}
-          <div className="grid grid-cols-4 gap-4">
-            {STAT_CARDS.map((card) => (
-              <div key={card.metric} className="bg-white rounded-[4px] border border-[#e5e5e5] p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-xs text-[#737373] font-medium">{card.label}</span>
-                  <div className={`w-8 h-8 rounded-[4px] bg-gradient-to-br ${card.iconBg} flex items-center justify-center text-white`}>
-                    <card.icon className="w-4 h-4" />
-                  </div>
+          {/* 顶部指标卡 —— 与 OpsObservation/TokensMonitor 统一的标准数字卡片 */}
+          <div className="grid grid-cols-4 gap-5">
+            {STAT_CARDS.map((card, idx) => (
+              <SurfaceCard key={card.metric} className="p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  {STAT_ICONS[idx]}
+                  <span className="text-sm text-[#737373]">{card.label}</span>
                 </div>
-                <div className="text-2xl font-bold text-[#09090b]">{card.value}</div>
-                {card.channels && (
+                <StatNumber>{card.value}</StatNumber>
+                {card.channels && card.channels.length > 0 && (
                   <div className="mt-3 text-xs text-[#737373] space-y-1">
                     {card.channels.map((ch) => (
                       <div key={ch}>{ch}</div>
                     ))}
                   </div>
                 )}
-              </div>
+              </SurfaceCard>
             ))}
           </div>
 

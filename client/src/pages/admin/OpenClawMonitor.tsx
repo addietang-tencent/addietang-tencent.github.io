@@ -2037,21 +2037,19 @@ export default function AgentMonitor() {
                   </div>
                 </TableHead>
                 {/* 名称 / ID 列 - 固定左侧（边界列，显示阴影），偏移 56px 错开复选框列 */}
-                <TableHead fixed="left" className="whitespace-nowrap px-4" style={{ left: 56, minWidth: '240px' }}>名称 / ID</TableHead>
+                <TableHead fixed="left" className="whitespace-nowrap px-4" style={{ left: 56, width: '240px', minWidth: '240px', maxWidth: '240px' }}>名称 / ID</TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '120px' }}>
                   <div className="flex items-center gap-2 relative z-40">
                     当前状态
                     <button
                       ref={filterButtonRef}
                       className="p-1 hover:bg-[#f5f5f5] rounded-[4px]"
-                      onClick={() => {
-                        if (filterButtonRef.current) {
-                          const rect = filterButtonRef.current.getBoundingClientRect();
-                          setFilterPosition({
-                            top: rect.bottom + 4,
-                            left: rect.left
-                          });
-                        }
+                      onClick={(event) => {
+                        const rect = event.currentTarget.getBoundingClientRect();
+                        setFilterPosition({
+                          top: rect.bottom + 4,
+                          left: rect.left
+                        });
                         setShowStatusFilter(!showStatusFilter);
                       }}
                     >
@@ -2210,7 +2208,7 @@ export default function AgentMonitor() {
                   const checkboxTooltip = "";
 
                   return (
-                    <TableRow key={claw.id} className="group hover:bg-[#f5f5f5]/50 transition-colors">
+                    <TableRow key={claw.id}>
                       {/* 复选框 - 固定左侧（非边界列） */}
                       <TableCell fixed="left" fixedShadow={false} className="py-4 px-4 whitespace-nowrap" style={{ width: '56px', minWidth: '56px' }}>
                         <Checkbox
@@ -2219,7 +2217,7 @@ export default function AgentMonitor() {
                         />
                       </TableCell>
                       {/* 名称/ID - 固定左侧（边界列），偏移 56px */}
-                      <TableCell fixed="left" className="px-4 py-4" style={{ left: 56, width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                      <TableCell fixed="left" className="px-4 py-4" style={{ left: 56, width: '240px', minWidth: '240px', maxWidth: '240px' }}>
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div className="min-w-0 flex-1">
                             <Tooltip>

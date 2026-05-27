@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from '@/components/ui/table';
 
 import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -796,14 +795,30 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
         <div className="flex items-center justify-end gap-4">
 
           {/* 视图切换 */}
-          <SegmentGroup>
-            <SegmentOption active={viewMode === 'card'} onClick={() => setViewMode('card')} title="卡片视图">
+          <div className="flex items-center gap-1 border border-[#E5E5E5] rounded-[4px] p-0.5 bg-white h-9">
+            <button
+              onClick={() => setViewMode('card')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'card'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              title="卡片视图"
+            >
               <Grid3x3 className="w-4 h-4" />
-            </SegmentOption>
-            <SegmentOption active={viewMode === 'list'} onClick={() => setViewMode('list')} title="列表视图">
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              title="列表视图"
+            >
               <List className="w-4 h-4" />
-            </SegmentOption>
-          </SegmentGroup>
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <Button variant="claw-primary" size="claw-sm" onClick={() => setUploadDialogOpen(true)}>
@@ -1077,7 +1092,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <TableHead className="w-[210px]" style={{ width: 210 }}>分类</TableHead>
                 <TableHead className="w-[190px]" style={{ width: 190 }}>应用范围</TableHead>
                 <TableHead className="w-[130px]" style={{ width: 130 }}>最后更新</TableHead>
-                <TableHead fixed="right" className="w-[210px]" style={{ width: 210 }}>
+                <TableHead fixed="right" className="w-[168px]" style={{ width: 168 }}>
                   操作
                 </TableHead>
               </TableRow>
@@ -1132,7 +1147,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     <TableRow
                       key={skill.id}
                       onClick={() => handleViewDetail(skill.id)}
-                      className="hover:bg-[#FAFAFA] cursor-pointer transition-colors group"
+                      className="cursor-pointer"
                     >
                       {/* 技能信息 — 固定左侧 */}
                       <TableCell
@@ -1319,76 +1334,66 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         </span>
                       </TableCell>
                       {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
-                      <TableCell
+                      <TableActionCell
                         fixed="right"
                         className="align-top"
-                        style={{ width: 210 }}
+                        style={{ width: 168 }}
+                        actionsClassName="h-5"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="flex items-center gap-1">
-                          {/* 下发按钮 */}
-                          <Button
-                            variant="claw-outline"
-                            size="claw-sm"
-                            onClick={() => handleDistribute(skill.id)}
-                            disabled={distributing}
-                            className={`h-7 min-w-[62px] px-3 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            <Send className="w-3 h-3" />
-                            {distributing ? (summary?.lastDistributionStatus === ('deleting' as any) ? '卸载中' : '下发中') : '下发'}
-                          </Button>
-                          {/* 更新按钮 */}
-                          <Button
-                            variant="claw-outline"
-                            size="claw-sm"
-                            onClick={() => handleUpdate(skill.id)}
-                            disabled={distributing}
-                            className={`h-7 px-3 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          >
-                            <Pencil className="w-3 h-3" />
-                            更新
-                          </Button>
-                          {/* 更多下拉：安全检测 / 下载 / 删除 */}
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="claw-outline" size="claw-square" className="h-7 w-7 p-0" aria-label="更多操作">
-                                <MoreHorizontal className="w-3.5 h-3.5" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {/* 安全检测（仅未检测时显示） */}
-                              {(skill.securityInfo?.overallStatus === 'not_scanned' || !skill.securityInfo) && (
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSecurityScanSkillId(skill.id);
-                                    setSecurityScanDialogOpen(true);
-                                  }}
-                                >
-                                  <ScanSearch className="w-4 h-4 mr-2" />
-                                  安全检测
-                                </DropdownMenuItem>
-                              )}
+                        <Button
+                          variant="link"
+                          onClick={() => handleDistribute(skill.id)}
+                          disabled={distributing}
+                        >
+                          {distributing ? (summary?.lastDistributionStatus === ('deleting' as any) ? '卸载中' : '下发中') : '下发'}
+                        </Button>
+                        <Button
+                          variant="link"
+                          onClick={() => handleUpdate(skill.id)}
+                          disabled={distributing}
+                        >
+                          更新
+                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="link" aria-label="更多操作">
+                              更多
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {/* 安全检测（仅未检测时显示） */}
+                            {(skill.securityInfo?.overallStatus === 'not_scanned' || !skill.securityInfo) && (
                               <DropdownMenuItem
-                                onClick={() => handleDownload(skill)}
-                                disabled={downloadingSkillId === skill.id}
+                                onClick={() => {
+                                  setSecurityScanSkillId(skill.id);
+                                  setSecurityScanDialogOpen(true);
+                                }}
                               >
-                                {downloadingSkillId === skill.id
-                                  ? <Loader className="w-4 h-4 mr-2 animate-spin" />
-                                  : <Download className="w-4 h-4 mr-2" />}
-                                下载
+                                <ScanSearch className="w-4 h-4 mr-2" />
+                                安全检测
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(skill.id)}
-                                disabled={distributing}
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2 text-red-500" />
-                                删除
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
+                            )}
+                            <DropdownMenuItem
+                              onClick={() => handleDownload(skill)}
+                              disabled={downloadingSkillId === skill.id}
+                            >
+                              {downloadingSkillId === skill.id
+                                ? <Loader className="w-4 h-4 mr-2 animate-spin" />
+                                : <Download className="w-4 h-4 mr-2" />}
+                              下载
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(skill.id)}
+                              disabled={distributing}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2 text-red-500" />
+                              删除
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableActionCell>
                     </TableRow>
                   );
                 })}

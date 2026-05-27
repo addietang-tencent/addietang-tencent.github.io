@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import MDXRenderer from '@/components/MDXRenderer';
+import { CardTitle, BodyText, MetaText } from '@/components/ui/Typography';
 import {
   PUBLIC_SKILL_PACKAGES,
   PUBLIC_SKILL_PACKAGE_CATEGORIES,
@@ -72,21 +73,21 @@ function PackageCard({ pkg, isFavorited, onFavorite, onClick }: PackageCardProps
       onClick={onClick}
     >
       <div className="p-4 flex flex-col flex-1">
-        {/* 标题 —— 单行省略，固定高度 */}
-        <h3
-          className="text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight truncate mb-1"
+        {/* 标题 —— 单行省略，固定高度（PingFang SC，对齐 CardTitle 设计令牌） */}
+        <CardTitle
+          className="!font-semibold text-gray-900 group-hover:text-blue-700 transition-colors !leading-tight truncate mb-1"
           title={pkg.name}
         >
           {pkg.name}
-        </h3>
+        </CardTitle>
 
         {/* 描述 —— 固定两行，line-clamp 截断 */}
-        <p
-          className="text-xs text-gray-500 line-clamp-2 leading-relaxed"
+        <BodyText
+          className="!text-xs text-gray-500 line-clamp-2 !leading-relaxed"
           style={{ minHeight: '2.5rem' }}
         >
           {pkg.description}
-        </p>
+        </BodyText>
 
         {/* Skill chip 列表（最多 2 个 + N）—— 单行不换行，chip 自身限宽截断保证整体定高 */}
         <div className="flex items-center gap-1.5 mt-3 flex-nowrap overflow-hidden">
@@ -94,9 +95,9 @@ function PackageCard({ pkg, isFavorited, onFavorite, onClick }: PackageCardProps
             <SkillChip key={s.slug} skill={s} />
           ))}
           {overflowCount > 0 && (
-            <span className="text-[11px] text-gray-400 font-medium flex-shrink-0">
+            <MetaText className="!text-[11px] !font-medium !text-gray-400 flex-shrink-0">
               +{overflowCount}
-            </span>
+            </MetaText>
           )}
         </div>
 
@@ -407,26 +408,25 @@ export default function PublicSkillPackageTab() {
         </button>
       </div>
 
-      {/* 分类标签栏 */}
+      {/* 分类标签栏 —— 黑底白字胶囊 active 态（与「公共技能」Tab 一致） */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        {PUBLIC_SKILL_PACKAGE_CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryChange(cat.id)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
-              activeCategory === cat.id
-                ? 'text-white border-transparent'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
-            }`}
-            style={
-              activeCategory === cat.id
-                ? { backgroundColor: '#007AFF', borderColor: '#007AFF' }
-                : undefined
-            }
-          >
-            {cat.name}
-          </button>
-        ))}
+        {PUBLIC_SKILL_PACKAGE_CATEGORIES.map((cat) => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => handleCategoryChange(cat.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                isActive
+                  ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
+                  : 'bg-white text-[#525252] border-[#E5E5E5] hover:border-[#0A0A0A] hover:text-[#0A0A0A]'
+              }`}
+            >
+              {cat.name}
+            </button>
+          );
+        })}
       </div>
 
       {/* 卡片网格 + 分页（每个分类都展示分页栏，与公共技能 Tab 一致） */}

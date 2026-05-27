@@ -8,6 +8,8 @@ import { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Pagination as StdPagination } from '@/components/ui/pagination';
+import { CardTitle, BodyText, MetaText } from '@/components/ui/Typography';
 import {
   Search, Download, Star, Heart, ChevronRight,
   ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
@@ -225,28 +227,33 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
       {rank > 0 && <RankBadge rank={rank} />}
 
       <div className="p-4 pl-4 flex flex-col flex-1">
-        {/* 技能名称 */}
-        <h3 className="font-mono text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight mb-1 pl-3">
+        {/* 技能名称（统一 PingFang SC，对齐 CardTitle 设计令牌） */}
+        <CardTitle
+          className="!font-semibold text-gray-900 group-hover:text-blue-700 transition-colors !leading-tight mb-1 pl-3"
+        >
           {skill.name}
-        </h3>
+        </CardTitle>
 
         {/* 中文简介 - 固定两行高度 */}
-        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
+        <BodyText
+          className="!text-xs text-gray-500 line-clamp-2 !leading-relaxed pl-3"
+          style={{ minHeight: '2.5rem' }}
+        >
           {skill.descriptionZh}
-        </p>
+        </BodyText>
 
         {/* 统计数据 + 收藏按钮 - 常驻第三行 */}
         <div className="flex items-center justify-between mt-3 pl-3">
-          <div className="flex items-center gap-3 text-xs text-gray-400">
-            <span className="flex items-center gap-1">
+          <div className="flex items-center gap-3">
+            <MetaText className="!text-gray-400 flex items-center gap-1">
               <Download className="w-3 h-3" />
               {formatCount(skill.downloads)}
-            </span>
-            <span className="flex items-center gap-1">
+            </MetaText>
+            <MetaText className="!text-gray-400 flex items-center gap-1">
               <Star className="w-3 h-3" />
               {formatCount(skill.stars)}
-            </span>
-            <span className="font-mono text-gray-300">v{skill.version}</span>
+            </MetaText>
+            <span className="font-mono text-xs text-gray-300">v{skill.version}</span>
           </div>
           {/* 收藏按钮 - 右下角 */}
           <button
@@ -715,7 +722,9 @@ export default function PublicSkillTab({ packages, onAddSkillToPackage }: Public
             className="pl-9 bg-white"
           />
         </div>
-        <button
+        <Button
+          variant="claw-outline"
+          size="icon"
           onClick={() => {
             setIsRefreshing(true);
             setTimeout(() => {
@@ -725,28 +734,31 @@ export default function PublicSkillTab({ packages, onAddSkillToPackage }: Public
             }, 250);
           }}
           title="刷新"
-          className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm transition-all flex-shrink-0"
+          className="w-9 h-9 shrink-0"
         >
           <RefreshCw className="w-4 h-4" />
-        </button>
+        </Button>
       </div>
 
-      {/* 分类 Tab */}
+      {/* 分类 Tab —— 黑底白字胶囊 active 态（与项目操作色一致） */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        {PUBLIC_SKILL_CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryChange(cat.id)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
-              activeCategory === cat.id
-                ? 'text-white border-transparent'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
-            }`}
-            style={activeCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
-          >
-            {cat.name}
-          </button>
-        ))}
+        {PUBLIC_SKILL_CATEGORIES.map(cat => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => handleCategoryChange(cat.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                isActive
+                  ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
+                  : 'bg-white text-[#525252] border-[#E5E5E5] hover:border-[#0A0A0A] hover:text-[#0A0A0A]'
+              }`}
+            >
+              {cat.name}
+            </button>
+          );
+        })}
       </div>
 
 
@@ -755,27 +767,27 @@ export default function PublicSkillTab({ packages, onAddSkillToPackage }: Public
       {filteredSkills.length > 0 ? (
         <>
           <div className="grid grid-cols-3 gap-4" style={{ opacity: isRefreshing ? 0 : 1, transition: 'opacity 0.25s ease' }}>
-            {pagedSkills.map((skill, index) => {
-              const globalRank = (currentPage - 1) * PAGE_SIZE + index + 1;
-              const isFeatured = activeCategory === 'featured';
-              return (
-                <SkillCard
-                  key={skill.id}
-                  skill={skill}
-                  rank={isFeatured ? globalRank : 0}
-                  isFavorited={isFavorited(skill.id)}
-                  onFavorite={handleFavorite}
-                  onClick={() => setSelectedSkillId(skill.id)}
-                />
-              );
-            })}
+            {pagedSkills.map((skill) => (
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+                rank={0}
+                isFavorited={isFavorited(skill.id)}
+                onFavorite={handleFavorite}
+                onClick={() => setSelectedSkillId(skill.id)}
+              />
+            ))}
           </div>
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalCount={filteredSkills.length}
-            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-          />
+          <div className="pt-3 border-t border-[#f0f0f0] mt-2">
+            <StdPagination
+              total={filteredSkills.length}
+              current={currentPage}
+              pageSize={PAGE_SIZE}
+              showTotal={(total) => `共 ${total} 个技能`}
+              className="w-full justify-between"
+              onChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            />
+          </div>
         </>
       ) : (
         <div className="text-center py-16 text-gray-400">

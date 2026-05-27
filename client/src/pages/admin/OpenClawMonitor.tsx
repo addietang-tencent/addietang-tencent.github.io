@@ -2300,50 +2300,31 @@ export default function AgentMonitor() {
                             const item = getCreatorGroupItemOneid(claw.creator);
                             if (!item) return <span className="text-sm text-[#A3A3A3]">—</span>;
                             return (
-                              <div className="flex items-center gap-1 max-w-[200px]">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate cursor-default">
-                                      {item.path}
-                                    </StatusTag>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                    <div className="py-2">
-                                      <div className="px-3 py-1.5 text-sm flex items-center gap-2">
-                                        <span className={`inline-flex items-center text-[10px] font-medium rounded px-1.5 py-0.5 shrink-0 ${
-                                          item.kind === "oneid-dept"
-                                            ? "text-[#355EF1] bg-blue-500/20"
-                                            : "text-purple-400 bg-purple-500/20"
-                                        }`}>
-                                          {item.kind === "oneid-dept" ? "部门" : "自定义分组"}
-                                        </span>
-                                        <span className="text-white">{item.path}</span>
-                                      </div>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="block max-w-[200px] cursor-default truncate text-sm text-[#334155]">
+                                    {item.path}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="max-w-[380px] text-xs leading-relaxed">
+                                  {item.path}
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           } else {
                             const item = getCreatorGroupItemManual(claw.creator);
                             if (!item) return <span className="text-sm text-[#A3A3A3]">—</span>;
                             return (
-                              <div className="flex items-center gap-1 max-w-[200px]">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <StatusTag mode="fill" variant="gray" className="max-w-[160px] truncate cursor-default">
-                                      {item.path}
-                                    </StatusTag>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="bottom" align="start" className="max-w-[380px] p-0">
-                                    <div className="py-2">
-                                      <div className="px-3 py-1.5 text-sm">
-                                        <span className="text-white">{item.path}</span>
-                                      </div>
-                                    </div>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="block max-w-[200px] cursor-default truncate text-sm text-[#334155]">
+                                    {item.path}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start" className="max-w-[380px] text-xs leading-relaxed">
+                                  {item.path}
+                                </TooltipContent>
+                              </Tooltip>
                             );
                           }
                         })()}

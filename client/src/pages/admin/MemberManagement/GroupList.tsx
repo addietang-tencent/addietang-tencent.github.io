@@ -247,9 +247,9 @@ function GroupRow(props: RowProps) {
           </Tooltip>
         )}
 
-        {/* 初始化未完成橙色点标记（不与异常红点同时显示）
+        {/* 初始化未完成红色提醒点（不与异常红点同时显示）
             方案D：父分组的冒泡标记仅在收起状态下显示，展开后隐藏（子分组自己标记了）
-            互斥优化：若本节点同时命中"网络配置待更新"，让位给后者，避免同一分组出现两个橙点。 */}
+            互斥优化：若本节点同时命中"网络配置待更新"，让位给后者，避免同一分组出现两个提醒点。 */}
         {!anomalousGroupIds?.has(node.id) &&
           !networkOutdatedGroupIds?.has(node.id) &&
           uninitializedGroupIds?.has(node.id) &&
@@ -258,7 +258,7 @@ function GroupRow(props: RowProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="relative shrink-0 ml-1">
-                <span className="block w-2 h-2 rounded-full bg-amber-500" />
+                <span className="block w-1 h-1 rounded-full bg-red-500" />
               </span>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs max-w-[260px]">
@@ -269,17 +269,17 @@ function GroupRow(props: RowProps) {
           </Tooltip>
         )}
 
-        {/* 网络配置待更新橙色点标记（VPC / 子网被云端删除）
+        {/* 网络配置待更新红色提醒点（VPC / 子网被云端删除）
             - 仅命中分组自身展示，不冒泡父分组、不下发子分组、不影响兄弟分组
             - 与异常红点互斥（异常红点优先级最高）
-            - 与「初始化未完成橙点」共同命中时，本橙点优先（更具体可定位），
-              初始化橙点会通过 networkOutdatedGroupIds 让位条件主动隐藏。 */}
+            - 与「初始化未完成提醒点」共同命中时，本提醒点优先（更具体可定位），
+              初始化提醒点会通过 networkOutdatedGroupIds 让位条件主动隐藏。 */}
         {!anomalousGroupIds?.has(node.id) &&
           networkOutdatedGroupIds?.has(node.id) && (
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="relative shrink-0 ml-1">
-                <span className="block w-2 h-2 rounded-full bg-amber-500" />
+                <span className="block w-1 h-1 rounded-full bg-red-500" />
               </span>
             </TooltipTrigger>
             <TooltipContent side="right" className="text-xs max-w-[260px]">
@@ -565,7 +565,7 @@ export default function GroupList({
                 className={`text-xs gap-2 ${filter === "uninitialized" ? "font-medium text-[#020617]" : ""}`}
                 onClick={() => setFilter("uninitialized")}
               >
-                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
                 初始化未完成
               </DropdownMenuItem>
               <DropdownMenuItem

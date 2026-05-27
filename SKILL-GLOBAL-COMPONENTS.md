@@ -711,6 +711,32 @@ import {
 </div>
 ```
 
+### 表格底部数量统计 + 分页器
+
+当表格底部同时展示数量统计与分页器时，必须使用统一页脚布局：
+
+```tsx
+<div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+  <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
+    共 {total} 条
+  </span>
+  <Pagination
+    total={total}
+    current={page}
+    pageSize={PAGE_SIZE}
+    className="justify-self-end justify-end flex-nowrap"
+    onChange={setPage}
+  />
+</div>
+```
+
+规则：
+- 页脚横向 padding 固定 `px-4`（16px），必须与 `TableHead` / `TableCell` 的左右 padding 对齐；禁止继续使用 `px-6`。
+- 纵向 padding 固定 `py-3`，顶部使用 `border-t border-[#f0f0f0]`。
+- 数量统计固定左对齐：`justify-self-start`，文字 `text-sm leading-[1.5] text-[#737373]`。
+- 分页器固定右对齐：`justify-self-end justify-end flex-nowrap`，避免换行和居中漂移。
+- 不要把数量统计塞进 `Pagination showTotal` 来做左右分布；数量统计与分页器必须作为两个独立区域分别对齐。
+
 ### 禁止事项
 
 - 禁止为紧凑版单独设置新的圆角、边框色、分割线色、hover 色或 selected 色。
@@ -1017,7 +1043,9 @@ import { Badge } from "@/components/ui/badge";
 | body cell / height | 标准版最小视觉高度 `54px`；紧凑版最小视觉高度 `40px`；复杂内容允许自然撑高 |
 | body cell / padding | 标准版 `px-4 py-3`；紧凑版 `px-4 py-2` |
 | body cell / font | 标准版 `text-sm`（14px）；紧凑版 `text-xs`（12px） |
-| footer / bg | `bg-[#fafafa] border-t border-[#f0f0f0]` |
+| footer / layout | `grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]` |
+| footer / total | `justify-self-start text-sm leading-[1.5] text-[#737373]` |
+| footer / pagination | `justify-self-end justify-end flex-nowrap` |
 
 **组件导出：**
 
@@ -1062,9 +1090,18 @@ import {
       ))}
     </TableBody>
   </Table>
-  {/* 分页器放在表格外部，带 padding 和 border-t */}
-  <div className="px-4 py-3 border-t border-[#f0f0f0]">
-    <Pagination total={data.length} current={page} pageSize={PAGE_SIZE} showTotal={(t) => `共 ${t} 条`} className="w-full justify-between" onChange={setPage} />
+  {/* 表格页脚：数量统计左对齐，分页器右对齐 */}
+  <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+    <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
+      共 {data.length} 条
+    </span>
+    <Pagination
+      total={data.length}
+      current={page}
+      pageSize={PAGE_SIZE}
+      className="justify-self-end justify-end flex-nowrap"
+      onChange={setPage}
+    />
   </div>
 </div>
 ```

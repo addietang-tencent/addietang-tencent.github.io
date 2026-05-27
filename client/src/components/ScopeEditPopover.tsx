@@ -377,17 +377,15 @@ export function ScopeEditPopover({
             </span>
             <div className="flex items-center gap-2">
               <Button
-                size="sm"
-                variant="outline"
-                className="h-8 text-[13px] px-4"
+                size="claw-sm"
+                variant="claw-outline"
                 onClick={() => setOpen(false)}
               >
                 取消
               </Button>
               <Button
-                size="sm"
+                size="claw-sm"
                 variant="dialog-confirm"
-                className="h-8 text-[13px] px-4"
                 disabled={isConfirmDisabled}
                 onClick={handleConfirm}
               >

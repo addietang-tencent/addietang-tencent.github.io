@@ -27,7 +27,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
-  Plus, Info, Pencil, Trash2, X,
+  Plus, Info, Pencil, Trash2, X, AlertTriangle,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 import type { UserGroup } from "./MemberManagement/types";

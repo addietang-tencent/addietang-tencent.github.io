@@ -910,11 +910,11 @@ function RoleAddEnterpriseSkillDialog({
                     <div className="px-2 pb-1.5 pt-1">
                       <div className="relative">
                         <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                        <input
+                        <Input
                           placeholder="搜索..."
                           value={scopeSearchQuery}
                           onChange={(e) => setScopeSearchQuery(e.target.value)}
-                          className="w-full pl-7 pr-2 h-8 text-sm border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6] bg-white"
+                          className="pl-7 pr-2 h-8 text-sm"
                           onClick={(e) => e.stopPropagation()}
                         />
                       </div>
@@ -1629,11 +1629,11 @@ export default function SkillRolesTab() {
                   <div className="px-2 pb-1.5 pt-1">
                     <div className="relative">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                      <input
+                      <Input
                         placeholder="搜索..."
                         value={scopeSearchQuery}
                         onChange={(e) => setScopeSearchQuery(e.target.value)}
-                        className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="pl-7 pr-2 h-8 text-sm"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </div>

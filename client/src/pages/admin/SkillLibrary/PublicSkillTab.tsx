@@ -218,7 +218,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-gray-100 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group flex flex-col"
+      className="relative bg-white rounded-xl border border-gray-100 cursor-pointer hover:border-[#1447E6] hover:shadow-md transition-all group flex flex-col"
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       onClick={onClick}
     >

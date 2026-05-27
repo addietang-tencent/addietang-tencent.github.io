@@ -219,12 +219,12 @@ function AgentTypeRow({
     <TableRow
       id={`section-${row.agentType}`}
       data-anchor={row.agentType}
-      className="group"
+      className="group [&>td]:py-4 [&>td]:align-top"
     >
       {/* 1. Agent 类型 */}
       <TableCell
         fixed="left"
-        className="py-4 align-top whitespace-normal !bg-transparent"
+        className="whitespace-normal !bg-transparent"
         style={{
           width: 300,
           minWidth: 300,
@@ -272,7 +272,7 @@ function AgentTypeRow({
       </TableCell>
 
       {/* 2. Agent 版本 */}
-      <TableCell className="py-4 align-top">
+      <TableCell>
         {selected ? (
           <AgentVersionCell
             image={selected}
@@ -281,38 +281,38 @@ function AgentTypeRow({
             onViewHistory={() => onViewPublicHistory(selected.id)}
           />
         ) : (
-          <span className="text-[12px] text-gray-400">—</span>
+          <span className="text-sm text-[#A3A3A3]">—</span>
         )}
       </TableCell>
 
       {/* 3. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID） */}
-      <TableCell className="py-4 align-top whitespace-normal">
+      <TableCell className="whitespace-normal">
         {selected ? (
           <ImageCombinedCell
             image={selected}
             onSwitchImage={onOpenSwitchDialog}
           />
         ) : (
-          <span className="text-[12px] text-gray-400">尚未选择镜像</span>
+          <span className="text-sm text-[#A3A3A3]">尚未选择镜像</span>
         )}
       </TableCell>
 
       {/* 4. 镜像状态（独立列） */}
-      <TableCell className="py-4 align-top">
+      <TableCell>
         {selected ? (
           <ImageStatusBadge status={selected.status} />
         ) : (
-          <span className="text-[12px] text-gray-400">—</span>
+          <span className="text-sm text-[#A3A3A3]">—</span>
         )}
       </TableCell>
 
       {/* 5. 应用范围（外部注入） */}
-      <TableCell className="py-4 align-top whitespace-normal">
+      <TableCell className="whitespace-normal">
         {scopeSlot}
       </TableCell>
 
       {/* 6. 用户可见 */}
-      <TableCell className="py-4 align-top">
+      <TableCell>
         {isDefault ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -362,7 +362,7 @@ function AgentTypeRow({
       </TableCell>
 
       {/* 6. 操作：「设为首选 / 删除」两枚文字按钮（条件不满足时禁用） */}
-      <TableActionCell fixed="right" className="py-4 align-top">
+      <TableActionCell fixed="right">
         <div className="flex items-center gap-4">
           {/* 设为首选 — 已是首选 / 尚未选择镜像 / 用户不可见 时禁用并提示 */}
           <span className="inline-flex shrink-0 justify-start">
@@ -535,7 +535,7 @@ function ImageCombinedCell({
           </TooltipContent>
         </Tooltip>
       </div>
-      <div className="flex items-center gap-2 text-[12px] text-gray-400 mt-0.5 flex-wrap">
+      <div className="flex items-center gap-2 text-xs text-[#737373] mt-0.5 flex-wrap">
         <span className="truncate">{image.id}</span>
       </div>
     </div>

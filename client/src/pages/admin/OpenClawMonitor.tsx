@@ -83,6 +83,8 @@ import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import DispatchCommandDialog from "./VersionManagement/components/DispatchCommandDialog";
 import NewVersionPushNotice from "./ImageManagement/NewVersionPushNotice";
+import UpdateRecordsDrawer, { type PushableItem } from "./ImageManagement/UpdateRecordsDrawer";
+import { useOutdatedTypes } from "./BatchUpdateNotice";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
@@ -631,6 +633,8 @@ export default function AgentMonitor() {
   // 批量更新
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBatchUpgradeDialog, setShowBatchUpgradeDialog] = useState(false);
+  // 「版本更新记录」侧边栏（点击新版本推送提醒打开）
+  const [showUpdateRecordsDrawer, setShowUpdateRecordsDrawer] = useState(false);
   // 批量升级失败结果弹窗
   const [showUpgradeResultDialog, setShowUpgradeResultDialog] = useState(false);
   const [upgradeFailedAgents, setUpgradeFailedAgents] = useState<{ name: string; instanceId: string; agentType: string; reason: string }[]>([]);
@@ -1587,9 +1591,13 @@ export default function AgentMonitor() {
       <div className="page-enter min-w-0">
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 列表</h1>
-            <p className="text-sm text-[#737373] mt-1">查看和管理所有企业用户创建的 Agent 云服务器。</p>
+          <div className="shrink-0 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold text-[#0A0A0A] whitespace-nowrap">Agent 列表</h1>
+              {/* 新版本推送提醒（点击打开版本更新记录侧边栏） */}
+              <ImageUpdateBellEntry onClick={() => setShowUpdateRecordsDrawer(true)} />
+            </div>
+            <p className="text-sm text-[#737373] mt-1 whitespace-nowrap">查看和管理所有企业用户创建的 Agent 云服务器。</p>
           </div>
           <div className="flex items-center gap-2">
             <DatePicker
@@ -1719,8 +1727,6 @@ export default function AgentMonitor() {
                 />
               </div>
             </div>
-            {/* 镜像更新提醒铃铛（与批量更新按钮同列） */}
-            <ImageUpdateBellEntry />
             {/* 批量更新按钮（次级样式，避免抢主操作） */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -3720,16 +3726,47 @@ export default function AgentMonitor() {
           setSelectedIds(new Set());
         }}
       />
+
+      {/* 版本更新记录侧边栏（点击新版本推送提醒打开，默认开启「仅看可推送新版本」） */}
+      <UpdateRecordsDrawerForAgentList
+        open={showUpdateRecordsDrawer}
+        onOpenChange={setShowUpdateRecordsDrawer}
+      />
     </TooltipProvider>
   );
 }
 
-// ─── 工具栏新版本提醒入口（与 Agent 类型页同款黄色横幅，点击跳转到全部更新记录） ─────
-function ImageUpdateBellEntry() {
-  const [, setLocation] = useLocation();
+// ─── 工具栏新版本提醒入口（与 Agent 类型页同款黄色横幅，点击触发外部回调） ─────
+function ImageUpdateBellEntry({ onClick }: { onClick: () => void }) {
+  return <NewVersionPushNotice onViewAllRecords={onClick} />;
+}
+
+// ─── 版本更新记录侧边栏（适配 Agent 列表页：从 useOutdatedTypes 构造 pushable） ─────
+function UpdateRecordsDrawerForAgentList({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const outdated = useOutdatedTypes();
+  const pushable: PushableItem[] = outdated.map((o) => ({
+    agentType: o.agentType,
+    agentTypeLabel: o.agentTypeLabel,
+    enabledVersion: o.enabledVersion,
+    outdatedInstanceCount: o.outdatedCount,
+    allUpToDate: o.outdatedCount === 0,
+    imageSource: o.imageSource,
+    imageName: o.enabledImageName,
+    enabledImage: o.enabledImageId ? { id: o.enabledImageId } : undefined,
+  }));
   return (
-    <NewVersionPushNotice
-      onViewAllRecords={() => setLocation("/admin/agent-types?openRecords=1")}
+    <UpdateRecordsDrawer
+      open={open}
+      onOpenChange={onOpenChange}
+      onPush={() => { /* Agent 列表页不直接触发推送，仅查看 */ }}
+      pushable={pushable}
+      initialPushableOnly
     />
   );
 }

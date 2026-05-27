@@ -2,7 +2,7 @@
  * MemberManagement - 管控端用户管理页
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
@@ -1845,8 +1845,11 @@ export default function MemberManagement() {
     return new Date(b.joinTime).getTime() - new Date(a.joinTime).getTime();
   });
 
-  // 初始管理员：排序后第一位
-  const initialAdminId = sortedMembers.find((m) => m.role === "admin")?.id;
+  // 管理员账号：所有 role === "admin" 的成员均不允许重置密码 / 禁用 / 删除
+  const initialAdminIds = useMemo(
+    () => new Set(sortedMembers.filter((m) => m.role === "admin").map((m) => m.id)),
+    [sortedMembers]
+  );
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showBatchDialog, setShowBatchDialog] = useState(false);
@@ -2072,7 +2075,7 @@ export default function MemberManagement() {
         tokenLimit: member.tokenLimit,
         groupIds: actualGroupIds,
       });
-      setIsInitialAdminEdit(member.id === initialAdminId);
+      setIsInitialAdminEdit(initialAdminIds.has(member.id));
     }
     setEditMemberId(member.id);
   };
@@ -2852,7 +2855,7 @@ export default function MemberManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {member.id === initialAdminId ? (
+                            {initialAdminIds.has(member.id) ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   {/* disabled 项不能直接放在 Tooltip 内（Radix 会吞 hover），用 span 包一层透传 */}
@@ -2862,14 +2865,14 @@ export default function MemberManagement() {
                                     </DropdownMenuItem>
                                   </span>
                                 </TooltipTrigger>
-                                <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">初始管理员账号不允许重置密码</TooltipContent>
+                                <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">管理员账号不允许重置密码</TooltipContent>
                               </Tooltip>
                             ) : (
                               <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
                                 <Key />重置密码
                               </DropdownMenuItem>
                             )}
-                            {member.id === initialAdminId ? (
+                            {initialAdminIds.has(member.id) ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span>
@@ -2878,7 +2881,7 @@ export default function MemberManagement() {
                                     </DropdownMenuItem>
                                   </span>
                                 </TooltipTrigger>
-                                <TooltipContent side="left">初始管理员账号不可禁用</TooltipContent>
+                                <TooltipContent side="left">管理员账号不可禁用</TooltipContent>
                               </Tooltip>
                             ) : member.status === "active" ? (
                               <DropdownMenuItem onClick={() => openDisableConfirm(member)}>
@@ -2889,7 +2892,7 @@ export default function MemberManagement() {
                                 <UserCheck />启用
                               </DropdownMenuItem>
                             )}
-                            {member.id === initialAdminId ? (
+                            {initialAdminIds.has(member.id) ? (
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span>
@@ -2898,7 +2901,7 @@ export default function MemberManagement() {
                                     </DropdownMenuItem>
                                   </span>
                                 </TooltipTrigger>
-                                <TooltipContent side="left">初始管理员账号不可删除</TooltipContent>
+                                <TooltipContent side="left">管理员账号不可删除</TooltipContent>
                               </Tooltip>
                             ) : (
                               <DropdownMenuItem variant="destructive" onClick={() => openDeleteCheck(member)}>

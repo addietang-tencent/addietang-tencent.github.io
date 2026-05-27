@@ -3,7 +3,6 @@
  * Design: 「流动蓝图」Fluid Blueprint - Admin Side
  */
 import { useState, useMemo } from "react";
-import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -702,17 +701,7 @@ export default function ModelConfig() {
       <div className="page-enter space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-[#0A0A0A]">模型配置</h1>
-          <Alert variant="operation-info" className="mt-2">
-            <AlertOperationInfoIcon />
-            <AlertDescription>
-              <p>
-                <span className="font-semibold">用户可见：</span>开启后，该模型会展示在用户端的模型选项列表中。
-              </p>
-              <p>
-                <span className="font-semibold">默认配置：</span>用户在创建新实例时，该模型将被自动预添加，用户无需手动配置。
-              </p>
-            </AlertDescription>
-          </Alert>
+          <p className="mt-2 text-sm text-[#737373]">统一管理平台可用模型、接入地址、每日配额与应用范围。</p>
         </div>
 
         <div className="grid grid-cols-4 gap-4">
@@ -748,13 +737,42 @@ export default function ModelConfig() {
             </Button>
           </div>
 
-          <Table scrollX={1280}>
+          <Table scrollX={1406}>
             <TableHeader>
               <TableRow>
                 <TableHead fixed="left" style={{ width: 260, minWidth: 260, maxWidth: 260 }}>模型信息</TableHead>
                 <TableHead className="w-[280px]">接入地址</TableHead>
                 <TableHead className="w-[150px]">每日配额</TableHead>
-                <TableHead className="w-[180px]">启用策略</TableHead>
+                <TableHead className="w-[120px]">
+                  <div className="flex items-center gap-1">
+                    用户可见
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default">
+                          <Info className="w-3 h-3 text-[#A3A3A3]" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
+                        开启后，该模型会展示在用户端的模型选项列表中。
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TableHead>
+                <TableHead className="w-[120px]">
+                  <div className="flex items-center gap-1">
+                    默认配置
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default">
+                          <Info className="w-3 h-3 text-[#A3A3A3]" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
+                        用户在创建新实例时，该模型将被自动预添加，用户无需手动配置。
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TableHead>
                 <TableHead className="w-[160px]">是否启用多模态</TableHead>
                 <TableHead className="w-[220px]">
                   <div className="flex items-center gap-1">
@@ -813,37 +831,36 @@ export default function ModelConfig() {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell className="w-[180px]">
-                      <div className="space-y-2.5">
-                        <div className="flex max-w-[150px] items-center justify-between gap-3">
-                          <span className="text-xs text-[#737373]">用户可见</span>
-                          <Switch
-                            checked={model.visible}
-                            onCheckedChange={(v) => handleToggleVisible(model.id, v)}
-                          />
-                        </div>
-                        <div className="flex max-w-[150px] items-center justify-between gap-3">
-                          <span className="text-xs text-[#737373]">默认配置</span>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex">
-                                <Switch
-                                  checked={model.isDefault}
-                                  onCheckedChange={(v) => handleSetDefault(model.id, v)}
-                                  disabled={!model.visible && !model.isDefault}
-                                  aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
-                                />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent className="text-xs">
-                              {model.isDefault
-                                ? "当前默认模型"
-                                : model.visible
-                                  ? "点击设为默认模型"
-                                  : "需先开启「用户可见」才可设为默认"}
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
+                    <TableCell className="w-[120px]">
+                      <div className="flex min-h-9 items-center">
+                        <Switch
+                          checked={model.visible}
+                          onCheckedChange={(v) => handleToggleVisible(model.id, v)}
+                          aria-label={model.visible ? "关闭用户可见" : "开启用户可见"}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell className="w-[120px]">
+                      <div className="flex min-h-9 items-center">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                              <Switch
+                                checked={model.isDefault}
+                                onCheckedChange={(v) => handleSetDefault(model.id, v)}
+                                disabled={!model.visible && !model.isDefault}
+                                aria-label={model.isDefault ? "当前默认模型" : "设为默认模型"}
+                              />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-xs">
+                            {model.isDefault
+                              ? "当前默认模型"
+                              : model.visible
+                                ? "点击设为默认模型"
+                                : "需先开启「用户可见」才可设为默认"}
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                     </TableCell>
                     <TableCell className="w-[160px]">

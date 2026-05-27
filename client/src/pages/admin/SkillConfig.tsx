@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import {
   Puzzle,
@@ -288,12 +289,9 @@ export default function SkillConfig() {
             >
               {tab.label}
               {tab.comingSoon && (
-                <span
-                  className="font-medium text-gray-500 bg-white border border-gray-300 px-1.5 py-0.5 rounded"
-                  style={{ fontSize: "10px" }}
-                >
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0.5">
                   即将开放
-                </span>
+                </Badge>
               )}
             </SegmentOption>
           ))}

@@ -38,6 +38,8 @@ const CLOUD_DEV_FEATURES: {
   },
 ];
 
+import { Badge } from "@/components/ui/badge";
+
 export default function CloudDevManagement() {
   return (
     <div className="page-enter">
@@ -45,12 +47,7 @@ export default function CloudDevManagement() {
       <div className="mb-6">
         <div className="flex items-center gap-2.5">
           <h1 className="text-2xl font-bold text-[#0A0A0A]">云开发管理</h1>
-          <span
-            className="font-medium text-[#A3A3A3] bg-gray-50 border border-gray-200 px-2 py-0.5 rounded"
-            style={{ fontSize: "12px" }}
-          >
-            即将开放
-          </span>
+          <Badge variant="outline">即将开放</Badge>
         </div>
         <p className="text-sm text-[#737373] mt-1">
           管理企业云开发环境的创建、分配与生命周期。管理员可为成员分配独立的云开发环境，统一配置运行环境与规格，为成员提供应用开发及部署能力。

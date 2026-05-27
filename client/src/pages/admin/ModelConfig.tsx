@@ -10,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { StatusTag } from "@/components/ui/status-tag";
-import { PanelTitle, BodyText } from "@/components/ui/Typography";
+import { Badge } from "@/components/ui/badge";
+import { PanelTitle, BodyText, UrlText } from "@/components/ui/Typography";
 import { Textarea } from "@/components/ui/textarea";
 import { SurfaceCard } from "@/components/ui/Surface";
 import {
@@ -101,7 +102,7 @@ function ScopePopover({
 
   const renderScopeText = () => {
     if (model.visibilityScope === "all" || selectedGroupPaths.length === 0) {
-      return <span className="text-sm font-normal text-[#0A0A0A]">全部用户</span>;
+      return <Badge variant="outline">全部用户</Badge>;
     }
 
     const firstName = selectedGroupPaths[0];
@@ -111,10 +112,10 @@ function ScopePopover({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex max-w-full items-center gap-1 cursor-default text-sm font-normal text-[#0A0A0A]">
+          <Badge variant="secondary" className="max-w-full cursor-default">
             <span className="truncate">{firstName}</span>
             {rest > 0 && <span className="shrink-0">+{rest}</span>}
-          </span>
+          </Badge>
         </TooltipTrigger>
         <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
           {tooltipText}
@@ -383,21 +384,29 @@ export default function ModelConfig() {
         <div className="grid grid-cols-4 gap-4">
           <SurfaceCard className="p-4">
             <p className="text-xs text-[#737373]">已配置模型</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums font-din text-[#020617]">{models.length}</p>
+            <div className="mt-2 flex h-8 items-center">
+              <p className="text-2xl leading-none font-semibold tabular-nums font-din text-[#020617]">{models.length}</p>
+            </div>
           </SurfaceCard>
           <SurfaceCard className="p-4">
             <p className="text-xs text-[#737373]">用户可见</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums font-din text-[#020617]">{visibleModelCount}</p>
+            <div className="mt-2 flex h-8 items-center">
+              <p className="text-2xl leading-none font-semibold tabular-nums font-din text-[#020617]">{visibleModelCount}</p>
+            </div>
           </SurfaceCard>
           <SurfaceCard className="p-4">
             <p className="text-xs text-[#737373]">默认模型</p>
-            <p className="mt-2 truncate text-sm font-medium text-[#0A0A0A]">
-              {defaultModel ? `${defaultModel.name} · ${defaultModel.version}` : "未设置"}
-            </p>
+            <div className="mt-2 flex h-8 items-center">
+              <p className="truncate text-sm leading-none font-medium text-[#0A0A0A]">
+                {defaultModel ? `${defaultModel.name} · ${defaultModel.version}` : "未设置"}
+              </p>
+            </div>
           </SurfaceCard>
           <SurfaceCard className="p-4">
             <p className="text-xs text-[#737373]">按分组可见</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums font-din text-[#020617]">{scopedModelCount}</p>
+            <div className="mt-2 flex h-8 items-center">
+              <p className="text-2xl leading-none font-semibold tabular-nums font-din text-[#020617]">{scopedModelCount}</p>
+            </div>
           </SurfaceCard>
         </div>
 
@@ -478,7 +487,7 @@ export default function ModelConfig() {
                       <div className="min-w-0 space-y-2">
                         <div className="flex min-w-0 items-center gap-2">
                           <p className="truncate text-sm font-medium text-[#0A0A0A]">{model.name}</p>
-                          {model.isDefault && <StatusTag mode="fill" variant="blue">默认</StatusTag>}
+                          {model.isDefault && <Badge variant="secondary">默认</Badge>}
                         </div>
                         <p className="truncate text-xs text-[#737373]">{model.version}</p>
                       </div>
@@ -486,12 +495,12 @@ export default function ModelConfig() {
                     <TableCell className="w-[280px]">
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="inline-flex max-w-[248px] cursor-default rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-2 py-1 font-mono text-xs text-[#334155]">
-                            <span className="truncate">{model.modelUrl}</span>
-                          </span>
+                          <UrlText className="block max-w-[248px] cursor-default truncate">
+                            {model.modelUrl}
+                          </UrlText>
                         </TooltipTrigger>
-                        <TooltipContent className="max-w-[360px] text-xs font-mono break-all">
-                          {model.modelUrl}
+                        <TooltipContent className="max-w-[360px]">
+                          <UrlText>{model.modelUrl}</UrlText>
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>

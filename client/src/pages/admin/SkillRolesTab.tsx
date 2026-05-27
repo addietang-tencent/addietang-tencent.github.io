@@ -47,6 +47,16 @@ import { Switch } from "@/components/ui/switch";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableActionCell,
+} from "@/components/ui/table";
+import { SurfaceCard } from "@/components/ui/Surface";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -406,13 +416,13 @@ function SortableRoleRow({
   };
 
   return (
-    <tr
+    <TableRow
       ref={setNodeRef}
       style={style}
-      className={`border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${isDragging ? "bg-blue-50/30 shadow-sm" : ""}`}
+      className={isDragging ? "bg-blue-50/30 shadow-sm" : undefined}
     >
       {/* Drag Handle */}
-      <td className="w-10 px-3 py-4">
+      <TableCell className="w-10 px-3">
         <button
           {...attributes}
           {...listeners}
@@ -420,54 +430,52 @@ function SortableRoleRow({
         >
           <GripVertical className="w-4 h-4" />
         </button>
-      </td>
+      </TableCell>
       {/* Name — clickable to open edit */}
-      <td className="px-4 py-4">
+      <TableCell>
         <button
           onClick={() => onEdit(role)}
-          className="font-semibold text-sm text-[#0A0A0A] hover:text-[#355EF1] hover:underline transition-colors text-left"
+          className="text-sm font-medium text-[#0A0A0A] hover:text-[#355EF1] hover:underline transition-colors text-left"
         >
           {role.name}
         </button>
-      </td>
+      </TableCell>
       {/* Description */}
-      <td className="px-4 py-4 max-w-[320px]">
-        <div className="text-xs text-[#A3A3A3] truncate">{role.description}</div>
-      </td>
+      <TableCell className="max-w-[320px]">
+        <div className="text-sm text-[#737373] truncate">{role.description}</div>
+      </TableCell>
       {/* 应用范围 */}
-      <td className="px-4 py-4">
+      <TableCell>
         <EditRoleScopePopover
           role={role}
           onConfirm={(scope, groupIds) => onScopeChange(role.id, scope, groupIds)}
         />
-      </td>
+      </TableCell>
       {/* Visible toggle */}
-      <td className="px-4 py-4">
+      <TableCell>
         <Switch
           checked={role.visible}
           onCheckedChange={() => onToggle(role.id)}
         />
-      </td>
+      </TableCell>
       {/* Actions */}
-      <td className="px-4 py-4">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => onEdit(role)}
-            className="p-1.5 rounded-xl text-[#A3A3A3] hover:text-[#355EF1] hover:bg-blue-50 transition-colors"
-            title="编辑"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </button>
-          <button
-            onClick={() => onDelete(role)}
-            className="p-1.5 rounded-xl text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 transition-colors"
-            title="删除"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </td>
-    </tr>
+      <TableActionCell className="w-24" actionsClassName="gap-1 justify-start">
+        <button
+          onClick={() => onEdit(role)}
+          className="p-1.5 rounded-[4px] text-[#A3A3A3] hover:text-[#355EF1] hover:bg-blue-50 transition-colors"
+          title="编辑"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={() => onDelete(role)}
+          className="p-1.5 rounded-[4px] text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 transition-colors"
+          title="删除"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </TableActionCell>
+    </TableRow>
   );
 }
 
@@ -1730,30 +1738,28 @@ export default function SkillRolesTab() {
       </div>
 
       {/* Table */}
-      <div
-        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-      >
+      <SurfaceCard className="overflow-hidden">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
-                <th className="w-10 px-3 py-3" />
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">角色名称</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">角色描述</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">应用范围</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">用户可见</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-24">操作</th>
-              </tr>
-            </thead>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10 px-3" />
+                <TableHead>角色名称</TableHead>
+                <TableHead>角色描述</TableHead>
+                <TableHead>应用范围</TableHead>
+                <TableHead>用户可见</TableHead>
+                <TableHead className="w-24">操作</TableHead>
+              </TableRow>
+            </TableHeader>
             <SortableContext
               items={filteredRoles.map((r) => r.id)}
               strategy={verticalListSortingStrategy}
             >
-              <tbody>
+              <TableBody>
                 {filteredRoles.map((role) => (
                   <SortableRoleRow
                     key={role.id}
@@ -1764,14 +1770,14 @@ export default function SkillRolesTab() {
                     onScopeChange={handleScopeChange}
                   />
                 ))}
-              </tbody>
+              </TableBody>
             </SortableContext>
-          </table>
+          </Table>
         </DndContext>
-        <div className="px-4 py-3 border-t border-gray-50 text-sm text-[#A3A3A3]">
+        <div className="px-4 py-3 border-t border-[#e5e5e5] text-sm text-[#737373]">
           共 {filteredRoles.length} 个角色{selectedScopes.size > 0 ? `（筛选中，全部 ${roles.length} 个）` : ''}
         </div>
-      </div>
+      </SurfaceCard>
 
       {/* Edit/Create Modal */}
       <RoleEditModal

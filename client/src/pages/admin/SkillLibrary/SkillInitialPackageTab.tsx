@@ -50,7 +50,7 @@ import {
 import {
   Plus, Trash2, ArrowLeft, Package, Globe, AlertTriangle,
   CheckCircle2, Clock, ChevronRight, X, AlertCircle, Sparkles,
-  Search, RefreshCw, ChevronDown, Check, Edit2, Filter, Users, Pin
+  Search, RefreshCw, ChevronDown, Check, Edit2, Filter, Users, Pin, Info
 } from 'lucide-react';
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
@@ -1514,10 +1514,20 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <h3 style={{ fontSize: '16px' }} className="font-medium text-gray-700 shrink-0">初始技能包列表</h3>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-xl whitespace-nowrap">
-            <Sparkles className="w-3 h-3 text-blue-500 shrink-0" />
-            <span className="text-xs text-blue-600">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
-          </div>
+          <Tooltip delayDuration={200}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label="服务说明"
+                className="inline-flex items-center justify-center text-[#A3A3A3] hover:text-[#525252] transition-colors"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="max-w-[320px] text-xs leading-relaxed">
+              由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间
+            </TooltipContent>
+          </Tooltip>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {/* 应用范围筛选下拉 — 多选 checkbox */}
@@ -1677,43 +1687,59 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
 
       {/* 技能包列表 */}
       {filteredPackages.length > 0 ? (
-        <div className="space-y-3">
-          {filteredPackages.map(pkg => {
-            const scopeLabels = getScopeLabels(pkg);
-            const isPub = isPublicScope(pkg);
-            const isPinned = pkg.isActive && isPub;
-            const packageIconSrc = getSkillPackageIconSrc(pkg);
-            return (
-              <div
-                key={pkg.id}
-                className="bg-white rounded-xl border border-[#e5e5e5] hover:border-[#1447E6] p-4 transition-all cursor-pointer group"
-               
-                onClick={() => setSelectedPackageId(pkg.id)}
-              >
-                <div className="flex items-center gap-3">
-                  {/* 图标 */}
-                  <img src={packageIconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />
+        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: 360, minWidth: 280 }}>技能包名称</TableHead>
+                <TableHead className="w-[120px]">技能数</TableHead>
+                <TableHead className="w-[200px]">应用范围</TableHead>
+                <TableHead className="w-[140px]">设为生效</TableHead>
+                <TableHead className="w-[80px] text-right">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPackages.map(pkg => {
+                const isPub = isPublicScope(pkg);
+                const isPinned = pkg.isActive && isPub;
+                const packageIconSrc = getSkillPackageIconSrc(pkg);
+                return (
+                  <TableRow
+                    key={pkg.id}
+                    className="cursor-pointer hover:bg-[#FAFAFA] group"
+                    onClick={() => setSelectedPackageId(pkg.id)}
+                  >
+                    {/* 名称列 */}
+                    <TableCell style={{ width: 360, minWidth: 280 }}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img src={packageIconSrc} alt="" aria-hidden="true" className="h-9 w-9 shrink-0" />
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          {isPinned && (
+                            <Tooltip delayDuration={300}>
+                              <TooltipTrigger asChild>
+                                <span className="text-blue-500 shrink-0">
+                                  <Pin className="w-3.5 h-3.5" />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="max-w-[240px] text-center">
+                                默认置顶应用范围为全部用户且生效中的初始技能包。
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                            {pkg.name}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
 
-                  {/* 信息 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      {isPinned && (
-                        <Tooltip delayDuration={300}>
-                          <TooltipTrigger asChild>
-                            <span className="text-blue-500 shrink-0">
-                              <Pin className="w-3.5 h-3.5" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="max-w-[240px] text-center">
-                            默认置顶应用范围为全部用户且生效中的初始技能包。
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <span className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{pkg.name}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                      <span>{pkg.skills.length} 个技能</span>
-                      {/* 应用范围标签 + 编辑 — 完全复用 agent 类型页同款 ScopeEditPopover（同数据源 + 同默认 props） */}
+                    {/* 技能数列 */}
+                    <TableCell className="w-[120px]">
+                      <span className="text-sm text-gray-700 tabular-nums">{pkg.skills.length} 个技能</span>
+                    </TableCell>
+
+                    {/* 应用范围列 — 复用 ScopeEditPopover */}
+                    <TableCell className="w-[200px]">
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                         <ScopeEditPopover
                           scope={pkg.scopeType === 'public' ? 'all' : 'groups'}
@@ -1728,48 +1754,48 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           }
                         />
                       </div>
-                    </div>
-                  </div>
+                    </TableCell>
 
-                  {/* 操作区 */}
-                  <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    {/* 生效开关 */}
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-gray-400">设为生效</span>
+                    {/* 生效开关列 */}
+                    <TableCell className="w-[140px]" onClick={(e) => e.stopPropagation()}>
                       <Switch
                         checked={pkg.isActive}
                         onCheckedChange={(v) => handleToggleActive(pkg.id, v)}
                       />
-                    </div>
+                    </TableCell>
 
-                    {/* 删除按钮 */}
-                    {pkg.isActive ? (
-                      <Tooltip delayDuration={1000}>
+                    {/* 操作列 */}
+                    <TableCell className="w-[80px] text-right" onClick={(e) => e.stopPropagation()}>
+                      {pkg.isActive ? (
+                        <Tooltip delayDuration={1000}>
                           <TooltipTrigger asChild>
                             <button
+                              type="button"
                               onClick={() => {}}
-                              className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-gray-300 cursor-not-allowed"
+                              className="text-sm text-[#A3A3A3] cursor-not-allowed"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              删除
                             </button>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-[200px] text-center">
                             生效中的技能包不可删除
                           </TooltipContent>
                         </Tooltip>
-                    ) : (
-                      <button
-                        onClick={() => setDeleteTarget(pkg.id)}
-                        className="w-7 h-7 rounded-xl flex items-center justify-center transition-colors text-gray-400 hover:text-red-500 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTarget(pkg.id)}
+                          className="text-sm text-[#1447E6] hover:underline"
+                        >
+                          删除
+                        </button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       ) : (
         <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#e5e5e5]"

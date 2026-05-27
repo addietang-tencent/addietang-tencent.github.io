@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, Link } from "wouter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
@@ -905,6 +906,9 @@ export default function AgentMonitor() {
   const totalPages = Math.max(1, Math.ceil(versionFiltered.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginated = versionFiltered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // 当前页是否存在任何带标签的实例；若全无标签则整列（表头 + 单元格）隐藏
+  const hasAnyTagColumn = paginated.some((c) => c.tags && c.tags.length > 0);
 
   // 当前页所有实例 id
   const pageIds = paginated.map(c => c.id);
@@ -2038,7 +2042,9 @@ export default function AgentMonitor() {
                   </Popover>
                 </TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '100px' }}>Agent 版本</TableHead>
-                <TableHead className="whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
+                {hasAnyTagColumn && (
+                  <TableHead className="whitespace-nowrap" style={{ minWidth: '60px' }}>标签</TableHead>
+                )}
                 <TableHead fixed="right" className="whitespace-nowrap" style={{ width: '240px', minWidth: '240px' }}>
                   操作
                 </TableHead>
@@ -2047,7 +2053,7 @@ export default function AgentMonitor() {
             <TableBody>
               {paginated.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={hasOneid ? 13 : 12} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
+                  <TableCell colSpan={(hasOneid ? 13 : 12) - (hasAnyTagColumn ? 0 : 1)} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
                     暂无符合条件的 Agent
                   </TableCell>
                 </TableRow>
@@ -2091,7 +2097,7 @@ export default function AgentMonitor() {
                       </TableCell>
                       {/* 状态列 */}
                       <TableCell className="px-4 py-4">
-                        <StatusTag mode="dot" variant={statusConfig.tagVariant}>
+                        <StatusTag mode="text" variant={statusConfig.tagVariant}>
                           {statusConfig.label}
                         </StatusTag>
                       </TableCell>
@@ -2190,47 +2196,49 @@ export default function AgentMonitor() {
                         {AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}
                       </TableCell>
                       {/* Agent 版本 */}
-                      <TableCell className="px-4 py-4 font-mono">
-                        {claw.version}
-                      </TableCell>
-                      {/* 标签 */}
                       <TableCell className="px-4 py-4">
-                        {claw.tags && claw.tags.length > 0 ? (
-                          <HoverCard openDelay={100} closeDelay={150}>
-                            <HoverCardTrigger asChild>
-                              <button className="inline-flex items-center text-[#737373] hover:text-[#334155] transition-colors">
-                                <Tag className="w-4 h-4" />
-                              </button>
-                            </HoverCardTrigger>
-                            <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden">
-                              <div className="grid grid-cols-2 bg-[#fafafa] border-b border-[#e5e5e5] px-3 py-2">
-                                <span className="text-xs font-semibold text-[#334155]">标签键</span>
-                                <span className="text-xs font-semibold text-[#334155]">标签值</span>
-                              </div>
-                              <div className="divide-y divide-gray-100">
-                                {claw.tags.map((tag, i) => (
-                                  <div key={i} className="grid grid-cols-2 px-3 py-2 gap-1">
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span className="text-xs text-[#334155] truncate block max-w-full cursor-default">{tag.key}</span>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="left"><span>{tag.key}</span></TooltipContent>
-                                    </Tooltip>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span className="text-xs text-[#737373] truncate block max-w-full cursor-default">{tag.value}</span>
-                                      </TooltipTrigger>
-                                      <TooltipContent side="right"><span>{tag.value}</span></TooltipContent>
-                                    </Tooltip>
-                                  </div>
-                                ))}
-                              </div>
-                            </HoverCardContent>
-                          </HoverCard>
-                        ) : (
-                          <Tag className="w-4 h-4 text-gray-200" />
-                        )}
+                        <Badge variant="secondary" className="font-mono">{claw.version}</Badge>
                       </TableCell>
+                      {/* 标签（当前页无任何带标签的实例时整列隐藏） */}
+                      {hasAnyTagColumn && (
+                        <TableCell className="px-4 py-4">
+                          {claw.tags && claw.tags.length > 0 ? (
+                            <HoverCard openDelay={100} closeDelay={150}>
+                              <HoverCardTrigger asChild>
+                                <button className="inline-flex items-center text-[#737373] hover:text-[#334155] transition-colors">
+                                  <Tag className="w-4 h-4" />
+                                </button>
+                              </HoverCardTrigger>
+                              <HoverCardContent side="top" align="center" className="p-0 w-56 bg-white border border-[#E5E5E5] rounded-[4px] overflow-hidden">
+                                <div className="grid grid-cols-2 bg-[#fafafa] border-b border-[#e5e5e5] px-3 py-2">
+                                  <span className="text-xs font-semibold text-[#334155]">标签键</span>
+                                  <span className="text-xs font-semibold text-[#334155]">标签值</span>
+                                </div>
+                                <div className="divide-y divide-gray-100">
+                                  {claw.tags.map((tag, i) => (
+                                    <div key={i} className="grid grid-cols-2 px-3 py-2 gap-1">
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-xs text-[#334155] truncate block max-w-full cursor-default">{tag.key}</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="left"><span>{tag.key}</span></TooltipContent>
+                                      </Tooltip>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-xs text-[#737373] truncate block max-w-full cursor-default">{tag.value}</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right"><span>{tag.value}</span></TooltipContent>
+                                      </Tooltip>
+                                    </div>
+                                  ))}
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                          ) : (
+                            <Tag className="w-4 h-4 text-gray-200" />
+                          )}
+                        </TableCell>
+                      )}
                       {/* 操作 - 全局 TableActionCell 内部按钮强制 link 蓝色样式（详见 SKILL §15 操作列规则） */}
                       <TableActionCell fixed="right" style={{ minWidth: '240px' }} actionsClassName="h-5">
                           {/* 终端 */}

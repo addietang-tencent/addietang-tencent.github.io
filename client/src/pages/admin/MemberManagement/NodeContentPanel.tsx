@@ -46,7 +46,6 @@ import {
   CheckCircle2,
   Lock,
   Plus,
-  UserMinus,
   Info,
   Brain,
   MessageSquare,
@@ -400,7 +399,7 @@ export default function NodeContentPanel({
 
   /**
    * 网络配置待更新（VPC 整删 / 某可用区所有子网均被删除）
-   * 用于「配置总览」Tab 旁的橙色小圆点提示。
+   * 用于「配置总览」Tab 旁的红色小圆点提示。
    * 与各资源行的逐项「配置已失效，请及时更新」保持同源判定。
    */
   const networkOutdatedForTab = useMemo(
@@ -555,10 +554,10 @@ export default function NodeContentPanel({
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
             )}
             {!isAnomalous && isUninitialized && !networkOutdatedForTab && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
             )}
             {!isAnomalous && networkOutdatedForTab && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500" />
             )}
           </SegmentOption>
         </SegmentGroup>
@@ -708,14 +707,14 @@ export default function NodeContentPanel({
                                   <div className="flex items-center gap-1 max-w-[180px]">
                                     <Tooltip>
                                       <TooltipTrigger asChild>
-                                        <span className="inline-flex items-center gap-1 cursor-default max-w-full">
-                                          <StatusTag variant="gray" className="max-w-[200px] truncate">
+                                        <span className="inline-flex items-center gap-1 cursor-default max-w-full text-sm text-[#0A0A0A]">
+                                          <span className="truncate max-w-[200px]">
                                             {firstName}
-                                          </StatusTag>
+                                          </span>
                                           {displayGroups.length > 1 && (
-                                            <StatusTag variant="gray">
+                                            <span className="shrink-0 tabular-nums text-[#0A0A0A]">
                                               +{displayGroups.length - 1}
-                                            </StatusTag>
+                                            </span>
                                           )}
                                         </span>
                                       </TooltipTrigger>
@@ -747,45 +746,35 @@ export default function NodeContentPanel({
 
                             {/* 角色 */}
                             <TableCell>
-                              <StatusTag variant={u.role === "admin" ? "blue" : "gray"}>
+                              <span className="text-sm text-[#0A0A0A]">
                                 {u.role === "admin" ? "管理员" : "用户"}
-                              </StatusTag>
+                              </span>
                             </TableCell>
 
                             {/* 状态 */}
                             <TableCell>
                               {u.status === "active" ? (
-                                <StatusTag variant="green" dot>正常</StatusTag>
+                                <StatusTag mode="text" variant="green">正常</StatusTag>
                               ) : (
-                                <StatusTag variant="red" dot>禁用</StatusTag>
+                                <StatusTag mode="text" variant="red">禁用</StatusTag>
                               )}
                             </TableCell>
 
                             {/* 操作（仅普通模式且非未分组） */}
                             {isManualMode && nodeId !== "__unassigned__" && (
-                              <TableCell>
-                                <div className="flex items-center justify-center gap-1">
-                                  {nodeId !== "__unassigned__" && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <button
-                                          type="button"
-                                          className="w-7 h-7 flex items-center justify-center rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                          onClick={() =>
-                                            setRemoveDialog({
-                                              userId: u.userId,
-                                              groupName: nodeName,
-                                            })
-                                          }
-                                        >
-                                          <UserMinus className="w-4 h-4" />
-                                        </button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>从分组中移除</TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                </div>
-                              </TableCell>
+                              <TableActionCell actionsClassName="justify-start">
+                                <Button
+                                  variant="link"
+                                  onClick={() =>
+                                    setRemoveDialog({
+                                      userId: u.userId,
+                                      groupName: nodeName,
+                                    })
+                                  }
+                                >
+                                  移除
+                                </Button>
+                              </TableActionCell>
                             )}
                           </TableRow>
                         );
@@ -796,15 +785,15 @@ export default function NodeContentPanel({
               </div>
 
               {/* 底部：共 N 名用户 + 分页 */}
-              <div className="flex items-center justify-between px-6 py-3 border-t border-[#f0f0f0]">
-                <span className="text-[12px] text-[#355EF1]">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+                <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
                   共 {total} 名用户
                 </span>
                 <Pagination
                   total={total}
                   current={page}
                   pageSize={PAGE_SIZE}
-
+                  className="justify-self-end justify-end flex-nowrap"
                   hideOnSinglePage
                   onChange={(p) => { setPage(() => p); }}
                 />
@@ -1247,7 +1236,7 @@ function LocalAnomalyHint() {
 function ConfigOutdatedHint() {
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 shrink-0">
-      <span className="w-1 h-1 rounded-full bg-amber-500" />
+      <span className="w-1 h-1 rounded-full bg-red-500" />
       请前往网络管理更新配置
     </span>
   );
@@ -1343,7 +1332,7 @@ function ConfigOverviewTab({
    * 网络配置待更新（VPC / 子网被云端删除）
    *
    * 当前分组的网络配置中存在任意一个 VPC 或子网待更新时为 true，
-   * 用于：顶部配置总览条「网络」节点 + 网络卡片标题旁的橙色小圆点。
+   * 用于：顶部配置总览条「网络」节点 + 网络卡片标题旁的红色小圆点。
    * 与各资源行的逐项「⚠ 配置待更新」保持同源判定。
    */
   const networkOutdated = useMemo(
@@ -1466,12 +1455,12 @@ function ConfigOverviewTab({
                       <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
                     )}
                     {!hasAnomaly && hasUninitWarning && (
-                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
                     )}
-                    {/* 网络配置待更新（VPC/子网被云端删除）：仅「网络」节点展示橙色小圆点，
-                        与异常红点 / 初始化未完成橙点互斥 */}
+                    {/* 网络配置待更新（VPC/子网被云端删除）：仅「网络」节点展示红色小圆点，
+                        与异常红点 / 初始化未完成红点互斥 */}
                     {!hasAnomaly && !hasUninitWarning && cat === "network" && networkOutdated && (
-                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span className="absolute -top-0.5 -right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
                     )}
                   </span>
                 </button>
@@ -1549,11 +1538,11 @@ function ConfigOverviewTab({
                           <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
                         )}
                         {!hasAnomaly && hasUninitWarning && (
-                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
                         )}
-                        {/* 网络配置待更新（VPC/子网被云端删除）：仅「网络」卡片标题旁展示橙色小圆点 */}
+                        {/* 网络配置待更新（VPC/子网被云端删除）：仅「网络」卡片标题旁展示红色小圆点 */}
                         {!hasAnomaly && !hasUninitWarning && cat === "network" && networkOutdated && (
-                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span className="absolute -top-0.5 -right-2 w-1.5 h-1.5 rounded-full bg-red-500" />
                         )}
                       </span>
                       {/* 仅模型、通道、镜像在标题旁显示数量；技能/Agent工具在子类别显示；其余不显示 */}

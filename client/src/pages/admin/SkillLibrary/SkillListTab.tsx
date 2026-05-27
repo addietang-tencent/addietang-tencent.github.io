@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { SurfaceCard } from '@/components/ui/Surface';
+import { StatusTag } from '@/components/ui/status-tag';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from '@/components/ui/table';
 
 import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
@@ -1079,7 +1081,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
 
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
-        <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+        <SurfaceCard className="overflow-hidden">
           <Table containerRef={tableScrollRef} scrollX={1500}>
             <TableHeader>
               <TableRow>
@@ -1106,40 +1108,24 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   const hasDistribution = summary && summary.lastDistributionStatus !== 'not_distributed';
                   let statusLine1 = '正常'; // 第一行：状态
                   let statusLine2 = '未下发'; // 第二行：下发进度
-                  let statusLine1Color = 'text-gray-700';
-                  let statusLine2Color = 'text-gray-400';
-                  let statusLine2Bg = ''; // 底色
-                  let statusLine2HoverBg = ''; // hover 加深底色
+                  let statusVariant: 'green' | 'blue' | 'red' = 'green';
+                  let distributionVariant: 'green' | 'blue' | 'red' = 'red';
                   if (summary) {
                     if (summary.lastDistributionStatus === 'deleting' as any) {
                       statusLine1 = '卸载中';
-                      statusLine1Color = 'text-red-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-red-600';
-                      statusLine2Bg = 'bg-red-50';
-                      statusLine2HoverBg = 'hover:bg-red-100';
+                      statusVariant = 'red';
+                      distributionVariant = 'red';
                     } else if (summary.lastDistributionStatus === 'distributing') {
                       statusLine1 = '下发中';
-                      statusLine1Color = 'text-blue-600';
                       statusLine2 = `${summary.lastDistributionProgress || 0}%`;
-                      statusLine2Color = 'text-blue-600';
-                      statusLine2Bg = 'bg-blue-50';
-                      statusLine2HoverBg = 'hover:bg-blue-100';
+                      statusVariant = 'blue';
+                      distributionVariant = 'blue';
                     } else if (hasDistribution) {
-                      statusLine1 = '正常';
-                      statusLine1Color = 'text-gray-700';
                       const total = summary.lastDistributionInstanceCount || 0;
                       const success = summary.lastDistributionSuccessCount ?? total;
                       statusLine2 = `已下发（${success}/${total}成功）`;
-                      if (success === total) {
-                        statusLine2Color = 'text-green-600';
-                        statusLine2Bg = 'bg-green-50';
-                        statusLine2HoverBg = 'hover:bg-green-100';
-                      } else {
-                        statusLine2Color = 'text-yellow-600';
-                        statusLine2Bg = 'bg-yellow-50';
-                        statusLine2HoverBg = 'hover:bg-yellow-100';
-                      }
+                      distributionVariant = success === total ? 'green' : 'red';
                     }
                   }
 
@@ -1208,34 +1194,29 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       </TableCell>
                       {/* 状态/最近下发进度 */}
                       <TableCell className="align-top">
-                        <div className="space-y-1.5">
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusLine1Color} bg-[#F5F5F5]`}>
-                            {statusLine1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (hasDistribution) {
+                        <div className="flex flex-col items-start gap-1.5">
+                          <StatusTag mode="dot" variant={statusVariant}>{statusLine1}</StatusTag>
+                          {hasDistribution ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setDefaultTabForDetail('distribution');
                                 setSelectedSkillId(skill.id);
-                              }
-                            }}
-                            className={hasDistribution
-                              ? `block max-w-[150px] truncate rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${statusLine2Color} ${statusLine2Bg} ${statusLine2HoverBg}`
-                              : `block text-xs ${statusLine2Color}`
-                            }
-                            title={statusLine2}
-                          >
-                            {statusLine2}
-                          </button>
+                              }}
+                              className="block max-w-[150px] truncate"
+                              title={statusLine2}
+                            >
+                              <StatusTag mode="fill" variant={distributionVariant}>{statusLine2}</StatusTag>
+                            </button>
+                          ) : (
+                            <span className="text-xs text-[#A3A3A3]">{statusLine2}</span>
+                          )}
                         </div>
                       </TableCell>
                       {/* 版本号 */}
                       <TableCell className="align-top">
-                        <span className="inline-flex items-center rounded-full bg-[#F5F5F5] px-2.5 py-0.5 text-xs font-medium text-[#334155] font-mono">
-                          v{skill.version}
-                        </span>
+                        <StatusTag mode="fill" variant="gray">v{skill.version}</StatusTag>
                       </TableCell>
                       {/* 描述 */}
                       <TableCell className="align-top" style={{ width: 360, overflow: 'hidden' }}>
@@ -1399,7 +1380,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 })}
               </TableBody>
             </Table>
-        </div>
+        </SurfaceCard>
       )}
 
       <SkillUploadDialog

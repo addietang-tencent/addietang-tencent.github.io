@@ -391,6 +391,8 @@ function TableCell({ className, fixed, fixedShadow = true, ...props }: TableCell
         density === "compact" ? "h-10 px-4 py-2 text-xs" : "h-[54px] px-4 py-3 text-sm",
         // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
         "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
+        // separate 模式下，tbody 最后一行单元格不画底边，避免与外层卡片底边重合（与 collapse 模式 `[&_tr:last-child]:border-0` 行为对齐）
+        "[table.border-separate_tbody_tr:last-child_&]:border-b-0",
         fixed === "left" && [FIXED_BASE, FIXED_LEFT_CELL_CLS],
         fixed === "right" && [FIXED_BASE, FIXED_RIGHT_CELL_CLS],
         fixed === "left" && fixedShadow && FIXED_LEFT_CELL_SHADOW_CLS,
@@ -457,6 +459,8 @@ function TableActionCell({
         density === "compact" ? "h-10 px-4 py-2 text-xs" : "h-[54px] px-4 py-3 text-sm",
         // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
         "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
+        // separate 模式下，tbody 最后一行单元格不画底边，避免与外层卡片底边重合
+        "[table.border-separate_tbody_tr:last-child_&]:border-b-0",
         fixed === "left" && [FIXED_BASE, FIXED_LEFT_CELL_CLS],
         fixed === "right" && [FIXED_BASE, FIXED_RIGHT_CELL_CLS],
         fixed === "left" && fixedShadow && FIXED_LEFT_CELL_SHADOW_CLS,

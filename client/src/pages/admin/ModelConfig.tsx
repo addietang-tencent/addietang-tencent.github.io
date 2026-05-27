@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { StatusTag } from "@/components/ui/status-tag";
+import { PanelTitle, BodyText } from "@/components/ui/Typography";
 import { Textarea } from "@/components/ui/textarea";
 import { SurfaceCard } from "@/components/ui/Surface";
 import {
@@ -24,23 +24,19 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "sonner";
 import {
-  Plus, Info, Pencil, Trash2,
-  Check, X, ChevronRight, ChevronDown, Minus,
+  Plus, Info, Pencil, Trash2, X,
 } from "lucide-react";
 import { AVAILABLE_MODELS } from "@/lib/mockData";
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
-import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import {
   CUSTOM_PROVIDER_VALUE,
   useAdminModelsState,
   type ModelRow,
 } from "@/lib/modelConfigStore";
+import { ScopeEditPopover, type ScopeType } from "@/components/ScopeEditPopover";
 
 // 模型配置页不区分 OneID/普通模式，合并展示所有分组
 const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
@@ -87,37 +83,7 @@ function getGroupPath(groupId: string, groups: UserGroup[]): string {
   return chain.join("/");
 }
 
-// ─── 树形多选节点的选中状态 ─────────────────────────────
-type CheckState = "checked" | "unchecked" | "indeterminate";
-
-function getCheckState(
-  node: GroupTreeNode,
-  selectedIds: Set<string>
-): CheckState {
-  if (selectedIds.has(node.id)) return "checked";
-  if (node.children.length === 0) return "unchecked";
-  let hasChecked = false;
-  let hasUnchecked = false;
-  for (const c of node.children) {
-    const s = getCheckState(c, selectedIds);
-    if (s === "checked") hasChecked = true;
-    else if (s === "unchecked") hasUnchecked = true;
-    else { hasChecked = true; hasUnchecked = true; }
-    if (hasChecked && hasUnchecked) return "indeterminate";
-  }
-  if (hasChecked && !hasUnchecked) return "checked";
-  if (!hasChecked && hasUnchecked) return "unchecked";
-  return "indeterminate";
-}
-
-/** 获取子孙所有 id（含自身） */
-function getDescendantIds(node: GroupTreeNode): string[] {
-  const ids: string[] = [node.id];
-  node.children.forEach((c) => ids.push(...getDescendantIds(c)));
-  return ids;
-}
-
-// 应用范围 Popover 编辑面板（树形多选版）
+// 应用范围 Popover 编辑面板（复用通用 ScopeEditPopover 组件）
 function ScopePopover({
   model,
   groups,
@@ -125,221 +91,13 @@ function ScopePopover({
 }: {
   model: ModelRow;
   groups: UserGroup[];
-  onSave: (id: string, scope: "all" | "groups", groupIds: string[]) => void;
+  onSave: (id: string, scope: ScopeType, groupIds: string[]) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [draftScope, setDraftScope] = useState<"all" | "groups">(model.visibilityScope);
-  const [draftGroupIds, setDraftGroupIds] = useState<string[]>(model.visibilityGroupIds);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-
-  // 按展示分区分桶构建树（oneid-group + manual 合并为 "custom"）
-  type DisplayBucket = "dept" | "custom";
-  const groupsByBucket = useMemo(() => {
-    const buckets: Record<DisplayBucket, UserGroup[]> = { dept: [], custom: [] };
-    groups.forEach((g) => {
-      if (g.source === "oneid-dept") buckets.dept.push(g);
-      else buckets.custom.push(g);
-    });
-    return buckets;
-  }, [groups]);
-
-  const activeBuckets = useMemo(() => {
-    const order: DisplayBucket[] = ["dept", "custom"];
-    return order.filter((b) => groupsByBucket[b].length > 0);
-  }, [groupsByBucket]);
-
-  const BUCKET_LABELS: Record<DisplayBucket, string> = { dept: "部门", custom: "自定义分组" };
-
-  // 每个分区的树
-  const treesMap = useMemo(() => {
-    const map: Record<string, GroupTreeNode[]> = {};
-    activeBuckets.forEach((b) => { map[b] = buildGroupTree(groupsByBucket[b]); });
-    return map;
-  }, [activeBuckets, groupsByBucket]);
-
-  // 是否有可展示的分组
-  const hasGroups = activeBuckets.length > 0;
-
-  // 每次打开时同步当前模型的状态
-  const handleOpenChange = (v: boolean) => {
-    if (v) {
-      setDraftScope(model.visibilityScope);
-      setDraftGroupIds([...model.visibilityGroupIds]);
-      setSearchQuery("");
-      // 默认展开所有已选分组的祖先
-      const expandSet = new Set<string>();
-      const groupMap = new Map(groups.map((g) => [g.id, g]));
-      model.visibilityGroupIds.forEach((gid) => {
-        let cur = groupMap.get(gid);
-        while (cur && cur.parentId) {
-          expandSet.add(cur.parentId);
-          cur = groupMap.get(cur.parentId);
-        }
-      });
-      // 也展开根节点
-      activeBuckets.forEach((b) => {
-        treesMap[b]?.forEach((root) => expandSet.add(root.id));
-      });
-      setExpanded(expandSet);
-    }
-    setOpen(v);
-  };
-
-  const toggleExpand = (id: string) =>
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-
-  // 树节点 check/uncheck 逻辑
-  const toggleNode = (node: GroupTreeNode) => {
-    const ids = new Set(draftGroupIds);
-    const state = getCheckState(node, ids);
-    const descendants = getDescendantIds(node);
-    if (state === "checked") {
-      // 取消自身及所有子孙
-      descendants.forEach((d) => ids.delete(d));
-    } else {
-      // 选中自身及所有子孙
-      descendants.forEach((d) => ids.add(d));
-    }
-    setDraftGroupIds(Array.from(ids));
-  };
-
-  const handleClearSelection = () => {
-    setDraftGroupIds([]);
-    setSearchQuery("");
-  };
-
-  // 确认按钮是否可点击：按分组时至少选了一个分组
-  const isConfirmDisabled = draftScope === "groups" && draftGroupIds.length === 0;
-
-  const handleConfirm = () => {
-    if (isConfirmDisabled) return;
-    onSave(
-      model.id,
-      draftScope,
-      draftScope === "all" ? [] : draftGroupIds,
-    );
-    setOpen(false);
-    toast.success("应用范围已更新");
-  };
-
-  // 搜索过滤：扁平匹配
-  const matchedGroupIds = useMemo(() => {
-    if (!searchQuery.trim()) return null; // null = 不过滤
-    const q = searchQuery.toLowerCase();
-    return new Set(
-      groups
-        .filter((g) => g.name.toLowerCase().includes(q) || getGroupPath(g.id, groups).toLowerCase().includes(q))
-        .map((g) => g.id)
-    );
-  }, [searchQuery, groups]);
-
-  // 判断节点或其子孙是否匹配搜索
-  const isNodeVisible = (node: GroupTreeNode): boolean => {
-    if (!matchedGroupIds) return true;
-    if (matchedGroupIds.has(node.id)) return true;
-    return node.children.some(isNodeVisible);
-  };
-
-  // 渲染一个树节点
-  const renderTreeNode = (node: GroupTreeNode, depth: number) => {
-    if (!isNodeVisible(node)) return null;
-
-    const selectedSet = new Set(draftGroupIds);
-    const checkState = getCheckState(node, selectedSet);
-    const isExpanded = expanded.has(node.id);
-    const hasChildren = node.children.length > 0;
-
-    return (
-      <div key={node.id}>
-        <button
-          onClick={() => toggleNode(node)}
-          className="w-full flex items-center gap-1.5 px-2 py-1.5 rounded-[4px] hover:bg-[#f5f5f5] transition-colors text-left"
-          style={{ paddingLeft: 8 + depth * 16 }}
-        >
-          {/* 展开/折叠 */}
-          {hasChildren ? (
-            <span
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpand(node.id);
-              }}
-              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-3 h-3" />
-              ) : (
-                <ChevronRight className="w-3 h-3" />
-              )}
-            </span>
-          ) : (
-            <span className="w-4 h-4 shrink-0" />
-          )}
-          {/* Checkbox 三态 */}
-          <span
-            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-              checkState === "checked"
-                ? "bg-[#eff4ff]0 border-blue-500"
-                : checkState === "indeterminate"
-                  ? "bg-[#eff4ff]0 border-blue-500"
-                  : "border-gray-300 bg-white"
-            }`}
-          >
-            {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
-            {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
-          </span>
-          <span className="text-xs text-[#334155] truncate">{node.name}</span>
-        </button>
-        {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
-      </div>
-    );
-  };
-
-  // 已选分组标签（子孙全选时自动合并为父分组）
-  const selectedTags = useMemo(() => {
-    const selectedSet = new Set(draftGroupIds);
-    // 利用树结构找到"有效最高节点"：如果一个节点的所有子孙都被选中，则该节点代表它们
-    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
-      const result: string[] = [];
-      for (const node of nodes) {
-        const state = getCheckState(node, selectedSet);
-        if (state === "checked") {
-          result.push(node.id);
-        } else if (state === "indeterminate") {
-          result.push(...collectEffective(node.children));
-        }
-      }
-      return result;
-    };
-    const effectiveIds: string[] = [];
-    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
-    return effectiveIds.map((gid) => ({ id: gid, path: getGroupPath(gid, groups) }));
-  }, [draftGroupIds, groups, activeBuckets, treesMap]);
-
-  // 解析已选分组名（用于表格徽章展示）
-  const selectedGroupPaths = useMemo(() => {
-    const selectedSet = new Set(model.visibilityGroupIds);
-    const collectEffective = (nodes: GroupTreeNode[]): string[] => {
-      const result: string[] = [];
-      for (const node of nodes) {
-        const state = getCheckState(node, selectedSet);
-        if (state === "checked") {
-          result.push(node.id);
-        } else if (state === "indeterminate") {
-          result.push(...collectEffective(node.children));
-        }
-      }
-      return result;
-    };
-    const effectiveIds: string[] = [];
-    activeBuckets.forEach((b) => { effectiveIds.push(...collectEffective(treesMap[b] || [])); });
-    return effectiveIds.map((gid) => getGroupPath(gid, groups));
-  }, [groups, model.visibilityGroupIds, activeBuckets, treesMap]);
+  const selectedGroupPaths = useMemo(() => (
+    model.visibilityGroupIds
+      .map((gid) => getGroupPath(gid, groups))
+      .filter(Boolean)
+  ), [groups, model.visibilityGroupIds]);
 
   const renderScopeText = () => {
     if (model.visibilityScope === "all" || selectedGroupPaths.length === 0) {
@@ -368,149 +126,27 @@ function ScopePopover({
   return (
     <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[220px]">
       {renderScopeText()}
-      <Popover open={open} onOpenChange={handleOpenChange}>
-        <PopoverTrigger asChild>
+      <ScopeEditPopover
+        scope={model.visibilityScope}
+        selectedGroupIds={model.visibilityGroupIds}
+        groups={groups}
+        showBadges={false}
+        align="start"
+        trigger={
           <button
+            type="button"
             className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors"
             title="编辑应用范围"
+            onClick={(e) => e.stopPropagation()}
           >
             <Pencil className="w-3 h-3" />
           </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-72 p-0 flex flex-col max-h-[420px]" align="start" sideOffset={6}>
-          <div className="px-3.5 pt-3.5 pb-2.5 space-y-2.5 overflow-y-auto flex-1 min-h-0">
-            {/* Segment 切换（标准分段选择器） */}
-            <SegmentGroup className="w-full">
-              <SegmentOption
-                active={draftScope === "all"}
-                onClick={() => setDraftScope("all")}
-                className="flex-1"
-              >
-                全部用户
-              </SegmentOption>
-              <SegmentOption
-                active={draftScope === "groups"}
-                onClick={() => setDraftScope("groups")}
-                className="flex-1"
-              >
-                按分组
-              </SegmentOption>
-            </SegmentGroup>
-
-            {/* 分组列表（仅 groups 模式） */}
-            {draftScope === "groups" && (
-              <div className="space-y-1.5">
-                {!hasGroups ? (
-                  /* 无分组空状态 */
-                  <div className="text-center py-5 px-2">
-                    <p className="text-xs text-[#A3A3A3] leading-relaxed">
-                      暂无分组，请前往
-                      <a
-                        href="/admin/members"
-                        className="text-[#355EF1] hover:text-[#355EF1] hover:underline mx-0.5"
-                        onClick={(e) => { e.preventDefault(); setOpen(false); window.location.href = "/admin/members"; }}
-                      >
-                        用户管理
-                      </a>
-                      建立分组
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    {/* 合并搜索框 + 已选标签 */}
-                    <div
-                      className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-[#e5e5e5] rounded-[4px] bg-[#fafafa] focus-within:border-[#355EF1] focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto"
-                    >
-                      {selectedTags.map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-[#eff4ff] text-[#355EF1] text-[10px] rounded-[4px] border border-blue-100 shrink-0 max-w-[200px]"
-                        >
-                          <span className="truncate">{tag.path}</span>
-                          <button
-                            onClick={() => {
-                              const findNode = (nodes: GroupTreeNode[]): GroupTreeNode | undefined => {
-                                for (const n of nodes) {
-                                  if (n.id === tag.id) return n;
-                                  const found = findNode(n.children);
-                                  if (found) return found;
-                                }
-                                return undefined;
-                              };
-                              let targetNode: GroupTreeNode | undefined;
-                              for (const b of activeBuckets) {
-                                targetNode = findNode(treesMap[b] || []);
-                                if (targetNode) break;
-                              }
-                              const idsToRemove = targetNode ? new Set(getDescendantIds(targetNode)) : new Set([tag.id]);
-                              setDraftGroupIds((prev) => prev.filter((id) => !idsToRemove.has(id)));
-                            }}
-                            className="text-[#355EF1] hover:text-[#355EF1] shrink-0"
-                          >
-                            <X className="w-2.5 h-2.5" />
-                          </button>
-                        </span>
-                      ))}
-                      <input
-                        type="text"
-                        placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-[#A3A3A3]"
-                      />
-                      {/* 清除全部按钮：hover 时显示 */}
-                      {(selectedTags.length > 0 || searchQuery) && (
-                        <button
-                          onClick={handleClearSelection}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="清除全部"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* 分组树形列表（按分区 + 小标题） */}
-                    <div className="max-h-[220px] overflow-y-auto">
-                      {activeBuckets.map((bucket) => {
-                        const trees = treesMap[bucket];
-                        if (!trees || trees.length === 0) return null;
-                        const anyVisible = trees.some(isNodeVisible);
-                        if (!anyVisible) return null;
-                        return (
-                          <div key={bucket} className="mb-1">
-                            <div className="px-2 py-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wider">
-                              {BUCKET_LABELS[bucket]}
-                            </div>
-                            {trees.map((root) => renderTreeNode(root, 0))}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 底部按钮 */}
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#e5e5e5] shrink-0">
-            <Button size="claw-sm" variant="claw-outline" className="h-7 px-3 text-xs" onClick={() => setOpen(false)}>
-              取消
-            </Button>
-            <Button
-              size="claw-sm"
-              variant="claw-primary"
-              className="h-7 px-3 text-xs"
-              disabled={isConfirmDisabled}
-              onClick={handleConfirm}
-            >
-              确认
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
+        }
+        onConfirm={(scope, groupIds) => {
+          onSave(model.id, scope, groupIds);
+          toast.success("应用范围已更新");
+        }}
+      />
     </div>
   );
 }
@@ -554,7 +190,7 @@ function EditQuotaDialog({
         <DialogFooter>
           <Button variant="claw-outline" size="claw-sm" onClick={onClose}>取消</Button>
           <Button
-            variant="claw-primary"
+            variant="dialog-confirm"
             size="claw-sm"
             onClick={() => { onSave(model.id, limit); onClose(); }}
           >
@@ -765,22 +401,22 @@ export default function ModelConfig() {
           </SurfaceCard>
         </div>
 
-        <SurfaceCard className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[#E5E5E5] px-5 py-4">
-            <div>
-              <h2 className="text-base font-semibold text-[#0A0A0A]">模型列表</h2>
-              <p className="mt-1 text-xs text-[#737373]">集中管理模型接入、配额、用户可见性与默认配置。</p>
-            </div>
-            <Button variant="claw-primary" size="claw-sm" onClick={openAddDialog}>
-              <Plus className="w-3.5 h-3.5" />
-              添加模型
-            </Button>
+        <div className="flex items-center justify-between !mt-16">
+          <div>
+            <PanelTitle>模型列表</PanelTitle>
+            <BodyText as="p" tone="muted" className="mt-1">集中管理模型接入、配额、用户可见性与默认配置。</BodyText>
           </div>
+          <Button variant="claw-primary" size="claw-sm" onClick={openAddDialog}>
+            <Plus className="w-3.5 h-3.5" />
+            添加模型
+          </Button>
+        </div>
 
+        <SurfaceCard className="overflow-hidden">
           <Table scrollX={1406}>
             <TableHeader>
               <TableRow>
-                <TableHead fixed="left" style={{ width: 260, minWidth: 260, maxWidth: 260 }}>模型信息</TableHead>
+                <TableHead fixed="left" style={{ width: 220, minWidth: 220, maxWidth: 220 }}>模型信息</TableHead>
                 <TableHead className="w-[280px]">接入地址</TableHead>
                 <TableHead className="w-[150px]">每日配额</TableHead>
                 <TableHead className="w-[120px]">
@@ -838,7 +474,7 @@ export default function ModelConfig() {
 
                 return (
                   <TableRow key={model.id}>
-                    <TableCell fixed="left" style={{ width: 260, minWidth: 260, maxWidth: 260 }}>
+                    <TableCell fixed="left" style={{ width: 220, minWidth: 220, maxWidth: 220 }}>
                       <div className="min-w-0 space-y-2">
                         <div className="flex min-w-0 items-center gap-2">
                           <p className="truncate text-sm font-medium text-[#0A0A0A]">{model.name}</p>
@@ -860,15 +496,16 @@ export default function ModelConfig() {
                       </Tooltip>
                     </TableCell>
                     <TableCell className="w-[150px]">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <p className="text-sm font-medium tabular-nums text-[#020617]">{model.dailyLimit.toLocaleString()}</p>
-                          <p className="text-xs text-[#A3A3A3]">tokens / day</p>
-                        </div>
-                        <Button variant="link-dark" size="sm" className="text-xs" onClick={() => openEditQuota(model)}>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium tabular-nums text-[#020617]">{model.dailyLimit.toLocaleString()}</span>
+                        <button
+                          type="button"
+                          className="inline-flex items-center text-[#A3A3A3] transition-colors hover:text-[#1447E6]"
+                          onClick={() => openEditQuota(model)}
+                          aria-label="编辑每日配额"
+                        >
                           <Pencil className="w-3 h-3" />
-                          编辑
-                        </Button>
+                        </button>
                       </div>
                     </TableCell>
                     <TableCell className="w-[120px]">
@@ -930,7 +567,7 @@ export default function ModelConfig() {
                       />
                     </TableCell>
                     <TableActionCell fixed="right" style={{ width: 96, minWidth: 96, maxWidth: 96 }} actionsClassName="justify-start">
-                      <Button variant="link" size="sm" className="text-xs" onClick={() => setDeleteConfirmModel(model)}>
+                      <Button variant="link" size="sm" className="text-[14px]" onClick={() => setDeleteConfirmModel(model)}>
                         删除
                       </Button>
                     </TableActionCell>

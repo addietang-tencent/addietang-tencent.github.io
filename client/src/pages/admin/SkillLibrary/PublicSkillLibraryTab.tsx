@@ -114,7 +114,7 @@ function RankBadge({ rank }: { rank: number }) {
     : "bg-[#F5F5F5] text-[#0A0A0A]";
 
   return (
-    <div className={`absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full flex items-center justify-center z-10 ${style}`}>
+    <div className={`absolute left-0 top-0 z-10 flex h-6 w-6 items-center justify-center rounded-br-[12px] rounded-tl-[4px] ${style}`}>
       <span className="text-xs font-bold tracking-[0.18px]">{rank}</span>
     </div>
   );
@@ -150,8 +150,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-[#e5e5e5] cursor-pointer hover:border-gray-200 transition-all group flex flex-col"
-     
+      className="relative flex flex-col overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white cursor-pointer transition-all hover:border-gray-200 group"
       onClick={onClick}
     >
       {rank > 0 && <RankBadge rank={rank} />}
@@ -183,7 +182,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleFavoriteClick}
-            className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+            className={`w-7 h-7 rounded-[4px] flex items-center justify-center transition-colors ${
               isFavorited
                 ? 'text-red-500 bg-red-50 hover:bg-red-100'
                 : 'text-[#A3A3A3] hover:text-red-500 hover:bg-red-50'

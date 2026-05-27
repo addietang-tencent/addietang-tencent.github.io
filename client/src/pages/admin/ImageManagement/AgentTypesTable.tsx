@@ -27,11 +27,12 @@
 import { useMemo, useState, type ReactNode } from "react";
 import {
   History,
-  ArrowLeftRight,
+  Pencil,
   Megaphone,
   RotateCcw,
 } from "lucide-react";
 import { Button, SmallIconStateButton } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusTag } from "@/components/ui/status-tag";
@@ -122,11 +123,12 @@ export default function AgentTypesTable({
       <Table className="table-auto" scrollX={1280}>
         <TableHeader>
           <TableRow>
-            <TableHead fixed="left" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
+            <TableHead fixed="left" className="!bg-transparent" style={{ width: 300, minWidth: 300, maxWidth: 300 }}>
               Agent 类型
             </TableHead>
             <TableHead style={{ minWidth: 170 }}>Agent 版本</TableHead>
             <TableHead style={{ minWidth: 320 }}>镜像</TableHead>
+            <TableHead style={{ minWidth: 100 }}>镜像状态</TableHead>
             <TableHead style={{ minWidth: 160 }}>应用范围</TableHead>
             <TableHead style={{ minWidth: 100 }}>用户可见</TableHead>
             <TableHead fixed="right" style={{ minWidth: 220, width: "1%" }}>操作</TableHead>
@@ -222,30 +224,31 @@ function AgentTypeRow({
       {/* 1. Agent 类型 */}
       <TableCell
         fixed="left"
-        className="py-4 align-top whitespace-normal"
-        style={{ width: 300, minWidth: 300, maxWidth: 300 }}
+        className="py-4 align-top whitespace-normal !bg-transparent"
+        style={{
+          width: 300,
+          minWidth: 300,
+          maxWidth: 300,
+        }}
       >
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-sm font-semibold text-gray-900 truncate max-w-[160px]">
             {label}
           </span>
-          {isDefault && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span><StatusTag mode="fill" variant="blue">用户端首选</StatusTag></span>
-              </TooltipTrigger>
-              <TooltipContent className="text-xs">
-                用户端首选 Agent 类型
-              </TooltipContent>
-            </Tooltip>
-          )}
         </div>
-        {(isNative || (customType && !isNative && kernelBaseLabel)) && (
-          <div className="mt-1 flex items-center gap-1 flex-wrap">
+        {(isDefault || isNative || (customType && !isNative && kernelBaseLabel)) && (
+          <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+            {isDefault && (
+              <Badge className="h-5 px-2 py-[2px] text-xs font-normal bg-[#1447E6] text-white border-transparent hover:bg-[#1447E6]/90">
+                用户端首选
+              </Badge>
+            )}
             {isNative && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span><StatusTag mode="fill" variant="gray">自定义内核</StatusTag></span>
+                  <span className="inline-flex">
+                    <StatusTag variant="gray">自定义内核</StatusTag>
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[260px] text-xs leading-relaxed">
                   完全自研内核：管控台部分功能不可用，用户需通过终端配置
@@ -255,7 +258,9 @@ function AgentTypeRow({
             {customType && !isNative && kernelBaseLabel && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span><StatusTag mode="fill" variant="gray">兼容 {kernelBaseLabel}</StatusTag></span>
+                  <span className="inline-flex">
+                    <StatusTag variant="gray">兼容 {kernelBaseLabel}</StatusTag>
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[240px] text-xs leading-relaxed">
                   与 {kernelBaseLabel} 完全兼容，管控台功能保持一致
@@ -273,18 +278,14 @@ function AgentTypeRow({
             image={selected}
             agentType={view.agentType}
             agentLabel={label}
-            isEnabled={isEnabled}
             onViewHistory={() => onViewPublicHistory(selected.id)}
-            onPushUpgrade={onPushUpgrade}
-            onRevokePush={onRevokePush}
-            pushableInfo={pushableInfo}
           />
         ) : (
           <span className="text-[12px] text-gray-400">—</span>
         )}
       </TableCell>
 
-      {/* 3. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID + 导入时间 + 状态） */}
+      {/* 3. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID） */}
       <TableCell className="py-4 align-top whitespace-normal">
         {selected ? (
           <ImageCombinedCell
@@ -296,14 +297,34 @@ function AgentTypeRow({
         )}
       </TableCell>
 
-      {/* 4. 应用范围（外部注入） */}
+      {/* 4. 镜像状态（独立列） */}
+      <TableCell className="py-4 align-top">
+        {selected ? (
+          <ImageStatusBadge status={selected.status} />
+        ) : (
+          <span className="text-[12px] text-gray-400">—</span>
+        )}
+      </TableCell>
+
+      {/* 5. 应用范围（外部注入） */}
       <TableCell className="py-4 align-top whitespace-normal">
         {scopeSlot}
       </TableCell>
 
-      {/* 5. 用户可见 */}
+      {/* 6. 用户可见 */}
       <TableCell className="py-4 align-top">
-        {selected ? (
+        {isDefault ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-1.5 cursor-not-allowed">
+                <Switch checked disabled />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              用户端首选 Agent 必须保持用户可见
+            </TooltipContent>
+          </Tooltip>
+        ) : selected ? (
           isEnabled ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -418,101 +439,61 @@ function AgentTypeRow({
   );
 }
 
-// ─── Agent 版本单元（版本号 + 维护标签 + 版本更新记录入口） ───────────
+// ─── Agent 版本单元（版本号 + 更新记录入口） ───────────
 function AgentVersionCell({
   image,
   agentType,
-  agentLabel,
-  isEnabled,
   onViewHistory,
-  onPushUpgrade,
-  onRevokePush,
-  pushableInfo,
 }: {
   image: ViewImage;
   agentType: string;
   agentLabel: string;
-  isEnabled: boolean;
   onViewHistory?: () => void;
-  onPushUpgrade?: () => void;
-  onRevokePush?: () => void;
-  pushableInfo?: { outdatedInstanceCount: number; allUpToDate: boolean; isActivePushing?: boolean };
 }) {
   const isPublic = image.source === "public";
-  // 是否存在该 agentType 的更新记录（仅系统预设公共镜像有）
   const versionKey = IMG_TO_VERSION_KEY[agentType];
   const versionList = versionKey
     ? AGENT_VERSIONS.filter((v) => v.agentType === versionKey)
     : [];
   const hasHistory = isPublic && !!onViewHistory && versionList.length > 0;
-  // 是否存在更新（最新版本与当前镜像版本不一致即视为有更新）
-  const latestVersion = versionList.find((v) => v.isLatest)?.version;
-  const normalize = (s: string) => s.replace(/^v/i, "").trim();
-  const hasNewVersion =
-    hasHistory &&
-    !!latestVersion &&
-    normalize(latestVersion) !== normalize(image.agentVersion);
-  const isActivePushing = pushableInfo?.isActivePushing;
-  const canPush = isEnabled && !!pushableInfo && !pushableInfo.allUpToDate;
   return (
     <div className="min-w-0">
       <div className="flex items-center gap-1.5 whitespace-nowrap">
         <span className="text-sm font-medium text-gray-900">
           v{image.agentVersion}
         </span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-flex">
-              <SmallIconStateButton
-                state={hasHistory ? "default" : "disabled"}
-                label=""
-                icon={History}
-                onClick={hasHistory ? onViewHistory : undefined}
-              />
-            </span>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs">
-            {hasHistory
-              ? `查看 ${agentLabel} 更新记录`
-              : `暂无 ${agentLabel} 更新记录`}
-          </TooltipContent>
-        </Tooltip>
-        {/* 推送 / 撤回按钮（与「切换」按钮同款 SmallIconStateButton 默认尺寸） */}
-        {hasNewVersion && isActivePushing && onRevokePush ? (
+        {onViewHistory && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <SmallIconStateButton
-                icon={RotateCcw}
-                label="撤回推送"
-                onClick={onRevokePush}
-              />
+              <button
+                type="button"
+                disabled={!hasHistory}
+                onClick={onViewHistory}
+                className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#737373] hover:text-[#020617] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#A3A3A3] disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+                aria-label="版本更新记录"
+              >
+                <History className="w-3.5 h-3.5" />
+              </button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs max-w-[220px]">
-              撤回后用户端的"可更新"徽章将立即消失
+            <TooltipContent side="top" className="text-xs">
+              {hasHistory ? "版本更新记录" : "暂无版本更新记录"}
             </TooltipContent>
           </Tooltip>
-        ) : hasNewVersion && canPush && onPushUpgrade ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <SmallIconStateButton
-                icon={Megaphone}
-                label="推送最新版本"
-                onClick={onPushUpgrade}
-              />
-            </TooltipTrigger>
-            <TooltipContent side="top" className="text-xs max-w-[260px]">
-              立即向使用旧版本的 Agent 推送 v{latestVersion} 更新提醒
-            </TooltipContent>
-          </Tooltip>
-        ) : null}
+        )}
       </div>
-      {/* 二级说明文字：有新版本 / 用户已更新到最新版本 */}
-      {hasNewVersion ? (
-        <div className="text-[12px] text-gray-500 mt-1 whitespace-nowrap">
-          有新版本 <span className="font-mono text-gray-900">v{latestVersion}</span>
+      {isPublic && (
+        <div className="mt-0.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <StatusTag variant="gray">腾讯云维护更新</StatusTag>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              由腾讯云持续维护更新，自动跟随官方版本
+            </TooltipContent>
+          </Tooltip>
         </div>
-      ) : (
-        <div className="text-[12px] text-gray-400 mt-1">用户已更新到最新版本</div>
       )}
     </div>
   );
@@ -539,14 +520,15 @@ function ImageCombinedCell({
         {/* 切换镜像 */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="shrink-0 inline-flex">
-              <SmallIconStateButton
-                state="default"
-                label="切换"
-                icon={ArrowLeftRight}
-                onClick={onSwitchImage}
-              />
-            </span>
+            <button
+              type="button"
+              onClick={onSwitchImage}
+              className="cursor-pointer self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors shrink-0"
+              aria-label="切换镜像"
+              title="切换镜像"
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
             切换镜像
@@ -554,33 +536,7 @@ function ImageCombinedCell({
         </Tooltip>
       </div>
       <div className="flex items-center gap-2 text-[12px] text-gray-400 mt-0.5 flex-wrap">
-        <span className="font-mono truncate">{image.id}</span>
-        <span className="text-gray-200">|</span>
-        <ImageStatusBadge status={image.status} />
-        {isPublic && (
-          <>
-            <span className="text-gray-200">|</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="text-[12px] text-gray-400 inline-block cursor-default underline decoration-dashed underline-offset-2 decoration-gray-300">
-                  腾讯云维护
-                </span>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                由腾讯云持续维护更新，自动跟随官方版本
-              </TooltipContent>
-            </Tooltip>
-          </>
-        )}
-        {/* 仅自定义镜像展示导入时间，公共镜像不展示（公共镜像无"导入"语义） */}
-        {!isPublic && image.createTime && (
-          <>
-            <span className="text-gray-200">|</span>
-            <span className="text-gray-400 whitespace-nowrap">
-              导入 {image.createTime.split(" ")[0]}
-            </span>
-          </>
-        )}
+        <span className="truncate">{image.id}</span>
       </div>
     </div>
   );

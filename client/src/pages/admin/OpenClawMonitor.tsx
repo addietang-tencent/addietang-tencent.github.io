@@ -3716,7 +3716,12 @@ export default function AgentMonitor() {
   );
 }
 
-// ─── 工具栏铃铛入口：镜像更新提醒（独立组件，不污染主组件状态） ─────────────
+// ─── 工具栏新版本提醒入口（与 Agent 类型页同款黄色横幅，点击跳转到全部更新记录） ─────
 function ImageUpdateBellEntry() {
-  return <NewVersionPushNotice variant="bell" />;
+  const [, setLocation] = useLocation();
+  return (
+    <NewVersionPushNotice
+      onViewAllRecords={() => setLocation("/admin/agent-types?openRecords=1")}
+    />
+  );
 }

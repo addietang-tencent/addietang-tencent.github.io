@@ -17,13 +17,16 @@ import { useMemo, useState, useEffect } from "react";
 import {
   Sheet,
   SheetContent,
+  SheetClose,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { SmallIconStateButton } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Megaphone, RotateCcw, Disc3 } from "lucide-react";
+import { Bell, Megaphone, RotateCcw, Disc3, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   listActivePushes,
@@ -45,6 +48,8 @@ export interface PushableItem {
   allUpToDate: boolean;
   imageSource: "public" | "custom";
   imageName: string;
+  /** 启用镜像 id（用于精确匹配时间线卡片，避免同 agentType 下其它镜像被误判为"可推送"） */
+  enabledImage?: { id: string };
 }
 
 /** 外部传入的初始筛选条件：进入侧边栏时自动定位 */
@@ -62,6 +67,8 @@ interface Props {
   pushable?: PushableItem[];
   /** 进入侧边栏时的初始筛选（如：从某行的"版本更新记录"按钮触发，自动筛选到该镜像） */
   initialFilter?: DrawerInitialFilter;
+  /** 进入侧边栏时是否默认开启「仅看可推送新版本」开关（如：从黄色「新版本更新推送提醒」横幅触发时为 true） */
+  initialPushableOnly?: boolean;
 }
 
 // ─── 镜像彩色徽章：稳定 hash → 颜色，使同一镜像在视觉上保持一致 ────
@@ -80,11 +87,11 @@ function hashImageColor(imageId: string): typeof IMAGE_COLOR_PALETTE[number] {
   return IMAGE_COLOR_PALETTE[h % IMAGE_COLOR_PALETTE.length];
 }
 
-export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPush, pushable = [], initialFilter }: Props) {
+export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPush, pushable = [], initialFilter, initialPushableOnly = false }: Props) {
   /** 仅显示当前可推送给员工的版本记录 */
-  const [showPushableOnly, setShowPushableOnly] = useState(false);
+  const [showPushableOnly, setShowPushableOnly] = useState(initialPushableOnly);
 
-  useEffect(() => { if (open) setShowPushableOnly(false); }, [open]);
+  useEffect(() => { if (open) setShowPushableOnly(initialPushableOnly); }, [open, initialPushableOnly]);
 
   // 活跃推送列表
   const [activePushes, setActivePushes] = useState<ActivePush[]>(() => listActivePushes());
@@ -132,13 +139,13 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
     return grouped;
   }, [records]);
 
-  /** 当前可推送版本的命中集合：agentType -> enabledVersion（仅含尚有过期 Agent 的类型） */
-  const pushableVersionByType = useMemo(() => {
-    const map = new Map<string, string>();
-    pushable.filter((p) => !p.allUpToDate).forEach((p) => {
-      map.set(p.agentType, p.enabledVersion);
+  /** 当前可推送的"启用镜像版本"键集合：`${imageId}::${version}` —— 仅命中真正启用的镜像 */
+  const pushableImageVersionKeys = useMemo(() => {
+    const set = new Set<string>();
+    pushable.filter((p) => !p.allUpToDate && p.enabledImage?.id).forEach((p) => {
+      set.add(`${p.enabledImage!.id}::${p.enabledVersion}`);
     });
-    return map;
+    return set;
   }, [pushable]);
 
   const filtered = useMemo(() => {
@@ -146,10 +153,20 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
     if (filter.kind === "type") list = list.filter((r) => r.agentType === filter.value);
     else if (filter.kind === "image") list = list.filter((r) => r.imageId === filter.value);
     if (showPushableOnly) {
-      list = list.filter((r) => pushableVersionByType.get(r.agentType) === r.version);
+      // 命中"用户可见 + 启用版本 + 有过期实例"的镜像记录
+      list = list.filter((r) => pushableImageVersionKeys.has(`${r.imageId}::${r.version}`));
+      // 同一镜像可能存在多条相同 version 的发布记录（不同 releaseDate），仅保留最新一条，
+      // 保证卡片数量与 Alert 中「可推送镜像数」一一对应
+      const seen = new Set<string>();
+      list = list.filter((r) => {
+        const key = `${r.imageId}::${r.version}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
     return list;
-  }, [records, filter, showPushableOnly, pushableVersionByType]);
+  }, [records, filter, showPushableOnly, pushableImageVersionKeys]);
 
   /**
    * 计算"每个镜像的最新一条记录索引"——按镜像聚合时，
@@ -206,93 +223,193 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
-      <SheetContent side="right" showOverlay={false} className="sm:max-w-[420px] overflow-y-auto p-0">
+      <SheetContent side="right" showOverlay={false} className="sm:max-w-[420px] overflow-y-auto p-0 [&>[data-slot=sheet-close]]:hidden">
         <SheetHeader className="px-6 pt-6 pb-3 shrink-0">
-          <SheetTitle className="text-base">
-            全部更新记录
-          </SheetTitle>
+          <div className="flex items-center justify-between gap-4">
+            <SheetTitle className="text-base shrink-0">
+              版本更新记录
+            </SheetTitle>
+            <div className="flex items-center gap-4 ml-auto">
+              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                <span className="text-xs text-[#525252]">仅看可推送新版本</span>
+                <Switch
+                  checked={showPushableOnly}
+                  onCheckedChange={setShowPushableOnly}
+                />
+              </label>
+              <SheetClose
+                aria-label="关闭"
+                className="flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+              >
+                <X className="size-5" />
+              </SheetClose>
+            </div>
+          </div>
         </SheetHeader>
 
         {/* 筛选区 */}
-        <div className="px-6 pb-3 space-y-2 shrink-0">
-          {/* 第一级：Agent 类型 */}
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
-              Agent 类型
-            </span>
-            <div className="flex items-center gap-1.5 flex-wrap">
-            <button
-              onClick={() => setFilter({ kind: "all", value: "" })}
-              className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                filter.kind === "all"
-                  ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
-                  : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
-              }`}
-            >
-              全部
-            </button>
-            {types.map((t) => {
-              const isActive =
-                filter.kind === "type" && filter.value === t.agentType
-                || filter.kind === "image"
-                  && records.find((r) => r.imageId === filter.value)?.agentType === t.agentType;
-              return (
+        <div className="px-6 pb-3 space-y-3 shrink-0">
+          {/* 新版本更新推送提醒：黄色 Alert（仅当「仅看可推送新版本」开关开启 + 存在可推送的新版本时展示） */}
+          {showPushableOnly && (() => {
+            // 仅统计「在时间线中能找到对应卡片」的可推送项：
+            //   - 该类型已启用且有过期实例
+            //   - 启用镜像 id 出现在公共镜像记录中
+            //   - 启用版本 = 该镜像最新记录版本（即时间线会展示的"最新版本"卡片）
+            const pushableList = pushable.filter(
+              (p) => !p.allUpToDate
+                && !!p.enabledImage?.id
+                && pushableImageVersionKeys.has(`${p.enabledImage!.id}::${p.enabledVersion}`),
+            );
+            const totalNew = pushableList.length;
+            if (totalNew === 0) return null;
+            const pushed = pushableList.filter((p) =>
+              activePushes.some(
+                (ap) => ap.agentType === p.agentType && ap.version === p.enabledVersion,
+              ),
+            ).length;
+            const handlePushAll = () => {
+              const now = new Date();
+              const pad = (n: number) => String(n).padStart(2, "0");
+              const pushedAt = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+              pushableList.forEach((p) => {
+                setActivePush({
+                  agentType: p.agentType,
+                  agentTypeLabel: p.agentTypeLabel,
+                  version: p.enabledVersion,
+                  imageSource: p.imageSource,
+                  imageName: p.imageName,
+                  pushedAt,
+                  pushedBy: "admin@company.com",
+                  message: `管理员推荐升级到 v${p.enabledVersion}`,
+                });
+              });
+              setActivePushes(listActivePushes());
+              toast.success(`已推送 ${totalNew} 个 Agent 类型的最新版本更新提醒`);
+            };
+            const handleRevokeAll = () => {
+              pushableList.forEach((p) => clearActivePush(p.agentType));
+              setActivePushes(listActivePushes());
+              toast.success(`已撤回 ${totalNew} 个 Agent 类型的推送提醒`);
+            };
+            const allPushed = pushed === totalNew;
+            return (
+              <Alert variant="warning">
+                <Bell />
+                <AlertTitle>可推送新版本</AlertTitle>
+                <AlertDescription>
+                  <div className="leading-relaxed">
+                    当前有 <span className="font-medium tabular-nums">{totalNew}</span> 个用户可见的 Agent 镜像有新版本
+                  </div>
+                  <div className="leading-relaxed">
+                    <span className="font-medium tabular-nums">{pushed}</span> 个正在提醒员工更新
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <SmallIconStateButton
+                      icon={Megaphone}
+                      label={allPushed ? "已全部推送最新版本" : "一键推送全部新版本"}
+                      state={allPushed ? "disabled" : "default"}
+                      onClick={handlePushAll}
+                      className="h-5 px-1.5 text-[10px] gap-1 [&_svg]:w-2.5 [&_svg]:h-2.5"
+                    />
+                    {allPushed && (
+                      <button
+                        type="button"
+                        onClick={handleRevokeAll}
+                        className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-red-500 transition-colors"
+                      >
+                        <RotateCcw className="w-2.5 h-2.5" />
+                        全部撤回
+                      </button>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            );
+          })()}
+
+          {/* Agent 类型 / 镜像筛选（仅在「仅看可推送新版本」关闭时展示） */}
+          {!showPushableOnly && (
+            <>
+              {/* 第一级：Agent 类型 */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
+                  Agent 类型
+                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
                 <button
-                  key={t.agentType}
-                  onClick={() => setFilter({ kind: "type", value: t.agentType })}
+                  onClick={() => setFilter({ kind: "all", value: "" })}
                   className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                    isActive
+                    filter.kind === "all"
                       ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
                       : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
                   }`}
                 >
-                  {t.label}
-                  <span className="ml-1 text-[10px] text-[#A3A3A3] tabular-nums">
-                    · {imagesByType.get(t.agentType)?.length ?? 0} 镜像
-                  </span>
+                  全部
                 </button>
-              );
-            })}
-            </div>
-          </div>
+                {types.map((t) => {
+                  const isActive =
+                    filter.kind === "type" && filter.value === t.agentType
+                    || filter.kind === "image"
+                      && records.find((r) => r.imageId === filter.value)?.agentType === t.agentType;
+                  return (
+                    <button
+                      key={t.agentType}
+                      onClick={() => setFilter({ kind: "type", value: t.agentType })}
+                      className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
+                        isActive
+                          ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
+                          : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
+                      }`}
+                    >
+                      {t.label}
+                      <span className="ml-1 text-[10px] text-[#A3A3A3] tabular-nums">
+                        · {imagesByType.get(t.agentType)?.length ?? 0} 镜像
+                      </span>
+                    </button>
+                  );
+                })}
+                </div>
+              </div>
 
-          {/* 第二级：镜像（按选中的 Agent 类型展开） */}
-          {imageOptionsForActiveType.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
-                镜像
-              </span>
-              <div className="flex items-center gap-1.5 flex-wrap">
-              <button
-                onClick={() => setFilter({ kind: "type", value: activeTypeForImageFilter })}
-                className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                  filter.kind === "type"
-                    ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
-                    : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
-                }`}
-              >
-                全部镜像
-              </button>
-              {imageOptionsForActiveType.map((img) => {
-                const c = hashImageColor(img.imageId);
-                const isActive = filter.kind === "image" && filter.value === img.imageId;
-                return (
+              {/* 第二级：镜像（按选中的 Agent 类型展开） */}
+              {imageOptionsForActiveType.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
+                    镜像
+                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
                   <button
-                    key={img.imageId}
-                    onClick={() => setFilter({ kind: "image", value: img.imageId })}
-                    className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                      isActive
-                        ? `${c.bg} ${c.text} ${c.border}`
-                        : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#A3A3A3]"
+                    onClick={() => setFilter({ kind: "type", value: activeTypeForImageFilter })}
+                    className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
+                      filter.kind === "type"
+                        ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
+                        : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
                     }`}
                   >
-                    <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-                    <span className="truncate max-w-[180px]">{img.imageName}</span>
+                    全部镜像
                   </button>
-                );
-              })}
-              </div>
-            </div>
+                  {imageOptionsForActiveType.map((img) => {
+                    const c = hashImageColor(img.imageId);
+                    const isActive = filter.kind === "image" && filter.value === img.imageId;
+                    return (
+                      <button
+                        key={img.imageId}
+                        onClick={() => setFilter({ kind: "image", value: img.imageId })}
+                        className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
+                          isActive
+                            ? `${c.bg} ${c.text} ${c.border}`
+                            : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#A3A3A3]"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+                        <span className="truncate max-w-[180px]">{img.imageName}</span>
+                      </button>
+                    );
+                  })}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -345,7 +462,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                           </TooltipContent>
                         </Tooltip>
                         {isLatestOfImage && !isFirstRelease && (
-                          <Badge variant="outline" className="shrink-0">当前版本</Badge>
+                          <Badge variant="outline" className="shrink-0 text-[11px] leading-4 px-1.5 py-0 h-[18px] font-normal">最新版本</Badge>
                         )}
                       </div>
 
@@ -410,8 +527,17 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                                 className="h-5 px-1.5 text-[10px] gap-1 [&_svg]:w-2.5 [&_svg]:h-2.5"
                               />
                             </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs max-w-[280px]">
-                              点击后将直接推送该版本更新提醒给员工
+                            <TooltipContent side="top" className="text-xs max-w-[280px] leading-relaxed">
+                              <div>点击后将直接推送该版本更新提醒给员工。</div>
+                              {(() => {
+                                const p = pushable.find((it) => it.agentType === r.agentType);
+                                const outdated = p?.outdatedInstanceCount ?? 0;
+                                return (
+                                  <div className="mt-1">
+                                    推送后，{r.agentTypeLabel} 下共 {outdated} 个旧版本 Agent，将在用户端收到更新提醒。
+                                  </div>
+                                );
+                              })()}
                             </TooltipContent>
                           </Tooltip>
                         </div>

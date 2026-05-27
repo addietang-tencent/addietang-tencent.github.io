@@ -20,7 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button, SmallIconStateButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogBody,
@@ -32,7 +32,6 @@ import {
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusTag } from "@/components/ui/status-tag";
-import { SurfaceInner } from "@/components/ui/Surface";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
@@ -44,6 +43,7 @@ import {
   TableActionCell,
 } from "@/components/ui/table";
 import { ImageStatusBadge } from "./ImageStatusBadge";
+import { getCurrentVersion } from "./publicImageRecords";
 import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
 
 interface Props {
@@ -170,59 +170,100 @@ export default function SwitchImageDialog({
                 onSelect={setPendingId}
                 onEditImage={onEditImage}
                 onDeleteImage={onDeleteImage}
+                onViewHistory={onViewPublicHistory}
               />
             </div>
           ) : (
             <div className="space-y-3">
-              {/* 当前生效镜像信息卡片 */}
+              {/* 当前生效镜像信息卡片 —— 使用规范 Table 组件，结构与下方列表完全一致 */}
               {effectiveImage && (
-                <SurfaceInner className="px-5 py-4">
-                  <div className="text-xs font-medium text-[#737373] mb-2">当前用户可见镜像</div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <StatusTag variant={effectiveImage.source === "public" ? "blue" : "gray"}>
-                      {effectiveImage.source === "public" ? "公共" : "自定义"}
-                    </StatusTag>
-                    <span className="text-sm font-medium text-[#0A0A0A]">
-                      {effectiveImage.name}
-                    </span>
-                    <span className="text-[#E5E5E5]">|</span>
-                    <span className="text-sm text-[#525252]">
-                      {effectiveImage.id}
-                    </span>
-                    <span className="text-[#E5E5E5]">|</span>
-                    <span className="inline-flex items-center gap-1 text-sm text-[#525252]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      可用
-                    </span>
-                    <span className="text-[#E5E5E5]">|</span>
-                    <span className="text-sm text-[#525252]">
-                      v{effectiveImage.agentVersion}
-                    </span>
-                    {effectiveImage.source === "public" && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex">
-                            <SmallIconStateButton
-                              state="default"
-                              label=""
-                              icon={History}
-                              onClick={() => onViewPublicHistory(effectiveImage.id)}
-                            />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="text-xs">版本更新记录</TooltipContent>
-                      </Tooltip>
-                    )}
-                    {effectiveImage.createTime && (
-                      <>
-                        <span className="text-[#E5E5E5]">|</span>
-                        <span className="text-sm text-[#525252]">
-                          {effectiveImage.createTime.split(" ")[0]} 创建
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </SurfaceInner>
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-[#737373]">当前用户可见镜像</div>
+                  <Table density="compact" containerClassName="rounded-[3px] border border-[#E5E5E5]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40px]" />
+                        <TableHead>Agent 版本</TableHead>
+                        <TableHead>镜像</TableHead>
+                        <TableHead>镜像状态</TableHead>
+                        <TableHead>创建时间</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="w-[40px]" />
+                        {/* Agent 版本：版本号 + History / 腾讯云维护 */}
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                              v{effectiveImage.agentVersion}
+                            </span>
+                            {effectiveImage.source === "public" && (() => {
+                              const hasHistory = getCurrentVersion(effectiveImage.id) !== null;
+                              return (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      type="button"
+                                      disabled={!hasHistory}
+                                      onClick={() => hasHistory && onViewPublicHistory(effectiveImage.id)}
+                                      className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#737373] hover:text-[#020617] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#A3A3A3] disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+                                      aria-label="版本更新记录"
+                                    >
+                                      <History className="w-3.5 h-3.5" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="text-xs">
+                                    {hasHistory ? "版本更新记录" : "暂无版本更新记录"}
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })()}
+                          </div>
+                          {effectiveImage.source === "public" && (
+                            <div className="mt-0.5">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex">
+                                    <StatusTag variant="gray">腾讯云维护更新</StatusTag>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="text-xs">
+                                  由腾讯云持续维护更新，自动跟随官方版本
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                          )}
+                        </TableCell>
+
+                        {/* 镜像：类型 + 名称 / ID */}
+                        <TableCell>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <StatusTag variant={effectiveImage.source === "public" ? "blue" : "gray"}>
+                              {effectiveImage.source === "public" ? "公共" : "自定义"}
+                            </StatusTag>
+                            <span className="text-sm font-medium text-gray-900 truncate max-w-[240px]">
+                              {effectiveImage.name}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-gray-400 mt-0.5 font-mono truncate">
+                            {effectiveImage.id}
+                          </div>
+                        </TableCell>
+
+                        {/* 镜像状态 */}
+                        <TableCell>
+                          <ImageStatusBadge status={effectiveImage.status || "available"} />
+                        </TableCell>
+
+                        {/* 创建时间 */}
+                        <TableCell className="text-sm font-medium text-gray-900 tabular-nums">
+                          {effectiveImage.createTime ? effectiveImage.createTime.split(" ")[0] : "—"}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
               )}
 
               <div className="flex items-center gap-3">
@@ -282,28 +323,6 @@ export default function SwitchImageDialog({
                     pendingId={pendingId}
                     onSelect={setPendingId}
                     onViewHistory={onViewPublicHistory}
-                    renderActions={(img) => (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span>
-                            <Button
-                              variant="link-dark"
-                              disabled={!!(img.isEffective || img.isVirtual)}
-                              onClick={() => onDeleteImage(img.id)}
-                            >
-                              删除
-                            </Button>
-                          </span>
-                        </TooltipTrigger>
-                        {!!(img.isEffective || img.isVirtual) && (
-                          <TooltipContent side="left" className="max-w-[220px] text-xs">
-                            {img.isEffective
-                              ? "用户可见的镜像不可删除"
-                              : "腾讯云提供的镜像，未启用过无需删除"}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    )}
                   />
                 ) : (
                   <EmptyHint text="暂无公共镜像" />
@@ -315,6 +334,7 @@ export default function SwitchImageDialog({
                   onSelect={setPendingId}
                   onEditImage={onEditImage}
                   onDeleteImage={onDeleteImage}
+                  onViewHistory={onViewPublicHistory}
                 />
               )}
             </div>
@@ -341,12 +361,14 @@ function CustomList({
   onSelect,
   onEditImage,
   onDeleteImage,
+  onViewHistory,
 }: {
   row: AgentTypeView["customRow"];
   pendingId: string;
   onSelect: (imageId: string) => void;
   onEditImage: (imageId: string) => void;
   onDeleteImage: (imageId: string) => void;
+  onViewHistory?: (imageId: string) => void;
 }) {
   const all = row.allImages
     .filter((i) => i.source === "custom" && !i.isEffective)
@@ -360,20 +382,23 @@ function CustomList({
           allowSelectIfMissingVersion={false}
           pendingId={pendingId}
           onSelect={onSelect}
+          onViewHistory={onViewHistory}
           renderActions={(img) => {
             return (
               <>
                 <Button
-                  variant="link-dark"
+                  variant="link"
+                  size="sm"
                   onClick={() => onEditImage(img.id)}
                 >
                   编辑
                 </Button>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span>
+                    <span className="inline-flex">
                       <Button
-                        variant="link-dark"
+                        variant="link"
+                        size="sm"
                         disabled={img.isEffective}
                         onClick={() => onDeleteImage(img.id)}
                       >
@@ -412,18 +437,19 @@ function ImageList({
   pendingId: string;
   onSelect: (imageId: string) => void;
   onViewHistory?: (imageId: string) => void;
-  renderActions: (img: ViewImage) => React.ReactNode;
+  renderActions?: (img: ViewImage) => React.ReactNode;
 }) {
   return (
     <RadioGroup value={pendingId} onValueChange={onSelect}>
-      <Table containerClassName="rounded-[3px] border border-[#E5E5E5]">
+      <Table density="compact" containerClassName="rounded-[3px] border border-[#E5E5E5]">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[40px]" />
+            <TableHead>Agent 版本</TableHead>
             <TableHead>镜像</TableHead>
-            <TableHead>版本</TableHead>
+            <TableHead>镜像状态</TableHead>
             <TableHead>创建时间</TableHead>
-            <TableHead>操作</TableHead>
+            {renderActions && <TableHead>操作</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -448,44 +474,7 @@ function ImageList({
                   />
                 </TableCell>
 
-                {/* 镜像：类型标签 + 名称 + ID + 状态（与 agent 类型页镜像列同款样式） */}
-                <TableCell>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <StatusTag variant={imgType === "公共" ? "blue" : "gray"}>
-                      {imgType}
-                    </StatusTag>
-                    <span className="text-sm font-medium text-gray-900 truncate max-w-[240px]">
-                      {img.name}
-                    </span>
-                    {img.isEffective && (
-                      <StatusTag variant="green">
-                        当前生效
-                      </StatusTag>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
-                    <span className="font-mono truncate">{img.id}</span>
-                    <span className="text-gray-200">|</span>
-                    <ImageStatusBadge status={img.status} />
-                    {img.source === "public" && (
-                      <>
-                        <span className="text-gray-200">|</span>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-[11px] text-gray-400 inline-block cursor-default underline decoration-dashed underline-offset-2 decoration-gray-300">
-                              腾讯云维护
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="text-xs">
-                            由腾讯云持续维护更新，自动跟随官方版本
-                          </TooltipContent>
-                        </Tooltip>
-                      </>
-                    )}
-                  </div>
-                </TableCell>
-
-                {/* 版本 */}
+                {/* Agent 版本 */}
                 <TableCell>
                   <div className="flex items-center gap-1.5">
                     {missingVersion ? (
@@ -505,27 +494,70 @@ function ImageList({
                         v{img.agentVersion}
                       </span>
                     )}
-                    {onViewHistory && (
+                    {onViewHistory && (() => {
+                      const hasHistory = img.source === "public" && getCurrentVersion(img.id) !== null;
+                      return (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              disabled={!hasHistory}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (hasHistory) onViewHistory(img.id);
+                              }}
+                              className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#737373] hover:text-[#020617] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#A3A3A3] disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+                              aria-label="版本更新记录"
+                            >
+                              <History className="w-3.5 h-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-xs">
+                            {hasHistory ? "版本更新记录" : "暂无版本更新记录"}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })()}
+                  </div>
+                  {img.source === "public" && (
+                    <div className="mt-0.5">
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span className="inline-flex">
-                            <SmallIconStateButton
-                              state={img.source === "public" ? "default" : "disabled"}
-                              label=""
-                              icon={History}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (img.source === "public") onViewHistory(img.id);
-                              }}
-                            />
+                            <StatusTag variant="gray">腾讯云维护更新</StatusTag>
                           </span>
                         </TooltipTrigger>
-                        <TooltipContent className="text-xs">
-                          {img.source === "public" ? "版本更新记录" : "自定义镜像暂无版本更新记录"}
+                        <TooltipContent side="bottom" className="text-xs">
+                          由腾讯云持续维护更新，自动跟随官方版本
                         </TooltipContent>
                       </Tooltip>
+                    </div>
+                  )}
+                </TableCell>
+
+                {/* 镜像：类型标签 + 名称 + ID + 状态（与 agent 类型页镜像列同款样式） */}
+                <TableCell>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <StatusTag variant={imgType === "公共" ? "blue" : "gray"}>
+                      {imgType}
+                    </StatusTag>
+                    <span className="text-sm font-medium text-gray-900 truncate max-w-[240px]">
+                      {img.name}
+                    </span>
+                    {img.isEffective && (
+                      <StatusTag variant="green">
+                        当前生效
+                      </StatusTag>
                     )}
                   </div>
+                  <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
+                    <span className="font-mono truncate">{img.id}</span>
+                  </div>
+                </TableCell>
+
+                {/* 镜像状态 */}
+                <TableCell>
+                  <ImageStatusBadge status={img.status} />
                 </TableCell>
 
                 {/* 创建时间 */}
@@ -534,13 +566,15 @@ function ImageList({
                 </TableCell>
 
                 {/* 操作列 */}
-                <TableActionCell
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center gap-2">
-                    {renderActions(img)}
-                  </div>
-                </TableActionCell>
+                {renderActions && (
+                  <TableActionCell
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex items-center gap-2">
+                      {renderActions(img)}
+                    </div>
+                  </TableActionCell>
+                )}
               </TableRow>
             );
           })}

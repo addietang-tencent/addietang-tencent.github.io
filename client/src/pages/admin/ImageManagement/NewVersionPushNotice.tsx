@@ -1,8 +1,9 @@
 /**
- * NewVersionPushNotice - 新版本提醒组件（封装 trigger + 下拉面板）
+ * NewVersionPushNotice - 新版本提醒组件
  *
  * 两种 trigger 形态：
- *   - banner: 黄色横幅按钮「当前有 N 个用户可见镜像有新版本，M 个正在提醒员工更新」
+ *   - banner: 黄色横幅按钮「有 N 个新版本，M 个正在提醒员工更新 / 可去提醒员工更新」
+ *             右侧跟一个向右箭头图标，点击即打开「全部更新记录」侧边栏
  *             （用于镜像管理 / Agent 类型页面顶部）
  *   - bell:   工具栏右上角铃铛图标按钮（带红点提示），用于 Agent 列表页面
  *
@@ -10,11 +11,10 @@
  *   - 父组件可显式传入 pushable（来自 ImageManagement 内部已聚合的 PushableAgentType[]）
  *   - 若未传则内部使用 useOutdatedTypes() 兜底（用于 Agent 列表等无法直接访问 ImageManagement 内部状态的场景）
  *
- * 下拉面板复用 PushUpgradePopover（标题已统一为：新版本更新推送提醒）
+ * 点击行为：直接调用父组件传入的 onViewAllRecords，无下拉面板
  */
 import { useEffect, useMemo, useState } from "react";
-import { Bell } from "lucide-react";
-import PushUpgradePopover from "./PushUpgradePopover";
+import { Bell, ChevronRight } from "lucide-react";
 import type { PushableAgentType } from "./PushUpgradeDialog";
 import { listActivePushes, type ActivePush } from "@/lib/upgradePushStore";
 import { useOutdatedTypes } from "../BatchUpdateNotice";
@@ -36,14 +36,14 @@ export default function NewVersionPushNotice({
   // 内部兜底数据源（仅未提供 pushable 时使用）
   const outdated = useOutdatedTypes();
 
-  // 把 OutdatedTypeStat 适配为 PushableAgentType（PushUpgradePopover 内不使用 enabledImage 字段）
+  // 把 OutdatedTypeStat 适配为 PushableAgentType
   const fallbackPushable = useMemo<PushableAgentType[]>(
     () =>
       outdated.map((o) => ({
         agentType: o.agentType,
         agentTypeLabel: o.agentTypeLabel,
         enabledVersion: o.enabledVersion,
-        // 兜底 enabledImage：Popover 内部不消费此字段，给个最小可用对象避免类型断言
+        // 兜底 enabledImage：本组件已不消费此字段，给个最小可用对象避免类型断言
         enabledImage: {} as PushableAgentType["enabledImage"],
         imageName: o.enabledImageName,
         imageSource: o.imageSource,
@@ -74,25 +74,21 @@ export default function NewVersionPushNotice({
 
   if (total === 0) return null;
 
-  const trigger = (
+  return (
     <button
       type="button"
-      className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-amber-200 bg-amber-50 text-[13px] text-amber-700 hover:bg-amber-100 transition-colors shrink-0"
+      onClick={onViewAllRecords}
+      className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] border border-[var(--alert-warning-border)] bg-[var(--alert-warning-bg)] text-[13px] text-[var(--alert-warning-foreground)] hover:brightness-95 transition-colors shrink-0"
     >
-      <Bell className="w-3.5 h-3.5" />
+      <Bell className="w-3.5 h-3.5 text-[var(--alert-warning-icon)]" />
       <span>
         {variant === "bell"
           ? `${total} 个新版本`
-          : `当前有 ${total} 个用户可见镜像有新版本，${pushed} 个正在提醒员工更新`}
+          : pushed === 0
+            ? `有 ${total} 个新版本，可去提醒员工更新`
+            : `有 ${total} 个新版本，${pushed} 个正在提醒员工更新`}
       </span>
+      <ChevronRight className="w-3.5 h-3.5 text-[var(--alert-warning-icon)]" />
     </button>
-  );
-
-  return (
-    <PushUpgradePopover
-      pushable={pushable}
-      onViewAllRecords={onViewAllRecords}
-      trigger={trigger}
-    />
   );
 }

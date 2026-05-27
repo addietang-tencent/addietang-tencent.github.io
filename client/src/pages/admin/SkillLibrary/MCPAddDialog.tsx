@@ -215,6 +215,7 @@ interface FormErrors {
   connectionCategory?: string;
   transport?: string;
   configJson?: string;
+  token?: string;
 }
 
 export default function MCPAddDialog({
@@ -239,6 +240,13 @@ export default function MCPAddDialog({
   const [usageViewMode, setUsageViewMode] = useState<'edit' | 'preview'>('edit');
   const [toolViewMode, setToolViewMode] = useState<'edit' | 'preview'>('edit');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [tokenValidating, setTokenValidating] = useState(false);
+  /** 凭据托管开关 */
+  const [credentialHostingEnabled, setCredentialHostingEnabled] = useState(false);
+  /** IP 白名单列表 */
+  const [ipWhitelist, setIpWhitelist] = useState<string[]>(['']);
+  /** 凭据 Token */
+  const [credentialToken, setCredentialToken] = useState('');
 
   /** 当前实际的 transportType（由 connectionCategory + remoteProtocol 派生） */
   const effectiveTransportType: MCPTransportType | '' =
@@ -266,6 +274,10 @@ export default function MCPAddDialog({
     setUsageViewMode('edit');
     setToolViewMode('edit');
     setErrors({});
+    setCredentialHostingEnabled(false);
+    setIpWhitelist(['']);
+    setCredentialToken('');
+    setTokenValidating(false);
   }, []);
 
   useEffect(() => {
@@ -276,6 +288,16 @@ export default function MCPAddDialog({
       resetForm();
     }
   }, [open, resetForm]);
+
+  /** 根据凭据托管开关状态返回对应的远程服务模板（开启后去掉 Authorization 行） */
+  const getRemoteTemplate = (protocol: 'streamable-http' | 'sse', hosting: boolean): string => {
+    if (!hosting) return SERVER_VALUE_TEMPLATES[protocol];
+    return [
+      `"transportType": "${protocol}",`,
+      `"url": "MCP服务的URL",`,
+      `"timeout": 60`,
+    ].join('\n');
+  };
 
   // 切换连接类别
   const handleCategoryChange = (category: MCPConnectionCategory) => {
@@ -288,7 +310,7 @@ export default function MCPAddDialog({
     } else if (category === 'remote') {
       // 远程服务 → 填充当前选中的协议模板
       if (!serverValueContent || allTemplateValues.includes(serverValueContent)) {
-        setServerValueContent(SERVER_VALUE_TEMPLATES[remoteProtocol]);
+        setServerValueContent(getRemoteTemplate(remoteProtocol, credentialHostingEnabled));
       }
     }
     setConfigRefExpanded(false);
@@ -298,7 +320,16 @@ export default function MCPAddDialog({
   const handleRemoteProtocolChange = (protocol: 'streamable-http' | 'sse') => {
     setRemoteProtocol(protocol);
     if (!serverValueContent || allTemplateValues.includes(serverValueContent)) {
-      setServerValueContent(SERVER_VALUE_TEMPLATES[protocol]);
+      setServerValueContent(getRemoteTemplate(protocol, credentialHostingEnabled));
+    }
+  };
+
+  // 切换凭据托管开关
+  const handleCredentialHostingChange = (enabled: boolean) => {
+    setCredentialHostingEnabled(enabled);
+    // 如果当前是远程服务且配置区是模板，同步更新模板（加渏或去掉 Authorization）
+    if (connectionCategory === 'remote' && (!serverValueContent || allTemplateValues.includes(serverValueContent))) {
+      setServerValueContent(getRemoteTemplate(remoteProtocol, enabled));
     }
   };
 
@@ -364,8 +395,27 @@ export default function MCPAddDialog({
 
   const validateStep1 = (): boolean => validate();
 
-  const handleNext = () => {
+  /** Mock 校验 Token 有效性：模拟异步请求，以 "invalid" 开头的 token 判定为无效 */
+  const mockValidateToken = async (token: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(!token.toLowerCase().startsWith('invalid'));
+      }, 800);
+    });
+  };
+
+  const handleNext = async () => {
     if (!validateStep1()) return;
+    // 开启凭据托管且填写了 Token 时，需要校验 Token 有效性
+    if (credentialHostingEnabled && credentialToken.trim()) {
+      setTokenValidating(true);
+      const isValid = await mockValidateToken(credentialToken.trim());
+      setTokenValidating(false);
+      if (!isValid) {
+        setErrors(prev => ({ ...prev, token: 'Token 无效，请检查后重新填写' }));
+        return;
+      }
+    }
     setStep(2);
   };
 
@@ -384,6 +434,9 @@ export default function MCPAddDialog({
       configJson: fullJson,
       usageDoc: usageDoc.trim() || undefined,
       toolDoc: toolDoc.trim() || undefined,
+      credentialHostingEnabled,
+      ipWhitelist: credentialHostingEnabled ? ipWhitelist.filter(ip => ip.trim()) : undefined,
+      token: credentialHostingEnabled && credentialToken.trim() ? credentialToken.trim() : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -506,6 +559,73 @@ export default function MCPAddDialog({
                   />
                 </div>
 
+                {/* 凭据托管 */}
+                <div className="space-y-3 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">凭据托管</Label>
+                      <p className="text-xs text-gray-400 mt-0.5">开启后，平台将托管该 MCP 服务的访问凭据，用户端无需再填写凭据</p>
+                    </div>
+                    <Switch
+                      checked={credentialHostingEnabled}
+                      onCheckedChange={handleCredentialHostingChange}
+                    />
+                  </div>
+                  {credentialHostingEnabled && (
+                    <div className="space-y-2 pt-1">
+                      <Label className="text-sm">Token</Label>
+                      <Input
+                        value={credentialToken}
+                        onChange={(e) => {
+                          setCredentialToken(e.target.value);
+                          if (errors.token) setErrors(prev => ({ ...prev, token: undefined }));
+                        }}
+                        placeholder="请输入访问凭据 Token"
+                        className={`font-mono text-sm mt-1 ${errors.token ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
+                      />
+                      {errors.token ? (
+                        <p className="text-xs text-red-500 mt-1">{errors.token}</p>
+                      ) : (
+                        <p className="text-xs text-gray-400 mt-1">注意：此处必须填写真实有效的 Token，填写错误将导致调用失败，不填写则代表调用该MCP无需认证</p>
+                      )}
+                      <Label className="text-sm mt-3 block">IP 白名单</Label>
+                      <p className="text-xs text-gray-400">仅允许以下 IP 地址访问该 MCP 服务，支持单个 IP 或 CIDR 格式，不填写则所有 IP 均可访问</p>
+                      <div className="space-y-2">
+                        {ipWhitelist.map((ip, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Input
+                              value={ip}
+                              onChange={(e) => {
+                                const next = [...ipWhitelist];
+                                next[idx] = e.target.value;
+                                setIpWhitelist(next);
+                              }}
+                              placeholder="e.g., 192.168.1.100 或 10.0.0.0/8"
+                              className="font-mono text-sm"
+                            />
+                            {ipWhitelist.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => setIpWhitelist(ipWhitelist.filter((_, i) => i !== idx))}
+                                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setIpWhitelist([...ipWhitelist, ''])}
+                          className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 transition-colors mt-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          添加 IP
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 {/* 连接方式 — 两级 Radio */}
                 <div>
                   <Label className="text-xs font-medium text-[#525252]">

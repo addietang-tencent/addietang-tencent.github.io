@@ -51,6 +51,10 @@ interface BatchDeleteDialogProps {
   }>;
   groups: Group[];
   onDeleteStart: (selectedInstanceIds: string[], selectedInstancesData: any[]) => void;
+  /** 是否显示分组筛选，默认 true */
+  showScopeFilter?: boolean;
+  /** 隐藏实例中的创建人、分组信息 */
+  hideCreatorAndGroup?: boolean;
 }
 
 export default function BatchDeleteDialog({
@@ -61,6 +65,8 @@ export default function BatchDeleteDialog({
   distributedInstances,
   groups,
   onDeleteStart,
+  showScopeFilter = true,
+  hideCreatorAndGroup = false,
 }: BatchDeleteDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
@@ -241,6 +247,7 @@ export default function BatchDeleteDialog({
               />
             </div>
             {/* 分组筛选 — 多选带搜索（参考下发弹窗） */}
+            {showScopeFilter && (
             <div className="relative" ref={scopeDropdownRef}>
               <Tooltip delayDuration={1000} open={scopeDropdownOpen ? false : undefined}>
                 <TooltipTrigger asChild>
@@ -396,6 +403,7 @@ export default function BatchDeleteDialog({
                 );
               })()}
             </div>
+            )}
             {/* 状态筛选 — 多选下拉（参考下发弹窗） */}
             <div className="relative" ref={statusDropdownRef}>
               <Tooltip delayDuration={1000} open={statusDropdownOpen ? false : undefined}>

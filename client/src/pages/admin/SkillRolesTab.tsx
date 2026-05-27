@@ -77,6 +77,10 @@ import {
 } from "@/lib/mockData";
 import type { Role, RoleSkill } from "@/lib/mockData";
 import { PUBLIC_SKILLS, type PublicSkill } from "./SkillLibrary/publicSkillMockData";
+import {
+  PUBLIC_SKILL_PACKAGES,
+  type PublicSkillPackage,
+} from "./SkillLibrary/publicSkillPackageMockData";
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from "./SkillLibrary/mockData";
 import type { SkillScope } from "./SkillLibrary/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
@@ -468,7 +472,35 @@ function SortableRoleRow({
 }
 
 // ── 公共技能库添加弹窗（与初始技能包交互一致）──────────────
+// Tab1「公共技能」：单个 Skill 多选；Tab2「公共技能包」：多选包，提交时展开为多个 Skill
 const MOCK_FAVORITES: PublicSkill[] = PUBLIC_SKILLS.slice(0, 5);
+
+// ── 公共技能包弹窗 helpers（适配主干 PublicSkillPackage 结构） ──
+// mock "我的收藏" —— 取前 4 个包模拟用户已收藏（后续接入全局收藏 store 时替换此处）
+const MOCK_FAVORITE_PKG_IDS = new Set(
+  PUBLIC_SKILL_PACKAGES.slice(0, 4).map(p => p.id)
+);
+
+/** 获取用户收藏的技能包列表（mock 实现，后续替换为全局 store 查询） */
+function getFavoritePackages(): PublicSkillPackage[] {
+  return PUBLIC_SKILL_PACKAGES.filter(p => MOCK_FAVORITE_PKG_IDS.has(p.id));
+}
+
+/** 将技能包展开为 RoleSkill[]（与单个 PublicSkill → RoleSkill 规则一致） */
+function toRoleSkills(pkg: PublicSkillPackage): RoleSkill[] {
+  return pkg.skills.map(ref => ({
+    name: ref.name,
+    version: "v1.0",
+    source: "公共" as const,
+  }));
+}
+
+/** 获取技能包内所有 Skill 的展示名（用于"N 个已存在"徽章计算） */
+function getPackageSkillNames(pkg: PublicSkillPackage): string[] {
+  return pkg.skills.map(ref => ref.name);
+}
+
+type PublicAddSubTab = "skill" | "package";
 
 function RoleAddPublicSkillDialog({
   open,
@@ -478,30 +510,75 @@ function RoleAddPublicSkillDialog({
 }: {
   open: boolean;
   existingSkillNames: string[];
-  onConfirm: (skills: RoleSkill[]) => void;
+  /**
+   * 确认提交：
+   *  - skills：本次新增到角色技能列表的 RoleSkill 集合（已合并、已按 name 去重，不与现有技能重复）
+   *  - packageIds：本次勾选的公共技能包 id（用于来源追溯，可选）
+   */
+  onConfirm: (skills: RoleSkill[], packageIds?: string[]) => void;
   onCancel: () => void;
 }) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeSubTab, setActiveSubTab] = useState<PublicAddSubTab>("skill");
+  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [selectedPackageIds, setSelectedPackageIds] = useState<string[]>([]);
 
   const toggleSkill = (skillId: string) => {
-    setSelectedIds(prev =>
+    setSelectedSkillIds(prev =>
       prev.includes(skillId) ? prev.filter(id => id !== skillId) : [...prev, skillId]
     );
   };
 
+  const togglePackage = (pkgId: string) => {
+    setSelectedPackageIds(prev =>
+      prev.includes(pkgId) ? prev.filter(id => id !== pkgId) : [...prev, pkgId]
+    );
+  };
+
+  const resetSelections = () => {
+    setSelectedSkillIds([]);
+    setSelectedPackageIds([]);
+    setActiveSubTab("skill");
+  };
+
   const handleConfirm = () => {
-    const newSkills: RoleSkill[] = selectedIds.map(id => {
+    // 1) 单个公共技能 → RoleSkill[]
+    const skillRoleSkills: RoleSkill[] = selectedSkillIds.map(id => {
       const skill = MOCK_FAVORITES.find(s => s.id === id)!;
       return { name: skill.name, version: `v${skill.version}`, source: "公共" as const };
     });
-    onConfirm(newSkills);
-    setSelectedIds([]);
+
+    // 2) 公共技能包 → 展开为 RoleSkill[]（每个包内部各自展开）
+    const selectedPackages = selectedPackageIds
+      .map(id => PUBLIC_SKILL_PACKAGES.find(p => p.id === id))
+      .filter((p): p is PublicSkillPackage => Boolean(p));
+    const packageRoleSkills: RoleSkill[] = selectedPackages.flatMap(toRoleSkills);
+
+    // 3) 合并 + 按 name 去重（同 name 优先保留单技能侧的选择，再按出现顺序保留首项）
+    //    同时排除掉角色技能列表里已经存在的同名 Skill
+    const existingSet = new Set(existingSkillNames);
+    const merged: RoleSkill[] = [];
+    const seen = new Set<string>();
+    for (const s of [...skillRoleSkills, ...packageRoleSkills]) {
+      if (existingSet.has(s.name) || seen.has(s.name)) continue;
+      seen.add(s.name);
+      merged.push(s);
+    }
+
+    onConfirm(merged, selectedPackageIds.length > 0 ? [...selectedPackageIds] : undefined);
+    resetSelections();
   };
 
   const handleCancel = () => {
-    setSelectedIds([]);
+    resetSelections();
     onCancel();
   };
+
+  // 底部按钮文案与可用性
+  const isSkillTab = activeSubTab === "skill";
+  const currentCount = isSkillTab ? selectedSkillIds.length : selectedPackageIds.length;
+  const confirmText = isSkillTab
+    ? `确认添加${currentCount > 0 ? `（${currentCount} 个）` : ""}`
+    : `确认添加技能包${currentCount > 0 ? `（${currentCount} 个）` : ""}`;
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleCancel(); }}>
@@ -565,9 +642,9 @@ function RoleAddPublicSkillDialog({
           <Button
             variant="dialog-confirm"
             onClick={handleConfirm}
-            disabled={selectedIds.length === 0}
+            disabled={currentCount === 0}
           >
-            确认添加{selectedIds.length > 0 ? `（${selectedIds.length} 个）` : ''}
+            {confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1073,11 +1150,22 @@ function RoleEditModal({
     setIsDirty(true);
   };
 
-  const handleAddSkills = (newSkills: RoleSkill[]) => {
+  const handleAddSkills = (newSkills: RoleSkill[], packageIds?: string[]) => {
     setSkills([...skills, ...newSkills]);
     setShowAddPublicDialog(false);
     setShowAddEnterpriseDialog(false);
     setIsDirty(true);
+
+    // 来自「公共技能包」Tab 的添加：单独给出成功反馈，便于来源追溯
+    if (packageIds && packageIds.length > 0) {
+      const pickedPkgs = packageIds
+        .map(id => PUBLIC_SKILL_PACKAGES.find(p => p.id === id))
+        .filter((p): p is PublicSkillPackage => Boolean(p));
+      if (pickedPkgs.length > 0) {
+        const names = pickedPkgs.map(p => p.name).join("、");
+        toast.success(`已添加公共技能包：${names}`);
+      }
+    }
   };
 
   // 单技能刷新

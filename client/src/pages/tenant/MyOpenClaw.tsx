@@ -60,11 +60,20 @@ const LAUNCH_FAILED_TIP = "创建失败，无法操作";
 
 // [006] 列表分页：每页默认 30 条，与后端 GET /openclaw/list 默认 page_size 保持一致
 const PAGE_SIZE = 30;
+const AGENT_NAME_MAX_BYTES = 128;
+
+const getAgentNameByteLength = (value: string) => new TextEncoder().encode(value).length;
 
 // 8 种状态配置
 type OpenClawStatus = "creating" | "createFail" | "running" | "shutdown" | "loading" | "loadFail" | "maintaining" | "pending";
+const RUNNING_ONLY_ACTION_STATUSES: OpenClawStatus[] = ["running"];
+const RENAME_ALLOWED_STATUSES: OpenClawStatus[] = ["running", "shutdown"];
+const canRunOnlyAction = (status: OpenClawStatus) => RUNNING_ONLY_ACTION_STATUSES.includes(status);
+const canRenameStatus = (status: OpenClawStatus) => RENAME_ALLOWED_STATUSES.includes(status);
+
 
 interface OpenClawItem {
+
   id: string;
   instanceId: string;
   name: string;
@@ -230,7 +239,10 @@ export default function MyOpenClaw() {
   const [restartConfirm, setRestartConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirm, setReinstallConfirm] = useState<{ id: string; name: string } | null>(null);
   const [reinstallConfirmInput, setReinstallConfirmInput] = useState("");
+  const [renameConfirm, setRenameConfirm] = useState<{ id: string; name: string } | null>(null);
+  const [renameInput, setRenameInput] = useState("");
   const [removeRoleConfirm, setRemoveRoleConfirm] = useState<{ id: string; name: string; roleName: string } | null>(null);
+
 
   // 开启面板弹窗
   const [panelDialog, setPanelDialog] = useState<{ id: string; name: string } | null>(null);
@@ -369,7 +381,50 @@ export default function MyOpenClaw() {
     toast.success(`「${name}」正在重新安装...`);
   };
 
+  const openRenameDialog = (claw: { id: string; name: string }) => {
+    const target = claws.find((item) => item.id === claw.id);
+    if (!target || !canRenameStatus(target.status)) return;
+    setRenameConfirm(claw);
+    setRenameInput(claw.name);
+  };
+
+
+  const handleRenameInputChange = (value: string) => {
+    const noLineBreakValue = value.replace(/[\r\n]/g, "");
+    setRenameInput(noLineBreakValue);
+  };
+
+  const renameTrimmedValue = renameInput.trim();
+  const renameInputBytes = getAgentNameByteLength(renameInput);
+  const isRenameOverByteLimit = renameInputBytes > AGENT_NAME_MAX_BYTES;
+  const isRenameConfirmDisabled = renameTrimmedValue.length === 0 || isRenameOverByteLimit;
+
+  const handleRenameConfirm = () => {
+    if (!renameConfirm || isRenameConfirmDisabled) return;
+
+    try {
+      const targetExists = claws.some((claw) => claw.id === renameConfirm.id);
+      if (!targetExists) {
+        throw new Error("target-not-found");
+      }
+
+      setClaws(claws.map((claw) => {
+        if (claw.id !== renameConfirm.id) return claw;
+        return {
+          ...claw,
+          name: renameTrimmedValue,
+        };
+      }));
+
+      setRenameConfirm(null);
+      setRenameInput("");
+    } catch {
+      toast.error("重命名失败，请重试");
+    }
+  };
+
   const handleRetry = (id: string, name: string) => {
+
     setClaws(claws.map(c => c.id === id ? { ...c, status: "loading" as OpenClawStatus } : c));
     toast.success(`「${name}」正在重试...`);
   };
@@ -614,8 +669,74 @@ export default function MyOpenClaw() {
           </div>
         )}
 
+        {/* Rename Dialog */}
+        <Dialog
+          open={!!renameConfirm}
+          onOpenChange={(open) => {
+            if (!open) {
+              setRenameConfirm(null);
+              setRenameInput("");
+            }
+          }}
+        >
+          <DialogContent
+            className="sm:max-w-[420px]"
+            onInteractOutside={(event) => event.preventDefault()}
+          >
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-gray-900">重命名 Agent</DialogTitle>
+              <DialogDescription className="text-sm text-gray-500">
+                支持中英文、数字、空格及常用符号。
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="rename-agent-input" className="text-sm font-medium text-gray-700">名称</Label>
+              <Input
+                id="rename-agent-input"
+                value={renameInput}
+                placeholder="请输入 Agent 名称"
+                aria-invalid={isRenameOverByteLimit}
+                className={isRenameOverByteLimit ? "border-red-500 focus-visible:ring-red-500" : undefined}
+                onChange={(e) => handleRenameInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleRenameConfirm();
+                  }
+                }}
+              />
+              <p
+                className={`text-xs min-h-5 ${isRenameOverByteLimit ? "text-red-500" : "text-transparent"}`}
+                aria-live="polite"
+              >
+                {isRenameOverByteLimit ? "名称不能超过 128 字节" : ""}
+              </p>
+
+            </div>
+            <DialogFooter className="gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setRenameConfirm(null);
+                  setRenameInput("");
+                }}
+              >
+                取消
+              </Button>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                disabled={isRenameConfirmDisabled}
+                onClick={handleRenameConfirm}
+              >
+                确认
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Restart Confirm Dialog */}
         <Dialog open={!!restartConfirm} onOpenChange={(open) => { if (!open) setRestartConfirm(null); }}>
+
           <DialogContent className="sm:max-w-[360px]">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-foreground">确认重启</DialogTitle>

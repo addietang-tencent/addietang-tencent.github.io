@@ -113,9 +113,11 @@ import {
   createDistributionRecordId,
   initMockDistributionRecords,
   type CachedDistributionRecord,
+  type RecordType,
 } from '../admin/SkillLibrary/distributionCache';
 import { downloadSkillAsZip } from '../admin/SkillLibrary/downloadUtils';
 import BatchDistributeDialog from '../admin/SkillLibrary/BatchDistributeDialog';
+import BatchDeleteDialog from '../admin/SkillLibrary/BatchDeleteDialog';
 import MDXRenderer from '@/components/MDXRenderer';
 
 // 懒加载 react-syntax-highlighter
@@ -446,7 +448,7 @@ function SkillCard({
   // 获取该技能的最新下发状态
   const latestRecord = getDistributionRecords(skill.id)?.[0];
   const distStatus = latestRecord?.status;
-  const isDistributing = distStatus === 'distributing';
+  const isDistributing = distStatus === 'distributing' || distStatus === 'deleting';
 
   const handleDistributeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -632,7 +634,7 @@ function SkillListRow({
 
   const latestRecord = getDistributionRecords(skill.id)?.[0];
   const distStatus = latestRecord?.status;
-  const isDistributing = distStatus === 'distributing';
+  const isDistributing = distStatus === 'distributing' || distStatus === 'deleting';
 
   const handleDistributeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -776,6 +778,7 @@ function SkillSquareDetail({
   initialTab?: string;
 }) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
@@ -789,6 +792,8 @@ function SkillSquareDetail({
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | DistributionStatus>('all');
   const [detailSearchQuery, setDetailSearchQuery] = useState('');
+  /** 记录类型筛选：全部/下发记录/卸载记录 */
+  const [recordTypeFilter, setRecordTypeFilter] = useState<'all' | 'distribute' | 'delete'>('all');
 
   const refreshRecords = useCallback(() => {
     setDistributionRecords(getDistributionRecords(skillId));
@@ -801,7 +806,7 @@ function SkillSquareDetail({
     return () => window.removeEventListener('distribution-cache-updated', handler);
   }, [refreshRecords]);
 
-  const hasInProgress = distributionRecords.some(r => r.status === 'distributing');
+  const hasInProgress = distributionRecords.some(r => r.status === 'distributing' || r.status === 'deleting');
 
   const skill = useMemo(() => skills.find(s => s.id === skillId), [skillId, skills]);
 
@@ -1035,6 +1040,77 @@ function SkillSquareDetail({
     simulateDistribution(recordId, selectedInstanceIds.length);
   };
 
+  // 卸载处理
+  const handleDeleteStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'deleting',
+      type: 'delete',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as DistributionStatus,
+      })),
+    };
+    addDistributionRecord(newRecord);
+    setActiveDistributionId(recordId);
+    setDeleteDialogOpen(false);
+    toast.success(`已开始卸载「${skill?.name}」，共 ${selectedInstanceIds.length} 个实例`);
+    simulateDelete(recordId, selectedInstanceIds.length);
+  };
+
+  // 聚合已下发成功的实例（用于卸载弹窗）
+  const distributedInstancesForDelete = useMemo(() => {
+    const myInstances = getMyInstances();
+    const successRecords = distributionRecords.filter(r => r.type !== 'delete' && (r.status === 'success' || r.status === 'failed'));
+    const instanceMap = new Map<string, { id: string; name: string; createdBy: string; distributedVersion?: string; deleteStatus?: 'not_deleted' | 'delete_failed'; deleteFailReason?: string }>();
+    successRecords.forEach(record => {
+      record.instances.forEach(inst => {
+        if (inst.distributionStatus === 'success' && myInstances.some(mi => mi.id === inst.id)) {
+          if (!instanceMap.has(inst.id)) {
+            instanceMap.set(inst.id, {
+              id: inst.id,
+              name: inst.name,
+              createdBy: inst.createdBy,
+              distributedVersion: skill?.version,
+              deleteStatus: 'not_deleted',
+            });
+          }
+        }
+      });
+    });
+    // 检查卸载记录，标记已卸载失败的
+    const deleteRecords = distributionRecords.filter(r => r.type === 'delete' && r.status !== 'deleting');
+    deleteRecords.forEach(record => {
+      record.instances.forEach(inst => {
+        if (inst.distributionStatus === 'failed' && instanceMap.has(inst.id)) {
+          const existing = instanceMap.get(inst.id)!;
+          existing.deleteStatus = 'delete_failed';
+          existing.deleteFailReason = inst.failReason;
+        } else if (inst.distributionStatus === 'success') {
+          // 卸载成功的从列表中移除
+          instanceMap.delete(inst.id);
+        }
+      });
+    });
+    return Array.from(instanceMap.values());
+  }, [distributionRecords, skill?.version]);
+
+  // 按类型筛选的记录
+  const filteredRecordsByType = useMemo(() => {
+    if (recordTypeFilter === 'all') return distributionRecords;
+    if (recordTypeFilter === 'distribute') return distributionRecords.filter(r => r.type !== 'delete');
+    return distributionRecords.filter(r => r.type === 'delete');
+  }, [distributionRecords, recordTypeFilter]);
+
   const getCategoryName = (catId: string) => {
     return DEFAULT_CATEGORIES.find(c => c.id === catId)?.name || catId;
   };
@@ -1200,7 +1276,7 @@ function SkillSquareDetail({
               value="distribution"
               className="rounded-[40px] h-full px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] font-normal text-[#334155] hover:text-[#020617] data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-normal data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] transition-all"
             >
-              下发记录
+              下发和卸载记录
             </TabsTrigger>
           </TabsList>
         </div>
@@ -1415,14 +1491,15 @@ function SkillSquareDetail({
               </div>
 
               <div className="space-y-3 mt-4">
-                {distributionRecords.length === 0 ? (
+                {filteredRecordsByType.length === 0 ? (
                   <div className="text-center py-12">
                     <Puzzle className="w-12 h-12 mx-auto mb-4 text-[#E5E5E5]" />
                     <p className="text-[#A3A3A3]">还没有下发记录</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {distributionRecords.map((record, idx) => {
+                    {filteredRecordsByType.map((record, idx) => {
+                      const isDelete = record.type === 'delete';
                       const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
                       return (
                         <TenantCard key={record.id} padding="none" className="p-4">
@@ -1489,11 +1566,24 @@ function SkillSquareDetail({
         hideCreatorAndGroup
       />
 
-      {/* 下发详情弹窗 */}
+      {/* 卸载弹窗 — 用户端简化版 */}
+      <BatchDeleteDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        skillName={skill.name}
+        skillVersion={skill.version}
+        distributedInstances={distributedInstancesForDelete}
+        groups={[]}
+        onDeleteStart={handleDeleteStart}
+        showScopeFilter={false}
+        hideCreatorAndGroup
+      />
+
+      {/* 下发/卸载详情弹窗 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>下发详情</DialogTitle>
+            <DialogTitle>{activeDistribution?.type === 'delete' ? '卸载详情' : '下发详情'}</DialogTitle>
           </DialogHeader>
 
           {activeDistribution && (
@@ -1517,7 +1607,7 @@ function SkillSquareDetail({
                     <SelectItem value="all">全部</SelectItem>
                     <SelectItem value="success">成功</SelectItem>
                     <SelectItem value="failed">失败</SelectItem>
-                    <SelectItem value="distributing">下发中</SelectItem>
+                    <SelectItem value="distributing">{activeDistribution.type === 'delete' ? '卸载中' : '下发中'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1580,18 +1670,31 @@ function SkillSquareDetail({
 
 // ========== 下发状态图标 ==========
 function DistributionStatusIcon({ status, latestRecord, onClick }: {
-  status: DistributionStatus;
+  status: DistributionStatus | 'deleting';
   latestRecord?: CachedDistributionRecord;
   onClick?: (e: React.MouseEvent) => void;
 }) {
   const total = latestRecord?.totalCount || 0;
   const success = latestRecord?.successCount || 0;
+  const isDelete = latestRecord?.type === 'delete';
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick?.(e);
   };
 
+  if (status === 'deleting') {
+    return (
+      <Tooltip delayDuration={300}>
+        <TooltipTrigger asChild>
+          <span className="inline-flex cursor-pointer" onClick={handleClick}>
+            <Loader className="w-3.5 h-3.5 text-red-500 animate-spin" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent><span className="text-xs">卸载中</span></TooltipContent>
+      </Tooltip>
+    );
+  }
   if (status === 'distributing') {
     return (
       <Tooltip delayDuration={300}>
@@ -1612,7 +1715,7 @@ function DistributionStatusIcon({ status, latestRecord, onClick }: {
             <CheckCircle className="w-3.5 h-3.5 text-green-500" />
           </span>
         </TooltipTrigger>
-        <TooltipContent><span className="text-xs">已下发 ({success}/{total} 成功)</span></TooltipContent>
+        <TooltipContent><span className="text-xs">{isDelete ? `已卸载（${success}/${total}成功）` : `已下发（${success}/${total}成功）`}</span></TooltipContent>
       </Tooltip>
     );
   }
@@ -1624,7 +1727,7 @@ function DistributionStatusIcon({ status, latestRecord, onClick }: {
             <XCircle className="w-3.5 h-3.5 text-red-500" />
           </span>
         </TooltipTrigger>
-        <TooltipContent><span className="text-xs">下发失败 ({success}/{total} 成功)</span></TooltipContent>
+        <TooltipContent><span className="text-xs">{isDelete ? `卸载失败（${success}/${total}成功）` : `下发失败（${success}/${total}成功）`}</span></TooltipContent>
       </Tooltip>
     );
   }
@@ -1677,4 +1780,38 @@ function simulateDistribution(recordId: string, totalCount: number) {
       }));
     }
   }, 800);
+}
+
+/** 模拟卸载进度 */
+function simulateDelete(recordId: string, totalCount: number) {
+  const FAIL_REASONS = ['卸载超时', '实例繁忙', '权限不足', '进程占用中'];
+  let completed = 0;
+  const interval = setInterval(() => {
+    completed += Math.floor(Math.random() * 2) + 1;
+    if (completed >= totalCount) {
+      completed = totalCount;
+      clearInterval(interval);
+      // 必定产生至少1个失败用于验证
+      const failedCount = Math.max(1, Math.floor(Math.random() * 2));
+      const successCount = totalCount - failedCount;
+      updateDistributionRecord(recordId, (record) => ({
+        ...record,
+        successCount,
+        failedCount,
+        inProgressCount: 0,
+        status: 'failed' as DistributionStatus,
+        instances: record.instances.map((inst, idx) => ({
+          ...inst,
+          distributionStatus: (idx < successCount ? 'success' : 'failed') as DistributionStatus,
+          failReason: idx >= successCount ? FAIL_REASONS[Math.floor(Math.random() * FAIL_REASONS.length)] : undefined,
+        })),
+      }));
+    } else {
+      updateDistributionRecord(recordId, (record) => ({
+        ...record,
+        successCount: completed,
+        inProgressCount: totalCount - completed,
+      }));
+    }
+  }, 1000);
 }

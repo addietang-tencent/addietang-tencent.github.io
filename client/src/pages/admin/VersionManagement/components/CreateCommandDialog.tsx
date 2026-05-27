@@ -84,7 +84,7 @@ function extractRefKeys(content: string): string[] {
   const set = new Set<string>();
   let m: RegExpExecArray | null;
   while ((m = re.exec(content)) !== null) set.add(m[1]);
-  return [...set];
+  return Array.from(set);
 }
 
 export default function CreateCommandDialog({ open, onOpenChange, template, onSaved }: Props) {

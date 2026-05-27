@@ -62,10 +62,10 @@ import {
   Search, ExternalLink, Brain, MessageSquare, Puzzle,
   ChevronRight, ChevronDown, ChevronUp, Info, CheckCircle2, Loader2, AlertTriangle, AlertCircle, ArrowUpCircle, Monitor, RotateCcw, XCircle, ArrowUpToLine, ArrowLeftRight,
   Copy, Terminal, Database, Clock, Shield, Lock, Megaphone,
-  Plus, Sparkles, Mic, Send,
+  Plus, Sparkles, Mic, Send, Pencil,
 } from "lucide-react";
 import { MOCK_OPENCLAW_LIST, AVAILABLE_SKILLS } from "@/lib/mockData";
-import { findClawById, onClawListChange, type AgentItem } from "@/lib/openclawStore";
+import { findClawById, onClawListChange, saveClawList, loadClawList, notifyClawListChange, type AgentItem } from "@/lib/openclawStore";
 import { getActivePush, type ActivePush } from "@/lib/upgradePushStore";
 import FileSpace from "./FileSpace";
 import MemoryPreview from "@/components/MemoryPreview";
@@ -195,6 +195,110 @@ export default function AgentDetail() {
   const clawName = claw.name;
   const clawStatus = (claw.status || "running") as AgentStatus;
   const statusCfg = INSTANCE_STATUS_CONFIG[clawStatus] ?? INSTANCE_STATUS_CONFIG.running;
+  const canRenameByStatus = (["running", "maintaining", "shutdown"] as AgentStatus[]).includes(clawStatus);
+
+
+  // ── Inline rename state ──
+  const AGENT_NAME_MAX_BYTES = 128;
+  const getAgentNameByteLength = (value: string) => new TextEncoder().encode(value).length;
+  const [isNameEditing, setIsNameEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [nameError, setNameError] = useState<string>("");
+  const [isNameOverflow, setIsNameOverflow] = useState(false);
+  const nameEditWrapperRef = useRef<HTMLDivElement | null>(null);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+  const nameTextRef = useRef<HTMLHeadingElement | null>(null);
+
+  const startNameEdit = useCallback(() => {
+    if (!canRenameByStatus) return;
+    setIsNameEditing(true);
+    setNameDraft(clawName);
+    setNameError("");
+  }, [canRenameByStatus, clawName]);
+
+
+  const cancelNameEdit = useCallback(() => {
+    setIsNameEditing(false);
+    setNameDraft(clawName);
+    setNameError("");
+  }, [clawName]);
+
+  const saveNameEdit = useCallback(() => {
+    const trimmed = nameDraft.trim();
+
+    if (!trimmed) {
+      cancelNameEdit();
+      return true;
+    }
+
+    if (getAgentNameByteLength(trimmed) > AGENT_NAME_MAX_BYTES) {
+      setNameError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+      return false;
+    }
+
+    if (trimmed === clawName) {
+      setIsNameEditing(false);
+      setNameError("");
+      return true;
+    }
+
+    try {
+      const latest = loadClawList();
+      const next = latest.map((item) => (item.id === claw.id ? { ...item, name: trimmed } : item));
+      saveClawList(next);
+      notifyClawListChange();
+      setClawData((prev) => ({ ...prev, name: trimmed }));
+      setIsNameEditing(false);
+      setNameError("");
+      return true;
+    } catch {
+      setNameError("重命名失败，请重试");
+      return false;
+    }
+  }, [nameDraft, clawName, claw.id, cancelNameEdit]);
+
+  useEffect(() => {
+    if (!isNameEditing) return;
+    const frame = requestAnimationFrame(() => {
+      if (!nameInputRef.current) return;
+      nameInputRef.current.focus();
+      nameInputRef.current.select();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isNameEditing]);
+
+  useEffect(() => {
+    if (!isNameEditing) return;
+
+    const handlePointerDown = (e: MouseEvent) => {
+      if (!nameEditWrapperRef.current) return;
+      if (nameEditWrapperRef.current.contains(e.target as Node)) return;
+      saveNameEdit();
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, [isNameEditing, saveNameEdit]);
+
+  useEffect(() => {
+    if (isNameEditing) return;
+    const el = nameTextRef.current;
+    if (!el) return;
+
+    const updateOverflow = () => {
+      setIsNameOverflow(el.scrollWidth > el.clientWidth);
+    };
+
+    updateOverflow();
+    const resizeObserver = new ResizeObserver(updateOverflow);
+    resizeObserver.observe(el);
+    window.addEventListener("resize", updateOverflow);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateOverflow);
+    };
+  }, [clawName, isNameEditing]);
 
   // ── Configuration state ──
   const [isConfiguring, setIsConfiguring] = useState(false); // 配置中状态
@@ -309,6 +413,35 @@ export default function AgentDetail() {
     type: "set-primary" | "delete" | "delete-backup";
     modelId: number | null;
   }>({ open: false, type: "set-primary", modelId: null });
+
+  // 连通性检测
+  const [connectTesting, setConnectTesting] = useState(false);
+  const [connectFailResult, setConnectFailResult] = useState<string | null>(null);
+
+  const handleConnectTest = async () => {
+    if (customInputMode === "form") {
+      if (!customForm.base_url || !customForm.api_key || !customForm.model_id) {
+        toast.error("请填写完整的模型配置信息");
+        return;
+      }
+    } else {
+      if (!customJson.trim()) {
+        toast.error("请填写完整的模型配置信息");
+        return;
+      }
+    }
+    setConnectTesting(true);
+    await new Promise((r) => setTimeout(r, 1500));
+    setConnectTesting(false);
+    setConnectFailResult(JSON.stringify({
+      error: {
+        message: "Invalid API Key",
+        param: "Please provide valid API Key",
+        code: "401",
+        type: "invalid_key",
+      }
+    }, null, 2));
+  };
 
   const currentProvider = MODEL_PROVIDERS.find(p => p.value === selectedProvider) || MODEL_PROVIDERS[0];
   const currentVersions = currentProvider.versions;
@@ -1375,30 +1508,94 @@ echo "✅ 导出完成，数据已上传到 COS"`;
             </div>
             <div>
             {/* 第一行：名称 + 状态 badge（8 种状态动态渲染） */}
-          <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-gray-900">{clawName}</h1>
-                <TooltipProvider delayDuration={200}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className={statusCfg.badgeClass}>
-                        {statusCfg.spinning ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <span
-                            className="w-1.5 h-1.5 rounded-full inline-block"
-                            style={{ backgroundColor: statusCfg.dotColor }}
-                          />
-                        )}
-                        {statusCfg.label}
-                      </span>
-                    </TooltipTrigger>
-                    {statusCfg.tooltipText && (
-                      <TooltipContent side="top" className="text-xs">
-                        {statusCfg.tooltipText}
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                </TooltipProvider>
+          <div className="flex items-start gap-2 min-w-0">
+                <div ref={nameEditWrapperRef} className="group/name peer/name min-w-0 h-9">
+                  {isNameEditing ? (
+                    <div className="relative w-full">
+                      <Input
+                        ref={nameInputRef}
+                        value={nameDraft}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[\r\n]/g, "");
+                          setNameDraft(value);
+                          if (getAgentNameByteLength(value.trim()) > AGENT_NAME_MAX_BYTES) {
+                            setNameError(`名称不能超过 ${AGENT_NAME_MAX_BYTES} 字节`);
+                          } else if (nameError) {
+                            setNameError("");
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            saveNameEdit();
+                          }
+                          if (e.key === "Escape") {
+                            e.preventDefault();
+                            cancelNameEdit();
+                          }
+                        }}
+                        aria-label="编辑 Agent 名称"
+                        aria-invalid={!!nameError}
+                        className={`h-9 w-full text-2xl font-bold text-gray-900 bg-transparent rounded-lg ${nameError ? "border-red-500 focus-visible:ring-red-500" : "border-gray-200 focus-visible:ring-blue-500"}`}
+                      />
+                      {nameError && <p className="absolute left-0 bottom-full mb-1 text-xs text-red-500">{nameError}</p>}
+                    </div>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={startNameEdit}
+                          disabled={!canRenameByStatus}
+                          className={`h-9 inline-flex items-center px-1 -ml-1 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${canRenameByStatus ? "hover:bg-gray-50" : "opacity-40 cursor-not-allowed"}`}
+                          aria-label="重命名 Agent"
+                        >
+
+                          <h1 ref={nameTextRef} className="text-2xl font-bold text-gray-900 leading-tight max-w-[460px] truncate">
+                            {clawName}
+                          </h1>
+                          <span className="h-5 inline-flex items-center justify-center flex-shrink-0 overflow-hidden w-5 opacity-100">
+                            <Pencil className="w-3.5 h-3.5 text-gray-400" />
+                          </span>
+                        </button>
+                      </TooltipTrigger>
+                      {!canRenameByStatus ? (
+                        <TooltipContent side="top" className="text-xs">
+                          当前状态不支持重命名
+                        </TooltipContent>
+                      ) : isNameOverflow ? (
+                        <TooltipContent side="top" className="text-xs max-w-[520px] break-all">
+                          {clawName}
+                        </TooltipContent>
+                      ) : null}
+
+                    </Tooltip>
+                  )}
+                </div>
+                <div className="transition-transform duration-150 peer-hover/name:translate-x-2 peer-focus-within/name:translate-x-2">
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className={statusCfg.badgeClass}>
+                          {statusCfg.spinning ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <span
+                              className="w-1.5 h-1.5 rounded-full inline-block"
+                              style={{ backgroundColor: statusCfg.dotColor }}
+                            />
+                          )}
+                          {statusCfg.label}
+                        </span>
+                      </TooltipTrigger>
+                      {statusCfg.tooltipText && (
+                        <TooltipContent side="top" className="text-xs">
+                          {statusCfg.tooltipText}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
               {/* 第二行：类型 tag + 角色胶囊标签 + 实例 ID */}
               <div className="flex items-center gap-2 mt-0.5">
@@ -1727,6 +1924,7 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                       自定义模型配置指引 <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
+
                 </div>
               )}
 
@@ -1738,15 +1936,28 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                     onClick={handleApplyModel}
                     disabled={isConfiguring}
                   >
-                    {appliedModels.some(m => m.primary) ? "添加备用模型" : "设为主模型"}
+                    {connectTesting && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+                    {connectTesting ? "检测中…" : "连通性检测"}
                   </Button>
-                </TooltipTrigger>
-                {isConfiguring && (
-                  <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
-                    当前TAT状态不在线，无法操作
-                  </TooltipContent>
                 )}
-              </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      className="flex-1 text-sm" 
+                      variant="outline" 
+                      onClick={handleApplyModel}
+                      disabled={isConfiguring}
+                    >
+                      {appliedModels.some(m => m.primary) ? "添加备用模型" : "设为主模型"}
+                    </Button>
+                  </TooltipTrigger>
+                  {isConfiguring && (
+                    <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                      当前TAT状态不在线，无法操作
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </div>
 
             </div>
             {/* Lower: model list */}
@@ -2855,6 +3066,33 @@ echo "✅ 导出完成，数据已上传到 COS"`;
       </Dialog>
 
       {/* ===== 一键更新 确认弹窗 ===== */}
+      {/* 连通性检测失败弹窗 */}
+      <Dialog open={!!connectFailResult} onOpenChange={() => setConnectFailResult(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-500">
+              <AlertTriangle className="w-5 h-5" />
+              模型连接失败
+            </DialogTitle>
+            <DialogDescription className="sr-only">模型连接失败详情</DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <pre className="rounded-lg bg-gray-50 border border-gray-200 p-3 text-xs text-gray-700 font-mono whitespace-pre-wrap break-all">
+              {connectFailResult}
+            </pre>
+          </div>
+          <div className="flex justify-end pt-1">
+            <Button
+              style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)" }}
+              className="text-white"
+              onClick={() => setConnectFailResult(null)}
+            >
+              我知道了
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showUpdateConfirmDialog} onOpenChange={setShowUpdateConfirmDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>

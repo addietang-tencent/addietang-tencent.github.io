@@ -1,20 +1,13 @@
 /**
- * 公共技能库 Tab —— 外壳容器
+ * 公共技能 Tab（原「公共技能库」单技能列表）
  *
- * 职责：在「公共技能库」一级 Tab 下，提供二级 Tab 切换器：
- *  - 公共技能（PublicSkillTab）：原有单 Skill 列表（零行为变更）
- *  - 公共技能包（PublicSkillPackageTab）：新增的 Skill 组合模板浏览
- *
- * 设计说明：
- * - 二级 Tab 视觉风格与「企业技能库」(EnterpriseSkillLibrary) 的二级 Tab 保持一致：
- *   `grid w-full grid-cols-2 bg-gray-50` —— 灰底容器 + 等宽两栏 + active 时白底蓝字
- * - 两个子 Tab 各自维护内部状态（搜索、分类、收藏、详情页），互不干扰
+ * 此组件由 PublicSkillLibraryTab（外壳）作为二级 Tab 之一渲染。
+ * 内容与原 PublicSkillLibraryTab 完全一致，未做任何行为变更，仅做了文件迁移。
  */
 import { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pagination } from '@/components/ui/pagination';
 import {
   Search, Download, Star, Heart, ChevronRight,
   ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
@@ -102,20 +95,95 @@ function getLanguageFromFilename(filename: string): string {
   return map[ext] || 'text';
 }
 
+// ─── 分页组件 ─────────────────────────────────────────────────────────────────
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  onPageChange: (page: number) => void;
+}
+
+function Pagination({ currentPage, totalPages, totalCount, onPageChange }: PaginationProps) {
+  const pages: (number | '...')[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('...');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('...');
+    pages.push(totalPages);
+  }
+
+  const btnBase = 'min-w-[28px] h-7 px-2 flex items-center justify-center rounded-lg text-xs font-medium transition-all';
+  const btnActive = 'text-white shadow-sm';
+  const btnInactive = 'border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50';
+  const btnArrow = `${btnBase} border border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed`;
+
+  return (
+    <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-2">
+      {/* 左侧：数据总览 */}
+      <span className="text-xs text-gray-400">
+        共 {totalCount} 个技能，第 {currentPage} / {totalPages} 页
+      </span>
+
+      {/* 右侧：翻页按钮组 */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={btnArrow}
+        >
+          ‹
+        </button>
+        {pages.map((p, i) =>
+          p === '...' ? (
+            <span key={`ellipsis-${i}`} className="min-w-[28px] h-7 flex items-center justify-center text-gray-400 text-xs">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onPageChange(p as number)}
+              className={`${btnBase} ${currentPage === p ? btnActive : btnInactive}`}
+              style={currentPage === p ? { backgroundColor: '#007AFF' } : undefined}
+            >
+              {p}
+            </button>
+          )
+        )}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={btnArrow}
+        >
+          ›
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── 排名徽章 ─────────────────────────────────────────────────────────────────
 
 function RankBadge({ rank }: { rank: number }) {
-  const style = rank === 1
-    ? "bg-[#E9F8EB] text-[#008236]"
-    : rank === 2
-    ? "bg-[#E8ECFE] text-[#1447E6]"
-    : rank === 3
-    ? "bg-[#F5F5F5] text-[#0A0A0A]"
-    : "bg-[#F5F5F5] text-[#0A0A0A]";
-
+  if (rank === 1) return (
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md z-10">
+      <span className="text-white text-xs font-bold">1</span>
+    </div>
+  );
+  if (rank === 2) return (
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md z-10">
+      <span className="text-white text-xs font-bold">2</span>
+    </div>
+  );
+  if (rank === 3) return (
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-md z-10">
+      <span className="text-white text-xs font-bold">3</span>
+    </div>
+  );
   return (
-    <div className={`absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full flex items-center justify-center z-10 ${style}`}>
-      <span className="text-xs font-bold tracking-[0.18px]">{rank}</span>
+    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center z-10 shadow-sm">
+      <span className="text-gray-500 font-medium" style={{ fontSize: '10px', lineHeight: 1 }}>{rank}</span>
     </div>
   );
 }
@@ -150,26 +218,26 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
   return (
     <div
-      className="relative bg-white rounded-xl border border-[#e5e5e5] cursor-pointer hover:border-gray-200 transition-all group flex flex-col"
-     
+      className="relative bg-white rounded-xl border border-gray-100 cursor-pointer hover:border-gray-200 hover:shadow-md transition-all group flex flex-col"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       onClick={onClick}
     >
       {rank > 0 && <RankBadge rank={rank} />}
 
       <div className="p-4 pl-4 flex flex-col flex-1">
         {/* 技能名称 */}
-        <h3 className="font-mono text-sm font-semibold text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors leading-tight mb-1 pl-3">
+        <h3 className="font-mono text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight mb-1 pl-3">
           {skill.name}
         </h3>
 
         {/* 中文简介 - 固定两行高度 */}
-        <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
+        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
           {skill.descriptionZh}
         </p>
 
         {/* 统计数据 + 收藏按钮 - 常驻第三行 */}
         <div className="flex items-center justify-between mt-3 pl-3">
-          <div className="flex items-center gap-3 text-xs text-[#A3A3A3]">
+          <div className="flex items-center gap-3 text-xs text-gray-400">
             <span className="flex items-center gap-1">
               <Download className="w-3 h-3" />
               {formatCount(skill.downloads)}
@@ -178,15 +246,15 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
               <Star className="w-3 h-3" />
               {formatCount(skill.stars)}
             </span>
-            <span className="font-mono text-[#A3A3A3]">v{skill.version}</span>
+            <span className="font-mono text-gray-300">v{skill.version}</span>
           </div>
           {/* 收藏按钮 - 右下角 */}
           <button
             onClick={handleFavoriteClick}
-            className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
               isFavorited
                 ? 'text-red-500 bg-red-50 hover:bg-red-100'
-                : 'text-[#A3A3A3] hover:text-red-500 hover:bg-red-50'
+                : 'text-gray-300 hover:text-red-500 hover:bg-red-50'
             }`}
             title={isFavorited ? '取消收藏' : '添加到我的收藏'}
           >
@@ -214,13 +282,13 @@ function FileTreeNode({ file, depth, selectedFile, onSelect }: FileTreeNodeProps
     return (
       <div>
         <button
-          className="w-full flex items-center gap-1.5 h-8 px-2 text-sm text-[#09090b] hover:bg-[#f4f4f5] rounded-[4px] transition-colors"
+          className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors"
           style={{ paddingLeft: `${8 + depth * 16}px` }}
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? <ChevronDown className="w-3.5 h-3.5 shrink-0 text-[#71717a]" /> : <ChevronRightIcon className="w-3.5 h-3.5 shrink-0 text-[#71717a]" />}
-          {expanded ? <FolderOpen className="w-3.5 h-3.5 shrink-0 text-[#71717a]" /> : <Folder className="w-3.5 h-3.5 shrink-0 text-[#71717a]" />}
+          {expanded ? <FolderOpen className="w-3.5 h-3.5 shrink-0 text-gray-400" /> : <Folder className="w-3.5 h-3.5 shrink-0 text-gray-400" />}
           <span className="font-medium">{file.name}</span>
+          {expanded ? <ChevronDown className="w-3 h-3 ml-auto text-gray-400" /> : <ChevronRightIcon className="w-3 h-3 ml-auto text-gray-400" />}
         </button>
         {expanded && file.children?.map(child => (
           <FileTreeNode
@@ -238,13 +306,13 @@ function FileTreeNode({ file, depth, selectedFile, onSelect }: FileTreeNodeProps
   const isSelected = selectedFile?.path === file.path;
   return (
     <button
-      className={`w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors ${
-        isSelected ? 'bg-[#f4f4f5] text-[#09090b] font-medium' : 'text-[#09090b] hover:bg-[#f4f4f5]'
+      className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
+        isSelected ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'
       }`}
       style={{ paddingLeft: `${8 + depth * 16}px` }}
       onClick={() => onSelect(file)}
     >
-      <FileText className="w-3.5 h-3.5 text-[#71717a] shrink-0" />
+      <FileText className="w-3.5 h-3.5 text-gray-400 shrink-0" />
       <span>{file.name}</span>
     </button>
   );
@@ -310,24 +378,24 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       {/* 顶部导航 */}
       <button
         onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors"
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         返回公共技能库
       </button>
 
       {/* 技能信息头部 */}
-      <div className="bg-white rounded-xl border border-[#e5e5e5] p-5"
-       >
+      <div className="bg-white rounded-xl border border-gray-100 p-5"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="font-mono text-lg font-bold text-[#0A0A0A]">{skill.name}</h2>
+              <h2 className="font-mono text-lg font-bold text-gray-900">{skill.name}</h2>
               <Badge variant="secondary" className="text-xs font-mono">v{skill.version}</Badge>
             </div>
-            <p className="text-xs text-[#A3A3A3] font-mono mb-2">slug：{skill.name}</p>
-            <p className="text-sm text-[#737373] mb-3">{skill.descriptionZh}</p>
-            <div className="flex items-center gap-4 text-xs text-[#A3A3A3]">
+            <p className="text-xs text-gray-400 font-mono mb-2">slug：{skill.name}</p>
+            <p className="text-sm text-gray-600 mb-3">{skill.descriptionZh}</p>
+            <div className="flex items-center gap-4 text-xs text-gray-400">
               <span className="flex items-center gap-1.5">
                 <Download className="w-4 h-4" />
                 {formatCount(skill.downloads)} 次下载
@@ -357,41 +425,43 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       </div>
 
       {/* 三列内容区 */}
-      <div className="flex h-[47rem] border border-[#e5e5e5] rounded-[4px] overflow-hidden bg-white">
+      <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
         {/* 左列：版本列表 */}
-        <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
-          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
-            <p className="text-sm font-medium text-[#09090b]">版本</p>
+        <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
+          <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+            <p className="text-xs font-medium text-gray-900">版本</p>
           </div>
           <div className="flex-1 overflow-y-auto">
             {skill.versions.map((v, idx) => (
               <button
                 key={v.version}
                 onClick={() => setSelectedVersion(v)}
-                className={`w-full text-left px-3 py-2.5 border-b border-[#f4f4f5] transition-colors ${
+                className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors rounded-none ${
                   selectedVersion.version === v.version
-                    ? 'bg-[#f4f4f5]'
-                    : 'hover:bg-[#f4f4f5] cursor-pointer'
+                    ? 'bg-blue-50'
+                    : 'hover:bg-gray-50 cursor-pointer'
                 }`}
               >
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[14px] font-semibold text-[#09090b]">{v.version}</span>
+                  <span className={`text-xs font-normal ${
+                    selectedVersion.version === v.version ? 'text-blue-700' : 'text-gray-700'
+                  }`}>{v.version}</span>
                   {v.isLatest && (
-                    <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold font-['Open_Sans'] leading-none tracking-[0.015em] text-[#355EF1]">New</span>
+                    <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">最新</span>
                   )}
                 </div>
-                <p className="text-[12px] text-[#a1a1aa] mt-0.5">{v.date.slice(0, 10)}</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{v.date.slice(0, 10)}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* 中列：文件目录 */}
-        <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
-          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
-            <p className="text-sm font-medium text-[#09090b]">{selectedVersion.version}</p>
+        <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
+          <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+            <p className="text-xs font-medium text-gray-900">{selectedVersion.version}</p>
           </div>
-          <div className="flex-1 overflow-y-auto px-3 py-2">
+          <div className="flex-1 overflow-y-auto">
             {displayFiles.map(file => (
               <FileTreeNode
                 key={file.path}
@@ -411,16 +481,16 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex-1 flex flex-col bg-white">
           {selectedFile ? (
             <>
-              <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
-                <p className="text-sm font-medium text-[#09090b]">{selectedFile.name}</p>
+              <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+                <p className="text-xs font-medium text-gray-900">{selectedFile.name}</p>
                 {/* 源码/预览 切换（所有文件都显示） */}
                 <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                   <button
                     onClick={() => setMdPreviewMode('preview')}
                     className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                       mdPreviewMode === 'preview'
-                        ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
-                        : 'text-[#737373] hover:text-[#334155]'
+                        ? 'bg-white text-gray-900 shadow-sm font-medium'
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     <Eye className="w-3 h-3" />
@@ -430,8 +500,8 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                     onClick={() => setMdPreviewMode('source')}
                     className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                       mdPreviewMode === 'source'
-                        ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
-                        : 'text-[#737373] hover:text-[#334155]'
+                        ? 'bg-white text-gray-900 shadow-sm font-medium'
+                        : 'text-gray-500 hover:text-gray-700'
                     }`}
                   >
                     <Code className="w-3 h-3" />
@@ -444,7 +514,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                   const content = selectedFile.content || '';
                   if (!content) {
                     return (
-                      <div className="flex items-center justify-center h-full text-[#A3A3A3]">
+                      <div className="flex items-center justify-center h-full text-gray-400">
                         <p className="text-sm">文件内容暂无</p>
                       </div>
                     );
@@ -455,7 +525,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                     registerLanguage(lang);
                     return (
                       <Suspense fallback={
-                        <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
+                        <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
                       }>
                         <SyntaxHighlighter
                           language={lang}
@@ -482,7 +552,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
                   registerLanguage(previewLang);
                   return (
                     <Suspense fallback={
-                      <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
+                      <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap break-words font-mono leading-5 bg-gray-50 p-3 m-0">{content}</pre>
                     }>
                       <SyntaxHighlighter
                         language={previewLang}
@@ -500,7 +570,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
               </div>
             </>
           ) : (
-            <div className="flex items-center justify-center h-full text-[#737373]">
+            <div className="flex items-center justify-center h-full text-gray-500">
               <p className="text-sm">选择一个文件查看内容</p>
             </div>
           )}
@@ -512,21 +582,132 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
 
 // ─── 主组件 ───────────────────────────────────────────────────────────────────
 
-interface PublicSkillLibraryTabProps {
+interface PublicSkillTabProps {
   packages: Array<{ id: string; name: string; isActive: boolean }>;
   onAddSkillToPackage: (skillId: string, packageId: string) => void;
 }
 
-export default function PublicSkillLibraryTab({
-  packages,
-  onAddSkillToPackage,
-}: PublicSkillLibraryTabProps) {
+const PAGE_SIZE = 24;
+
+export default function PublicSkillTab({ packages, onAddSkillToPackage }: PublicSkillTabProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('featured');
+  const [favorites, setFavorites] = useState<FavoriteSkill[]>([]);
+  const [inPackageSkills, setInPackageSkills] = useState<Set<string>>(new Set());
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null);
+  const [addToPackageSkillId, setAddToPackageSkillId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // 精选 Top 50：按下载量+收藏量综合排序
+  const featuredSkills = useMemo(() => {
+    return [...PUBLIC_SKILLS]
+      .sort((a, b) => (b.downloads + b.stars) - (a.downloads + a.stars))
+      .slice(0, 50);
+  }, []);
+
+  // 过滤技能
+  const filteredSkills = useMemo(() => {
+    let list: PublicSkill[] = [];
+
+    if (activeCategory === 'all') {
+      list = [...PUBLIC_SKILLS];
+    } else if (activeCategory === 'featured') {
+      list = featuredSkills;
+    } else if (activeCategory === 'favorites') {
+      const favIds = new Set(favorites.map(f => f.skillId));
+      list = PUBLIC_SKILLS.filter(s => favIds.has(s.id));
+    } else {
+      list = PUBLIC_SKILLS.filter(s => s.category === activeCategory);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(s =>
+        s.name.toLowerCase().includes(q) ||
+        s.nameZh.includes(q) ||
+        s.descriptionZh.includes(q)
+      );
+    }
+
+    return list;
+  }, [activeCategory, searchQuery, favorites, featuredSkills]);
+
+  // 收藏操作
+  const handleFavorite = (skillId: string) => {
+    setFavorites(prev => {
+      const exists = prev.find(f => f.skillId === skillId);
+      if (exists) {
+        return prev.filter(f => f.skillId !== skillId);
+      }
+      return [...prev, { skillId, tags: [], addedAt: new Date() }];
+    });
+  };
+
+  // 加入初始技能包
+  const handleAddToPackage = (skillId: string) => {
+    setAddToPackageSkillId(skillId);
+  };
+
+  const handlePackageSelected = (packageId: string) => {
+    if (addToPackageSkillId) {
+      onAddSkillToPackage(addToPackageSkillId, packageId);
+      setInPackageSkills(prev => { const next = new Set(prev); next.add(addToPackageSkillId); return next; });
+    }
+    setAddToPackageSkillId(null);
+  };
+
+  const isFavorited = (skillId: string) => favorites.some(f => f.skillId === skillId);
+
+  // 分页计算
+  const totalPages = Math.ceil(filteredSkills.length / PAGE_SIZE);
+  const pagedSkills = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredSkills.slice(start, start + PAGE_SIZE);
+  }, [filteredSkills, currentPage]);
+
+  // 切换分类或搜索时重置到第一页
+  const handleCategoryChange = (catId: string) => {
+    setActiveCategory(catId);
+    setCurrentPage(1);
+  };
+  const handleSearchChange = (q: string) => {
+    setSearchQuery(q);
+    setCurrentPage(1);
+  };
+
+  // 如果选中了技能，显示详情页
+  if (selectedSkillId) {
+    const skill = PUBLIC_SKILLS.find(s => s.id === selectedSkillId);
+    if (skill) {
+      return (
+        <>
+          <SkillDetailView
+            skill={skill}
+            isFavorited={isFavorited(skill.id)}
+            isInPackage={inPackageSkills.has(skill.id)}
+            onFavorite={handleFavorite}
+            onAddToPackage={handleAddToPackage}
+            onBack={() => setSelectedSkillId(null)}
+          />
+          <AddToPackageDialog
+            open={!!addToPackageSkillId}
+            skillName={PUBLIC_SKILLS.find(s => s.id === addToPackageSkillId)?.nameZh || ''}
+            packages={packages}
+            onConfirm={handlePackageSelected}
+            onCancel={() => setAddToPackageSkillId(null)}
+          />
+        </>
+      );
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* 搜索框 + 刷新按钮 */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
             placeholder="搜索技能名称或关键词..."
             value={searchQuery}
@@ -534,9 +715,7 @@ export default function PublicSkillLibraryTab({
             className="pl-9 bg-white"
           />
         </div>
-        <Button
-          variant="claw-outline"
-          size="icon"
+        <button
           onClick={() => {
             setIsRefreshing(true);
             setTimeout(() => {
@@ -546,18 +725,27 @@ export default function PublicSkillLibraryTab({
             }, 250);
           }}
           title="刷新"
-          className="w-9 h-9"
+          className="flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-700 hover:shadow-sm transition-all flex-shrink-0"
         >
           <RefreshCw className="w-4 h-4" />
-        </Button>
+        </button>
       </div>
 
       {/* 分类 Tab */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-1.5 flex-wrap">
         {PUBLIC_SKILL_CATEGORIES.map(cat => (
-          <Button key={cat.id} variant="plain" size="sm" data-state={activeCategory === cat.id ? "active" : undefined} onClick={() => handleCategoryChange(cat.id)}>
+          <button
+            key={cat.id}
+            onClick={() => handleCategoryChange(cat.id)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              activeCategory === cat.id
+                ? 'text-white border-transparent'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+            }`}
+            style={activeCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+          >
             {cat.name}
-          </Button>
+          </button>
         ))}
       </div>
 
@@ -582,19 +770,15 @@ export default function PublicSkillLibraryTab({
               );
             })}
           </div>
-          <div className="pt-3 border-t border-[#e5e5e5] mt-2">
-            <Pagination
-              total={filteredSkills.length}
-              current={currentPage}
-              pageSize={PAGE_SIZE}
-              showTotal={(total) => `共 ${total} 个技能`}
-              className="w-full justify-between"
-              onChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            />
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={filteredSkills.length}
+            onPageChange={(p) => { setCurrentPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          />
         </>
       ) : (
-        <div className="text-center py-16 text-[#A3A3A3]">
+        <div className="text-center py-16 text-gray-400">
           <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">
             {activeCategory === 'favorites' && favorites.length === 0

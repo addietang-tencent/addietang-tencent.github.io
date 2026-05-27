@@ -276,7 +276,7 @@ function HistoryRow({
               {record.commandExtra?.testInstanceId && (
                 <span className="ml-1.5 inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 align-middle">
                   <FlaskConical className="w-2.5 h-2.5 mr-0.5" />
-                  测试机优先
+                  灰度执行
                 </span>
               )}
             </div>
@@ -415,7 +415,46 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 </pre>
               </div>
 
-              {/* 测试机结果 */}
+              {/* 命令参数值（仅本次任务用到了参数化命令时显示） */}
+              {record.commandExtra.paramValues && Object.keys(record.commandExtra.paramValues).length > 0 && (
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">命令参数</div>
+                  <div className="rounded-lg border border-gray-100 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-50">
+                        <tr className="border-b border-gray-100">
+                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium w-[36%]">
+                            参数名
+                          </th>
+                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium">
+                            参数值
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-50">
+                        {Object.entries(record.commandExtra.paramValues).map(([k, v]) => (
+                          <tr key={k}>
+                            <td className="px-3 py-1.5 font-mono text-gray-900 break-all">{k}</td>
+                            <td className="px-3 py-1.5 font-mono text-gray-700 break-all">{v}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {record.commandExtra.commandContentTemplate && (
+                    <details className="text-xs mt-2">
+                      <summary className="text-gray-500 cursor-pointer hover:text-blue-600">
+                        查看命令模板原始内容（含 {"{{key}}"}）
+                      </summary>
+                      <pre className="text-xs font-mono text-gray-500 bg-gray-50/60 rounded p-2 mt-1.5 max-h-[120px] overflow-auto whitespace-pre-wrap break-all border border-gray-100">
+                        {record.commandExtra.commandContentTemplate}
+                      </pre>
+                    </details>
+                  )}
+                </div>
+              )}
+
+              {/* 灰度执行结果 */}
               {record.commandExtra.testInstanceId && (
                 <div
                   className={`flex items-start gap-2 rounded-lg px-3 py-2 ${
@@ -435,7 +474,7 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                         record.commandExtra.testStatus === "success" ? "text-amber-800" : "text-red-700"
                       }`}
                     >
-                      测试机优先验证：
+                      灰度机验证：
                       {record.commandExtra.testStatus === "success" ? "通过" : "失败"}
                     </div>
                     {record.commandExtra.testMessage && (

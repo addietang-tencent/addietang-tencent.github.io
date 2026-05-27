@@ -76,6 +76,7 @@ import {
   type CustomChannel as AdminCustomChannel,
 } from "@/lib/customChannelStore";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import { DepartmentColumnFilter, GroupColumnFilter } from "@/components/admin/ColumnFilters";
 import { MOCK_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";

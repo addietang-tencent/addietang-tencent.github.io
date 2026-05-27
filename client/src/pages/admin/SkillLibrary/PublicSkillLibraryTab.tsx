@@ -19,6 +19,8 @@ interface PublicSkillLibraryTabProps {
   onAddSkillToPackage: (skillId: string, packageId: string) => void;
 }
 
+const PAGE_SIZE = 24;
+
 export default function PublicSkillLibraryTab({
   packages,
   onAddSkillToPackage,

@@ -32,6 +32,7 @@ import {
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StatusTag } from "@/components/ui/status-tag";
+import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Table,
@@ -184,6 +185,7 @@ export default function SwitchImageDialog({
                       <TableRow>
                         <TableHead className="w-[40px]" />
                         <TableHead>Agent 版本</TableHead>
+                        <TableHead>来源</TableHead>
                         <TableHead>镜像</TableHead>
                         <TableHead>镜像状态</TableHead>
                         <TableHead>创建时间</TableHead>
@@ -195,7 +197,7 @@ export default function SwitchImageDialog({
                         {/* Agent 版本：版本号 + History / 腾讯云维护 */}
                         <TableCell>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                            <span className="text-sm font-medium text-[#0A0A0A] tabular-nums whitespace-nowrap">
                               v{effectiveImage.agentVersion}
                             </span>
                             {effectiveImage.source === "public" && (() => {
@@ -207,7 +209,7 @@ export default function SwitchImageDialog({
                                       type="button"
                                       disabled={!hasHistory}
                                       onClick={() => hasHistory && onViewPublicHistory(effectiveImage.id)}
-                                      className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#737373] hover:text-[#020617] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#A3A3A3] disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+                                      className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#A3A3A3] hover:text-[#0A0A0A] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#D4D4D4] disabled:hover:bg-transparent"
                                       aria-label="版本更新记录"
                                     >
                                       <History className="w-3.5 h-3.5" />
@@ -220,33 +222,23 @@ export default function SwitchImageDialog({
                               );
                             })()}
                           </div>
-                          {effectiveImage.source === "public" && (
-                            <div className="mt-0.5">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="inline-flex">
-                                    <StatusTag variant="gray">腾讯云维护更新</StatusTag>
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom" className="text-xs">
-                                  由腾讯云持续维护更新，自动跟随官方版本
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                          )}
                         </TableCell>
 
-                        {/* 镜像：类型 + 名称 / ID */}
+                        {/* 来源 */}
+                        <TableCell>
+                          <Badge variant="outline">
+                            {effectiveImage.source === "public" ? "公共" : "自定义"}
+                          </Badge>
+                        </TableCell>
+
+                        {/* 镜像：名称 / ID */}
                         <TableCell>
                           <div className="flex items-center gap-1.5 min-w-0">
-                            <StatusTag variant={effectiveImage.source === "public" ? "blue" : "gray"}>
-                              {effectiveImage.source === "public" ? "公共" : "自定义"}
-                            </StatusTag>
-                            <span className="text-sm font-medium text-gray-900 truncate max-w-[240px]">
+                            <span className="text-sm font-medium text-[#0A0A0A] truncate max-w-[240px]">
                               {effectiveImage.name}
                             </span>
                           </div>
-                          <div className="text-[11px] text-gray-400 mt-0.5 font-mono truncate">
+                          <div className="text-[11px] text-[#A3A3A3] mt-1 font-mono truncate">
                             {effectiveImage.id}
                           </div>
                         </TableCell>
@@ -446,6 +438,7 @@ function ImageList({
           <TableRow>
             <TableHead className="w-[40px]" />
             <TableHead>Agent 版本</TableHead>
+            <TableHead>来源</TableHead>
             <TableHead>镜像</TableHead>
             <TableHead>镜像状态</TableHead>
             <TableHead>创建时间</TableHead>
@@ -490,7 +483,7 @@ function ImageList({
                         </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                      <span className="text-sm font-medium text-[#0A0A0A] tabular-nums whitespace-nowrap">
                         v{img.agentVersion}
                       </span>
                     )}
@@ -506,7 +499,7 @@ function ImageList({
                                 e.stopPropagation();
                                 if (hasHistory) onViewHistory(img.id);
                               }}
-                              className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#737373] hover:text-[#020617] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#A3A3A3] disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+                              className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#A3A3A3] hover:text-[#0A0A0A] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#D4D4D4] disabled:hover:bg-transparent"
                               aria-label="版本更新记录"
                             >
                               <History className="w-3.5 h-3.5" />
@@ -519,29 +512,17 @@ function ImageList({
                       );
                     })()}
                   </div>
-                  {img.source === "public" && (
-                    <div className="mt-0.5">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="inline-flex">
-                            <StatusTag variant="gray">腾讯云维护更新</StatusTag>
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">
-                          由腾讯云持续维护更新，自动跟随官方版本
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  )}
                 </TableCell>
 
-                {/* 镜像：类型标签 + 名称 + ID + 状态（与 agent 类型页镜像列同款样式） */}
+                {/* 来源（公共/自定义） */}
+                <TableCell>
+                  <Badge variant="outline">{imgType}</Badge>
+                </TableCell>
+
+                {/* 镜像：名称 + ID */}
                 <TableCell>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <StatusTag variant={imgType === "公共" ? "blue" : "gray"}>
-                      {imgType}
-                    </StatusTag>
-                    <span className="text-sm font-medium text-gray-900 truncate max-w-[240px]">
+                    <span className="text-sm font-medium text-[#0A0A0A] truncate max-w-[240px]">
                       {img.name}
                     </span>
                     {img.isEffective && (
@@ -550,7 +531,7 @@ function ImageList({
                       </StatusTag>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
+                  <div className="flex items-center gap-2 text-[11px] text-[#A3A3A3] mt-1 flex-wrap">
                     <span className="font-mono truncate">{img.id}</span>
                   </div>
                 </TableCell>
@@ -561,7 +542,7 @@ function ImageList({
                 </TableCell>
 
                 {/* 创建时间 */}
-                <TableCell className="text-sm font-medium text-gray-900 tabular-nums">
+                <TableCell className="text-sm text-[#525252] tabular-nums">
                   {img.createTime ? img.createTime.split(" ")[0] : "—"}
                 </TableCell>
 

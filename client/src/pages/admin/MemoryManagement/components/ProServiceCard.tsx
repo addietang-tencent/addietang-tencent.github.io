@@ -13,6 +13,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { SurfaceCard } from '@/components/ui/Surface';
 import {
   Tooltip,
@@ -617,9 +618,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400 text-amber-900 tracking-wide">
                   🎁 限时免费（至 6.15）
                 </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-[#355EF1]">
-                  免费体验中
-                </span>
+                <Badge color="blue">免费体验中</Badge>
                 {isInitializing && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-[#355EF1] rounded text-xs">
                     <Loader2 className="w-3 h-3 animate-spin" />

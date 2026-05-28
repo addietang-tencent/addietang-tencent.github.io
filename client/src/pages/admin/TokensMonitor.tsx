@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFoo
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -415,9 +416,9 @@ function TokenGroupFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox"
-          className={`w-[160px] justify-between bg-white text-sm font-normal hover:bg-white data-[state=open]:border-ring data-[state=open]:ring-[3px] data-[state=open]:ring-ring/50 ${
-            triggerNode ? "text-foreground" : "text-muted-foreground"
+        <Button variant="claw-outline" size="claw" role="combobox"
+          className={`w-[160px] justify-between font-normal ${
+            triggerNode ? "" : "text-muted-foreground"
           }`}>
           <span className="truncate">{triggerNode?.name || "全部分组"}</span>
           <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 opacity-50 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -426,12 +427,10 @@ function TokenGroupFilter({
       <PopoverContent className="w-[280px] p-0" align="start">
         {/* 搜索框 */}
         <div className="p-2 border-b border-[#e5e5e5]">
-          <input
-            type="text"
+          <Input
             placeholder="搜索分组"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-8 px-3 text-sm rounded-[4px] border border-[#e5e5e5] bg-white text-[#525252] placeholder:text-[#A3A3A3] focus:outline-none focus:ring-2 focus:ring-[#355EF1] focus:border-[#355EF1]"
           />
         </div>
         <div className="max-h-[280px] overflow-y-auto p-2">
@@ -1198,7 +1197,7 @@ export default function TokensMonitor() {
               {hasOneid && <SegmentItem value="department">按部门</SegmentItem>}
               <SegmentItem value="group" className="relative pr-3">
                 按分组
-                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
               </SegmentItem>
               <SegmentItem value="session">按会话</SegmentItem>
             </SegmentList>

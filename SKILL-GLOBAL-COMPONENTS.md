@@ -1037,7 +1037,7 @@ import { Badge } from "@/components/ui/badge";
 
 | color | 背景 | 文字 | dark 模式 |
 |-------|------|------|-----------|
-| `blue` | `bg-blue-50` | `text-blue-700` | `bg-blue-950/40 text-blue-300` |
+| `blue` | `bg-[#E8ECFE]` | `text-[#1447E6]` | `bg-blue-950/40 text-blue-300` |
 | `green` | `bg-green-50` | `text-green-700` | `bg-green-950/40 text-green-300` |
 | `purple` | `bg-purple-50` | `text-purple-700` | `bg-purple-950/40 text-purple-300` |
 | `red` | `bg-red-50` | `text-red-700` | `bg-red-950/40 text-red-300` |
@@ -1153,6 +1153,17 @@ import {
 - 特殊布局（多行 / 自定义 wrapper）：设 `rawChildren` 关闭内置 flex 容器
 - 禁止在操作列使用 ghost、outline、default、link-dark 或自定义按钮样式
 - **横向滚动固定**：当表格列过多需横向滚动时，操作列必须 `fixed="right"` 固定在最右侧。**统一使用 `<Table scrollX={...}>` + `fixed` 属性**，不允许手写 sticky + bg 的写法（详见下方「固定列（Fixed Columns）」章节）。
+
+**单元格对齐规则（强制）：**
+- **垂直对齐**：组件默认 `align-middle`（垂直居中），**禁止业务侧使用 `align-top` 覆盖**。多行内容（如名称 + slug 两行）可自然撑高行高，仍保持居中。
+- **禁止使用原生 `<table>`**：所有数据表格必须使用标准 Table 组件，禁止裸写 `<table>` + 自定义 class。
+
+**表格内状态/标签样式规则（强制）：**
+- **状态列**（运行状态、下发状态）：必须使用 `StatusTag mode="text"`（纯文字变色，无底色无圆点），禁止在表格内使用 `mode="dot"` 或 `mode="fill"`。
+- **版本号**：使用纯文字（如 `v2.1.0`），禁止使用 `StatusTag mode="fill" variant="gray"` 包裹。
+- **镜像来源 / 类型标签**（公共/自定义）：拆为独立列，纯文字显示，禁止使用彩色 `StatusTag` fill 标签。
+- **辅助信息**（如"腾讯云维护更新"）：使用 `text-xs text-gray-400` 纯文字，禁止用 `StatusTag` 包裹。
+- **总原则**：表格行内只允许「状态列」有颜色文字（通过 `StatusTag mode="text"`），其余列一律黑白灰纯文字层次，保持表格整洁。
 
 ### 15.1 固定列（Fixed Columns）
 

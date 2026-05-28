@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { StatusTag } from "@/components/ui/status-tag";
+import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
@@ -112,14 +112,17 @@ export default function AgentTypesTable({
 
   return (
     <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-      <Table className="table-auto" scrollX={1180}>
+      <Table className="table-auto" scrollX={1460}>
         <TableHeader>
           <TableRow>
             <TableHead fixed="left" style={{ width: 240, minWidth: 240, maxWidth: 240 }}>
               Agent 类型
             </TableHead>
+            <TableHead style={{ minWidth: 120 }}>维护方</TableHead>
             <TableHead style={{ minWidth: 160 }}>Agent 版本</TableHead>
-            <TableHead style={{ minWidth: 320 }}>镜像</TableHead>
+            <TableHead style={{ minWidth: 80 }}>来源</TableHead>
+            <TableHead style={{ minWidth: 240 }}>镜像</TableHead>
+            <TableHead style={{ minWidth: 80 }}>状态</TableHead>
             <TableHead style={{ minWidth: 160 }}>应用范围</TableHead>
             <TableHead style={{ minWidth: 100 }}>用户可见</TableHead>
             <TableHead fixed="right" style={{ minWidth: 200, width: "1%" }}>操作</TableHead>
@@ -236,6 +239,19 @@ function AgentTypeRow({
         </div>
       </TableCell>
 
+      {/* 1.5 维护方 */}
+      <TableCell className="py-4">
+        {selected ? (
+          selected.source === "public" ? (
+            <Badge color="blue">腾讯云维护更新</Badge>
+          ) : (
+            <span className="text-sm text-[#525252]">企业自维护</span>
+          )
+        ) : (
+          <span className="text-sm text-[#D4D4D4]">—</span>
+        )}
+      </TableCell>
+
       {/* 2. Agent 版本 */}
       <TableCell className="py-4">
         {selected ? (
@@ -250,14 +266,24 @@ function AgentTypeRow({
         )}
       </TableCell>
 
-      {/* 3. 镜像（来源 tag + 名称 + 状态徽章 + ID + 切换图标 / 空态 link） */}
+      {/* 3. 来源（公共/自定义） */}
+      <TableCell className="py-4">
+        {selected ? (
+          selected.source === "public" ? (
+            <Badge variant="outline">公共</Badge>
+          ) : (
+            <Badge variant="outline">自定义</Badge>
+          )
+        ) : (
+          <span className="text-xs text-[#A3A3A3]">-</span>
+        )}
+      </TableCell>
+
+      {/* 4. 镜像（名称 + ID + 切换图标 / 空态 link） */}
       <TableCell className="py-4 whitespace-normal">
         {selected ? (
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <StatusTag mode="fill" variant={selected.source === "public" ? "blue" : "gray"}>
-                {selected.source === "public" ? "公共" : "自定义"}
-              </StatusTag>
               <span className="text-sm font-medium text-gray-900 truncate min-w-0">
                 {selected.name}
               </span>
@@ -280,13 +306,21 @@ function AgentTypeRow({
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-[#A3A3A3]">
               <span className="truncate">{selected.id}</span>
-              <ImageStatusBadge status={selected.status} />
             </div>
           </div>
         ) : (
           <Button variant="link" size="sm" onClick={onOpenSwitchDialog}>
             选择镜像
           </Button>
+        )}
+      </TableCell>
+
+      {/* 3.5 状态（独立列） */}
+      <TableCell className="py-4">
+        {selected ? (
+          <ImageStatusBadge status={selected.status} />
+        ) : (
+          <span className="text-sm text-[#D4D4D4]">—</span>
         )}
       </TableCell>
 
@@ -390,9 +424,9 @@ function AgentVersionCell({
     : [];
   const hasHistory = isPublic && !!onViewHistory && versionList.length > 0;
   return (
-    <div className="min-w-0">
+    <div className="min-w-0 py-0.5">
       <div className="flex items-center gap-1.5 whitespace-nowrap">
-        <span className="text-sm font-medium text-gray-900">
+        <span className="text-sm font-medium text-[#0A0A0A] tabular-nums">
           v{image.agentVersion}
         </span>
         {onViewHistory && (
@@ -402,7 +436,7 @@ function AgentVersionCell({
                 type="button"
                 disabled={!hasHistory}
                 onClick={onViewHistory}
-                className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#737373] hover:text-[#020617] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#A3A3A3] disabled:hover:bg-transparent disabled:hover:text-[#A3A3A3]"
+                className="cursor-pointer inline-flex items-center justify-center w-5 h-5 rounded-[4px] text-[#A3A3A3] hover:text-[#0A0A0A] hover:bg-[#f5f5f5] transition-colors disabled:cursor-not-allowed disabled:text-[#D4D4D4] disabled:hover:bg-transparent"
                 aria-label="版本更新记录"
               >
                 <History className="w-3.5 h-3.5" />
@@ -414,11 +448,6 @@ function AgentVersionCell({
           </Tooltip>
         )}
       </div>
-      {isPublic && (
-        <div className="mt-1">
-          <span className="text-xs text-[#A3A3A3]">腾讯云维护更新</span>
-        </div>
-      )}
     </div>
   );
 }

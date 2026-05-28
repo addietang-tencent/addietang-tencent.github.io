@@ -1,5 +1,5 @@
-import React from 'react';
-import { Check, Zap } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Check } from 'lucide-react';
 
 interface ComparisonTableProps {
   /** Pro 服务是否已开通（开通后 Pro 卡可在外层另作徽标处理；本视图按设计稿不显示徽标） */
@@ -24,19 +24,15 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = (
   _props,
 ) => {
   return (
-    <div className="grid grid-cols-[170px_1px_1fr] gap-x-[70px] gap-y-0">
+    <div className="grid grid-cols-[170px_1px_1fr] gap-x-10 gap-y-0">
       {/* ─────────── 左列：Free 版 ─────────── */}
       <div className="flex flex-col">
-        {/* 图标容器：白底淡蓝渐变 */}
-        <div
-          className="w-9 h-9 rounded-[4px] flex items-center justify-center shrink-0"
-          style={{
-            background:
-              'linear-gradient(135deg, rgba(20,71,230,0.04) 0%, #FFFFFF 50%, rgba(20,71,230,0.04) 100%)',
-          }}
-        >
-          <Zap className="w-[18px] h-[18px] text-[#0A0A0A]" />
-        </div>
+        {/* 图标 — 自带渐变方块背景的 36×36 svg */}
+        <img
+          src="/assets/admin-memory-management/version-compare/icon-free.svg"
+          alt="Free"
+          className="w-9 h-9 shrink-0"
+        />
 
         {/* 标题 + 标签 */}
         <div className="mt-[16px]">
@@ -54,12 +50,12 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = (
         </ul>
       </div>
 
-      {/* ─────────── 垂直分隔线 ─────────── */}
-      <div className="self-stretch w-px bg-[#E6E9EF]" />
+      {/* ─────────── 垂直分隔线（高度 2/3，居中） ─────────── */}
+      <div className="self-center w-px h-2/3 bg-[#E6E9EF]" />
 
-      {/* ─────────── 右列：Pro 版（顶部 header + 下半两块：左特性条 / 右 2x2 卡片网格） ─────────── */}
-      <div className="flex flex-col">
-        {/* 头部：图标 + 标题 + 推荐/企业级方案 tag */}
+      {/* ─────────── 右列：Pro 版（左：头部+特性 / 右：2x2 卡片，两子列顶端对齐） ─────────── */}
+      <div className="grid grid-cols-[190px_minmax(0,1fr)] gap-x-10 items-start">
+        {/* 左：图标 + 标题 + 标签 + 3 条特性 */}
         <div>
           <div
             className="w-9 h-9 rounded-[4px] flex items-center justify-center shrink-0"
@@ -85,36 +81,35 @@ export const ComparisonTable: React.FC<ComparisonTableProps> = (
               <span className="text-[10px] leading-none text-[#0A0A0A]">企业级方案</span>
             </span>
           </div>
-        </div>
 
-        {/* 下半：左特性条 + 右 2x2 卡片网格 */}
-        <div className="mt-[16px] grid grid-cols-[190px_1fr] gap-x-[54px]">
-          {/* 左：3 条特性（与 Free 列对齐） */}
-          <ul className="space-y-2">
+          <ul className="mt-[16px] space-y-2">
             <FeatureRow label="腾讯云向量数据库（VDB）" />
             <FeatureRow label="语义 + 关键词双路检索" />
             <FeatureRow label="支持百万级记忆数据" />
           </ul>
+        </div>
 
-          {/* 右：企业级特性 2x2 卡片网格 */}
-          <div className="grid grid-cols-2 gap-2">
-            <EnterpriseFeatureCard
-              iconSrc="/assets/admin-memory-management/version-compare/feature-tenant.svg"
-              label="租户权限隔离，访问更安全"
-            />
-            <EnterpriseFeatureCard
-              iconSrc="/assets/admin-memory-management/version-compare/feature-encrypt.svg"
-              label="全链路加密，保障数据安全"
-            />
-            <EnterpriseFeatureCard
-              iconSrc="/assets/admin-memory-management/version-compare/feature-backup.svg"
-              label="数据备份，可靠性更高"
-            />
-            <EnterpriseFeatureCard
-              iconSrc="/assets/admin-memory-management/version-compare/feature-token.svg"
-              label="短期记忆压缩，Token 节省 50%+"
-            />
-          </div>
+        {/* 右：企业级特性 2x2 卡片网格（顶端与 Pro 版标题对齐，每张卡片定最小宽确保文本不换行） */}
+        <div
+          className="grid gap-2 mt-[52px]"
+          style={{ gridTemplateColumns: 'repeat(2, minmax(220px, 260px))' }}
+        >
+          <EnterpriseFeatureCard
+            iconSrc="/assets/admin-memory-management/version-compare/feature-tenant.svg"
+            label="租户权限隔离，访问更安全"
+          />
+          <EnterpriseFeatureCard
+            iconSrc="/assets/admin-memory-management/version-compare/feature-encrypt.svg"
+            label="全链路加密，保障数据安全"
+          />
+          <EnterpriseFeatureCard
+            iconSrc="/assets/admin-memory-management/version-compare/feature-backup.svg"
+            label="数据备份，可靠性更高"
+          />
+          <EnterpriseFeatureCard
+            iconSrc="/assets/admin-memory-management/version-compare/feature-token.svg"
+            label="短期记忆压缩，Token 节省 50%+"
+          />
         </div>
       </div>
     </div>
@@ -138,13 +133,42 @@ const FeatureRow: React.FC<{ label: string; muted?: boolean }> = ({ label, muted
   </li>
 );
 
-/** 企业级特性卡片：图标 + 文案，9px 圆角 + 1px 浅描边 */
+/** 企业级特性卡片：图标 + 文案，9px 圆角 + 1px 浅描边
+ *  附带 spotlight 鼠标跟随高光效果（参考 reactbits.dev/components/spotlight-card） */
 const EnterpriseFeatureCard: React.FC<{ iconSrc: string; label: string }> = ({
   iconSrc,
   label,
-}) => (
-  <div className="h-16 rounded-[9px] border border-[#EAEAEA] px-6 py-3">
-    <img src={iconSrc} alt="" aria-hidden="true" className="w-4 h-4" />
-    <div className="mt-1 text-[12px] leading-5 text-[#0A0A0A]">{label}</div>
-  </div>
-);
+}) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+    card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+  };
+
+  return (
+    <div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      className="group relative overflow-hidden rounded-[9px] border border-[#EAEAEA] px-4 py-3 h-full transition-colors hover:border-[#D8E1FF]"
+    >
+      {/* spotlight 高光层 */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            'radial-gradient(circle 200px at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(213, 229, 255, 0.6), transparent 70%)',
+        }}
+      />
+      {/* 内容 */}
+      <div className="relative">
+        <img src={iconSrc} alt="" aria-hidden="true" className="w-4 h-4" />
+        <div className="mt-1 text-[12px] leading-5 text-[#0A0A0A] whitespace-nowrap">{label}</div>
+      </div>
+    </div>
+  );
+};

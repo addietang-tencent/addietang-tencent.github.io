@@ -2563,13 +2563,13 @@ export default function AgentMonitor() {
                       <TableBody>
                         {selectedClaws.map((c) => (
                           <TableRow key={c.id}>
-                            <TableCell className="whitespace-normal align-top">
+                            <TableCell className="whitespace-normal">
                               <div className="min-w-0">
                                 <div className="text-sm text-[#0A0A0A] break-words">{c.name}</div>
                                 <div className="font-mono text-xs text-[#A3A3A3] break-all">{c.instanceId}</div>
                               </div>
                             </TableCell>
-                            <TableCell className="whitespace-normal align-top">
+                            <TableCell className="whitespace-normal">
                               <span className="text-xs text-[#334155] break-words">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
                             </TableCell>
                           </TableRow>

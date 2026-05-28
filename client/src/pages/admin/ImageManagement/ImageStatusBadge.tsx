@@ -20,7 +20,7 @@ const STATUS_MAP: Record<string, { text: string; variant: "green" | "blue" | "re
 export function ImageStatusBadge({ status }: { status: string }) {
   const c = STATUS_MAP[status] ?? STATUS_MAP.available;
   return (
-    <StatusTag mode="dot" variant={c.variant}>
+    <StatusTag mode="text" variant={c.variant}>
       {c.text}
     </StatusTag>
   );

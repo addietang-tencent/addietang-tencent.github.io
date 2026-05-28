@@ -3576,7 +3576,7 @@ export default function SecurityGroupManagement() {
                       {/* 主行 — 复用 TableRow 内置 hover / border-b，不再额外覆盖 */}
                       <TableRow>
                         {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
-                        <TableCell className="py-4 align-top whitespace-normal">
+                        <TableCell className="py-4 whitespace-normal">
                           <div className="flex items-start gap-2 min-w-0">
                             <button
                               type="button"
@@ -3632,7 +3632,7 @@ export default function SecurityGroupManagement() {
                           </div>
                         </TableCell>
                         {/* 子网配置：仅展示已配置子网总数 */}
-                        <TableCell className="py-4 align-top">
+                        <TableCell className="py-4">
                           {totalSubnets === 0 ? (
                             <span className="text-xs text-[#A3A3A3] whitespace-nowrap">未配置</span>
                           ) : (
@@ -3643,7 +3643,7 @@ export default function SecurityGroupManagement() {
                           )}
                         </TableCell>
                         {/* 策略：胶囊式徽章（对齐 ModelConfig 风格）；预设策略额外带 tooltip 说明 */}
-                        <TableCell className="py-4 align-top whitespace-nowrap">
+                        <TableCell className="py-4 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
                               <StatusTag mode="fill" variant="blue">预设策略</StatusTag>
@@ -3665,7 +3665,7 @@ export default function SecurityGroupManagement() {
                           )}
                         </TableCell>
                         {/* 操作：TableActionCell 内统一 link（品牌蓝）文字按钮 */}
-                        <TableActionCell className="py-4 align-top whitespace-nowrap">
+                        <TableActionCell className="py-4 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <Button
                               variant="link"

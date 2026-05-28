@@ -173,10 +173,10 @@ const PUBLIC_IMAGES: { id: string; name: string; agentType: string; agentVersion
   { id: "img-nmg7pw1r", name: "OpenClaw on TencentOS Server 4",                    agentType: "OpenClaw",     agentVersion: "2026.4.23", os: "TencentOS Server 4 x86_64",    activeByDefault: false },
   { id: "img-pf18atu9", name: "OpenClaw on TencentOS Server 4 For Tencent",        agentType: "OpenClaw",     agentVersion: "2026.4.23", os: "TencentOS Server 4 (TKernel5)", activeByDefault: false },
   // Hermes Agent 系列（2 个）
-  { id: "img-al484uhr", name: "Hermes Agent on Ubuntu 24.04",                      agentType: "HermesAgent",  agentVersion: "v0.12.0",   os: "Ubuntu 24.04 x86_64",          activeByDefault: true  },
-  { id: "img-ppz9gfjn", name: "Hermes Agent on TencentOS Server 4",                agentType: "HermesAgent",  agentVersion: "v0.12.0",   os: "TencentOS Server 4 x86_64",    activeByDefault: false },
+  { id: "img-al484uhr", name: "Hermes Agent on Ubuntu 24.04",                      agentType: "HermesAgent",  agentVersion: "0.12.0",    os: "Ubuntu 24.04 x86_64",          activeByDefault: true  },
+  { id: "img-ppz9gfjn", name: "Hermes Agent on TencentOS Server 4",                agentType: "HermesAgent",  agentVersion: "0.12.0",    os: "TencentOS Server 4 x86_64",    activeByDefault: false },
   // LightClaw ACE（1 个）
-  { id: "img-0dvlda3b", name: "LightClaw ACE on TencentOS Server 4",               agentType: "LightClawACE", agentVersion: "v0.1.8",    os: "TencentOS Server 4 x86_64",    activeByDefault: true  },
+  { id: "img-0dvlda3b", name: "LightClaw ACE on TencentOS Server 4",               agentType: "LightClawACE", agentVersion: "0.1.8",     os: "TencentOS Server 4 x86_64",    activeByDefault: true  },
 ];
 
 const PUBLIC_IMAGE_ROWS: ImageRow[] = PUBLIC_IMAGES.map((p) => ({

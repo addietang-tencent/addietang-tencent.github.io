@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { SurfaceCard } from '@/components/ui/Surface';
 import { StatusTag } from '@/components/ui/status-tag';
+import { SurfaceCard } from '@/components/ui/Surface';
+
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from '@/components/ui/table';
 
 import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
@@ -1083,15 +1084,15 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <SurfaceCard className="overflow-hidden">
-          <Table containerRef={tableScrollRef} scrollX={1620}>
+          <Table containerRef={tableScrollRef} scrollX={1520}>
             <TableHeader>
               <TableRow>
                 <TableHead fixed="left" className="w-[260px]" style={{ width: 260 }}>
                   技能信息
                 </TableHead>
-                <TableHead className="w-[170px]" style={{ width: 170 }}>状态 / 下发</TableHead>
-                <TableHead className="w-[110px]" style={{ width: 110 }}>安全等级</TableHead>
-                <TableHead className="w-[110px]" style={{ width: 110 }}>版本</TableHead>
+                <TableHead className="w-[100px]" style={{ width: 100 }}>状态</TableHead>
+                <TableHead className="w-[160px]" style={{ width: 160 }}>下发</TableHead>
+                <TableHead className="w-[80px]" style={{ width: 80 }}>版本</TableHead>
                 <TableHead className="w-[360px]" style={{ width: 360 }}>描述</TableHead>
                 <TableHead className="min-w-[160px]">分类</TableHead>
                 <TableHead className="w-[190px]" style={{ width: 190 }}>应用范围</TableHead>
@@ -1140,7 +1141,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       {/* 技能信息 — 固定左侧 */}
                       <TableCell
                         fixed="left"
-                        className="align-top"
+                        className=""
                         style={{ width: 260 }}
                       >
                         <div className="min-w-0">
@@ -1152,83 +1153,40 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           </OverflowTooltip>
                         </div>
                       </TableCell>
-                      {/* 状态/最近下发进度 — 单行：状态（变色）/ 下发结果 */}
-                      <TableCell className="align-top">
-                        <div className="flex items-center gap-1 text-sm whitespace-nowrap">
-                          {/* 状态文本（无 dot），按状态变色 */}
-                          <span
-                            className={`font-medium ${
-                              statusVariant === 'green'
-                                ? 'text-[#16A34A]'
-                                : statusVariant === 'blue'
-                                  ? 'text-[#1447E6]'
-                                  : 'text-[#DC2626]'
-                            }`}
-                          >
-                            {statusLine1}
-                          </span>
-                          <span className="text-[#A3A3A3]">/</span>
-                          {/* 下发进度 */}
-                          {hasDistribution ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDefaultTabForDetail('distribution');
-                                setSelectedSkillId(skill.id);
-                              }}
-                              className="inline-flex max-w-[150px] truncate"
-                              title={statusLine2}
-                            >
-                              <StatusTag mode="fill" variant={distributionVariant}>{statusLine2}</StatusTag>
-                            </button>
-                          ) : (
-                            <span className="text-[#A3A3A3]">{statusLine2}</span>
-                          )}
-                        </div>
+                      {/* 状态 — StatusTag 文本模式 */}
+                      <TableCell className="">
+                        <StatusTag
+                          mode="text"
+                          variant={statusVariant === 'green' ? 'green' : statusVariant === 'blue' ? 'blue' : 'red'}
+                        >
+                          {statusLine1}
+                        </StatusTag>
                       </TableCell>
-                      {/* 安全等级 — 标准 Badge，按状态自动映射 */}
-                      <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
-                        {(() => {
-                          const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
-                          const handleClick = () => {
-                            setDefaultTabForDetail('overview');
-                            setSelectedSkillId(skill.id);
-                          };
-                          if (secStatus === 'not_scanned') {
-                            return (
-                              <Badge variant="secondary" className="cursor-pointer" onClick={handleClick}>未检测</Badge>
-                            );
-                          }
-                          if (secStatus === 'scanning') {
-                            return (
-                              <Badge color="blue" className="cursor-pointer" onClick={handleClick}>检测中</Badge>
-                            );
-                          }
-                          if (secStatus === 'safe') {
-                            return (
-                              <Badge color="green" className="cursor-pointer" onClick={handleClick}>安全</Badge>
-                            );
-                          }
-                          if (secStatus === 'suspicious') {
-                            return (
-                              <Badge color="red" className="cursor-pointer" onClick={handleClick}>
-                                可疑
-                              </Badge>
-                            );
-                          }
-                          // malicious
-                          return (
-                            <Badge color="red" className="cursor-pointer" onClick={handleClick}>恶意</Badge>
-                          );
-                        })()}
+                      {/* 下发状态 — 纯文字 */}
+                      <TableCell className="">
+                        {hasDistribution ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDefaultTabForDetail('distribution');
+                              setSelectedSkillId(skill.id);
+                            }}
+                            className="text-sm text-[#334155] hover:text-[#1447E6] transition-colors"
+                            title={statusLine2}
+                          >
+                            {statusLine2}
+                          </button>
+                        ) : (
+                          <span className="text-sm text-[#A3A3A3]">{statusLine2}</span>
+                        )}
                       </TableCell>
                       {/* 版本号 */}
-                      <TableCell className="align-top">
-                        <StatusTag mode="fill" variant="gray">v{skill.version}</StatusTag>
+                      <TableCell className="">
+                        <span className="text-sm text-[#334155]">v{skill.version}</span>
                       </TableCell>
                       {/* 描述 */}
-                      <TableCell className="align-top" style={{ width: 360, overflow: 'hidden' }}>
+                      <TableCell className="" style={{ width: 360, overflow: 'hidden' }}>
                         <Tooltip delayDuration={1000}>
                           <TooltipTrigger asChild>
                             <span
@@ -1251,7 +1209,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         </Tooltip>
                       </TableCell>
                       {/* 分类 — 纯文本展示（用「/」分隔），自适应列宽，hover 展示全部，可点击编辑 */}
-                      <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="" onClick={(e) => e.stopPropagation()}>
                         {(() => {
                           const names = skill.categories.map((catId: string) => getCategoryName(catId));
                           const fullText = names.join(' / ');
@@ -1295,7 +1253,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         })()}
                       </TableCell>
                       {/* 应用范围 — 使用 Popover 编辑 */}
-                      <TableCell className="align-top" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="" onClick={(e) => e.stopPropagation()}>
                         <EditScopePopover
                           groups={MOCK_GROUPS}
                           currentScope={skill.scope || 'public'}
@@ -1311,7 +1269,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                         />
                       </TableCell>
                       {/* 最后更新时间 */}
-                      <TableCell className="align-top">
+                      <TableCell className="">
                         <span className="text-sm text-[#334155] tabular-nums">
                           {skill.uploadTime.toLocaleDateString('zh-CN')}
                         </span>
@@ -1319,7 +1277,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       {/* 操作 — 固定右侧：下发 / 更新 / 更多(下载、删除) */}
                       <TableActionCell
                         fixed="right"
-                        className="align-top"
+                        className=""
                         style={{ width: 168 }}
                         actionsClassName="h-5"
                         onClick={(e) => e.stopPropagation()}

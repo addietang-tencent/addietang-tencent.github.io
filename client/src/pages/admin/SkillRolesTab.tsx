@@ -67,7 +67,6 @@ import { toast } from "sonner";
 import {
   Plus,
   GripVertical,
-  Pencil,
   Trash2,
   X,
   Search,
@@ -459,21 +458,9 @@ function SortableRoleRow({
         />
       </TableCell>
       {/* Actions */}
-      <TableActionCell className="w-24" actionsClassName="gap-1 justify-start">
-        <button
-          onClick={() => onEdit(role)}
-          className="p-1.5 rounded-[4px] text-[#A3A3A3] hover:text-[#355EF1] hover:bg-blue-50 transition-colors"
-          title="编辑"
-        >
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
-        <button
-          onClick={() => onDelete(role)}
-          className="p-1.5 rounded-[4px] text-[#A3A3A3] hover:text-red-600 hover:bg-red-50 transition-colors"
-          title="删除"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+      <TableActionCell className="w-24">
+        <Button variant="link" onClick={() => onEdit(role)}>编辑</Button>
+        <Button variant="link" onClick={() => onDelete(role)}>删除</Button>
       </TableActionCell>
     </TableRow>
   );

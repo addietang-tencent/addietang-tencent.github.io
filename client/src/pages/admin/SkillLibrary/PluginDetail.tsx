@@ -445,13 +445,13 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-0 border-b border-[#e5e5e5] rounded-none">
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
+              className="rounded-none border-0 border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-b-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
+              className="rounded-none border-0 border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-b-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               下发记录
             </TabsTrigger>

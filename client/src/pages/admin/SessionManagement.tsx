@@ -670,66 +670,67 @@ export default function SessionManagement() {
               <h2 className="text-lg font-bold text-[#09090b]">会话摘要一览</h2>
               <p className="text-xs text-[#A3A3A3] mt-1">按时间倒序 · 点击查看会话详情</p>
             </div>
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
-             >
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-[#fafafa]/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">会话</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">会话 ID</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">模型</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">轮次</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">TOKENS</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">成本</th>
-                    <th className="text-right px-6 py-3">
+            <SurfaceCard className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>会话</TableHead>
+                    <TableHead>会话 ID</TableHead>
+                    <TableHead>模型</TableHead>
+                    <TableHead>轮次</TableHead>
+                    <TableHead>TOKENS</TableHead>
+                    <TableHead>成本</TableHead>
+                    <TableHead>
                       <button
                         onClick={() => handleSort("updatedAt")}
-                        className="flex items-center justify-end gap-2 text-xs font-medium text-[#737373] uppercase tracking-wide hover:text-[#525252] w-full"
+                        className="inline-flex items-center gap-1 hover:text-[#09090b] transition-colors"
                       >
                         更新时间
                         <SortIcon column="updatedAt" />
                       </button>
-                    </th>
-                    <th className="text-center px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+                    </TableHead>
+                    <TableHead>操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {paginatedSessions.map((session) => (
-                    <tr key={session.id} className="hover:bg-[#f5f5f5]/50 transition-colors">
-                      <td className="px-6 py-4 cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
-                        <div className="text-sm text-[#525252] font-medium hover:text-[#355EF1] transition-colors">{session.name}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-[#737373] font-mono">{session.id}</td>
-                      <td className="px-6 py-4 text-sm text-[#525252]">{session.model}</td>
-                      <td className="px-6 py-4 text-sm text-[#737373] text-right">28</td>
-                      <td className="px-6 py-4 text-sm text-[#737373] text-right font-mono">{session.tokens}</td>
-                      <td className="px-6 py-4 text-sm text-[#737373] text-right font-mono">{session.cost}</td>
-                      <td className="px-6 py-4 text-sm text-[#737373] text-right">{session.updatedAt}</td>
-                      <td className="px-6 py-4 text-center">
+                    <TableRow key={session.id} className="cursor-pointer" onClick={() => navigate(`/admin/session/${session.id}`)}>
+                      <TableCell>
+                        <span className="font-medium text-[#0A0A0A]">{session.name}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-mono text-[#737373]">{session.id}</span>
+                      </TableCell>
+                      <TableCell>{session.model}</TableCell>
+                      <TableCell className="tabular-nums text-[#334155]">28</TableCell>
+                      <TableCell className="tabular-nums font-mono text-[#334155]">{session.tokens}</TableCell>
+                      <TableCell className="tabular-nums font-mono text-[#334155]">{session.cost}</TableCell>
+                      <TableCell className="tabular-nums text-[#334155]">{session.updatedAt}</TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <Button
                           onClick={() => navigate(`/admin/session/${session.id}`)}
-                          variant="outline"
-                          className="text-xs h-7 px-3"
+                          variant="link"
                         >
                           查看详情
                         </Button>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            {/* 翻页控件 */}
-            <div className="px-6 py-4 border-t border-gray-50 bg-[#fafafa]/50">
-              <Pagination
-                total={filteredSessions.length}
-                current={currentPage}
-                pageSize={PAGE_SIZE}
-                showTotal={(total) => `共 ${total} 条记录`}
-                className="w-full justify-between"
-                onChange={(page) => { setCurrentPage(page); }}
-              />
-            </div>
+                </TableBody>
+              </Table>
+
+              {/* 翻页控件 — 与表格同一容器，顶部分隔线对齐 AuditLog 规范 */}
+              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <Pagination
+                  total={filteredSessions.length}
+                  current={currentPage}
+                  pageSize={PAGE_SIZE}
+                  showTotal={(total) => `共 ${total} 条记录`}
+                  className="w-full justify-between"
+                  onChange={(page) => { setCurrentPage(page); }}
+                />
+              </div>
+            </SurfaceCard>
           </div>
 
           {/* 渠道与模型分布 */}

@@ -257,7 +257,7 @@
         "owner": "addietang",
         "date": "2026-05-18",
         "figma": "https://www.figma.com/design/c5aMwnTTrqTJbIf7FDSsPp/clawpro%E7%BB%84%E4%BB%B6%E8%A1%A5%E5%85%85?node-id=3-76",
-        "changes": "主按钮:黑蓝渐变+hover深蓝+active叠白+disabled半透明; 次按钮:白底#e5边+hover灰底+disabled文字30%透明; 尺寸统一40/36/32px; disabled加cursor-not-allowed; SmallIconStateButton(h-24px,px-2,rounded-4px,border-#D4D4D4,text-xs,icon+label,hover:border-#C9C9C9+bg-#FAFAFA,disabled:text-#A3A3A3)"
+        "changes": "主按钮:黑蓝渐变+hover深蓝+active叠白+disabled半透明; 次按钮:白底#e5边+hover灰底+disabled文字30%透明; 尺寸统一40/36/32px; disabled加cursor-not-allowed; SmallIconStateButton(h-24px,px-2,rounded-4px,border-#D4D4D4,text-xs,icon+label,hover:border-#C9C9C9+bg-#FAFAFA,disabled:text-#A3A3A3); link-dark变体(黑色文字按钮,用于表格操作列):normal#020617/hover#525252/active下划线/disabled30%透明"
       }
     },
     {
@@ -950,7 +950,13 @@
         "other": 0
       },
       "priority": "P2",
-      "note": ""
+      "note": "树结构基础组件（GroupTree 基于此实现）",
+      "designRefresh": {
+        "status": "done",
+        "owner": "addietang",
+        "date": "2026-05-21",
+        "changes": "GroupTree标准化: 对齐shadcn FileTree色系; text-foreground=#09090b; accent=#f4f4f5; muted-foreground=#71717a; h-8 rounded-[4px]; 缩进16px/层; mx-3对齐搜索框; 去除所有blue色; 搜索框border-#E4E4E4+focus-#020617"
+      }
     },
     {
       "name": "command",
@@ -1008,7 +1014,13 @@
         "other": 0
       },
       "priority": "P2",
-      "note": ""
+      "note": "",
+      "designRefresh": {
+        "status": "done",
+        "owner": "addietang",
+        "date": "2026-05-22",
+        "changes": "新增TableActionCell组件:表格操作列专用单元格,内部Button自动强制应用link-dark黑色文字按钮样式(normal#020617/hover#525252/active下划线/disabled30%透明),无需手动指定variant"
+      }
     },
     {
       "name": "accordion",
@@ -2618,6 +2630,25 @@
                </button>
              </div>
              <div style="margin-top:8px;font-size:11px;color:#9ca3af;">h-6(24px) · px-2 · rounded-[4px] · border-[#D4D4D4] · text-xs · icon w-3 h-3 + gap-1.5</div>
+           </div>`
+        : c.name === "collapsible"
+        ? `<div style="margin-top:12px;padding:16px;background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;">
+             <div style="font-size:12px;font-weight:600;color:#111;margin-bottom:10px;">GroupTree 树结构预览（对齐 shadcn FileTree）</div>
+             <div style="font-family:-apple-system,sans-serif;font-size:14px;">
+               <div style="display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:4px;background:#f4f4f5;color:#09090b;font-weight:500;cursor:pointer;">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                 <span>产品组</span><span style="font-size:11px;color:#a1a1aa;">(3)</span>
+               </div>
+               <div style="display:flex;align-items:center;gap:6px;height:32px;padding-left:28px;padding-right:12px;border-radius:4px;color:#09090b;cursor:pointer;" onmouseover="this.style.background='#f4f4f5'" onmouseout="this.style.background='transparent'">
+                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                 <span>研发组</span><span style="font-size:11px;color:#a1a1aa;">(9)</span>
+               </div>
+               <div style="display:flex;align-items:center;gap:6px;height:32px;padding-left:44px;padding-right:12px;border-radius:4px;color:#09090b;cursor:pointer;" onmouseover="this.style.background='#f4f4f5'" onmouseout="this.style.background='transparent'">
+                 <span style="width:16px;height:16px;display:inline-block;"></span>
+                 <span>设计组</span><span style="font-size:11px;color:#a1a1aa;">(2)</span>
+               </div>
+             </div>
+             <div style="margin-top:8px;font-size:11px;color:#9ca3af;">h-8(32px) · rounded-[4px] · text-foreground:#09090b · accent:#f4f4f5 · muted-fg:#71717a · indent:16px/层 · mx-3</div>
            </div>`
         : "";
       const dist = c.distribution;

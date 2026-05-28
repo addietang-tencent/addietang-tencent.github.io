@@ -316,9 +316,9 @@ export default function ChannelConfig() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead style={{ width: "50%" }}>产品</TableHead>
-                <TableHead style={{ width: 160 }}>用户可见</TableHead>
-                <TableHead>分组</TableHead>
+                <TableHead style={{ width: "100%", minWidth: 240 }}>产品</TableHead>
+                <TableHead style={{ width: 88 }}>用户可见</TableHead>
+                <TableHead style={{ width: 120, minWidth: 120 }}>分组</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -404,9 +404,9 @@ export default function ChannelConfig() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead style={{ width: "45%" }}>通道名</TableHead>
+                    <TableHead style={{ minWidth: 280 }}>通道名</TableHead>
                     <TableHead style={{ width: 140 }}>用户可见</TableHead>
-                    <TableHead>分组</TableHead>
+                    <TableHead style={{ width: "100%" }}>分组</TableHead>
                     <TableHead fixed="right" style={{ width: 96, minWidth: 96, maxWidth: 96 }}>操作</TableHead>
                   </TableRow>
                 </TableHeader>

@@ -621,19 +621,19 @@ export default function SessionManagement() {
               className="max-w-xs"
             />
           </div>
-           {/* 右侧：升级CLS插件 + 关闭CLS按钮 */}
+           {/* 右侧：升级CLS插件（主按钮） + 关闭CLS（次要按钮） */}
           <div className="flex items-center gap-2 mt-6">
             <Button
               onClick={() => setShowPluginUpgradeDialog(true)}
-              variant="outline"
-              className="text-xs h-8 px-3 text-[#355EF1] border-[#355EF1] hover:bg-[#eff4ff] bg-white"
+              variant="claw-primary"
+              size="claw"
             >
               升级CLS采集插件
             </Button>
             <Button
               onClick={() => setShowCloseClsConfirm(true)}
-              variant="outline"
-              className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
+              variant="claw-outline"
+              size="claw"
             >
               关闭CLS服务
             </Button>

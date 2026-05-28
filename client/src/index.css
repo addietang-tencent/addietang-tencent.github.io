@@ -391,6 +391,31 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* ─── 表格字号一致性规则 ───────────────────────────────────────
+   * 表格内所有组件（按钮、Select、Input、分页器等）字号跟随表格密度：
+   *   - default (14px / text-sm): 所有后代组件 font-size 继承 14px
+   *   - compact (12px / text-xs): 所有后代组件 font-size 继承 12px
+   * Badge 字号不变（始终保持自身尺寸），通过 [data-slot="badge"] 豁免。
+   * 分页器与表格同级（通常在同一个 SurfaceCard 内），通过 :has() 向上匹配
+   * 容器再向下覆盖分页器字号，保证分页器也跟随密度变化。
+   * ──────────────────────────────────────────────────────────── */
+
+  /* 表格内部组件：跟随密度字号 */
+  table[data-density="default"] :where(button, input, select, [role="combobox"], label, span, p, a):not([data-slot="badge"], [data-slot="badge"] *) {
+    font-size: 0.875rem; /* 14px */
+  }
+  table[data-density="compact"] :where(button, input, select, [role="combobox"], label, span, p, a):not([data-slot="badge"], [data-slot="badge"] *) {
+    font-size: 0.75rem; /* 12px */
+  }
+
+  /* 分页器跟随表格密度（分页器与表格同在一个 SurfaceCard 容器内） */
+  [data-surface="card"]:has([data-density="default"]) > :not([data-slot="table-container"]) :where(button, input, select, span, a):not([data-slot="badge"], [data-slot="badge"] *) {
+    font-size: 0.875rem; /* 14px */
+  }
+  [data-surface="card"]:has([data-density="compact"]) > :not([data-slot="table-container"]) :where(button, input, select, span, a):not([data-slot="badge"], [data-slot="badge"] *) {
+    font-size: 0.75rem; /* 12px */
+  }
+
   /* 收起态侧栏：内容区居中对齐图标 */
   [data-slot="admin-sidebar"][data-state="collapsed"] [data-slot="admin-sidebar-content"] {
     padding-left: 0.5rem;

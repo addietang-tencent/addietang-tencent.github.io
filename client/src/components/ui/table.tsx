@@ -11,6 +11,13 @@ import { cn } from "@/lib/utils";
  *      约定上，页面级标准表格通常搭配 Pagination 默认尺寸 `size="default"`；
  *      `size="small"` 更适合 Dialog / Drawer 等空间受限浮层中的表格分页。
  *
+ *   ⚠️ 字号一致性规则（index.css 全局强制）：
+ *      表格内所有组件（按钮、Switch、Select、Input、分页器等）字号必须跟随表格密度：
+ *        - default → 14px（text-sm）
+ *        - compact → 12px（text-xs）
+ *      **Badge 字号不变**（始终保持自身 12px），通过 [data-slot="badge"] 豁免。
+ *      分页器位于 SurfaceCard 内、table-container 同级，同样通过 :has() 继承密度字号。
+ *
  *   2) 固定列 / Fixed Columns（参考 Ant Design）
  *      https://ant.design/components/table-cn#table-demo-fixed-header
  *      严格使用项目自身的颜色 / 字号 / 交互规范（见 SKILL-GLOBAL-COMPONENTS.md §15）。

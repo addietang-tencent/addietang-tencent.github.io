@@ -6,9 +6,11 @@
  */
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Trash2, Search, Eye, Code, FileText, Loader } from 'lucide-react';
+import { Trash2, Search, Eye, Code, FileText, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import MDXRenderer from '@/components/MDXRenderer';
 import { Input } from '@/components/ui/input';
@@ -360,13 +362,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
   return (
     <div className="space-y-6">
       {/* 返回按钮 */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-[#355EF1] hover:text-[#355EF1] transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        返回列表
-      </button>
+      <BackButton onClick={onBack}>返回列表</BackButton>
 
       {/* 基础信息卡片 */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -377,9 +373,9 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
               <span className="font-mono text-[#A3A3A3]">{mcp.name}</span>
             </p>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-[#355EF1] text-xs font-medium rounded-full">
+              <Badge color="blue">
                 {mcp.transport === 'stdio' ? '本地命令' : '远程服务'}
-              </span>
+              </Badge>
               <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
                 v{mcp.version}
               </span>
@@ -393,12 +389,12 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
               <TooltipTrigger asChild>
                 <span>
                   <Button
-                    variant="outline"
+                    variant="claw-outline"
+                    size="claw"
                     onClick={() => setDeleteDialogOpen(true)}
                     disabled={hasInProgress}
-                    className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200`}
                   >
-                    <Trash2 className="w-4 h-4 mr-1.5" />
+                    <Trash2 className="w-4 h-4" />
                     删除
                   </Button>
                 </span>

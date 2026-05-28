@@ -1770,6 +1770,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                           scope={pkg.scopeType === 'public' ? 'all' : 'groups'}
                           selectedGroupIds={pkg.groupIds || []}
                           groups={CREATE_DIALOG_ALL_GROUPS}
+                          scopeLabels={getScopeLabels(pkg)}
                           onConfirm={(scope, groupIds) =>
                             handleScopeChange(
                               pkg.id,

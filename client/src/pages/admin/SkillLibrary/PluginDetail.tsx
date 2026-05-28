@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Trash2, Info, Loader } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Trash2, Info, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import MDXRenderer from '@/components/MDXRenderer';
 import { Input } from '@/components/ui/input';
@@ -393,13 +394,7 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
   return (
     <div className="space-y-6">
       {/* 返回按钮 */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-[#355EF1] hover:text-[#355EF1] transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        返回列表
-      </button>
+      <BackButton onClick={onBack}>返回列表</BackButton>
 
       {/* 基础信息卡片 */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
@@ -418,14 +413,14 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
               <TooltipTrigger asChild>
                 <span>
                   <Button
-                    variant="outline"
+                    variant="claw-outline"
+                    size="claw"
                     onClick={() => setDeleteDialogOpen(true)}
                     disabled={hasInProgress}
-                      className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200`}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1.5" />
-                      删除
-                    </Button>
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    删除
+                  </Button>
                 </span>
               </TooltipTrigger>
               {hasInProgress && (

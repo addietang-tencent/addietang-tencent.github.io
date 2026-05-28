@@ -509,6 +509,24 @@ export default function SessionManagement() {
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
           </Button>
+          {clsEnabled && (
+            <>
+              <Button
+                onClick={() => setShowPluginUpgradeDialog(true)}
+                variant="claw-outline"
+                size="claw"
+              >
+                升级CLS采集插件
+              </Button>
+              <Button
+                onClick={() => setShowCloseClsConfirm(true)}
+                variant="claw-outline"
+                size="claw"
+              >
+                关闭CLS服务
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -609,35 +627,15 @@ export default function SessionManagement() {
         </div>
       )}
 
-      {/* 已开启时显示搜索框 + 关闭按钮 */}
+      {/* 已开启时显示 Agent 名称筛选 */}
       {clsEnabled && (
-        <div className="flex items-start justify-between mb-6 gap-4">
-          {/* 左侧：Agent 名称筛选 */}
-          <div className="flex-1">
-            <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
-            <AgentCombobox
-              value={selectedAgent}
-              onValueChange={setSelectedAgent}
-              className="max-w-xs"
-            />
-          </div>
-           {/* 右侧：升级CLS插件（主按钮） + 关闭CLS（次要按钮） */}
-          <div className="flex items-center gap-2 mt-6">
-            <Button
-              onClick={() => setShowPluginUpgradeDialog(true)}
-              variant="claw-primary"
-              size="claw"
-            >
-              升级CLS采集插件
-            </Button>
-            <Button
-              onClick={() => setShowCloseClsConfirm(true)}
-              variant="claw-outline"
-              size="claw"
-            >
-              关闭CLS服务
-            </Button>
-          </div>
+        <div className="mb-6">
+          <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
+          <AgentCombobox
+            value={selectedAgent}
+            onValueChange={setSelectedAgent}
+            className="max-w-xs"
+          />
         </div>
       )}
 
@@ -699,17 +697,18 @@ export default function SessionManagement() {
                         <span className="font-medium text-[#0A0A0A]">{session.name}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="font-mono text-[#737373]">{session.id}</span>
+                        <span className="text-[#737373]">{session.id}</span>
                       </TableCell>
-                      <TableCell>{session.model}</TableCell>
-                      <TableCell className="tabular-nums text-[#334155]">28</TableCell>
-                      <TableCell className="tabular-nums font-mono text-[#334155]">{session.tokens}</TableCell>
-                      <TableCell className="tabular-nums font-mono text-[#334155]">{session.cost}</TableCell>
-                      <TableCell className="tabular-nums text-[#334155]">{session.updatedAt}</TableCell>
+                      <TableCell className="text-[#0A0A0A]">{session.model}</TableCell>
+                      <TableCell className="tabular-nums text-[#0A0A0A]">28</TableCell>
+                      <TableCell className="tabular-nums text-[#0A0A0A]">{session.tokens}</TableCell>
+                      <TableCell className="tabular-nums text-[#0A0A0A]">{session.cost}</TableCell>
+                      <TableCell className="tabular-nums text-[#0A0A0A]">{session.updatedAt}</TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Button
                           onClick={() => navigate(`/admin/session/${session.id}`)}
                           variant="link"
+                          className="text-sm"
                         >
                           查看详情
                         </Button>

@@ -6,9 +6,10 @@ import { ProActivationDialog } from './components/ProActivationDialog';
 import { ProCloseDialog } from './components/ProCloseDialog';
 import { OneClickUpgradeDialog } from './components/OneClickUpgradeDialog';
 import { DefaultMemoryVersion, DefaultMemoryVersionType } from './components/DefaultMemoryVersion';
-import { AlertCircle, Loader2, CheckCircle2, X, Info, ChevronDown, ChevronUp, ArrowUpCircle } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle2, X, Info, ChevronDown, ArrowUpCircle } from 'lucide-react';
 import { SurfaceCard } from '@/components/ui/Surface';
 import { StatusTag } from '@/components/ui/status-tag';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 // 配置常量
@@ -32,7 +33,7 @@ export const MemoryManagement: React.FC = () => {
   // 一键升级弹窗：触发后由弹窗内部异步检测可升级实例并展示对应态
   const [oneClickUpgradeDialogOpen, setOneClickUpgradeDialogOpen] = useState(false);
   // 版本对比折叠状态，默认收起
-  const [versionCompareExpanded, setVersionCompareExpanded] = useState(false);
+  const [versionCompareExpanded, setVersionCompareExpanded] = useState(true);
   
   // 实例列表 ref，用于滚动定位
   const instanceTableRef = useRef<HTMLDivElement>(null);
@@ -186,25 +187,22 @@ export const MemoryManagement: React.FC = () => {
         {/* 折叠触发器 */}
         <button
           onClick={() => setVersionCompareExpanded(!versionCompareExpanded)}
-          className="w-full px-6 py-4 flex items-center justify-between hover:bg-[#FAFAFA] transition-colors"
+          className={`w-full px-6 py-4 flex items-center justify-between transition-colors ${
+            versionCompareExpanded ? '' : 'hover:bg-[#FAFAFA]'
+          }`}
         >
           <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-[#1447E6]" />
+            <Info className="w-4 h-4 text-[#0A0A0A]" />
             <span className="text-sm font-medium text-[#0A0A0A]">了解 Memory Free 版与 Pro 版的区别</span>
           </div>
-          <span className="text-sm text-[#1447E6] flex items-center gap-0.5">
-            {versionCompareExpanded ? '收起' : '展开'}
-            {versionCompareExpanded ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </span>
+          <ChevronDown
+            className={`w-4 h-4 text-[#737373] transition-transform duration-200 ${versionCompareExpanded ? 'rotate-180' : ''}`}
+          />
         </button>
 
         {/* 可折叠内容 */}
         {versionCompareExpanded && (
-          <div className="px-6 pb-5">
+          <div className="px-6 pt-4 pb-5">
             <ComparisonTable
               isProActive={isProActive}
             />
@@ -270,7 +268,7 @@ export const MemoryManagement: React.FC = () => {
                   <div className="flex flex-col gap-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">Pro 版</span>
-                      <StatusTag variant="blue">免费体验中</StatusTag>
+                      <Badge color="blue">免费体验中</Badge>
                     </div>
 
                   </div>

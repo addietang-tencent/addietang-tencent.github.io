@@ -17,10 +17,11 @@
  *    - 工作流：用 MDXRenderer 渲染 SkillHub 真实 markdown 内容（已剥离 YAML frontmatter）
  */
 import { useMemo, useState } from 'react';
-import { Search, Heart, ArrowLeft, RefreshCw, Puzzle } from 'lucide-react';
+import { Search, Heart, RefreshCw, Puzzle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import MDXRenderer from '@/components/MDXRenderer';
 import {
   PUBLIC_SKILL_PACKAGES,
@@ -211,13 +212,7 @@ function PackageDetailView({ pkg, isFavorited, onFavorite, onBack }: PackageDeta
   return (
     <div className="space-y-4">
       {/* 顶部返回 */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        返回公共技能包
-      </button>
+      <BackButton onClick={onBack}>返回公共技能包</BackButton>
 
       {/* 技能包信息头部 */}
       <div

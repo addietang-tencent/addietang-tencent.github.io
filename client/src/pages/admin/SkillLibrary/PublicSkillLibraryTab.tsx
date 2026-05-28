@@ -16,9 +16,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatusTag } from '@/components/ui/status-tag';
 import { Pagination } from '@/components/ui/pagination';
+import { BackButton } from '@/components/ui/back-button';
 import {
   Search, Download, Star, Heart, ChevronRight,
-  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
+  ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
 } from 'lucide-react';
 import {
   PUBLIC_SKILLS, PUBLIC_SKILL_CATEGORIES, type PublicSkill, type FavoriteSkill, type PublicSkillFile
@@ -137,19 +138,19 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
       onClick={onClick}
     >
       <div className="p-4 pl-4 flex flex-col flex-1">
-        {/* 技能名称 + Top 标签（前 3 名展示） */}
-        <div className="flex items-center gap-2 mb-1 pl-3">
-          <h3 className="text-sm font-semibold text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors leading-tight truncate">
+        {/* 技能名称 + Top 标签（前 3 名展示，标签贴右） */}
+        <div className="flex items-center justify-between gap-2 mb-1 pl-3">
+          <h3 className="text-sm font-semibold text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors leading-tight truncate min-w-0 flex-1">
             {skill.name}
           </h3>
           {rank === 1 && (
-            <StatusTag mode="fill" variant="gray" className="bg-[#0A0A0A] text-white">Top 1</StatusTag>
+            <StatusTag mode="fill" variant="gray" className="shrink-0 bg-[#F3E8FF] text-[#7E22CE]">Top 1</StatusTag>
           )}
           {rank === 2 && (
-            <StatusTag mode="fill" variant="blue">Top 2</StatusTag>
+            <StatusTag mode="fill" variant="blue" className="shrink-0">Top 2</StatusTag>
           )}
           {rank === 3 && (
-            <StatusTag mode="fill" variant="gray">Top 3</StatusTag>
+            <StatusTag mode="fill" variant="green" className="shrink-0">Top 3</StatusTag>
           )}
         </div>
 
@@ -299,13 +300,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
   return (
     <div className="space-y-4">
       {/* 顶部导航 */}
-      <button
-        onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        返回公共技能库
-      </button>
+      <BackButton onClick={onBack}>返回公共技能库</BackButton>
 
       {/* 技能信息头部 */}
       <div className="bg-white rounded-xl border border-[#e5e5e5] p-5"

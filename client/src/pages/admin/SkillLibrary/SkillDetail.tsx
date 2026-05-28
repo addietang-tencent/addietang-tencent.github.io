@@ -1,9 +1,10 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusTag } from '@/components/ui/status-tag';
 import { Badge } from '@/components/ui/badge';
@@ -585,41 +586,14 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     : [];
 
   return (
-    <div className="space-y-0">
-      {/* ======== Header（参照 Agent 详情页风格）======== */}
-      <header className="relative flex items-end justify-between gap-6 px-[42px] py-6">
-        {/* Header 底部横线 */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-0 right-0 bottom-0 h-px"
-          style={{ backgroundColor: "#E2E8F0" }}
-        />
+    <div className="space-y-4">
+      {/* ======== Header（参照 MCPDetail / PluginDetail 卡片风格）======== */}
+      <header className="flex flex-col gap-4">
+        {/* 返回按钮 — 卡片外，单独成行 */}
+        <BackButton onClick={onBack} className="self-start">返回上级</BackButton>
 
-        <div className="flex items-center gap-3">
-          {/* 返回按钮 */}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={onBack}
-                  className="inline-flex items-center justify-center w-8 h-8 rounded-[4px] hover:bg-[#f5f5f5] transition-colors"
-                  style={{ color: "#525252" }}
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>返回列表</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          {/* 技能图标 */}
-          <div
-            className="w-14 h-14 rounded-[8px] flex items-center justify-center text-white text-xl font-bold shrink-0"
-            style={{ background: "linear-gradient(135deg, #1447E6 0%, #7C3AED 100%)" }}
-          >
-            {skill.name.charAt(0).toUpperCase()}
-          </div>
-
+        {/* 基础信息卡片 — bg + 圆角 + 边框 + p-6 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
               <h1
@@ -678,34 +652,15 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               })()}
             </div>
             {/* 元信息行 */}
-            <div
-              className="flex items-center flex-wrap"
-              style={{
-                gap: "4px",
-                fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
-                fontWeight: 400,
-                fontSize: "12px",
-                lineHeight: "20px",
-                color: "#334155",
-              }}
-            >
-              <span
-                className="inline-flex items-center"
-                style={{
-                  padding: "2px 6px",
-                  borderRadius: "2px",
-                  border: "1px solid #DAE0E9",
-                  background: "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
-                  color: "#334155",
-                }}
-              >
+            <div className="flex items-center flex-wrap gap-2 text-sm text-[#525252]">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-[2px] border border-[#E5E5E5] bg-white text-[#334155] text-sm">
                 v{skill.version}
               </span>
-              <span style={{ color: "#E2E8F0" }}>｜</span>
-              <span>slug: {skill.slug}</span>
-              <span style={{ color: "#E2E8F0" }}>｜</span>
+              <span className="text-[#E2E8F0]">｜</span>
+              <span>{skill.slug}</span>
+              <span className="text-[#E2E8F0]">｜</span>
               <span>分类：{skill.categories.map((catId: string) => getCategoryName(catId)).join('、')}</span>
-              <span style={{ color: "#E2E8F0" }}>｜</span>
+              <span className="text-[#E2E8F0]">｜</span>
               <span>范围：{skill.scope === 'public' || !skill.groupIds || skill.groupIds.length === 0
                 ? '全部用户'
                 : skill.groupIds.map((gId: string) => MOCK_GROUPS.find(g => g.id === gId)?.name || gId).join('、')
@@ -716,78 +671,77 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 {skill.description}
               </p>
             )}
+
+            {/* 操作按钮组 — 描述下方独占一行（对齐 Agent 详情页风格） */}
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <Button
+                variant="claw-primary"
+                size="claw"
+                onClick={() => setDistributeDialogOpen(true)}
+                disabled={hasInProgress}
+              >
+                {hasInProgress ? '下发中...' : '批量下发'}
+                <Send className="w-4 h-4" />
+              </Button>
+
+              <TooltipProvider>
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="claw-outline"
+                        size="claw"
+                        onClick={() => setUpdateDialogOpen(true)}
+                        disabled={hasInProgress}
+                      >
+                        <Pencil className="w-4 h-4" />
+                        更新
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {hasInProgress && (
+                    <TooltipContent>仅支持状态为正常的 Skill</TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button
+                variant="claw-outline"
+                size="claw"
+                onClick={handleDownload}
+                disabled={isDownloading}
+              >
+                {isDownloading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                下载
+              </Button>
+
+              <TooltipProvider>
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="claw-outline"
+                        size="claw"
+                        onClick={() => setDeleteDialogOpen(true)}
+                        disabled={hasInProgress}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        删除
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {hasInProgress && (
+                    <TooltipContent>仅支持状态为正常的 Skill</TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
-        </div>
-
-        {/* 右：操作按钮（对齐 Agent 详情页风格） */}
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip delayDuration={1000}>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    variant="claw-outline"
-                    size="claw"
-                    onClick={() => setUpdateDialogOpen(true)}
-                    disabled={hasInProgress}
-                  >
-                    <Pencil className="w-4 h-4" />
-                    更新
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              {hasInProgress && (
-                <TooltipContent>仅支持状态为正常的 Skill</TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
-
-          <Button
-            variant="claw-outline"
-            size="claw"
-            onClick={handleDownload}
-            disabled={isDownloading}
-          >
-            {isDownloading ? <Loader className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            下载
-          </Button>
-
-          <Button
-            variant="claw-primary"
-            size="claw"
-            onClick={() => setDistributeDialogOpen(true)}
-            disabled={hasInProgress}
-          >
-            {hasInProgress ? '下发中...' : '批量下发'}
-            <Send className="w-4 h-4" />
-          </Button>
-
-          <TooltipProvider>
-            <Tooltip delayDuration={1000}>
-              <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    variant="claw-outline"
-                    size="claw"
-                    onClick={() => setDeleteDialogOpen(true)}
-                    disabled={hasInProgress}
-                    className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    删除
-                  </Button>
-                </span>
-              </TooltipTrigger>
-              {hasInProgress && (
-                <TooltipContent>仅支持状态为正常的 Skill</TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </header>
 
       {/* ======== 横向 Segmented Tab（§8.6 规范，参照 Agent 详情页）======== */}
-      <div className="px-[42px] py-4">
+      <div className="py-4">
         <div
           className="inline-flex items-center gap-1 p-1 rounded-[4px]"
           style={{ background: "#F5F5F5" }}
@@ -821,7 +775,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
       </div>
 
       {/* ======== Tab 内容 ======== */}
-      <div className="px-[42px] pb-6">
+      <div className="pb-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* 隐藏原始 TabsList，使用上方自定义 Segmented */}
           <TabsList className="hidden">

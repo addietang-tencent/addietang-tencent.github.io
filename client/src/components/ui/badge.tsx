@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
  */
 
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 gap-1 [&>svg]:size-3 [&>svg]:pointer-events-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-normal w-fit whitespace-nowrap shrink-0 gap-1 [&>svg]:size-3 [&>svg]:pointer-events-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
   {
     variants: {
       variant: {
@@ -42,7 +42,7 @@ const badgeVariants = cva(
 );
 
 const badgeColorVariants = {
-  blue: "border-transparent bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
+  blue: "border-transparent bg-[#E8ECFE] text-[#1447E6] dark:bg-blue-950/40 dark:text-blue-300",
   green:
     "border-transparent bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300",
   purple:

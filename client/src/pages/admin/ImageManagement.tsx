@@ -587,7 +587,7 @@ function OverviewStats({
   enabledTypeCount: number;
 }) {
   return (
-    <div className="h-8 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
+    <div className="h-9 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
       <div className="flex items-center gap-2">
         <span className="text-[13px] text-[#737373]">Agent 类型</span>
         <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
@@ -1146,17 +1146,7 @@ export default function ImageManagement() {
         <div className="min-w-0">
           {/* 页面标题 */}
           <div className="mb-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
-              <NewVersionPushNotice
-                pushable={pushable}
-                onViewAllRecords={() => {
-                  setDrawerInitialFilter(undefined);
-                  setDrawerInitialPushableOnly(true);
-                  setShowAllRecordsDrawer(true);
-                }}
-              />
-            </div>
+            <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
             <p className="text-sm text-[#737373] mt-1">
               通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
             </p>
@@ -1166,16 +1156,24 @@ export default function ImageManagement() {
           <div className="min-w-0">
           {/* 顶部总览 + 添加自定义类型按钮 */}
           <div className="mb-4 flex items-center justify-between gap-3 flex-wrap">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <OverviewStats
                 typeCount={views.length}
                 enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
+              />
+              <NewVersionPushNotice
+                pushable={pushable}
+                onViewAllRecords={() => {
+                  setDrawerInitialFilter(undefined);
+                  setDrawerInitialPushableOnly(true);
+                  setShowAllRecordsDrawer(true);
+                }}
               />
             </div>
             <div className="flex items-center gap-2">
             <Button
               variant="claw-outline"
-              size="claw-sm"
+              size="claw"
               onClick={() => {
                 setDrawerInitialFilter(undefined);
                 setDrawerInitialPushableOnly(false);
@@ -1183,16 +1181,16 @@ export default function ImageManagement() {
               }}
               className="shrink-0"
             >
-              <History className="w-3 h-3" />
+              <History className="w-4 h-4" />
               版本更新记录
             </Button>
             <Button
               variant="claw-primary"
-              size="claw-sm"
+              size="claw"
               onClick={() => setShowCreateCustomDialog(true)}
               className="shrink-0"
             >
-              <Plus className="w-3 h-3" />
+              <Plus className="w-4 h-4" />
               添加自定义 Agent 类型
             </Button>
             </div>

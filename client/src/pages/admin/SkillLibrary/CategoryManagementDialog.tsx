@@ -193,10 +193,9 @@ export default function CategoryManagementDialog({
                       </TableCell>
                       <TableActionCell>
                         <Button
-                          variant="link-dark"
+                          variant="link"
                           size="sm"
                           onClick={() => openDeleteConfirm(category)}
-                          className="text-red-600 hover:text-red-700"
                         >
                           删除
                         </Button>

@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from "react";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
+import { SurfaceCard } from "@/components/ui/Surface";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -3544,15 +3545,13 @@ export default function SecurityGroupManagement() {
 
           {/* VPC 列表 */}
           <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">私有网络与子网配置</h3>
-          <div
-            className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden"
-          >
+          <SurfaceCard className="overflow-hidden">
             {/* 表格 */}
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead style={{ minWidth: 280 }}>私有网络（VPC）</TableHead>
-                  <TableHead style={{ width: 140, minWidth: 140 }}>子网配置</TableHead>
+                  <TableHead style={{ width: 140, minWidth: 140 }}>子网数量</TableHead>
                   <TableHead style={{ minWidth: 240 }}>应用范围</TableHead>
                   <TableHead style={{ width: 140, minWidth: 140 }}>操作</TableHead>
                 </TableRow>
@@ -3646,7 +3645,7 @@ export default function SecurityGroupManagement() {
                         <TableCell className="py-4 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
-                              <StatusTag mode="fill" variant="blue">预设策略</StatusTag>
+                              <StatusTag mode="fill" variant="green">预设策略</StatusTag>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-default">
@@ -3751,9 +3750,9 @@ export default function SecurityGroupManagement() {
                       {/* 次级详情行：仅展开时渲染，按可用区纵向展示（视觉弱化，作当前行补充说明） */}
                       {expandedVpcIds.has(row.id) && (
                         <TableRow>
-                          <TableCell colSpan={4} className="px-4 pb-3 pt-0 whitespace-normal">
-                            <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-3 py-2">
-                              <div className="text-[11px] text-[#A3A3A3] mb-1.5">子网配置明细</div>
+                          <TableCell colSpan={4} className="px-4 py-4 whitespace-normal">
+                            <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] p-4">
+                              <div className="text-[11px] text-[#A3A3A3] mb-2">子网配置明细</div>
                               <div className="flex flex-col gap-1">
                                 {AVAILABLE_ZONES.map((zone) => {
                                   const subnets = effectiveZoneSubnets[zone] ?? [];
@@ -3848,7 +3847,7 @@ export default function SecurityGroupManagement() {
                 。
               </p>
             </div>
-          </div>
+          </SurfaceCard>
 
           {/* ─── 编辑 VPC 弹窗 ─── */}
           <Dialog open={!!showEditVpcDialog} onOpenChange={(open) => {

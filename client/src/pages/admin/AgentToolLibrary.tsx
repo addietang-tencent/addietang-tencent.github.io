@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { ShieldCheck, ExternalLink, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { StatusTag } from "@/components/ui/status-tag";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -69,7 +70,7 @@ export default function AgentToolLibrary() {
 
       {/* Tab 切换器 - LineTabs */}
       <div className="mb-1">
-        <div className="flex items-center gap-1 border-b border-[#f0f0f0]">
+        <div className="flex items-center gap-2 border-b border-[#f0f0f0]">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -90,43 +91,22 @@ export default function AgentToolLibrary() {
       <div className="mt-3 mb-6 space-y-2">
         <p className="text-sm text-[#737373] leading-relaxed">{currentTab.description}</p>
         {currentTab.id === 'enterprise' && (
-          <div className="flex items-center justify-between gap-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-100 rounded-[4px] whitespace-nowrap">
-              <svg className="w-3 h-3 text-[#355EF1] flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
-                <path d="M20 3v4" /><path d="M22 5h-4" /><path d="M4 17v2" /><path d="M5 18H3" />
-              </svg>
-              <span className="text-xs text-[#355EF1]">由腾讯云存储 Agent Storage 提供服务，ClawPro 用户独享初始技能包和企业技能库各 50GB 免费空间</span>
-            </div>
-
-            {/* 安全检测服务区域 — 右上角 */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {!securityServiceActive ? (
-                <>
-                  <span className="text-xs text-[#737373] flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#A3A3A3]" />
-                    恶意 Skills 扫描 API
+          <p className="text-xs text-[#0A0A0A] leading-relaxed flex items-center gap-2">
+            <span>由腾讯云 Agent Storage 提供服务，独享 50GB 免费空间</span>
+            {!securityServiceActive ? (
+              <Badge variant="outline" className="cursor-pointer" onClick={() => setSecurityApplyDialogOpen(true)}>
+                恶意 Skills 扫描 API：未开通
+              </Badge>
+            ) : (
+              <HoverCard openDelay={300}>
+                <HoverCardTrigger asChild>
+                  <span className="inline-flex">
+                    <Badge color="green" className="cursor-pointer">
+                      恶意 Skills 扫描 API：试用中
+                    </Badge>
                   </span>
-                  <StatusTag mode="fill" variant="gray">未开通</StatusTag>
-                  <button
-                    onClick={() => setSecurityApplyDialogOpen(true)}
-                    className="text-xs text-[#355EF1] hover:text-[#355EF1] font-medium"
-                  >
-                    开通
-                  </button>
-                </>
-              ) : (
-                <HoverCard openDelay={300}>
-                  <HoverCardTrigger asChild>
-                    <div className="flex items-center gap-2 cursor-pointer">
-                      <span className="text-xs text-[#334155] flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
-                        恶意 Skills 扫描 API
-                      </span>
-                      <StatusTag mode="fill" variant="green">试用中</StatusTag>
-                    </div>
-                  </HoverCardTrigger>
-                  <HoverCardContent side="bottom" align="end" className="w-80 p-4">
+                </HoverCardTrigger>
+                <HoverCardContent side="bottom" align="end" className="w-80 p-4">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-[#0A0A0A] flex items-center gap-1.5">
@@ -170,24 +150,24 @@ export default function AgentToolLibrary() {
                 </HoverCard>
               )}
               {/* 调试用：状态切换按钮 */}
-              <Tooltip delayDuration={500}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => {
-                      const next = !securityServiceActive;
-                      setSecurityServiceActive(next);
-                      localStorage.setItem('skill_security_service_active', String(next));
-                      toast.success(next ? '已模拟开通安全检测服务' : '已模拟取消安全检测服务');
-                    }}
-                    className="w-5 h-5 rounded border border-dashed border-gray-300 text-[#A3A3A3] hover:text-[#737373] flex items-center justify-center text-[10px] ml-1"
-                  >
-                    ↻
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">切换开通状态（调试）</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
+              <button
+                onClick={() => {
+                  const next = !securityServiceActive;
+                  setSecurityServiceActive(next);
+                  localStorage.setItem('skill_security_service_active', String(next));
+                  toast.success(next ? '已模拟开通安全检测服务' : '已模拟取消安全检测服务');
+                }}
+                className="inline-flex w-5 h-5 rounded-[4px] border border-[#E5E5E5] text-[#737373] hover:text-[#0A0A0A] hover:border-[#0A0A0A] items-center justify-center ml-1.5 align-middle transition-colors"
+                title="切换开通状态（调试）"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                  <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                  <path d="M16 21h5v-5" />
+                </svg>
+              </button>
+          </p>
         )}
       </div>
 

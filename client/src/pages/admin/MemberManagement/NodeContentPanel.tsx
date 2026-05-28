@@ -11,6 +11,7 @@
 import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { StatusTag } from "@/components/ui/status-tag";
@@ -1187,35 +1188,16 @@ interface ConfigOverviewTabProps {
 /** 来源标签 */
 function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
   if (source.type === "local") {
-    // 本分组 → 蓝色标签
-    return (
-      <span className="inline-flex items-center text-[10px] font-medium text-blue-600 bg-blue-50 border border-blue-100 rounded px-1.5 py-0.5 shrink-0">
-        本分组
-      </span>
-    );
+    return <Badge color="blue">本分组</Badge>;
   }
   if (source.type === "platformDefault") {
-    // 全部用户 → 灰色标签
-    return (
-      <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
-        全部用户
-      </span>
-    );
+    return <Badge variant="secondary">全部用户</Badge>;
   }
   if (source.type === "presetPolicy") {
-    // 预设策略 → 灰色标签（与全部用户一致）
-    return (
-      <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
-        预设策略
-      </span>
-    );
+    return <Badge variant="secondary">预设策略</Badge>;
   }
-  // inherited → 灰色标签
-  return (
-    <span className="inline-flex items-center text-[10px] font-medium text-gray-500 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 shrink-0">
-      继承自 {source.groupName}
-    </span>
-  );
+  // inherited
+  return <Badge variant="secondary">继承自 {source.groupName}</Badge>;
 }
 
 /** 异常分组：本分组配置条目后的红色提示标签 */
@@ -1527,9 +1509,6 @@ function ConfigOverviewTab({
                 onClick={() => toggleCollapse(cat)}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-7 h-7 rounded-xl ${catMeta.bg} flex items-center justify-center`}>
-                    <IconComp className={`w-3.5 h-3.5 ${catMeta.color}`} />
-                  </div>
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="relative inline-flex text-sm font-semibold text-gray-900">

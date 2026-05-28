@@ -105,8 +105,8 @@ export function useOutdatedTypes(claws?: ClawLite[]): OutdatedTypeStat[] {
     if (images.length === 0) {
       images = [
         { id: "img-idzg74s9", agentType: "OpenClaw",     agentVersion: "2026.4.23", active: true, type: "public", name: "OpenClaw on Ubuntu 24.04" },
-        { id: "img-al484uhr", agentType: "HermesAgent",  agentVersion: "v0.12.0",   active: true, type: "public", name: "Hermes Agent on Ubuntu 24.04" },
-        { id: "img-0dvlda3b", agentType: "LightClawACE", agentVersion: "v0.1.8",    active: true, type: "public", name: "LightClaw ACE on TencentOS Server 4" },
+        { id: "img-al484uhr", agentType: "HermesAgent",  agentVersion: "0.12.0",    active: true, type: "public", name: "Hermes Agent on Ubuntu 24.04" },
+        { id: "img-0dvlda3b", agentType: "LightClawACE", agentVersion: "0.1.8",     active: true, type: "public", name: "LightClaw ACE on TencentOS Server 4" },
       ];
     }
 

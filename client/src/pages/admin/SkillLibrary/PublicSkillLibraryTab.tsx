@@ -14,6 +14,7 @@ import { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StatusTag } from '@/components/ui/status-tag';
 import { Pagination } from '@/components/ui/pagination';
 import {
   Search, Download, Star, Heart, ChevronRight,
@@ -102,24 +103,6 @@ function getLanguageFromFilename(filename: string): string {
   return map[ext] || 'text';
 }
 
-// ─── 排名徽章 ─────────────────────────────────────────────────────────────────
-
-function RankBadge({ rank }: { rank: number }) {
-  const style = rank === 1
-    ? "bg-[#E9F8EB] text-[#008236]"
-    : rank === 2
-    ? "bg-[#E8ECFE] text-[#1447E6]"
-    : rank === 3
-    ? "bg-[#F5F5F5] text-[#0A0A0A]"
-    : "bg-[#F5F5F5] text-[#0A0A0A]";
-
-  return (
-    <div className={`absolute left-0 top-0 z-10 flex h-6 w-6 items-center justify-center rounded-br-[12px] rounded-tl-[4px] ${style}`}>
-      <span className="text-xs font-bold tracking-[0.18px]">{rank}</span>
-    </div>
-  );
-}
-
 // ─── 技能卡片 ─────────────────────────────────────────────────────────────────
 
 interface SkillCardProps {
@@ -150,16 +133,25 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
   return (
     <div
-      className="relative flex flex-col overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white cursor-pointer transition-all hover:border-gray-200 group"
+      className="relative flex flex-col overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white cursor-pointer transition-all hover:border-[#355EF1] group"
       onClick={onClick}
     >
-      {rank > 0 && <RankBadge rank={rank} />}
-
       <div className="p-4 pl-4 flex flex-col flex-1">
-        {/* 技能名称 */}
-        <h3 className="font-mono text-sm font-semibold text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors leading-tight mb-1 pl-3">
-          {skill.name}
-        </h3>
+        {/* 技能名称 + Top 标签（前 3 名展示） */}
+        <div className="flex items-center gap-2 mb-1 pl-3">
+          <h3 className="text-sm font-semibold text-[#0A0A0A] group-hover:text-[#355EF1] transition-colors leading-tight truncate">
+            {skill.name}
+          </h3>
+          {rank === 1 && (
+            <StatusTag mode="fill" variant="gray" className="bg-[#0A0A0A] text-white">Top 1</StatusTag>
+          )}
+          {rank === 2 && (
+            <StatusTag mode="fill" variant="blue">Top 2</StatusTag>
+          )}
+          {rank === 3 && (
+            <StatusTag mode="fill" variant="gray">Top 3</StatusTag>
+          )}
+        </div>
 
         {/* 中文简介 - 固定两行高度 */}
         <p className="text-xs text-[#737373] line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
@@ -321,7 +313,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="font-mono text-lg font-bold text-[#0A0A0A]">{skill.name}</h2>
+              <h2 className="text-lg font-semibold text-[#0A0A0A]">{skill.name}</h2>
               <Badge variant="secondary" className="text-xs font-mono">v{skill.version}</Badge>
             </div>
             <p className="text-xs text-[#A3A3A3] font-mono mb-2">slug：{skill.name}</p>

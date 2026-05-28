@@ -420,13 +420,13 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
           <TabsList className="w-full justify-start bg-white p-0 h-auto gap-0 border-b border-[#e5e5e5] rounded-none">
             <TabsTrigger
               value="files"
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
+              className="rounded-none border-0 border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-b-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               文件列表
             </TabsTrigger>
             <TabsTrigger
               value="distribution"
-              className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-[#09090b] data-[state=active]:shadow-none transition-colors"
+              className="rounded-none border-0 border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-b-[#09090b] data-[state=active]:shadow-none transition-colors"
             >
               下发记录
             </TabsTrigger>
@@ -479,7 +479,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                 <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
                   <p className="text-sm font-medium text-[#09090b]">{selectedVersion || mcp.version}</p>
                 </div>
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto px-3 py-2">
                   {MCP_FILES.map((file) => {
                     const isActive = selectedFile === file.name;
                     return (
@@ -489,14 +489,13 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                           setSelectedFile(file.name);
                           setFileViewMode(isMarkdownFile(file.name) ? 'preview' : 'source');
                         }}
-                        className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
+                        className={`w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors ${
                           isActive
-                            ? 'bg-blue-50 text-[#355EF1]'
-                            : 'hover:bg-gray-50 text-[#737373] cursor-pointer'
+                            ? 'bg-[#f4f4f5] text-[#09090b] font-medium'
+                            : 'hover:bg-[#f4f4f5] text-[#09090b] cursor-pointer'
                         }`}
-                        style={{ paddingLeft: '8px' }}
                       >
-                        <FileText className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
+                        <FileText className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
                         <span className="truncate">{file.label}</span>
                       </button>
                     );

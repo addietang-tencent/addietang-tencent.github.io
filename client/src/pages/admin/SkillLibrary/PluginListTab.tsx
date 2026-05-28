@@ -362,11 +362,12 @@ export default function PluginListTab() {
       {/* 列表视图 */}
       {viewMode === 'list' && sortedPlugins.length > 0 && (
         <SurfaceCard className="overflow-hidden">
-          <Table scrollX={1120}>
+          <Table scrollX={1200}>
             <TableHeader>
               <TableRow>
                 <TableHead style={{ width: 240, minWidth: 240 }}>名称/SLUG</TableHead>
-                <TableHead style={{ width: 180, minWidth: 180 }}>状态/下发动态</TableHead>
+                <TableHead style={{ width: 100, minWidth: 100 }}>状态</TableHead>
+                <TableHead style={{ width: 120, minWidth: 120 }}>下发</TableHead>
                 <TableHead style={{ width: 104, minWidth: 104 }}>版本号</TableHead>
                 <TableHead style={{ width: 360, minWidth: 360 }}>描述</TableHead>
                 <TableHead style={{ width: 140, minWidth: 140 }}>发布时间</TableHead>
@@ -399,17 +400,17 @@ export default function PluginListTab() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col items-start gap-1.5">
-                        <StatusTag mode="dot" variant={statusVariant}>{statusLabel}</StatusTag>
-                        {hasDistribution ? (
-                          <StatusTag mode="fill" variant={distributionVariant}>{distributionLabel}</StatusTag>
-                        ) : (
-                          <span className="text-xs text-[#A3A3A3]">{distributionLabel}</span>
-                        )}
-                      </div>
+                      <StatusTag mode="text" variant={statusVariant}>{statusLabel}</StatusTag>
                     </TableCell>
                     <TableCell>
-                      <StatusTag mode="fill" variant="gray">v{plugin.version}</StatusTag>
+                      {hasDistribution ? (
+                        <span className="text-sm text-[#334155]">{distributionLabel}</span>
+                      ) : (
+                        <span className="text-sm text-[#A3A3A3]">{distributionLabel}</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-[#334155]">v{plugin.version}</span>
                     </TableCell>
                     <TableCell className="whitespace-normal" style={{ overflow: 'hidden' }}>
                       <Tooltip delayDuration={1000}>

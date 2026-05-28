@@ -159,6 +159,10 @@ function Pagination({
   hideOnSinglePage = false,
   className,
 }: PaginationProps) {
+  // Hide if only one page — must be before hooks to avoid conditional hook calls
+  const earlyTotalPages = Math.max(1, Math.ceil(total / (controlledPageSize ?? defaultPageSize)));
+  if (hideOnSinglePage && earlyTotalPages <= 1) return null;
+
   const [internalCurrent, setInternalCurrent] = useState(defaultCurrent);
   const [internalPageSize, setInternalPageSize] = useState(defaultPageSize);
   const [jumpValue, setJumpValue] = useState("");
@@ -166,9 +170,6 @@ function Pagination({
   const currentPage = controlledCurrent ?? internalCurrent;
   const pageSize = controlledPageSize ?? internalPageSize;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
-  // Hide if only one page
-  if (hideOnSinglePage && totalPages <= 1) return null;
 
   const isSmall = size === "small";
   const itemSize = isSmall ? "h-6 min-w-[24px]" : "h-8 min-w-[32px]";

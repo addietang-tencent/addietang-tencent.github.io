@@ -19,7 +19,9 @@ async function startServer() {
   app.use(express.static(staticPath));
 
   // Handle client-side routing - serve index.html for all routes
-  app.get("*", (_req, res) => {
+  // Note: Express v5 / path-to-regexp v6+ no longer accepts bare "*";
+  // use named splat parameter for catch-all routes.
+  app.get("/*splat", (_req, res) => {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 

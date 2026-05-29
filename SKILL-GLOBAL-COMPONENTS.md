@@ -509,6 +509,113 @@ import { SmallIconStateButton } from "@/components/ui/button";
 3. 弹窗内 Table 必须沿用全局 Table 表头 / 行 / 边框 / 空状态样式，禁止重新定义表头底色、行高、分割线颜色。
 4. 若弹窗内确有特殊视觉需求，**必须在本 SKILL 文档中扩展规范**后再使用，禁止在业务代码内单点编造样式绕过规范。
 
+### 7.2 Drawer / 右侧抽屉（管控端详情类）
+
+**文件**: `client/src/components/ui/drawer.tsx`  
+**适用场景**: 管控端详情查看 / 局部配置编辑，如 `OpenClawMonitor.tsx` 的「Agent 详情」抽屉。
+
+> 右侧详情抽屉必须优先使用 shadcn `Drawer`（`direction="right"`），禁止继续手写 `fixed inset-0` + 自定义遮罩 + `shadow-lg` 结构。抽屉本体圆角固定为 `0`。
+
+| 区域 | 规范 |
+|------|------|
+| Root | `<Drawer direction="right" open={open} onOpenChange={...}>` |
+| Content | `w-[480px] sm:max-w-none max-w-[calc(100vw-24px)] h-full rounded-none bg-background p-0`；信息密度特别高时可扩到 `560px`，需说明原因 |
+| Header | `flex flex-row items-center justify-between gap-4 p-4 bg-background text-left`；**不加底部分割线** |
+| Title | `DrawerTitle asChild` + `PanelTitle`；不要手写 `text-lg font-semibold` |
+| Header actions | 仅图标按钮用 `Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-900 hover:text-gray-950"`；默认色对齐 Typography `primary`（`#171717`）；按钮间距 `gap-1` |
+| Body | 优先使用 `<DrawerBody>`；等效样式为 `flex-1 overflow-y-auto bg-background [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`，内部 `p-4 space-y-6`；抽屉内容区必须隐藏滚动条但保留滚动能力 |
+| 对象标题 | 使用 `PanelTitle`（较重要）或 `BodyMedium`（普通对象名）；下方 ID 使用 `CodeText`，链接使用 `MetaText tone="brand"` |
+| 分组标题 | 使用 `MetaText`，如「已应用模型（0）」；右侧轻量操作也使用 `MetaText as="button" tone="brand"` |
+| 空状态 | 使用 `MetaText tone="weak"` + `border border-dashed`，不要手写大字号灰字；添加入口默认放分组标题右侧，除非设计明确要求框内引导 |
+
+#### 快速 Checklist
+
+- 右侧详情抽屉：`Drawer direction="right"` + `DrawerContent rounded-none`。
+- 抽屉宽度默认 `480px`；只有复杂高密度内容才扩到 `560px`。
+- Header 不加底部分割线；右上角图标按钮用 `ghost`，不使用 `outline`。
+- Body 优先使用 `<DrawerBody>`；如需手写容器，必须包含 `overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`，隐藏滚动条但保留滚动能力。
+- 标题、分组、正文、ID、链接必须映射到 Typography 组件，不直接手写文字 class。
+- 添加入口默认放分组标题右侧，使用 link 蓝色文字按钮；空态框内保留弱提示文案。
+- 编辑态确认按钮统一 `dialog-confirm`，不使用 primary / 渐变主按钮。
+
+#### 详情抽屉内容模式
+
+1. **避免装饰性大 icon**：详情抽屉首屏信息以文本为主，不放蓝色圆形机器人 / 资源 icon；除非 icon 是识别对象类型的必要信息。
+2. **列表信息优先紧凑化**：仅展示名称的重复列表（如已安装技能）不要一项一张大卡片；使用 `Table density="compact"` 或紧凑信息块承载。
+3. **分组添加入口**：添加模型 / 添加通道等轻量入口默认放在分组标题右侧，使用 `MetaText as="button" tone="brand"` + `Plus` 图标，颜色与「编辑凭证」等轻量操作统一；空态框内保留 `MetaText tone="weak"` 提示文案。若设计明确要求框内引导，可例外放入虚线空态框内。
+4. **凭证 / Key-Value 信息块**：使用聚合卡片，不要把操作按钮放在右下角。
+   - 外层：`border-t border-[#e5e5e5] bg-muted/30 p-3`
+   - 内层：`rounded-[4px] border border-[#e5e5e5] bg-background overflow-hidden`
+   - 顶部：左侧 `MetaMedium`（如「凭证信息」），右侧 `MetaText as="button" tone="brand"`（如「编辑凭证」）
+   - 行布局：`grid grid-cols-[112px_minmax(0,1fr)] items-center gap-3 px-3 py-2`
+   - 字段名：`MetaText`；字段值：`CodeText tone="emphasis"`
+   - 密钥可见性 icon 紧跟值文本后方，使用 `text-gray-500 hover:text-gray-900`，不要贴到整行最右。
+   - 编辑态确认按钮（如「保存」）使用 `Button variant="dialog-confirm"`，颜色走 confirm 语义；不要使用默认 primary / `claw-primary`。
+5. **内联编辑表单**：如「已应用模型」新增 / 替换态、「已接入通道」新增态，视觉结构必须与凭证编辑保持一致。
+   - 外层：`bg-muted/30 p-3`
+   - 内层：`rounded-[4px] border border-[#e5e5e5] bg-background overflow-hidden`
+   - 顶部标题：`MetaMedium`（如「模型配置」/「通道配置」）+ `border-b border-[#f0f0f0] px-3 py-2`
+   - 字段行：`px-3 py-2 space-y-1.5`，字段之间用 `divide-y divide-[#f0f0f0]`
+   - Select / Input：优先使用 `bg-background border-[#e5e5e5] h-8 text-xs`
+   - 底部操作栏：`border-t border-[#f0f0f0] px-3 py-2`；取消用 `ghost`，保存用 `dialog-confirm`
+   - 禁止使用蓝色激活边框（如 `border-[#355EF1]`）包裹整块编辑表单。
+
+#### 推荐写法
+
+```tsx
+<Drawer direction="right" open={open} onOpenChange={setOpen}>
+  <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none max-w-[calc(100vw-24px)] h-full rounded-none bg-background p-0">
+    <DrawerHeader className="flex flex-row items-center justify-between gap-4 p-4 bg-background text-left">
+      <DrawerTitle asChild>
+        <PanelTitle as="h2">Agent 详情</PanelTitle>
+      </DrawerTitle>
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-900 hover:text-gray-950" aria-label="刷新">
+          <RefreshCw className="w-4 h-4" />
+        </Button>
+        <DrawerClose asChild>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-gray-900 hover:text-gray-950" aria-label="关闭">
+            <X className="w-4 h-4" />
+          </Button>
+        </DrawerClose>
+      </div>
+    </DrawerHeader>
+
+    <DrawerBody>
+      <div className="p-4 space-y-6">
+        <section className="min-w-0 space-y-1.5">
+          <PanelTitle as="div" className="truncate leading-tight">对象名称</PanelTitle>
+          <div className="flex items-center gap-2">
+            <CodeText>ins-xxxx</CodeText>
+            <MetaText as="button" tone="brand">去控制台管理</MetaText>
+          </div>
+        </section>
+
+        <section>
+          <MetaText as="div" className="mb-2">已安装技能（7）</MetaText>
+          <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-background">
+            <Table density="compact">
+              <TableHeader><TableRow><TableHead>技能名称</TableHead></TableRow></TableHeader>
+              <TableBody>
+                <TableRow><TableCell><MiniBodyText>feishu-doc</MiniBodyText></TableCell></TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+      </div>
+    </DrawerBody>
+  </DrawerContent>
+</Drawer>
+```
+
+**禁止事项**：
+- 禁止右侧详情抽屉使用 `shadow-lg` 手写浮层；阴影与动画交给 `DrawerContent`。
+- 禁止 Header 图标按钮使用 `outline` 边框态；详情抽屉头部操作一律 `ghost`。
+- 禁止用单项大卡片堆叠纯文本列表；优先紧凑表格 / 紧凑信息块。
+- 禁止在 Drawer 内散落 `text-xs text-[#737373]` / `text-sm text-[#0A0A0A]`，必须优先映射到 Typography 组件。
+- 禁止将 Drawer 内编辑态确认按钮做成默认 primary / 渐变主按钮；确认动作使用 `dialog-confirm`。
+- 禁止无故隐藏分组标题右侧的添加入口；添加模型 / 添加通道等入口默认保留在标题右侧，除非设计明确要求框内引导。
+
 ---
 
 ## 8. Checkbox 组件
@@ -1335,14 +1442,19 @@ import {
 
 ### 16.2 颜色 token
 
-> 同一颜色在 `mode="text"`、`mode="dot"` 与 `mode="fill"` 中保持近似语义：text/dot 使用主色字，fill 使用同语义浅底色 + 主色文字。后续新增颜色（如 `amber` / `purple`）必须同时补齐 `text / bg / dot` 三个 token。
+> 同一颜色在 `mode="text"`、`mode="dot"`、`mode="fill"` 与 `mode="soft"` 中保持近似语义：text/dot 使用主色字，fill 使用同语义浅底色 + 主色文字，soft 使用浅底色 + 浅边框 + 深色字。后续新增颜色必须同时补齐 `text / bg / border / dot` 四个 token。
 
-| variant | text / dot | fill bg | 使用场景 |
-|---------|------------|---------|----------|
-| `green` | `#008236` | `#E9F8EB` | 正常、运行中、已完成、开启、生效 |
-| `blue` | `#1447E6` | `#E8ECFE` | 进行中、全部用户、推荐/提示 |
-| `gray` | `#0A0A0A` | `#F5F5F5` | 默认、待处理、关闭、版本、范围 |
-| `red` | `#DC2626` | `#FEF2F2` | 错误、失败、异常、风险 |
+| variant | text / dot | fill bg | soft border | 使用场景 |
+|---------|------------|---------|-------------|----------|
+| `blue` | `#1447E6` | `#E8ECFE` | `#C7D7FE` | 进行中、全部用户、推荐/提示（对齐品牌蓝） |
+| `green` | `#008236` | `#E9F8EB` | `#BFE8C8` | 正常、运行中、已完成、开启、生效 |
+| `red` | `#DC2626` | `#FEF2F2` | `#FECACA` | 错误、失败、异常、风险 |
+| `orange` | `#F59E0B` / `orange-700` | `orange-50` | `orange-200` | 警告、待处理、需关注（对齐全局 warning） |
+| `gray` | `#0A0A0A` | `#F5F5F5` | `#E5E5E5` | 默认、待处理、关闭、版本、范围 |
+| `slate` / `zinc` / `stone` | Tailwind 700 / 500 | Tailwind 50 | Tailwind 200 | 中性色分类标签，低饱和分组 |
+| `yellow` / `amber` / `lime` | Tailwind 700 / 500 | Tailwind 50 | Tailwind 200 | 暖色/高亮分类标签 |
+| `emerald` / `teal` / `cyan` / `sky` | Tailwind 700 / 500 | Tailwind 50 | Tailwind 200 | 冷色/服务/通道分类标签 |
+| `indigo` / `violet` / `purple` / `fuchsia` / `pink` / `rose` | Tailwind 700 / 500 | Tailwind 50 | Tailwind 200 | 多分类彩色标签（如镜像标签），仅用于 `mode="soft"` 或需要稳定色彩分组的场景 |
 
 ### 16.3 文本状态类 `mode="text"`（表格状态列默认）
 
@@ -1402,7 +1514,28 @@ import {
 <StatusTag mode="fill" variant="green">已接入</StatusTag>
 ```
 
-### 16.6 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
+### 16.6 轻量彩色标签 `mode="soft"`
+
+| Token | Value |
+|-------|-------|
+| height | `20px` (`h-5`) |
+| background | 使用当前 `variant` 的浅色 bg |
+| border | 使用当前 `variant` 的浅色 border |
+| border-radius | `4px` (`rounded-[4px]`) |
+| padding | `px-2 py-0` |
+| icon | 可选；`size-3`，颜色跟随文字 |
+| font | `SmallBodyText` |
+
+适用于卡片顶部的分类 / 镜像 / 来源标签。需要稳定彩色分组时，从 `slate / zinc / stone / yellow / amber / lime / emerald / teal / cyan / sky / indigo / violet / purple / fuchsia / pink / rose` 中选色；禁止在业务代码中手写 `bg-*-50 text-*-700 border-*-200` 拼标签。
+
+```tsx
+<StatusTag mode="soft" variant="amber" icon={<Disc3 />}>
+  OpenClaw on Ubuntu 24.04
+</StatusTag>
+<StatusTag mode="soft" variant="gray">最新版本</StatusTag>
+```
+
+### 16.7 角色类 StatusTag token（Figma 1300:6713 / 1300:6724）
 
 | Token | 管理员 | 用户 |
 |-------|--------|------|
@@ -1821,10 +1954,11 @@ import { Pagination } from "@/components/ui/pagination";
 5. 新增全局组件时，组件内部文字规格必须先映射到 Typography 层级；如确需新增文字层级，先更新本规范和 `Typography.tsx`
 6. 如发现 rebase 后组件样式被改，以 addietang 和 miekoyychen 的版本为准强制恢复
 7. 新增组件需经 addietang 和 miekoyychen 审核后才能合入基线
-8. **对话框 / 弹窗内的 Input、下拉（Select）、Table 必须直接 import 自 `@/components/ui/*` 且与本 SKILL 第 5 / 6 / 11.1 节规范完全一致**：
-   - 禁止在弹窗中重新编造 Input / Select / Table 样式
-   - Input / Select **默认状态禁止加底色**（白底 + `border-[#d3d6db]`）
+8. **对话框 / 弹窗 / 右侧抽屉内的 Input、下拉（Select）、Table 必须直接 import 自 `@/components/ui/*` 且与本 SKILL 第 5 / 6 / 11.1 / 7.2 节规范完全一致**：
+   - 禁止在弹窗 / 抽屉中重新编造 Input / Select / Table / Drawer 样式
+   - Input / Select **默认状态禁止加底色**（白底 + `border-[#d3d6db]`；Drawer 详情内可按第 7.2 节使用 `bg-background` 语义）
    - Input / Select **禁用（disabled）状态禁止添加任何 hover 样式**（不允许 `disabled:hover:*`，不允许出现边框变蓝、底色加深等反馈）
+   - 右侧详情抽屉必须优先使用 `@/components/ui/drawer` 的 `Drawer direction="right"`，禁止手写 fixed 浮层结构
 
 ---
 

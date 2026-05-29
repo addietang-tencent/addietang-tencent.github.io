@@ -93,6 +93,19 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+function DrawerBody({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="drawer-body"
+      className={cn(
+        "flex-1 overflow-y-auto bg-background [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        className
+      )}
+      {...props}
+    />
+  );
+}
+
 function DrawerTitle({
   className,
   ...props
@@ -128,6 +141,7 @@ export {
   DrawerContent,
   DrawerHeader,
   DrawerFooter,
+  DrawerBody,
   DrawerTitle,
   DrawerDescription,
 };

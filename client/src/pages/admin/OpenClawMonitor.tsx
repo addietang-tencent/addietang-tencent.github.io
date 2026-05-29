@@ -6,6 +6,14 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useLocation, Link } from "wouter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerBody,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
@@ -51,11 +59,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { StatusTag } from "@/components/ui/status-tag";
+import {
+  BodyMedium,
+  BodyText,
+  CodeText,
+  MetaMedium,
+  MetaText,
+  MiniBodyText,
+  PanelTitle,
+} from "@/components/ui/Typography";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
-  Search, Bot, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
+  Search, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
   Activity, Loader2, ExternalLink, ChevronDown, Filter, HelpCircle, X, Eye, EyeOff,
   Server, CheckCircle2, PowerOff, Layers, ArrowUp, ArrowDown, Zap, BarChart3,
@@ -88,6 +105,25 @@ import { useOutdatedTypes } from "./BatchUpdateNotice";
 
 type ClawStatus = "creating" | "createFail" | "running" | "loading" | "loadFail" | "shutdown" | "maintaining" | "pending" | "upgrading";
 const LATEST_VERSION = "2026.4.2";
+
+const OTHER_STATUS_GROUPS = [
+  {
+    title: "需关注",
+    items: [
+      { label: "创建失败", variant: "red" as const },
+      { label: "加载失败", variant: "red" as const },
+      { label: "维护中", variant: "gray" as const },
+      { label: "待处理", variant: "gray" as const },
+    ],
+  },
+  {
+    title: "处理中",
+    items: [
+      { label: "创建中", variant: "blue" as const },
+      { label: "加载中", variant: "blue" as const },
+    ],
+  },
+] as const;
 
 interface PluginVersions {
   wechat: string;
@@ -1675,8 +1711,8 @@ export default function AgentMonitor() {
           </button>
 
           {/* 其他 */}
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <HoverCard openDelay={120} closeDelay={120}>
+            <HoverCardTrigger asChild>
               <button
                 onClick={() => handleCardFilterChange("other")}
                 className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
@@ -1689,28 +1725,36 @@ export default function AgentMonitor() {
                 </div>
                 <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{otherCount}</p>
               </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="p-4 w-fit bg-white border border-[#e5e5e5] shadow-lg" style={{ color: 'inherit' }}>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-[#020617] mb-2">需关注</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <StatusTag mode="fill" variant="red">创建失败</StatusTag>
-                    <StatusTag mode="fill" variant="red">加载失败</StatusTag>
-                    <StatusTag mode="fill" variant="gray">维护中</StatusTag>
-                    <StatusTag mode="fill" variant="gray">待处理</StatusTag>
+            </HoverCardTrigger>
+            <HoverCardContent
+              side="bottom"
+              align="end"
+              sideOffset={12}
+              className="w-[320px] rounded-xl border border-[#E5E7EB] bg-white p-5 shadow-[0_18px_48px_rgba(15,23,42,0.12)]"
+            >
+              <div className="space-y-4">
+                {OTHER_STATUS_GROUPS.map((group, index) => (
+                  <div
+                    key={group.title}
+                    className={index === 0 ? "space-y-2.5" : "space-y-2.5 border-t border-[#EEF2F6] pt-4"}
+                  >
+                    <MetaText as="div">{group.title}：</MetaText>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                      {group.items.map((item) => (
+                        <StatusTag
+                          key={item.label}
+                          mode="text"
+                          variant={item.variant}
+                        >
+                          {item.label}
+                        </StatusTag>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="border-t border-[#f0f0f0] pt-3">
-                  <p className="text-xs font-medium text-[#020617] mb-2">处理中</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    <StatusTag mode="fill" variant="blue">创建中</StatusTag>
-                    <StatusTag mode="fill" variant="blue">加载中</StatusTag>
-                  </div>
-                </div>
+                ))}
               </div>
-            </TooltipContent>
-          </Tooltip>
+            </HoverCardContent>
+          </HoverCard>
         </div>
 
         {/* 工具栏（独立于表格卡片） */}
@@ -2301,27 +2345,27 @@ export default function AgentMonitor() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-44">
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-[#fafafa] cursor-pointer ${isRunning ? "text-[#737373] focus:text-[#334155]" : "text-[#A3A3A3] opacity-40 cursor-not-allowed"}`}
+                                className={`cursor-pointer focus:bg-[#fafafa] ${isRunning ? "text-gray-900 focus:text-gray-900 [&_svg:not([class*='text-'])]:text-gray-900" : "text-[#A3A3A3] opacity-40 cursor-not-allowed [&_svg:not([class*='text-'])]:text-[#A3A3A3]"}`}
                                 disabled={!isRunning}
                                 onClick={() => handleRestart(claw)}
                               >
-                                <RotateCcw className="w-3.5 h-3.5 mr-2" />
-                                重启
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <BodyText as="span" tone="inherit">重启</BodyText>
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className={`text-xs focus:bg-[#fafafa] cursor-pointer ${["running", "shutdown"].includes(claw.status) ? "text-[#737373] focus:text-[#334155]" : "text-[#A3A3A3] opacity-40 cursor-not-allowed"}`}
+                                className={`cursor-pointer focus:bg-[#fafafa] ${["running", "shutdown"].includes(claw.status) ? "text-gray-900 focus:text-gray-900 [&_svg:not([class*='text-'])]:text-gray-900" : "text-[#A3A3A3] opacity-40 cursor-not-allowed [&_svg:not([class*='text-'])]:text-[#A3A3A3]"}`}
                                 disabled={!["running", "shutdown"].includes(claw.status)}
                                 onClick={() => handleReinstallClick(claw)}
                               >
-                                <HardDriveDownload className="w-3.5 h-3.5 mr-2" />
-                                重新安装 Agent
+                                <HardDriveDownload className="w-3.5 h-3.5" />
+                                <BodyText as="span" tone="inherit">重新安装 Agent</BodyText>
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                className="text-xs text-[#737373] focus:text-[#334155] focus:bg-[#fafafa] cursor-pointer"
+                                className="cursor-pointer text-gray-900 focus:bg-[#fafafa] focus:text-gray-900 [&_svg:not([class*='text-'])]:text-gray-900"
                                 onClick={() => handleOpenMonitor(claw)}
                               >
-                                <Activity className="w-3.5 h-3.5 mr-2" />
-                                监控
+                                <Activity className="w-3.5 h-3.5" />
+                                <BodyText as="span" tone="inherit">监控</BodyText>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -3013,58 +3057,60 @@ export default function AgentMonitor() {
       </Dialog>
 
       {/* Agent 详情抽屉 */}
-      {showDetailDrawer && selectedClaw && (
-        <div className="fixed inset-0 z-50 flex">
-          <div
-            className="flex-1 bg-black/20"
-            onClick={() => setShowDetailDrawer(false)}
-          />
-          <div className="w-[593px] bg-white shadow-lg flex flex-col">
+      <Drawer
+        open={showDetailDrawer && !!selectedClaw}
+        onOpenChange={(open) => setShowDetailDrawer(open)}
+        direction="right"
+      >
+        {selectedClaw && (
+          <DrawerContent className="data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none max-w-[calc(100vw-24px)] h-full rounded-none bg-background p-0">
             {/* 抽屉头 */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#e5e5e5] bg-white">
-              <h2 className="text-lg font-semibold text-[#0A0A0A]">Agent 详情</h2>
-              <div className="flex items-center gap-2">
+            <DrawerHeader className="flex flex-row items-center justify-between gap-4 p-4 bg-background text-left">
+              <DrawerTitle asChild>
+                <PanelTitle as="h2">Agent 详情</PanelTitle>
+              </DrawerTitle>
+              <div className="flex items-center gap-1">
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="h-8 w-8 p-0"
+                  variant="ghost"
+                  className="h-7 w-7 p-0 text-gray-900 hover:text-gray-950"
                   onClick={handleRefreshDrawer}
                   disabled={drawerLoading}
+                  aria-label="刷新"
                 >
                   <RefreshCw className={`w-4 h-4 ${drawerLoading ? "animate-spin" : ""}`} />
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setShowDetailDrawer(false)}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
+                <DrawerClose asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0 text-gray-900 hover:text-gray-950"
+                    aria-label="关闭"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </DrawerClose>
               </div>
-            </div>
-            {/* 抽屉内容 - 灰色背景 */}
-            <div className="flex-1 overflow-y-auto bg-[#fafafa]">
-              <div className="p-6 space-y-5">
+            </DrawerHeader>
+            {/* 抽屉内容 */}
+            <DrawerBody>
+              <div className="p-4 space-y-6">
                 {/* 名称/ID 部分 */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                    <Bot className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-base font-bold text-[#0A0A0A] leading-tight">{selectedClaw.name}</div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-[#A3A3A3] font-mono">{selectedClaw.instanceId}</span>
-                      <button
-                        className="text-xs text-[#355EF1] hover:text-[#355EF1] flex items-center gap-0.5 whitespace-nowrap"
+                <div className="min-w-0 space-y-1.5">
+                    <PanelTitle as="div" className="truncate leading-tight">{selectedClaw.name}</PanelTitle>
+                    <div className="flex items-center gap-2">
+                      <CodeText>{selectedClaw.instanceId}</CodeText>
+                      <MetaText
+                        as="button"
+                        tone="brand"
+                        className="inline-flex items-center gap-0.5 whitespace-nowrap hover:text-[#355EF1]"
                         onClick={() => window.open(`https://console.cloud.tencent.com/cvm/instance/detail?rid=1&id=${selectedClaw.instanceId}`, "_blank")}
                       >
                         去腾讯云控制台管理
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                      </button>
+                      </MetaText>
                     </div>
                   </div>
-                </div>
                 {/* 已应用模型 */}
                 {(() => {
                   const detail = getClawDetail(selectedClaw.id);
@@ -3083,62 +3129,68 @@ export default function AgentMonitor() {
 
                   /** 卡片内两级 Select + 保存/取消（替换态 / 新增态共用） */
                   const renderInlineEditForm = () => (
-                    <div className="space-y-3">
+                    <div className="bg-muted/30 p-3">
                       {providerGroups.length === 0 ? (
                         <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-[4px] px-3 py-2.5">
                           <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                          <p className="text-xs text-amber-700 leading-relaxed">
+                          <MetaText as="p" className="text-amber-700 leading-relaxed">
                             当前「模型配置」页中没有对用户可见的模型，请前往该页面添加或开启模型可见性。
-                          </p>
+                          </MetaText>
                         </div>
                       ) : (
-                        <>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-[#737373]">模型厂商</label>
-                            <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
-                              <SelectTrigger className="w-full bg-white border-[#e5e5e5] h-9">
-                                <SelectValue placeholder="选择模型厂商" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {providerGroups.map((g) => (
-                                  <SelectItem key={g.key} value={g.key}>{g.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                        <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-background">
+                          <div className="border-b border-[#f0f0f0] px-3 py-2">
+                            <MetaMedium>模型配置</MetaMedium>
                           </div>
-                          <div className="space-y-1.5">
-                            <label className="text-xs font-medium text-[#737373]">模型名称</label>
-                            <Select value={modelDraftModelId} onValueChange={setModelDraftModelId}>
-                              <SelectTrigger className="w-full bg-white border-[#e5e5e5] h-9">
-                                <SelectValue placeholder="选择模型名称" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {(providerGroups.find(g => g.key === modelDraftProvider)?.models ?? []).map((m) => {
-                                  const isCustom = m.provider === CUSTOM_PROVIDER_VALUE;
-                                  return (
-                                    <SelectItem key={m.id} value={m.id}>
-                                      {isCustom ? m.name : m.version}
-                                    </SelectItem>
-                                  );
-                                })}
-                              </SelectContent>
-                            </Select>
+                          <div className="divide-y divide-[#f0f0f0]">
+                            <div className="px-3 py-2 space-y-1.5">
+                              <MetaMedium as="label">模型厂商</MetaMedium>
+                              <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
+                                <SelectTrigger className="w-full bg-background border-[#e5e5e5] h-8 text-xs">
+                                  <SelectValue placeholder="选择模型厂商" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {providerGroups.map((g) => (
+                                    <SelectItem key={g.key} value={g.key}>{g.label}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="px-3 py-2 space-y-1.5">
+                              <MetaMedium as="label">模型名称</MetaMedium>
+                              <Select value={modelDraftModelId} onValueChange={setModelDraftModelId}>
+                                <SelectTrigger className="w-full bg-background border-[#e5e5e5] h-8 text-xs">
+                                  <SelectValue placeholder="选择模型名称" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {(providerGroups.find(g => g.key === modelDraftProvider)?.models ?? []).map((m) => {
+                                    const isCustom = m.provider === CUSTOM_PROVIDER_VALUE;
+                                    return (
+                                      <SelectItem key={m.id} value={m.id}>
+                                        {isCustom ? m.name : m.version}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
                           </div>
-                        </>
+                          <div className="flex justify-end gap-2 border-t border-[#f0f0f0] px-3 py-2">
+                            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={cancelEditModel}>
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="dialog-confirm"
+                              className="h-7 px-2 text-xs"
+                              onClick={saveEditModel}
+                              disabled={!modelDraftProvider || !modelDraftModelId}
+                            >
+                              保存
+                            </Button>
+                          </div>
+                        </div>
                       )}
-                      <div className="flex justify-end gap-2 pt-1">
-                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelEditModel}>
-                          取消
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="h-8 px-3 text-xs"
-                          onClick={saveEditModel}
-                          disabled={!modelDraftProvider || !modelDraftModelId}
-                        >
-                          保存
-                        </Button>
-                      </div>
                     </div>
                   );
 
@@ -3148,20 +3200,22 @@ export default function AgentMonitor() {
                     return (
                       <div
                         key={model.id}
-                        className={`px-4 py-3 bg-white rounded-[4px] border transition-colors ${isReplacingThis ? "border-[#355EF1]" : "border-[#e5e5e5]"}`}
+                        className={isReplacingThis
+                          ? "bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+                          : "px-4 py-3 bg-white rounded-[4px] border border-[#e5e5e5] transition-colors"}
                       >
                         {isReplacingThis ? (
                           renderInlineEditForm()
                         ) : (
                           <div className="flex items-center gap-3">
                             <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
-                              <span className="text-sm font-semibold text-[#0A0A0A] leading-tight truncate">
+                              <BodyMedium className="truncate leading-tight">
                                 {model.providerLabel}
-                              </span>
+                              </BodyMedium>
                               {model.versionLabel && (
-                                <span className="text-xs text-[#A3A3A3] leading-tight mt-0.5 truncate">
+                                <MetaText tone="weak" className="leading-tight mt-0.5 truncate">
                                   {model.versionLabel}
-                                </span>
+                                </MetaText>
                               )}
                             </div>
                             {isOpenClaw && (isPrimary ? (
@@ -3232,23 +3286,25 @@ export default function AgentMonitor() {
                   return (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm text-[#737373]">已应用模型（{models.length}）</div>
+                        <MetaText as="div">已应用模型（{models.length}）</MetaText>
                         {!isAdding && canAddMore && (
-                          <button
+                          <MetaText
+                            as="button"
+                            tone="brand"
                             onClick={startAddModel}
-                            className="flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] transition-colors"
+                            className="flex items-center gap-1 hover:text-[#355EF1] transition-colors"
                           >
                             <Plus className="w-3 h-3" />
                             {addButtonLabel}
-                          </button>
+                          </MetaText>
                         )}
                       </div>
 
                       {/* 空态（无模型且不在新增态） */}
                       {models.length === 0 && !isAdding && (
-                        <div className="px-4 py-6 bg-white rounded-[4px] border border-dashed border-[#e5e5e5] text-center text-sm text-[#A3A3A3]">
+                        <MetaText as="div" tone="weak" className="px-4 py-6 bg-background rounded-[4px] border border-dashed border-[#e5e5e5] text-center">
                           暂未配置模型
-                        </div>
+                        </MetaText>
                       )}
 
                       {/* 主模型分组 */}
@@ -3269,7 +3325,7 @@ export default function AgentMonitor() {
 
                       {/* 新增态：底部 inline 卡（替换态已在行内展示，不再重复渲染） */}
                       {isAdding && (
-                        <div className="mt-2 px-4 py-3 bg-white rounded-[4px] border border-[#355EF1]">
+                        <div className="mt-2 bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
                           {renderInlineEditForm()}
                         </div>
                       )}
@@ -3279,8 +3335,18 @@ export default function AgentMonitor() {
                 {/* 已接入通道 */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm text-[#737373]">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</div>
-                    {/* 添加通道按钮已移除（本期需求不包含） */}
+                    <MetaText as="div">已接入通道（{getClawDetail(selectedClaw.id).connectedChannels.length}）</MetaText>
+                    {!channelAdding && (
+                      <MetaText
+                        as="button"
+                        tone="brand"
+                        className="flex items-center gap-1 hover:text-[#355EF1] transition-colors"
+                        onClick={() => startAddChannel(getClawDetail(selectedClaw.id))}
+                      >
+                        <Plus className="w-3 h-3" />
+                        添加通道
+                      </MetaText>
+                    )}
                   </div>
                   <div className="space-y-2">
                     {getClawDetail(selectedClaw.id).connectedChannels.map((channel) => {
@@ -3299,7 +3365,7 @@ export default function AgentMonitor() {
                             >
                               <ChevronRight className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
                             </button>
-                            <span className="text-sm font-semibold text-[#0A0A0A] flex-1">{channel.name}</span>
+                            <BodyMedium className="flex-1">{channel.name}</BodyMedium>
                             <button
                               onClick={() => setChannelRemoveTarget(channel.name)}
                               className="text-[#A3A3A3] hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
@@ -3311,87 +3377,99 @@ export default function AgentMonitor() {
 
                           {/* 展开区域：凭证查看 / 编辑 */}
                           {isExpanded && (
-                            <div className="border-t border-[#e5e5e5] px-4 py-3 bg-[#fafafa]/50 space-y-2">
+                            <div className="border-t border-[#e5e5e5] bg-muted/30 p-3">
                               {fields.length === 0 ? (
                                 <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
                                   <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
-                                  <p className="text-xs text-[#355EF1] leading-relaxed">
+                                  <MetaText as="p" tone="brand" className="leading-relaxed">
                                     该通道无需凭证配置（由租户在用户端完成扫码授权）。
-                                  </p>
+                                  </MetaText>
                                 </div>
                               ) : (
-                                <>
-                                  {fields.map((field) => {
-                                    const visible = isSecretVisible(channel.name, field.key);
-                                    if (isEditingThis) {
-                                      // 编辑态：Input + 密码可见切换
+                                <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-background">
+                                  <div className="flex items-center justify-between gap-3 border-b border-[#f0f0f0] px-3 py-2">
+                                    <MetaMedium>凭证信息</MetaMedium>
+                                    {!isEditingThis && (
+                                      <MetaText
+                                        as="button"
+                                        tone="brand"
+                                        className="inline-flex items-center gap-1 hover:text-[#355EF1]"
+                                        onClick={() => startEditChannel(channel)}
+                                      >
+                                        <Pencil className="w-3 h-3" />
+                                        编辑凭证
+                                      </MetaText>
+                                    )}
+                                  </div>
+
+                                  <div className="divide-y divide-[#f0f0f0]">
+                                    {fields.map((field) => {
+                                      const visible = isSecretVisible(channel.name, field.key);
+                                      if (isEditingThis) {
+                                        // 编辑态：Input + 密码可见切换
+                                        return (
+                                          <div key={field.key} className="px-3 py-2 space-y-1.5">
+                                            <MetaMedium as="label">{field.label}</MetaMedium>
+                                            <div className="relative">
+                                              <Input
+                                                type={field.secret && !visible ? "password" : "text"}
+                                                value={channelEditDraft![field.key] ?? ""}
+                                                onChange={(e) => setChannelEditDraft(prev => ({ ...(prev ?? {}), [field.key]: e.target.value }))}
+                                                className="bg-background border-[#e5e5e5] text-xs h-8 pr-9"
+                                              />
+                                              {field.secret && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => toggleSecretVisibility(channel.name, field.key)}
+                                                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors"
+                                                >
+                                                  {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                                </button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      }
+                                      // 只读态：key - value（secret 自动 mask）
+                                      const rawValue = channel.fieldValues[field.key] ?? "";
+                                      const displayValue = field.secret && !visible ? maskSecret(rawValue) : (rawValue || "—");
                                       return (
-                                        <div key={field.key} className="space-y-1">
-                                          <label className="text-xs font-medium text-[#737373]">{field.label}</label>
-                                          <div className="relative">
-                                            <Input
-                                              type={field.secret && !visible ? "password" : "text"}
-                                              value={channelEditDraft![field.key] ?? ""}
-                                              onChange={(e) => setChannelEditDraft(prev => ({ ...(prev ?? {}), [field.key]: e.target.value }))}
-                                              className="bg-white border-[#e5e5e5] text-sm h-9 pr-10"
-                                            />
-                                            {field.secret && (
+                                        <div key={field.key} className="grid grid-cols-[112px_minmax(0,1fr)] items-center gap-3 px-3 py-2">
+                                          <MetaText className="truncate" title={field.label}>{field.label}</MetaText>
+                                          <div className="min-w-0 flex items-center gap-1.5">
+                                            <CodeText tone="emphasis" className="min-w-0 break-all">{displayValue}</CodeText>
+                                            {field.secret && rawValue && (
                                               <button
                                                 type="button"
                                                 onClick={() => toggleSecretVisibility(channel.name, field.key)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] transition-colors"
+                                                className="text-gray-500 hover:text-gray-900 transition-colors shrink-0"
+                                                title={visible ? "隐藏" : "查看"}
                                               >
-                                                {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                                               </button>
                                             )}
                                           </div>
                                         </div>
                                       );
-                                    }
-                                    // 只读态：key - value（secret 自动 mask）
-                                    const rawValue = channel.fieldValues[field.key] ?? "";
-                                    const displayValue = field.secret && !visible ? maskSecret(rawValue) : (rawValue || "—");
-                                    return (
-                                      <div key={field.key} className="flex items-center gap-3 py-1.5">
-                                        <span className="text-xs text-[#737373] w-28 shrink-0 truncate" title={field.label}>{field.label}</span>
-                                        <span className="text-xs text-[#0A0A0A] flex-1 font-mono break-all">{displayValue}</span>
-                                        {field.secret && rawValue && (
-                                          <button
-                                            type="button"
-                                            onClick={() => toggleSecretVisibility(channel.name, field.key)}
-                                            className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors flex-shrink-0"
-                                            title={visible ? "隐藏" : "查看"}
-                                          >
-                                            {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                                          </button>
-                                        )}
-                                      </div>
-                                    );
-                                  })}
-
-                                  {/* 操作按钮 */}
-                                  <div className="flex justify-end gap-2 pt-1">
-                                    {isEditingThis ? (
-                                      <>
-                                        <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelEditChannel}>
-                                          取消
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          className="h-8 px-3 text-xs"
-                                          onClick={() => saveEditChannel(channel)}
-                                        >
-                                          保存
-                                        </Button>
-                                      </>
-                                    ) : (
-                                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={() => startEditChannel(channel)}>
-                                        <Pencil className="w-3 h-3 mr-1" />
-                                        编辑凭证
-                                      </Button>
-                                    )}
+                                    })}
                                   </div>
-                                </>
+
+                                  {isEditingThis && (
+                                    <div className="flex justify-end gap-2 border-t border-[#f0f0f0] px-3 py-2">
+                                      <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={cancelEditChannel}>
+                                        取消
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="dialog-confirm"
+                                        className="h-7 px-2 text-xs"
+                                        onClick={() => saveEditChannel(channel)}
+                                      >
+                                        保存
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </div>
                           )}
@@ -3399,9 +3477,9 @@ export default function AgentMonitor() {
                       );
                     })}
                     {getClawDetail(selectedClaw.id).connectedChannels.length === 0 && !channelAdding && (
-                      <div className="px-4 py-6 bg-white rounded-[4px] border border-dashed border-[#e5e5e5] text-center text-sm text-[#A3A3A3]">
+                      <MetaText as="div" tone="weak" className="px-4 py-6 bg-background rounded-[4px] border border-dashed border-[#e5e5e5] text-center">
                         暂未接入通道
-                      </div>
+                      </MetaText>
                     )}
                     {/* 新增通道面板 */}
                     {channelAdding && (() => {
@@ -3410,82 +3488,92 @@ export default function AgentMonitor() {
                       const currentCh = availableChannelOptions.find(c => c.value === channelDraft);
                       const isWechatLike = currentCh?.wechatMode;
                       return (
-                        <div className="px-4 py-3 bg-white rounded-[4px] border border-[#e5e5e5] space-y-3">
-                          {/* 通道选择 */}
-                          <div className="space-y-2">
-                            <label className="text-xs font-medium text-[#737373]">通道类型</label>
-                            <Select value={channelDraft} onValueChange={handleChannelDraftChange}>
-                              <SelectTrigger className="w-full bg-white border-[#e5e5e5] h-9">
-                                <SelectValue placeholder="选择要添加的通道" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {available.length === 0 ? (
-                                  <div className="px-3 py-6 text-center text-xs text-[#A3A3A3]">
-                                    所有通道均已添加
-                                  </div>
-                                ) : (
-                                  available.map((c) => (
-                                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                                  ))
-                                )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {/* 无凭证字段的通道（微信）：提示框 */}
-                          {currentCh && isWechatLike && (
-                            <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
-                              <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
-                              <p className="text-xs text-[#355EF1] leading-relaxed">
-                                微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
-                              </p>
-                            </div>
-                          )}
-
-                          {/* 凭证字段录入 */}
-                          {currentCh && !isWechatLike && (currentCh.fields ?? []).length > 0 && (
-                            <div className="space-y-2">
-                              {(currentCh.fields ?? []).map((field) => {
-                                const visible = isSecretVisible("__draft__", field.key);
-                                return (
-                                  <div key={field.key} className="space-y-1">
-                                    <label className="text-xs font-medium text-[#737373]">{field.label}</label>
-                                    <div className="relative">
-                                      <Input
-                                        type={field.secret && !visible ? "password" : "text"}
-                                        value={channelDraftFields[field.key] ?? ""}
-                                        onChange={(e) => setChannelDraftFields(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                        placeholder={field.label}
-                                        className="bg-[#fafafa] border-[#e5e5e5] text-sm h-9 pr-10"
-                                      />
-                                      {field.secret && (
-                                        <button
-                                          type="button"
-                                          onClick={() => toggleSecretVisibility("__draft__", field.key)}
-                                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] transition-colors"
-                                        >
-                                          {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
+                        <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+                          <div className="bg-muted/30 p-3">
+                            <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-background">
+                              <div className="border-b border-[#f0f0f0] px-3 py-2">
+                                <MetaMedium>通道配置</MetaMedium>
+                              </div>
+                              <div className="divide-y divide-[#f0f0f0]">
+                                {/* 通道选择 */}
+                                <div className="px-3 py-2 space-y-1.5">
+                                  <MetaMedium as="label">通道类型</MetaMedium>
+                                  <Select value={channelDraft} onValueChange={handleChannelDraftChange}>
+                                    <SelectTrigger className="w-full bg-background border-[#e5e5e5] h-8 text-xs">
+                                      <SelectValue placeholder="选择要添加的通道" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {available.length === 0 ? (
+                                        <MetaText as="div" tone="weak" className="px-3 py-6 text-center">
+                                          所有通道均已添加
+                                        </MetaText>
+                                      ) : (
+                                        available.map((c) => (
+                                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                                        ))
                                       )}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+
+                                {/* 无凭证字段的通道（微信）：提示框 */}
+                                {currentCh && isWechatLike && (
+                                  <div className="px-3 py-2">
+                                    <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
+                                      <Info className="w-4 h-4 text-[#355EF1] mt-0.5 shrink-0" />
+                                      <MetaText as="p" tone="brand" className="leading-relaxed">
+                                        微信通道通过扫码授权接入，管控端仅创建占位记录，实际扫码绑定由租户在用户端完成。
+                                      </MetaText>
                                     </div>
                                   </div>
-                                );
-                              })}
-                            </div>
-                          )}
+                                )}
 
-                          <div className="flex justify-end gap-2">
-                            <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={cancelAddChannel}>
-                              取消
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="h-8 px-3 text-xs"
-                              onClick={confirmAddChannel}
-                              disabled={!channelDraft}
-                            >
-                              确认添加
-                            </Button>
+                                {/* 凭证字段录入 */}
+                                {currentCh && !isWechatLike && (currentCh.fields ?? []).length > 0 && (
+                                  (currentCh.fields ?? []).map((field) => {
+                                    const visible = isSecretVisible("__draft__", field.key);
+                                    return (
+                                      <div key={field.key} className="px-3 py-2 space-y-1.5">
+                                        <MetaMedium as="label">{field.label}</MetaMedium>
+                                        <div className="relative">
+                                          <Input
+                                            type={field.secret && !visible ? "password" : "text"}
+                                            value={channelDraftFields[field.key] ?? ""}
+                                            onChange={(e) => setChannelDraftFields(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                            placeholder={field.label}
+                                            className="bg-background border-[#e5e5e5] text-xs h-8 pr-9"
+                                          />
+                                          {field.secret && (
+                                            <button
+                                              type="button"
+                                              onClick={() => toggleSecretVisibility("__draft__", field.key)}
+                                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 transition-colors"
+                                            >
+                                              {visible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })
+                                )}
+                              </div>
+
+                              <div className="flex justify-end gap-2 border-t border-[#f0f0f0] px-3 py-2">
+                                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={cancelAddChannel}>
+                                  取消
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="dialog-confirm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={confirmAddChannel}
+                                  disabled={!channelDraft}
+                                >
+                                  确认添加
+                                </Button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );
@@ -3494,20 +3582,37 @@ export default function AgentMonitor() {
                 </div>
                 {/* 已安装技能 */}
                 <div>
-                  <div className="text-sm text-[#737373] mb-2">已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）</div>
-                  <div className="space-y-2">
-                    {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
-                      <div key={skill} className="px-4 py-3 bg-white rounded-[4px] border border-[#e5e5e5] text-sm text-[#0A0A0A]">
-                        {skill}
-                      </div>
-                    ))}
-                  </div>
+                  <MetaText as="div" className="mb-2">已安装技能（{getClawDetail(selectedClaw.id).installedSkills.length}）</MetaText>
+                  {getClawDetail(selectedClaw.id).installedSkills.length === 0 ? (
+                    <MetaText as="div" tone="weak" className="px-4 py-6 bg-background rounded-[4px] border border-dashed border-[#e5e5e5] text-center">
+                      暂未安装技能
+                    </MetaText>
+                  ) : (
+                    <div className="overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-background">
+                      <Table density="compact">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>技能名称</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {getClawDetail(selectedClaw.id).installedSkills.map((skill) => (
+                            <TableRow key={skill}>
+                              <TableCell>
+                                <MiniBodyText>{skill}</MiniBodyText>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </DrawerBody>
+          </DrawerContent>
+        )}
+      </Drawer>
 
       {/* 移除通道二次确认 */}
       <AlertDialog open={!!channelRemoveTarget} onOpenChange={(open) => { if (!open) setChannelRemoveTarget(null); }}>

@@ -1,7 +1,5 @@
 /**
- * UpdateRecordsDrawer - 「版本更新」侧边栏
- *
- * 注：组件名保留 Drawer 仅为兼容历史 import，实际形态为右侧 Sheet 面板。
+ * UpdateRecordsDrawer - 「版本更新记录」右侧抽屉
  *
  * 展示所有 Agent 类型的镜像更新历史，让管理员能在一个地方浏览全部版本变化。
  *
@@ -15,18 +13,29 @@
  */
 import { useMemo, useState, useEffect } from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetClose,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { SmallIconStateButton } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerBody,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { StatusTag, type StatusTagColor } from "@/components/ui/status-tag";
 import { Switch } from "@/components/ui/switch";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Bell, Megaphone, RotateCcw, Disc3, X } from "lucide-react";
+import {
+  BodyMedium,
+  BodyText,
+  CompactText,
+  CodeText,
+  MetaMedium,
+  MetaText,
+  MiniBodyText,
+  PanelTitle,
+} from "@/components/ui/Typography";
+import { Bell, Disc3, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   listActivePushes,
@@ -71,20 +80,17 @@ interface Props {
   initialPushableOnly?: boolean;
 }
 
-// ─── 镜像彩色徽章：稳定 hash → 颜色，使同一镜像在视觉上保持一致 ────
-const IMAGE_COLOR_PALETTE = [
-  { bg: "bg-sky-50",      text: "text-sky-700",      border: "border-sky-200",      dot: "bg-sky-500"      },
-  { bg: "bg-emerald-50",  text: "text-emerald-700",  border: "border-emerald-200",  dot: "bg-emerald-500"  },
-  { bg: "bg-violet-50",   text: "text-violet-700",   border: "border-violet-200",   dot: "bg-violet-500"   },
-  { bg: "bg-amber-50",    text: "text-amber-700",    border: "border-amber-200",    dot: "bg-amber-500"    },
-  { bg: "bg-rose-50",     text: "text-rose-700",     border: "border-rose-200",     dot: "bg-rose-500"     },
-  { bg: "bg-cyan-50",     text: "text-cyan-700",     border: "border-cyan-200",     dot: "bg-cyan-500"     },
-];
+// ─── 镜像标签颜色：仅按 Agent 类型区分，不按具体镜像 / OS 版本扩展色彩 ────
+type ImageColorToken = { variant: StatusTagColor; dot: string };
 
-function hashImageColor(imageId: string): typeof IMAGE_COLOR_PALETTE[number] {
-  let h = 0;
-  for (let i = 0; i < imageId.length; i++) h = (h * 31 + imageId.charCodeAt(i)) >>> 0;
-  return IMAGE_COLOR_PALETTE[h % IMAGE_COLOR_PALETTE.length];
+const AGENT_TYPE_COLOR_MAP: Record<string, ImageColorToken> = {
+  OpenClaw: { variant: "blue", dot: "bg-[var(--brand-blue)]" },
+  HermesAgent: { variant: "teal", dot: "bg-teal-500" },
+  LightClawACE: { variant: "violet", dot: "bg-violet-500" },
+};
+
+function getAgentTypeColor(agentType: string): ImageColorToken {
+  return AGENT_TYPE_COLOR_MAP[agentType] ?? { variant: "gray", dot: "bg-[#0A0A0A]" };
 }
 
 export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPush, pushable = [], initialFilter, initialPushableOnly = false }: Props) {
@@ -156,7 +162,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
       // 命中"用户可见 + 启用版本 + 有过期实例"的镜像记录
       list = list.filter((r) => pushableImageVersionKeys.has(`${r.imageId}::${r.version}`));
       // 同一镜像可能存在多条相同 version 的发布记录（不同 releaseDate），仅保留最新一条，
-      // 保证卡片数量与 Alert 中「可推送镜像数」一一对应
+      // 保证卡片数量与提示卡中「可推送镜像数」一一对应
       const seen = new Set<string>();
       list = list.filter((r) => {
         const key = `${r.imageId}::${r.version}`;
@@ -221,337 +227,401 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
     ? imagesByType.get(activeTypeForImageFilter) ?? []
     : [];
 
+  const pushableList = useMemo(() => {
+    return pushable.filter(
+      (p) =>
+        !p.allUpToDate
+        && !!p.enabledImage?.id
+        && pushableImageVersionKeys.has(`${p.enabledImage.id}::${p.enabledVersion}`),
+    );
+  }, [pushable, pushableImageVersionKeys]);
+
+  const pushedPushableCount = useMemo(() => {
+    return pushableList.filter((p) =>
+      activePushes.some(
+        (ap) => ap.agentType === p.agentType && ap.version === p.enabledVersion,
+      ),
+    ).length;
+  }, [activePushes, pushableList]);
+
+  const allPushablePushed = pushableList.length > 0 && pushedPushableCount === pushableList.length;
+
+  const handlePushAll = () => {
+    if (pushableList.length === 0) return;
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const pushedAt = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+    pushableList.forEach((p) => {
+      setActivePush({
+        agentType: p.agentType,
+        agentTypeLabel: p.agentTypeLabel,
+        version: p.enabledVersion,
+        imageSource: p.imageSource,
+        imageName: p.imageName,
+        pushedAt,
+        pushedBy: "admin@company.com",
+        message: `管理员推荐升级到 v${p.enabledVersion}`,
+      });
+    });
+
+    setActivePushes(listActivePushes());
+    toast.success(`已推送 ${pushableList.length} 个 Agent 类型的最新版本更新提醒`);
+  };
+
+  const handleRevokeAll = () => {
+    if (pushableList.length === 0) return;
+    pushableList.forEach((p) => clearActivePush(p.agentType));
+    setActivePushes(listActivePushes());
+    toast.success(`已撤回 ${pushableList.length} 个 Agent 类型的推送提醒`);
+  };
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} modal={false}>
-      <SheetContent side="right" showOverlay={false} className="sm:max-w-[420px] overflow-y-auto p-0 [&>[data-slot=sheet-close]]:hidden">
-        <SheetHeader className="px-6 pt-6 pb-3 shrink-0">
-          <div className="flex items-center justify-between gap-4">
-            <SheetTitle className="text-base shrink-0">
-              版本更新记录
-            </SheetTitle>
-            <div className="flex items-center gap-4 ml-auto">
-              <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                <span className="text-xs text-[#525252]">仅看可推送新版本</span>
-                <Switch
-                  checked={showPushableOnly}
-                  onCheckedChange={setShowPushableOnly}
-                />
-              </label>
-              <SheetClose
-                aria-label="关闭"
-                className="flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-              >
-                <X className="size-5" />
-              </SheetClose>
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="h-full max-w-[calc(100vw-24px)] rounded-none bg-background p-0 data-[vaul-drawer-direction=right]:w-[480px] data-[vaul-drawer-direction=right]:sm:max-w-none">
+        <DrawerHeader className="shrink-0 gap-7 bg-background p-4 text-left">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-2">
+              <DrawerTitle asChild>
+                <PanelTitle as="h2">版本更新记录</PanelTitle>
+              </DrawerTitle>
+              <DrawerDescription asChild>
+                <CompactText as="p" tone="muted" className="w-full">
+                  集中查看各 Agent 镜像的版本演进、当前最新版本，以及员工端更新提醒状态。
+                </CompactText>
+              </DrawerDescription>
             </div>
+            <DrawerClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="关闭"
+                className="h-7 w-7 shrink-0 p-0 text-gray-900 hover:text-gray-950"
+              >
+                <X className="size-4" />
+              </Button>
+            </DrawerClose>
           </div>
-        </SheetHeader>
 
-        {/* 筛选区 */}
-        <div className="px-6 pb-3 space-y-3 shrink-0">
-          {/* 新版本更新推送提醒：黄色 Alert（仅当「仅看可推送新版本」开关开启 + 存在可推送的新版本时展示） */}
-          {showPushableOnly && (() => {
-            // 仅统计「在时间线中能找到对应卡片」的可推送项：
-            //   - 该类型已启用且有过期实例
-            //   - 启用镜像 id 出现在公共镜像记录中
-            //   - 启用版本 = 该镜像最新记录版本（即时间线会展示的"最新版本"卡片）
-            const pushableList = pushable.filter(
-              (p) => !p.allUpToDate
-                && !!p.enabledImage?.id
-                && pushableImageVersionKeys.has(`${p.enabledImage!.id}::${p.enabledVersion}`),
-            );
-            const totalNew = pushableList.length;
-            if (totalNew === 0) return null;
-            const pushed = pushableList.filter((p) =>
-              activePushes.some(
-                (ap) => ap.agentType === p.agentType && ap.version === p.enabledVersion,
-              ),
-            ).length;
-            const handlePushAll = () => {
-              const now = new Date();
-              const pad = (n: number) => String(n).padStart(2, "0");
-              const pushedAt = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-              pushableList.forEach((p) => {
-                setActivePush({
-                  agentType: p.agentType,
-                  agentTypeLabel: p.agentTypeLabel,
-                  version: p.enabledVersion,
-                  imageSource: p.imageSource,
-                  imageName: p.imageName,
-                  pushedAt,
-                  pushedBy: "admin@company.com",
-                  message: `管理员推荐升级到 v${p.enabledVersion}`,
-                });
-              });
-              setActivePushes(listActivePushes());
-              toast.success(`已推送 ${totalNew} 个 Agent 类型的最新版本更新提醒`);
-            };
-            const handleRevokeAll = () => {
-              pushableList.forEach((p) => clearActivePush(p.agentType));
-              setActivePushes(listActivePushes());
-              toast.success(`已撤回 ${totalNew} 个 Agent 类型的推送提醒`);
-            };
-            const allPushed = pushed === totalNew;
-            return (
-              <Alert variant="warning">
-                <Bell />
-                <AlertTitle>可推送新版本</AlertTitle>
-                <AlertDescription>
-                  <div className="leading-relaxed">
-                    当前有 <span className="font-medium tabular-nums">{totalNew}</span> 个用户可见的 Agent 镜像有新版本
-                  </div>
-                  <div className="leading-relaxed">
-                    <span className="font-medium tabular-nums">{pushed}</span> 个正在提醒员工更新
-                  </div>
-                  <div className="mt-2 flex items-center gap-2">
-                    <SmallIconStateButton
-                      icon={Megaphone}
-                      label={allPushed ? "已全部推送最新版本" : "一键推送全部新版本"}
-                      state={allPushed ? "disabled" : "default"}
-                      onClick={handlePushAll}
-                      className="h-5 px-1.5 text-[10px] gap-1 [&_svg]:w-2.5 [&_svg]:h-2.5"
-                    />
-                    {allPushed && (
-                      <button
-                        type="button"
-                        onClick={handleRevokeAll}
-                        className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-red-500 transition-colors"
-                      >
-                        <RotateCcw className="w-2.5 h-2.5" />
-                        全部撤回
-                      </button>
-                    )}
-                  </div>
-                </AlertDescription>
-              </Alert>
-            );
-          })()}
+          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[4px] border border-[#E5E5E5] bg-background px-3 py-2.5 select-none">
+            <MetaText as="span" tone="muted">
+              仅看可推送版本
+            </MetaText>
+            <Switch
+              checked={showPushableOnly}
+              onCheckedChange={setShowPushableOnly}
+            />
+          </label>
+        </DrawerHeader>
 
-          {/* Agent 类型 / 镜像筛选（仅在「仅看可推送新版本」关闭时展示） */}
-          {!showPushableOnly && (
-            <>
-              {/* 第一级：Agent 类型 */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
-                  Agent 类型
-                </span>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                <button
-                  onClick={() => setFilter({ kind: "all", value: "" })}
-                  className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                    filter.kind === "all"
-                      ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
-                      : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
-                  }`}
-                >
-                  全部
-                </button>
-                {types.map((t) => {
-                  const isActive =
-                    filter.kind === "type" && filter.value === t.agentType
-                    || filter.kind === "image"
-                      && records.find((r) => r.imageId === filter.value)?.agentType === t.agentType;
-                  return (
-                    <button
-                      key={t.agentType}
-                      onClick={() => setFilter({ kind: "type", value: t.agentType })}
-                      className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                        isActive
-                          ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
-                          : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
-                      }`}
-                    >
-                      {t.label}
-                      <span className="ml-1 text-[10px] text-[#A3A3A3] tabular-nums">
-                        · {imagesByType.get(t.agentType)?.length ?? 0} 镜像
-                      </span>
-                    </button>
-                  );
-                })}
-                </div>
-              </div>
-
-              {/* 第二级：镜像（按选中的 Agent 类型展开） */}
-              {imageOptionsForActiveType.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-semibold text-[#A3A3A3] uppercase tracking-wider">
-                    镜像
-                  </span>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                  <button
-                    onClick={() => setFilter({ kind: "type", value: activeTypeForImageFilter })}
-                    className={`text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                      filter.kind === "type"
-                        ? "border-[#1447E6]/40 bg-[#1447E6]/5 text-[#1447E6]"
-                        : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#1447E6]/40"
-                    }`}
-                  >
-                    全部镜像
-                  </button>
-                  {imageOptionsForActiveType.map((img) => {
-                    const c = hashImageColor(img.imageId);
-                    const isActive = filter.kind === "image" && filter.value === img.imageId;
-                    return (
-                      <button
-                        key={img.imageId}
-                        onClick={() => setFilter({ kind: "image", value: img.imageId })}
-                        className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-[3px] border transition-colors ${
-                          isActive
-                            ? `${c.bg} ${c.text} ${c.border}`
-                            : "border-[#E5E5E5] bg-white text-[#334155] hover:border-[#A3A3A3]"
-                        }`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-                        <span className="truncate max-w-[180px]">{img.imageName}</span>
-                      </button>
-                    );
-                  })}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* 时间线 */}
-        <div className="flex-1 overflow-y-auto px-6 py-2">
-          {filtered.length === 0 ? (
-            <div className="py-12 text-center text-sm text-[#A3A3A3]">暂无更新记录</div>
-          ) : (
-            <ol className="relative space-y-3 ml-2 border-l border-[#E5E5E5] pl-5">
-              {filtered.map((r, idx) => {
-                const push = findPush(r);
-                const isFirstRelease = r.type === "firstRelease";
-                const isLatestOfImage = latestIdxPerImage.get(r.imageId) === idx;
-                const c = hashImageColor(r.imageId);
-                return (
-                  <li key={`${r.imageId}-${r.version}-${r.releaseDate}-${idx}`} className="relative">
-                    <span
-                      className={`absolute -left-[26px] top-2 w-2.5 h-2.5 rounded-full ${
-                        push
-                          ? "bg-[#1447E6]"
-                          : isFirstRelease
-                            ? "bg-purple-500"
-                            : "bg-[#D4D4D4]"
-                      }`}
-                    />
-                    <div
-                      className={`rounded-[4px] p-3 border ${
-                        push
-                          ? "bg-[#1447E6]/5 border-[#1447E6]/20"
-                          : "bg-white border-[#E5E5E5]"
-                      }`}
-                    >
-                      {/* 第一行：镜像彩色徽章（左）+ 状态标签（右上角：当前版本） */}
-                      <div className="flex items-center justify-between gap-2">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span
-                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border cursor-default ${c.bg} ${c.text} ${c.border}`}
-                            >
-                              <Disc3 className="w-2.5 h-2.5" />
-                              <span className="truncate max-w-[200px]">{r.imageName}</span>
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" className="text-xs">
-                            <div className="font-medium">{r.imageName}</div>
-                            <div className="font-mono text-[#A3A3A3] mt-0.5">{r.imageId}</div>
-                            <div className="text-[#A3A3A3] mt-0.5">
-                              所属 Agent 类型：{r.agentTypeLabel}
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                        {isLatestOfImage && !isFirstRelease && (
-                          <Badge variant="outline" className="shrink-0 text-[11px] leading-4 px-1.5 py-0 h-[18px] font-normal">最新版本</Badge>
+        <DrawerBody>
+          <div className="space-y-6 p-4">
+            {showPushableOnly ? (
+              pushableList.length > 0 ? (
+                <div className="rounded-[4px] border border-[var(--alert-info-border)] bg-[var(--alert-info-bg)] px-3 py-2.5 text-[var(--alert-info-foreground)]">
+                  <div className="flex items-center gap-2">
+                    <Bell className="size-4 shrink-0 text-[var(--alert-info-icon)]" />
+                    <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                      <MetaText as="p" tone="inherit" className="min-w-0 flex-1 leading-relaxed">
+                        当前有 <MetaMedium as="span" tone="inherit" className="tabular-nums">{pushableList.length}</MetaMedium> 个镜像可推送新版本，<MetaMedium as="span" tone="inherit" className="tabular-nums">{pushedPushableCount}</MetaMedium> 个已提醒员工
+                      </MetaText>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {!allPushablePushed && (
+                          <MetaText
+                            as="button"
+                            type="button"
+                            tone="brand"
+                            onClick={handlePushAll}
+                            className="inline-flex items-center gap-1 whitespace-nowrap"
+                          >
+                            一键推送
+                          </MetaText>
+                        )}
+                        {allPushablePushed && (
+                          <Button
+                            type="button"
+                            variant="link-dark"
+                            onClick={handleRevokeAll}
+                            className="inline-flex items-center gap-1 whitespace-nowrap text-xs"
+                          >
+                            全部撤回
+                          </Button>
                         )}
                       </div>
-
-                      {/* 第二行：版本号 */}
-                      <div className="text-base font-semibold text-[#0A0A0A] mt-1.5">
-                        {formatVersion(r.version)}
-                      </div>
-
-                      {/* 第三行：所属 Agent 类型 | 镜像 ID | 发布日期 */}
-                      <div className="flex items-center gap-2 mt-1 flex-wrap text-[11px] text-[#737373]">
-                        <span>
-                          属于 <span className="font-medium">{r.agentTypeLabel}</span>
-                        </span>
-                        <span className="text-gray-200">|</span>
-                        <span className="font-mono">{r.imageId}</span>
-                        <span className="text-gray-200">|</span>
-                        <span>{r.releaseDate}</span>
-                      </div>
-
-                      {/* 第四行：发布说明（合并自原"版本更新记录"弹窗的 description） */}
-                      {r.description ? (
-                        <p className="text-[11px] text-[#525252] mt-1.5 leading-relaxed">
-                          {r.description}
-                        </p>
-                      ) : (
-                        <div className="text-[11px] text-[#A3A3A3] mt-1.5 leading-relaxed italic">
-                          {isFirstRelease
-                            ? "镜像首次上线"
-                            : `更新到 ${formatVersion(r.version)} 版本`}
-                        </div>
-                      )}
-
-                      {push ? (
-                        <div className="mt-2 flex items-center gap-2 flex-wrap">
-                          <span className="inline-flex items-center gap-1 text-[10px] text-[#1447E6]">
-                            <Megaphone className="w-2.5 h-2.5" />
-                            正在提醒员工更新此版本
-                          </span>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <button
-                                onClick={() => handleRevoke(push)}
-                                className="inline-flex items-center gap-0.5 text-[10px] text-[#737373] hover:text-red-500 transition-colors"
-                              >
-                                <RotateCcw className="w-2.5 h-2.5" />
-                                撤回
-                              </button>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs max-w-[220px]">
-                              撤回后用户端的"可更新"徽章将立即消失
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      ) : isLatestOfImage ? (
-                        <div className="mt-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <SmallIconStateButton
-                                icon={Megaphone}
-                                label={`推送 ${r.agentTypeLabel} 最新版本`}
-                                onClick={() => handleDirectPush(r)}
-                                className="h-5 px-1.5 text-[10px] gap-1 [&_svg]:w-2.5 [&_svg]:h-2.5"
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="text-xs max-w-[280px] leading-relaxed">
-                              <div>点击后将直接推送该版本更新提醒给员工。</div>
-                              {(() => {
-                                const p = pushable.find((it) => it.agentType === r.agentType);
-                                const outdated = p?.outdatedInstanceCount ?? 0;
-                                return (
-                                  <div className="mt-1">
-                                    推送后，{r.agentTypeLabel} 下共 {outdated} 个旧版本 Agent，将在用户端收到更新提醒。
-                                  </div>
-                                );
-                              })()}
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      ) : null}
                     </div>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-[4px] border border-dashed border-[#D8DEE8] bg-background px-4 py-6 text-center">
+                  <PanelTitle as="div">当前没有可推送的新版本</PanelTitle>
+                  <BodyText as="div" tone="secondary" className="mt-1">
+                    所有用户可见镜像都已经是最新版本，或暂无可在员工端触达的升级提醒。
+                  </BodyText>
+                </div>
+              )
+            ) : (
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <MetaMedium as="div" tone="muted">Agent 类型</MetaMedium>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setFilter({ kind: "all", value: "" })}
+                      className={`inline-flex h-7 items-center rounded-[4px] border px-2.5 transition-colors ${
+                        filter.kind === "all"
+                          ? "border-gray-900 bg-background text-gray-900"
+                          : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                      }`}
+                    >
+                      <MetaMedium as="span" className="text-inherit">全部</MetaMedium>
+                    </button>
+                    {types.map((t) => {
+                      const isActive =
+                        (filter.kind === "type" && filter.value === t.agentType)
+                        || (filter.kind === "image"
+                          && records.find((r) => r.imageId === filter.value)?.agentType === t.agentType);
 
+                      return (
+                        <button
+                          key={t.agentType}
+                          type="button"
+                          onClick={() => setFilter({ kind: "type", value: t.agentType })}
+                          className={`inline-flex h-7 items-center rounded-[4px] border px-2.5 transition-colors ${
+                            isActive
+                              ? "border-gray-900 bg-background text-gray-900"
+                              : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                          }`}
+                        >
+                          <MetaMedium as="span" className="text-inherit">{t.label}</MetaMedium>
+                          <MetaText as="span" className="ml-1 tabular-nums text-inherit opacity-75">
+                            {imagesByType.get(t.agentType)?.length ?? 0} 镜像
+                          </MetaText>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-      </SheetContent>
-    </Sheet>
+                {imageOptionsForActiveType.length > 0 && (
+                  <div className="space-y-1.5">
+                    <MetaMedium as="div" tone="muted">镜像</MetaMedium>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setFilter({ kind: "type", value: activeTypeForImageFilter })}
+                        className={`inline-flex h-7 items-center rounded-[4px] border px-2.5 transition-colors ${
+                          filter.kind === "type"
+                            ? "border-gray-900 bg-background text-gray-900"
+                            : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                        }`}
+                      >
+                        <MetaMedium as="span" className="text-inherit">全部镜像</MetaMedium>
+                      </button>
+                      {imageOptionsForActiveType.map((img) => {
+                        const c = getAgentTypeColor(activeTypeForImageFilter);
+                        const isActive = filter.kind === "image" && filter.value === img.imageId;
+
+                        return (
+                          <button
+                            key={img.imageId}
+                            type="button"
+                            onClick={() => setFilter({ kind: "image", value: img.imageId })}
+                            className={`inline-flex h-7 items-center gap-1.5 rounded-[4px] border px-2.5 transition-colors ${
+                              isActive
+                                ? "border-gray-900 bg-background text-gray-900"
+                                : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                            }`}
+                          >
+                            <span className={`size-1.5 rounded-full ${c.dot}`} />
+                            <MetaText as="span" className="max-w-[180px] truncate text-inherit">{img.imageName}</MetaText>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <MetaText as="div" tone="muted">共 {filtered.length} 条记录</MetaText>
+
+              {filtered.length === 0 ? (
+                <div className="rounded-[4px] border border-dashed border-[#D8DEE8] bg-background px-4 py-8 text-center">
+                  <PanelTitle as="div">暂无更新记录</PanelTitle>
+                  <BodyText as="div" tone="secondary" className="mt-1">
+                    当前筛选条件下没有匹配到镜像更新版本，可以切换筛选范围后再看。
+                  </BodyText>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div aria-hidden className="absolute bottom-3 left-[11px] top-3 w-px bg-[#E5E5E5]" />
+                  <ol className="space-y-3">
+                    {filtered.map((r, idx) => {
+                      const push = findPush(r);
+                      const isFirstRelease = r.type === "firstRelease";
+                      const isLatestOfImage = latestIdxPerImage.get(r.imageId) === idx;
+                      const c = getAgentTypeColor(r.agentType);
+                      const typePushable = pushable.find((it) => it.agentType === r.agentType);
+                      const outdatedCount = typePushable?.outdatedInstanceCount ?? 0;
+
+                      return (
+                        <li key={`${r.imageId}-${r.version}-${r.releaseDate}-${idx}`} className="relative pl-8">
+                          <span
+                            aria-hidden
+                            className="absolute left-[3px] top-5 flex size-4 items-center justify-center rounded-full border border-[#E5E5E5] bg-background"
+                          >
+                            <span
+                              className={`size-1.5 rounded-full ${
+                                push
+                                  ? "bg-[var(--brand-blue)]"
+                                  : isFirstRelease
+                                    ? "bg-violet-500"
+                                    : "bg-[#D0D5DD]"
+                              }`}
+                            />
+                          </span>
+
+                          <div
+                            className={`rounded-[4px] border p-5 transition-colors ${
+                              push
+                                ? "border-[#C7D7FE] bg-[#F5F8FF]"
+                                : "border-[#E5E5E5] bg-background"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0 space-y-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <StatusTag
+                                        mode="soft"
+                                        variant={c.variant}
+                                        icon={<Disc3 />}
+                                        className="max-w-full justify-start"
+                                      >
+                                        <span className="max-w-[210px] truncate">
+                                          {r.imageName}
+                                        </span>
+                                      </StatusTag>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="top" className="max-w-[260px] text-xs">
+                                      <BodyMedium as="div" tone="inherit">{r.imageName}</BodyMedium>
+                                      <CodeText tone="inherit" className="mt-1 block opacity-80">{r.imageId}</CodeText>
+                                      <MetaText as="div" tone="inherit" className="mt-1 opacity-80">
+                                        所属 Agent 类型：{r.agentTypeLabel}
+                                      </MetaText>
+                                    </TooltipContent>
+                                  </Tooltip>
+
+                                  {isLatestOfImage && !isFirstRelease && (
+                                    <StatusTag mode="soft" variant="gray">
+                                      最新版本
+                                    </StatusTag>
+                                  )}
+
+                                </div>
+
+                                <div className="space-y-1">
+                                  <PanelTitle as="div" className="leading-6">
+                                    {formatVersion(r.version)}
+                                  </PanelTitle>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <MetaText as="span" tone="muted">
+                                      属于 <MetaText as="span" tone="muted">{r.agentTypeLabel}</MetaText>
+                                    </MetaText>
+                                    <MetaText as="span" tone="weak">|</MetaText>
+                                    <CodeText tone="muted">{r.imageId}</CodeText>
+                                    <MetaText as="span" tone="weak">|</MetaText>
+                                    <MetaText as="span" tone="muted">{r.releaseDate} 更新</MetaText>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {r.description ? (
+                              <MiniBodyText as="p" tone="secondary" className="mt-3 leading-relaxed">
+                                {r.description}
+                              </MiniBodyText>
+                            ) : (
+                              <MetaText as="div" tone="weak" className="mt-3 italic leading-relaxed">
+                                {isFirstRelease ? "镜像首次上线" : `更新到 ${formatVersion(r.version)} 版本`}
+                              </MetaText>
+                            )}
+
+                            {push ? (
+                              <div className="mt-4 flex items-center justify-start gap-2">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleRevoke(push)}
+                                      className="h-7 w-fit px-2.5 text-xs has-[>svg]:px-2.5"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 256 256"
+                                        className="size-3.5 fill-current"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M244,56v48a12,12,0,0,1-12,12H184a12,12,0,1,1,0-24H201.1l-19-17.38c-.13-.12-.26-.24-.38-.37A76,76,0,1,0,127,204h1a75.53,75.53,0,0,0,52.15-20.72,12,12,0,0,1,16.49,17.45A99.45,99.45,0,0,1,128,228h-1.37A100,100,0,1,1,198.51,57.06L220,76.72V56a12,12,0,0,1,24,0Z" />
+                                      </svg>
+                                      撤回
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="text-xs max-w-[220px]">
+                                    撤回后用户端的“可更新”徽章会立即消失。
+                                  </TooltipContent>
+                                </Tooltip>
+                                <MetaText as="span" tone="brand" className="font-medium">
+                                  正在提醒员工更新
+                                </MetaText>
+                              </div>
+                            ) : isLatestOfImage ? (
+                              <div className="mt-4 flex justify-start">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDirectPush(r)}
+                                      className="h-7 w-fit px-2.5 text-xs has-[>svg]:px-2.5"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 256 256"
+                                        className="size-3.5 fill-current"
+                                        aria-hidden="true"
+                                      >
+                                        <path d="M229.7,82.84l-175.94-54-.16-.05A20,20,0,0,0,28,48V192a20,20,0,0,0,19.94,20,20.38,20.38,0,0,0,5.66-.81l.16,0,78.24-24V196a20,20,0,0,0,20,20h32a20,20,0,0,0,20-20V165.06l25.7-7.89A20.1,20.1,0,0,0,244,138V102A20.1,20.1,0,0,0,229.7,82.84ZM52,186.58V53.43L132,78V162ZM180,192H156V179.78l24-7.36Zm40-56.95-64,19.63V85.33L220,105Z" />
+                                      </svg>
+                                      推送 {r.agentTypeLabel} 最新版本
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
+                                    <BodyText as="div" tone="inherit">点击后将直接推送该版本更新提醒给员工。</BodyText>
+                                    <BodyText as="div" tone="inherit" className="mt-1 opacity-80">
+                                      推送后，{r.agentTypeLabel} 下共 {outdatedCount} 个旧版本 Agent，将在用户端收到更新提醒。
+                                    </BodyText>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              )}
+            </div>
+          </div>
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
   );
 }

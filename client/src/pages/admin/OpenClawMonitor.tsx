@@ -2565,7 +2565,7 @@ export default function AgentMonitor() {
           }
         }}
       >
-        <AlertDialogContent className="sm:max-w-[560px]">
+        <AlertDialogContent className="gap-0 overflow-hidden rounded-[12px] p-0 sm:max-w-[560px]" showCloseButton={false}>
           <button
             type="button"
             aria-label="关闭"
@@ -2573,30 +2573,32 @@ export default function AgentMonitor() {
               setShowBatchDeleteDialog(false);
               setBatchDeleteInput("");
             }}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+            className="absolute top-5 right-5 z-10 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
           >
             <X className="size-5" />
             <span className="sr-only">关闭</span>
           </button>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">批量删除</AlertDialogTitle>
+          <AlertDialogHeader className="gap-1.5 px-6 pt-6 pb-4">
+            <AlertDialogTitle asChild>
+              <PanelTitle>批量删除</PanelTitle>
+            </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <p className="text-sm text-[#525252]">
-                此操作不可撤销。共 <span className="font-semibold text-[#0A0A0A] tabular-nums">{selectedCount}</span> 个
-                <span className="text-[#DC2626] font-medium">
-                  实例及相关数据将被永久删除，已配置的模型、通道和插件将全部清除且无法恢复
-                </span>
-                。
-              </p>
+              <BodyText tone="secondary">此操作不可撤销，请再次确认删除范围与影响。</BodyText>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5 px-6 pb-6">
+            <Alert variant="warning" className="items-start [&>svg]:translate-y-[1px]">
+              <CircleAlert />
+              <AlertDescription>
+                <p>将永久删除 <MetaMedium as="span" tone="inherit" className="tabular-nums">{selectedCount}</MetaMedium> 个实例，以及相关模型、通道和插件配置，且无法恢复。</p>
+              </AlertDescription>
+            </Alert>
             {selectedCount > 0 && (
-              <div className="space-y-3">
-                <label className="text-[14px] font-medium text-[#0A0A0A]">
+              <div className="space-y-2">
+                <BodyText as="div">
                   待删除实例（<span className="tabular-nums">{selectedCount}</span> 个）
-                </label>
-                <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+                </BodyText>
+                <div className="overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
                   <div className="max-h-[260px] overflow-y-auto scrollbar-on-hover">
                     <Table density="compact">
                       <TableHeader>
@@ -2609,13 +2611,13 @@ export default function AgentMonitor() {
                         {selectedClaws.map((c) => (
                           <TableRow key={c.id}>
                             <TableCell className="whitespace-normal">
-                              <div className="min-w-0">
-                                <div className="text-sm text-[#0A0A0A] break-words">{c.name}</div>
-                                <div className="font-mono text-xs text-[#A3A3A3] break-all">{c.instanceId}</div>
+                              <div className="min-w-0 space-y-0.5 py-0.5">
+                                <MiniBodyText as="div" className="break-words">{c.name}</MiniBodyText>
+                                <CodeText tone="weak" className="break-all">{c.instanceId}</CodeText>
                               </div>
                             </TableCell>
                             <TableCell className="whitespace-normal">
-                              <span className="text-xs text-[#334155] break-words">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
+                              <MetaText as="span" tone="secondary" className="break-words">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</MetaText>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -2625,18 +2627,23 @@ export default function AgentMonitor() {
                 </div>
               </div>
             )}
-            <div className="space-y-3">
-              <label className="text-[14px] font-medium text-[#0A0A0A]">请输入「删除」以确认</label>
+            <div className="space-y-2">
+              <BodyText as="label" htmlFor="batch-delete-confirm-input" className="block">
+                请输入「删除」以确认
+              </BodyText>
               <Input
+                id="batch-delete-confirm-input"
                 value={batchDeleteInput}
                 onChange={(e) => setBatchDeleteInput(e.target.value)}
                 placeholder="输入「删除」"
                 autoFocus
               />
+              <MetaText as="p">输入正确后才可执行删除。</MetaText>
             </div>
           </div>
-          <AlertDialogFooter>
+          <AlertDialogFooter className="gap-2 justify-end border-t border-[#F0F0F0] px-6 pt-4 pb-4">
             <AlertDialogCancel
+              className="h-9 px-6"
               onClick={() => {
                 setShowBatchDeleteDialog(false);
                 setBatchDeleteInput("");
@@ -2645,7 +2652,7 @@ export default function AgentMonitor() {
               取消
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="h-9 px-6"
               disabled={batchDeleteInput !== "删除" || selectedCount === 0}
               onClick={() => {
                 setClaws((prev) => prev.filter((c) => !selectedIds.has(c.id)));
@@ -2665,78 +2672,82 @@ export default function AgentMonitor() {
       {/* 批量更新确认弹窗 */}
       <Dialog open={showBatchUpgradeDialog} onOpenChange={setShowBatchUpgradeDialog}>
         <DialogContent className="rounded-[4px] sm:max-w-[680px]">
-          <DialogHeader className="pb-5">
+          <DialogHeader className="pb-4">
             <DialogTitle className="text-[16px] font-semibold text-[#0A0A0A]">批量更新</DialogTitle>
-            <DialogDescription className="text-xs leading-[1.5] text-[#737373]">
+            <DialogDescription>
               将 <span className="font-din font-bold tabular-nums text-[#020617]">{selectedIds.size}</span> 个实例更新至当前用户可见镜像版本。
             </DialogDescription>
           </DialogHeader>
-          <Alert variant="warning" className="border-0 bg-[#FFF7ED] px-4 py-3">
-            <CircleAlert />
-            <AlertDescription className="space-y-1.5">
-              <p>更新预计需要 5～10 分钟，期间 Agent 实例不可使用。</p>
-              <p>请先确认目标镜像已设为生效状态；更新后模型、通道、技能、记忆及用户个人数据不会丢失。</p>
-            </AlertDescription>
-          </Alert>
-          <div className="flex items-center justify-between pt-1">
-            <p className="text-sm font-medium text-[#0A0A0A]">待更新实例</p>
-            <p className="text-xs text-[#737373]">可移除不需要更新的实例</p>
-          </div>
-          <div className="max-h-[300px] overflow-y-auto scrollbar-on-hover">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-y border-[#F5F5F5]">
-                  <th className="sticky top-0 z-10 bg-white px-2 py-2.5 text-left text-xs font-medium text-[#737373]">实例</th>
-                  <th className="sticky top-0 z-10 bg-white px-3 py-2.5 text-left text-xs font-medium text-[#737373]">Agent 类型</th>
-                  <th className="sticky top-0 z-10 bg-white px-3 py-2.5 text-left text-xs font-medium text-[#737373]">版本</th>
-                  <th className="sticky top-0 z-10 bg-white px-3 py-2.5 text-left text-xs font-medium text-[#737373]">状态</th>
-                  <th className="sticky top-0 z-10 bg-white px-2 py-2.5 text-right text-xs font-medium text-[#737373]">操作</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F5F5F5]">
-                {claws.filter(c => selectedIds.has(c.id)).map(c => {
-                  const sc = STATUS_CONFIG[c.status];
-                  return (
-                    <tr key={c.id} className="transition-colors hover:bg-[#FAFAFA]">
-                      <td className="py-3 pl-2 pr-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#EFF6FF] text-[#1447E6]">
-                            <span className="font-din text-xs font-bold">{c.agentType.slice(0, 1)}</span>
-                          </div>
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-medium text-[#0A0A0A]">{c.name}</div>
+
+          <div className="space-y-4">
+            <Alert variant="warning" className="items-start bg-[#FFF7ED] px-3 py-2.5 [&>svg]:translate-y-[1px]">
+              <CircleAlert />
+              <AlertDescription>
+                <p>更新预计需要 5～10 分钟，期间 Agent 实例不可使用。</p>
+                <p>请先确认目标镜像已设为生效状态；更新后模型、通道、技能、记忆及用户个人数据不会丢失。</p>
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <BodyText as="p" tone="secondary">待更新实例</BodyText>
+                <MetaText as="p">可移除不需要更新的实例</MetaText>
+              </div>
+
+              <Table
+                density="compact"
+                containerClassName="max-h-[300px] overflow-y-auto rounded-[4px] border border-[#E5E5E5] scrollbar-on-hover"
+              >
+                <TableHeader className="bg-[#FAFAFA]">
+                  <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">实例</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">Agent 类型</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">版本</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">状态</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {claws.filter(c => selectedIds.has(c.id)).map(c => {
+                    const sc = STATUS_CONFIG[c.status];
+                    return (
+                      <TableRow key={c.id} className="border-[#F0F0F0] hover:bg-[#FAFAFA]">
+                        <TableCell className="h-[52px] min-w-[180px] max-w-[260px] py-2.5 text-center">
+                          <div className="mx-auto min-w-0 max-w-full text-left">
+                            <div className="truncate text-xs font-medium text-[#0A0A0A]">{c.name}</div>
                             <div className="font-mono text-xs text-[#A3A3A3]">{c.instanceId}</div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="text-xs text-[#334155]">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="font-mono text-xs text-[#334155]">{c.version}</span>
-                      </td>
-                      <td className="px-3 py-3">
-                        <StatusTag mode="dot" variant={sc.tagVariant}>
-                          {sc.label}
-                        </StatusTag>
-                      </td>
-                      <td className="py-3 pl-3 pr-2 text-right">
-                        <button
-                          onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })}
-                          className="whitespace-nowrap text-xs text-[#737373] transition-colors hover:text-red-600"
-                        >
-                          移除
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </TableCell>
+                        <TableCell className="h-[52px] py-2.5 text-center">
+                          <span className="text-xs text-[#334155]">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
+                        </TableCell>
+                        <TableCell className="h-[52px] py-2.5 text-center">
+                          <span className="font-mono text-xs text-[#334155]">{c.version}</span>
+                        </TableCell>
+                        <TableCell className="h-[52px] py-2.5 text-center">
+                          <StatusTag mode="dot" variant={sc.tagVariant}>
+                            {sc.label}
+                          </StatusTag>
+                        </TableCell>
+                        <TableActionCell rawChildren className="h-[52px] py-2.5 text-center">
+                          <button
+                            onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })}
+                            className="whitespace-nowrap text-xs text-[#737373] transition-colors hover:text-red-600"
+                          >
+                            移除
+                          </button>
+                        </TableActionCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-          <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
-            <Button variant="dialog-confirm" onClick={confirmBatchUpgrade}>
+
+          <DialogFooter className="gap-2">
+            <Button variant="claw-outline" size="claw-sm" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
+            <Button variant="dialog-confirm" size="claw-sm" onClick={confirmBatchUpgrade}>
               确认更新
             </Button>
           </DialogFooter>

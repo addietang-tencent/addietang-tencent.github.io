@@ -499,7 +499,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                                         mode="soft"
                                         variant={c.variant}
                                         icon={<Disc3 />}
-                                        className="max-w-full justify-start"
+                                        className="max-w-full justify-start rounded-full"
                                       >
                                         <span className="max-w-[210px] truncate">
                                           {r.imageName}
@@ -516,7 +516,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                                   </Tooltip>
 
                                   {isLatestOfImage && !isFirstRelease && (
-                                    <StatusTag mode="soft" variant="gray">
+                                    <StatusTag mode="soft" variant="gray" className="rounded-full">
                                       最新版本
                                     </StatusTag>
                                   )}

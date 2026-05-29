@@ -25,12 +25,12 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Stepper } from "@/components/ui/stepper";
 import { Card } from "@/components/ui/card";
+import { SurfaceInner } from "@/components/ui/Surface";
 import { toast } from "sonner";
 import {
   Info,
   Plus,
   Trash2,
-  CheckCircle,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -474,7 +474,7 @@ export default function AuthSourceImportDialog({
       <div
         role="radiogroup"
         aria-label="选择数据源"
-        className="grid grid-cols-3 gap-4"
+        className="grid grid-cols-2 gap-3"
       >
         {AUTH_SOURCES.map((source) => {
           const isSelected = selectedSource === source.id;
@@ -491,28 +491,29 @@ export default function AuthSourceImportDialog({
                   handleSelectSource(source.id);
                 }
               }}
-              className={`flex flex-col items-center text-center p-5 gap-0 cursor-pointer transition-all duration-200 outline-none ${
+              className={`flex flex-row items-center text-left gap-3 px-3 py-3 cursor-pointer transition-colors duration-200 outline-none rounded-[4px] ${
                 isSelected
-                  ? "border-[#1447E6] bg-[#EFF6FF] ring-1 ring-[#1447E6]"
-                  : "hover:border-[#1447E6] hover:bg-[#EFF6FF]/30"
+                  ? "border-[#1447E6] bg-[#1447E6]/5"
+                  : "hover:border-[#1447E6]/40"
               }`}
             >
-              {/* 图标（logo 36×36） */}
-              <div className="w-12 h-12 rounded-[4px] bg-white border border-[#E5E5E5] flex items-center justify-center mb-3 overflow-hidden">
+              {/* 图标（左侧 logo 28×28 容器 40×40） */}
+              <div className="w-10 h-10 rounded-[4px] bg-white border border-[#E5E5E5] flex items-center justify-center shrink-0 overflow-hidden">
                 <img
                   src={source.iconUrl}
                   alt={source.name}
-                  className="w-9 h-9 object-contain"
+                  className="w-7 h-7 object-contain"
                 />
               </div>
-              {/* 名称 */}
-              <p className="text-sm font-semibold text-[#0A0A0A] mb-1">
-                {source.name}
-              </p>
-              {/* 描述 */}
-              <p className="text-xs text-[#737373] leading-relaxed">
-                {source.description}
-              </p>
+              {/* 名称 + 描述（右侧左对齐） */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#0A0A0A] mb-0.5 leading-snug truncate">
+                  {source.name}
+                </p>
+                <p className="text-xs text-[#737373] leading-relaxed truncate">
+                  {source.description}
+                </p>
+              </div>
             </Card>
           );
         })}
@@ -751,7 +752,7 @@ export default function AuthSourceImportDialog({
             部门映射
             <span className="text-red-500">*</span>
           </Label>
-          <div className="pl-4 space-y-2">
+          <SurfaceInner className="p-4 space-y-2">
             {/* 表头 */}
             <div className="grid grid-cols-[1fr_40px_1fr_36px] gap-2 items-center">
               <span className="text-xs font-semibold text-[#737373]">{currentSource.name}部门</span>
@@ -793,7 +794,7 @@ export default function AuthSourceImportDialog({
                 <span className="w-8 h-8" />
               </div>
             ))}
-          </div>
+          </SurfaceInner>
         </div>
 
         {/* 成员映射 */}
@@ -802,7 +803,7 @@ export default function AuthSourceImportDialog({
             成员映射
             <span className="text-red-500">*</span>
           </Label>
-          <div className="pl-4 space-y-2">
+          <SurfaceInner className="p-4 space-y-2">
             {/* 表头 */}
             <div className="grid grid-cols-[1fr_40px_1fr_36px] gap-2 items-center">
               <span className="text-xs font-semibold text-[#737373]">{currentSource.name}成员</span>
@@ -880,7 +881,7 @@ export default function AuthSourceImportDialog({
               <Plus className="w-3.5 h-3.5" />
               添加映射
             </button>
-          </div>
+          </SurfaceInner>
         </div>
       </div>
     );
@@ -888,12 +889,7 @@ export default function AuthSourceImportDialog({
 
   // ─── 步骤4：完成 ──────────────────────────────────────────────────────────
   const renderStep4 = () => (
-    <div className="flex flex-col items-center justify-center py-10">
-      <div
-        className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
-      >
-        <CheckCircle className="w-8 h-8 text-white" />
-      </div>
+    <div className="flex flex-col items-center justify-center h-full min-h-[320px] py-10">
       <h3 className="text-lg font-semibold text-[#0A0A0A] mb-2">数据源配置成功</h3>
       <p className="text-sm text-[#737373] text-center max-w-xs leading-relaxed">
         {currentSource?.name} 数据源已成功配置，系统将自动开始同步通讯录数据，预计需要几分钟时间。

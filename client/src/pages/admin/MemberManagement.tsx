@@ -693,7 +693,7 @@ function AddMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        
+        <p className="text-sm font-medium text-[#0A0A0A] mb-3">用户信息</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -1026,7 +1026,7 @@ function EditMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        
+        <p className="text-sm font-medium text-[#0A0A0A] mb-3">用户信息</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -1336,7 +1336,7 @@ function OneidEditMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        
+        <p className="text-sm font-medium text-[#0A0A0A] mb-3">用户信息</p>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -2503,12 +2503,12 @@ export default function MemberManagement() {
             )}
             {/* 搜索框 */}
             <div className="relative w-[260px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3] pointer-events-none" />
               <Input
                 placeholder="搜索用户 ID..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="pl-9 bg-white border-[#e5e5e5]"
+                className="pl-9 h-9"
               />
             </div>
             {/* 清除筛选按钮 - 当有任何筛选条件时显示 */}
@@ -4385,10 +4385,13 @@ export default function MemberManagement() {
                 </div>
               </div>
             )}
-            <div className="rounded-[4px] bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-1.5">
-              <p className="font-medium">确定要删除该数据源吗？</p>
-              <p className="text-xs text-red-500 leading-relaxed">删除后，通过该数据源同步的用户数据将不再自动更新，已同步的用户不受影响。</p>
-            </div>
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <AlertCircle className="size-4" />
+              <AlertTitle>确定要删除该数据源吗？</AlertTitle>
+              <AlertDescription>
+                删除后，通过该数据源同步的用户数据将不再自动更新，已同步的用户不受影响。
+              </AlertDescription>
+            </Alert>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteAuthSourceConfirm(null)}>取消</Button>

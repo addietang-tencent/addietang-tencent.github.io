@@ -9,13 +9,14 @@ interface BenchmarkSectionProps {
 export const BenchmarkSection: React.FC<BenchmarkSectionProps> = () => {
   return (
     <div
-      className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+      className="bg-white rounded-xl border border-gray-100 overflow-hidden"
+      style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
     >
       {/* 标题栏 — 常驻展开，不可折叠 */}
       <div className="px-5 py-4 flex items-center gap-2">
         <span className="text-lg">📈</span>
-        <h3 className="font-semibold text-[#0A0A0A]">记忆效果对比</h3>
-        <span className="text-xs text-[#A3A3A3]">基于 PersonaMem 数据集评测</span>
+        <h3 className="font-semibold text-gray-900">记忆效果对比</h3>
+        <span className="text-xs text-gray-400">基于 PersonaMem 数据集评测</span>
       </div>
 
       {/* 内容区 — 常驻展示 */}

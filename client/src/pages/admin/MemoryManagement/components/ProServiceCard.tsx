@@ -13,8 +13,6 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { SurfaceCard } from '@/components/ui/Surface';
 import {
   Tooltip,
   TooltipContent,
@@ -134,7 +132,7 @@ function DimensionRow({
               style={{ background: '#d0d0e0', width: `${data.native}%` }}
             />
           </div>
-          <span className="text-[11px] font-mono text-[#A3A3A3] w-[34px] text-right flex-shrink-0">
+          <span className="text-[11px] font-mono text-gray-400 w-[34px] text-right flex-shrink-0">
             {data.native.toFixed(0)}%
           </span>
         </div>
@@ -262,7 +260,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
   const proFeatures: { icon: React.ElementType; color: string; bgColor: string; title: string; desc: string; tag?: string }[] = [
     {
       icon: Search,
-      color: 'text-[#355EF1]',
+      color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       title: '混合双路检索',
       desc: '融合"关键字 + 向量语义"双路召回，精准捕获深层关联，让 Agent 的回答更精准、更具洞察力',
@@ -288,11 +286,11 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
     return (
       <TooltipProvider>
         <div
-          className={`rounded-xl overflow-hidden flex flex-col mb-5 ${disabled ? 'opacity-60' : ''}`}
+          className={`rounded-2xl overflow-hidden flex flex-col mb-5 ${disabled ? 'opacity-60' : ''}`}
           style={{
             background: '#ffffff',
             border: '1.5px solid rgba(59,130,246,0.15)',
-            boxShadow: '0 1px 3px rgba(59,130,246,0.06), 0 4px 16px rgba(59,130,246,0.08)', // allow-shadow: Pro 版未开通态促销卡，强调蓝色阴影
+            boxShadow: '0 1px 3px rgba(59,130,246,0.06), 0 4px 16px rgba(59,130,246,0.08)',
           }}
         >
           {/* ====== 头部：蓝色渐变背景 + 左侧文案 + 右侧即刻开通按钮 ====== */}
@@ -317,7 +315,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                         免费体验中
                       </span>
                     </div>
-                    <p className="text-[#355EF1] text-sm mt-0.5">
+                    <p className="text-blue-100 text-sm mt-0.5">
                       基于腾讯云向量数据库的企业级记忆服务，接入腾讯云向量数据库与内置 Embedding 能力，实现语义级记忆检索与企业级数据管理。
                     </p>
                   </div>
@@ -333,7 +331,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                         <span className="cursor-not-allowed">
                           <button
                             disabled
-                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-[#355EF1] bg-white opacity-50 cursor-not-allowed flex-shrink-0"
+                            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-blue-600 bg-white opacity-50 cursor-not-allowed flex-shrink-0"
                           >
                             <Sparkles className="w-4 h-4" />
                             立即开通
@@ -347,7 +345,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                   ) : (
                     <button
                       onClick={() => setActivationDialogOpen(true)}
-                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-[#355EF1] bg-white transition-all hover:shadow-lg hover:shadow-blue-400/30 hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-blue-600 bg-white transition-all hover:shadow-lg hover:shadow-blue-400/30 hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
                     >
                       <Sparkles className="w-4 h-4" />
                       立即开通
@@ -357,7 +355,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 {isInitializing && (
                   <button
                     disabled
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-[#355EF1] bg-white opacity-80 cursor-not-allowed flex-shrink-0"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-blue-600 bg-white opacity-80 cursor-not-allowed flex-shrink-0"
                   >
                     <Loader2 className="w-4 h-4 animate-spin" />
                     开通中...
@@ -366,7 +364,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 {isError && (
                   <button
                     onClick={onRetry}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-red-400/20 hover:scale-[1.02] active:scale-[0.98] flex-shrink-0 bg-red-500 hover:bg-red-600"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-red-400/20 hover:scale-[1.02] active:scale-[0.98] flex-shrink-0 bg-red-500 hover:bg-red-600"
                   >
                     <RotateCcw className="w-4 h-4" />
                     重试开通
@@ -380,8 +378,8 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
           <div className="px-6 py-5 flex-1 flex flex-col bg-white">
             {/* 记忆效果对比标题 */}
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-sm font-semibold text-[#0A0A0A]">记忆效果对比</span>
-              <span className="text-[11px] text-[#A3A3A3]">基于 PersonaMem 评测集</span>
+              <span className="text-sm font-semibold text-gray-900">记忆效果对比</span>
+              <span className="text-[11px] text-gray-400">基于 PersonaMem 评测集</span>
             </div>
 
             {/* 上半部分：雷达图区 + 维度对比 并排 */}
@@ -394,14 +392,14 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 <div className="flex items-center gap-5 mt-3">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 rounded-full bg-gray-300" />
-                    <span className="text-xs text-[#A3A3A3]">Agent 原生</span>
+                    <span className="text-xs text-gray-400">Agent 原生</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div
                       className="w-2.5 h-2.5 rounded-full"
                       style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}
                     />
-                    <span className="text-xs text-[#A3A3A3]">Memory Pro 版</span>
+                    <span className="text-xs text-gray-400">Memory Pro 版</span>
                   </div>
                 </div>
 
@@ -417,7 +415,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                       <motion.p
                         animate={{ opacity: [0.4, 0.8, 0.4] }}
                         transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                        className="text-xs text-[#355EF1]"
+                        className="text-xs text-blue-400"
                       >
                         悬停雷达图查看对比详情
                       </motion.p>
@@ -431,16 +429,16 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 {/* 总分对比 Hero */}
                 <div className="flex items-center gap-4 mb-4">
                   {/* 原生分数 */}
-                  <div className="flex-1 text-center px-4 py-3 rounded-xl bg-gray-50 border border-[#e5e5e5]">
-                    <p className="text-xs text-[#A3A3A3] uppercase tracking-wide mb-1">Agent 原生</p>
-                    <p className="text-2xl font-bold text-[#A3A3A3] font-mono">
+                  <div className="flex-1 text-center px-4 py-3 rounded-xl bg-gray-50 border border-gray-100">
+                    <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Agent 原生</p>
+                    <p className="text-2xl font-bold text-gray-400 font-mono">
                       <AnimatedCounter value={TOTAL.native} delay={200} duration={1800} />
                     </p>
                   </div>
 
                   {/* VS */}
                   <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-[#A3A3A3]">VS</span>
+                    <span className="text-xs font-bold text-gray-400">VS</span>
                   </div>
 
                   {/* Pro 版分数 */}
@@ -484,17 +482,17 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
                 </div>
 
                 {/* 7 个维度对比 — 紧凑行内条形 */}
-                <div className="rounded-xl border border-[#e5e5e5] bg-gray-50/30 px-4 py-3">
+                <div className="rounded-lg border border-gray-100 bg-gray-50/30 px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wide">各维度记忆能力对比</p>
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">各维度记忆能力对比</p>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 rounded-full bg-gray-300" />
-                        <span className="text-[11px] text-[#A3A3A3]">原生</span>
+                        <span className="text-[11px] text-gray-400">原生</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 rounded-full" style={{ background: '#2563EB' }} />
-                        <span className="text-[11px] text-[#A3A3A3]">Pro 版</span>
+                        <span className="text-[11px] text-gray-400">Pro 版</span>
                       </div>
                     </div>
                   </div>
@@ -515,31 +513,31 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
 
             {/* 核心能力标题 + 卡片网格 — 雷达图下方 */}
             <div className="flex items-center gap-2 mb-3 mt-5">
-              <span className="text-sm font-semibold text-[#0A0A0A]">Pro 版核心能力</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-[#355EF1] font-semibold">全面升级</span>
+              <span className="text-sm font-semibold text-gray-900">Pro 版核心能力</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 font-semibold">全面升级</span>
             </div>
             <div className="grid grid-cols-4 gap-3">
               {proFeatures.map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-xl p-4 transition-all hover:shadow-sm"
+                  className="rounded-lg p-4 transition-all hover:shadow-sm"
                   style={{
                     border: '1px solid rgba(59,130,246,0.1)',
                     background: 'rgba(59,130,246,0.02)',
                   }}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-8 h-8 rounded-xl ${feature.bgColor} flex items-center justify-center flex-shrink-0`}>
+                    <div className={`w-8 h-8 rounded-lg ${feature.bgColor} flex items-center justify-center flex-shrink-0`}>
                       <feature.icon className={`w-4 h-4 ${feature.color}`} />
                     </div>
-                    <div className="font-medium text-sm text-[#0A0A0A]">{feature.title}</div>
+                    <div className="font-medium text-sm text-gray-900">{feature.title}</div>
                     {feature.tag && (
                       <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium border border-amber-100 whitespace-nowrap">
                         {feature.tag}
                       </span>
                     )}
                   </div>
-                  <div className="text-xs text-[#737373] leading-relaxed">{feature.desc}</div>
+                  <div className="text-xs text-gray-500 leading-relaxed">{feature.desc}</div>
                 </div>
               ))}
             </div>
@@ -549,7 +547,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
               <div className="mt-4 pt-4 border-t border-blue-100/40">
                 <div className="flex items-center">
                   {isInitializing && (
-                    <span className="text-sm text-[#737373]">正在初始化服务，请稍候...</span>
+                    <span className="text-sm text-gray-500">正在初始化服务，请稍候...</span>
                   )}
                   {isError && (
                     <span className="text-sm text-red-600">{errorMessage || '初始化失败，请重试'}</span>
@@ -572,17 +570,20 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
   // ==================== 已开通状态 ====================
   return (
     <TooltipProvider>
-      <SurfaceCard className="px-6 py-6 mb-5">
+      <div
+        className="bg-white rounded-xl border border-gray-100 px-6 py-6 mb-5"
+        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+      >
         {/* 状态提示条 */}
         {isInitializing && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 flex items-center gap-3 mb-4">
-            <Loader2 className="w-4 h-4 text-[#355EF1] animate-spin flex-shrink-0" />
-            <span className="text-sm text-[#355EF1]">Memory Pro 正在初始化中，预计需要几分钟...</span>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center gap-3 mb-4">
+            <Loader2 className="w-4 h-4 text-blue-500 animate-spin flex-shrink-0" />
+            <span className="text-sm text-blue-700">Memory Pro 正在初始化中，预计需要几分钟...</span>
           </div>
         )}
 
         {isError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 flex items-center justify-between mb-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
               <span className="text-sm text-red-700">{errorMessage || 'Memory Pro 初始化失败，请重试'}</span>
@@ -595,7 +596,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
         )}
 
         {showSuccessBanner && isActive && (
-          <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-2.5 flex items-center justify-between mb-4 animate-in fade-in duration-300">
+          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2.5 flex items-center justify-between mb-4 animate-in fade-in duration-300">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
               <span className="text-sm text-green-700">Memory Pro 已就绪</span>
@@ -609,24 +610,26 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
         {/* 头部 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
               <Gem className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-[#0A0A0A]">Memory Pro 服务</h3>
+                <h3 className="font-semibold text-gray-900">Memory Pro 服务</h3>
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-400 text-amber-900 tracking-wide">
-                  🎁 限时免费（至 6.15）
+                  🎁 限时免费（至 8.15）
                 </span>
-                <Badge color="blue">免费体验中</Badge>
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-blue-100 text-blue-600">
+                  免费体验中
+                </span>
                 {isInitializing && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-[#355EF1] rounded text-xs">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-600 rounded text-xs">
                     <Loader2 className="w-3 h-3 animate-spin" />
                     初始化中
                   </span>
                 )}
               </div>
-              <p className="text-sm text-[#737373] mt-0.5">
+              <p className="text-sm text-gray-500 mt-0.5">
                 基于腾讯云向量数据库的企业级记忆服务，统一管理所有 Agent 的记忆资源。
               </p>
             </div>
@@ -654,14 +657,14 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
         </div>
 
         {/* 分割线 */}
-        <div className="border-t border-[#e5e5e5] my-5" />
+        <div className="border-t border-gray-100 my-5" />
 
         {/* 额度信息 */}
         <div className="relative">
           {isInitializing && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
-              <div className="flex items-center gap-2 text-sm text-[#737373]">
-                <Loader2 className="w-4 h-4 animate-spin text-[#355EF1]" />
+            <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-lg z-10 flex items-center justify-center">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
                 <span>数据加载中...</span>
               </div>
             </div>
@@ -676,19 +679,19 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
           ) : (
             <>
               <div className="flex items-baseline gap-3 mb-3">
-                <span className="text-3xl font-bold text-[#355EF1] tracking-tight">
+                <span className="text-3xl font-bold text-blue-600 tracking-tight">
                   {formatNumber(proUsedCount)}/{formatNumber(purchasedSpaces)}
                 </span>
-                <span className="text-sm text-[#737373]">
-                  已分配 <strong className="text-[#334155]">{formatNumber(proUsedCount)}</strong> 个，
-                  剩余 <strong className="text-[#334155]">{formatNumber(purchasedSpaces - proUsedCount)}</strong> 个可分配
+                <span className="text-sm text-gray-500">
+                  已分配 <strong className="text-gray-700">{formatNumber(proUsedCount)}</strong> 个，
+                  剩余 <strong className="text-gray-700">{formatNumber(purchasedSpaces - proUsedCount)}</strong> 个可分配
                 </span>
               </div>
 
               <div className="mb-3">
                 <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-[#737373]">Pro 额度使用率</span>
-                  <span className="font-semibold text-[#355EF1]">{memoryAllocationPercent}%</span>
+                  <span className="text-gray-500">Pro 额度使用率</span>
+                  <span className="font-semibold text-blue-600">{memoryAllocationPercent}%</span>
                 </div>
                 <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -703,7 +706,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
               </div>
 
               {memoryAllocationPercent >= 80 && (
-                <div className={`px-3 py-2.5 rounded-xl text-xs flex items-center gap-2 mt-3 ${
+                <div className={`px-3 py-2.5 rounded-lg text-xs flex items-center gap-2 mt-3 ${
                   memoryAllocationPercent >= 100
                     ? 'bg-red-50 border border-red-100 text-red-700'
                     : 'bg-amber-50 border border-amber-100 text-amber-700'
@@ -733,7 +736,7 @@ export const ProServiceCard: React.FC<ProServiceCardProps> = ({
           ocCount={proUsedCount}
           onGoToInstanceList={onGoToInstanceList}
         />
-      </SurfaceCard>
+      </div>
     </TooltipProvider>
   );
 };

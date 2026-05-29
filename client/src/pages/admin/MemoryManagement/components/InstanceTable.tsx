@@ -9,10 +9,6 @@ import {
   X,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CircleAlert } from 'lucide-react';
-import { Pagination } from '@/components/ui/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import {
@@ -20,30 +16,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAdminMode } from '@/contexts/AdminModeContext';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  GroupColumnFilter,
+  GroupCell,
+  matchesGroupFilter,
+  getGroupsForMode,
+} from './GroupColumn';
 // 骨架屏组件
 const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
 
-// 骨架屏行组件 - 5列（复选框、名称/ID、创建人、Agent 类型、记忆管理）
+// 骨架屏行组件 - 6列（复选框、名称/ID、创建人、Agent 类型、分组、记忆管理）
 const SkeletonRow: React.FC = () => (
   <tr>
     <td className="w-12 px-4 py-4"><Skeleton className="w-4 h-4 rounded" /></td>
@@ -55,6 +41,7 @@ const SkeletonRow: React.FC = () => (
     </td>
     <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
     <td className="px-4 py-4"><Skeleton className="h-4 w-20" /></td>
+    <td className="px-4 py-4"><Skeleton className="h-4 w-24" /></td>
     <td className="px-6 py-4"><Skeleton className="h-8 w-48 rounded-full" /></td>
   </tr>
 );
@@ -182,7 +169,7 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
               <TooltipTrigger asChild>
                 <button
                   className={`relative z-10 flex-1 h-7 text-xs font-medium rounded-full transition-colors
-                    ${isActive ? 'text-white' : 'text-[#A3A3A3] cursor-not-allowed'}`}
+                    ${isActive ? 'text-white' : 'text-gray-400 cursor-not-allowed'}`}
                 >
                   {opt.label}
                 </button>
@@ -203,8 +190,8 @@ const TriStateSwitch: React.FC<TriStateSwitchProps> = ({
               ${isActive 
                 ? ((isTransitioning || isLocked) ? 'text-white/80' : 'text-white') 
                 : isDisabled 
-                  ? 'text-[#A3A3A3] cursor-not-allowed' 
-                  : 'text-[#737373] hover:text-[#0A0A0A]'
+                  ? 'text-gray-400 cursor-not-allowed' 
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             {isActive && (isTransitioning || isLocked) ? '' : opt.label}
@@ -293,8 +280,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [refreshing, setRefreshing] = useState(false);
-  
+  const [refreshing, setRefreshing] = useState(false);  
   // 批量选择状态
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // Gmail 风格：是否选择了全部（跨页）
@@ -311,6 +297,11 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
   const [dialogType, setDialogType] = useState<DialogType>('none');
   const [targetInstance, setTargetInstance] = useState<OcInstance | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // 分组列筛选（复用 Agent 列表 OpenClawMonitor 的同款交互）
+  const { hasOneid } = useAdminMode();
+  const [groupFilter, setGroupFilter] = useState('');
+  const [groupColFilterOpen, setGroupColFilterOpen] = useState(false);
 
   const PAGE_SIZE = 10;
 
@@ -340,10 +331,13 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
       } else {
         matchMemoryState = selectedMemoryStates.has('none');
       }
-      
-      return matchSearch && matchMemoryState;
+
+      // 分组筛选：creator 是否属于选中分组（含子孙分组）
+      const matchGroup = matchesGroupFilter(oc.creator, groupFilter, hasOneid);
+
+      return matchSearch && matchMemoryState && matchGroup;
     });
-  }, [instances, searchQuery, selectedMemoryStatesKey, selectedMemoryStates]);
+  }, [instances, searchQuery, selectedMemoryStatesKey, selectedMemoryStates, groupFilter, hasOneid]);
 
   const totalPages = Math.max(1, Math.ceil(filteredList.length / PAGE_SIZE));
   const paginatedList = filteredList.slice(
@@ -567,21 +561,25 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           title: '批量开启 Memory Free',
           content: (
             <div className="space-y-3">
-              <p className="text-[14px] text-[#020617] leading-relaxed">
-                即将为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Free 服务。开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。
+              <p className="text-gray-600 text-sm leading-relaxed">
+                即将为 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 开启 Memory Free 服务。
               </p>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <p className="text-blue-700 text-sm">开启后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
+              </div>
               {selectedInstances.length > count && (
-                <p className="text-[12px] text-[#737373]">
+                <p className="text-xs text-gray-500">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已开启记忆，将被跳过。
                 </p>
               )}
             </div>
           ),
           confirmText: '确认开启',
+          confirmClass: 'bg-blue-500 hover:bg-blue-600',
           confirmDisabled: false,
         };
       }
-
+      
       // 批量升级 Pro
       if (dialogType === 'batch-enable-pro') {
         const count = batchStats.enablePro.length;
@@ -590,33 +588,33 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           title: '开启 Memory Pro',
           content: (
             <div className="space-y-3">
-              <Alert variant="warning">
-                <CircleAlert />
-                <AlertDescription>开启 Pro 版后不支持回退到 Free 版</AlertDescription>
-              </Alert>
-              <p className="text-[14px] text-[#020617] leading-relaxed">
-                确认为 <span className="font-medium">{count}</span> 个 Agent 开启 Memory Pro 服务？
+              <p className="text-gray-600 text-sm leading-relaxed">
+                确认为 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 开启 Memory Pro 服务？
               </p>
               {fromFreeCount > 0 && (
-                <p className="text-[14px] text-[#020617] leading-relaxed">
+                <p className="text-gray-500 text-sm leading-relaxed">
                   其中 {fromFreeCount} 个 Agent 将从 Free 版升级，数据将自动迁移。
                 </p>
               )}
-              <p className="text-[14px] text-[#020617] leading-relaxed">
+              <p className="text-gray-500 text-sm leading-relaxed">
                 开启后将重启 Gateway 服务，届时会有短暂的服务中断。
               </p>
+              <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <p className="text-amber-700 text-sm">开启 Pro 版后不支持回退到 Free 版</p>
+              </div>
               {selectedInstances.length > count && (
-                <p className="text-[12px] text-[#737373]">
+                <p className="text-xs text-gray-500">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个已是 Pro 版，将被跳过。
                 </p>
               )}
             </div>
           ),
           confirmText: '确认开启',
+          confirmClass: 'bg-blue-500 hover:bg-blue-600',
           confirmDisabled: false,
         };
       }
-
+      
       // 批量关闭
       if (dialogType === 'batch-disable') {
         const count = batchStats.disable.length;
@@ -624,67 +622,79 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
         const freeCount = count - proCount;
         return {
           title: '批量关闭 Memory 服务',
-          isAlert: true,
           content: (
             <div className="space-y-3">
-              <p className="text-[14px] text-[#020617] leading-relaxed">
-                即将关闭 <span className="font-medium">{count}</span> 个 Agent 的 Memory 服务。关闭后将重启相关 Gateway 服务，<span className="text-[#DC2626] font-medium">届时会有短暂的服务中断</span>。{!hasProInDisable && 'Free 版实例的记忆数据将保留在本地，重新开启后可继续使用。'}
+              <p className="text-gray-600 text-sm leading-relaxed">
+                即将关闭 <span className="font-semibold text-gray-900">{count}</span> 个 Agent 的 Memory 服务。
               </p>
               {proCount > 0 && freeCount > 0 && (
-                <p className="text-[14px] text-[#737373]">
+                <p className="text-gray-500 text-sm">
                   包含 {proCount} 个 Pro 版、{freeCount} 个 Free 版实例。
                 </p>
               )}
-              {hasProInDisable && (
-                <p className="text-[14px] text-[#DC2626] font-medium leading-relaxed">
-                  {proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除，此操作不可恢复。
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <p className="text-blue-700 text-sm">关闭后将重启相关 Gateway 服务，届时会有短暂的服务中断。</p>
+              </div>
+              {hasProInDisable ? (
+                <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-red-600 text-sm font-medium">
+                    {proCount > 0 ? `${proCount} 个 Pro 版实例的` : ''}所有记忆数据将被清除，此操作不可恢复
+                  </p>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Free 版实例的记忆数据将保留在本地，重新开启后可继续使用。
                 </p>
               )}
               {/* 二次确认输入框 */}
-              <div className="pt-2 space-y-2">
-                <label className="block text-[14px] font-medium text-[#0A0A0A]">
-                  请输入「关闭」以确认
+              <div className="pt-2">
+                <label className="block text-sm text-gray-700 mb-2">
+                  请输入「<span className="font-medium text-red-600">关闭</span>」以确认：
                 </label>
-                <Input
+                <input
+                  type="text"
                   value={confirmText}
                   onChange={(e) => setConfirmText(e.target.value)}
-                  placeholder="输入「关闭」"
+                  placeholder="请输入「关闭」"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 />
               </div>
               {selectedInstances.length > count && (
-                <p className="text-[12px] text-[#737373]">
+                <p className="text-xs text-gray-500">
                   注：已选中 {selectedInstances.length} 个 Agent，其中 {selectedInstances.length - count} 个未开启记忆，将被跳过。
                 </p>
               )}
             </div>
           ),
           confirmText: '确认关闭',
+          confirmClass: 'bg-red-500 hover:bg-red-600 disabled:bg-red-300',
           confirmDisabled: confirmText !== '关闭',
         };
       }
 
       // 单实例操作
       if (!targetInstance) return null;
-
+      
       const { version } = parseMemoryStatus(targetInstance.memoryStatus);
       const isFromFree = version === 'free';
       const isProVersion = targetInstance.memoryStatus === 'pro';
-
+      
       switch (dialogType) {
         case 'enable-free':
           return {
             title: '开启 Memory Free',
             content: (
               <div className="space-y-3">
-                <p className="text-[14px] text-[#020617] leading-relaxed">
-                  确认为 Agent「<span className="font-medium">{targetInstance.name}</span>」开启 Memory Free 服务？
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  确认为 Agent「<span className="font-medium text-gray-900">{targetInstance.name}</span>」开启 Memory Free 服务？
                 </p>
-                <p className="text-[14px] text-[#737373] leading-relaxed">
+                <p className="text-gray-500 text-sm leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
               </div>
             ),
             confirmText: '确认开启',
+            confirmClass: 'bg-blue-500 hover:bg-blue-600',
             confirmDisabled: false,
           };
         case 'enable-pro': {
@@ -692,24 +702,25 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             title: '开启 Memory Pro',
             content: (
               <div className="space-y-3">
-                <Alert variant="warning">
-                  <CircleAlert />
-                  <AlertDescription>开启 Pro 版后不支持回退到 Free 版</AlertDescription>
-                </Alert>
-                <p className="text-[14px] text-[#020617] leading-relaxed">
-                  确认为 Agent「<span className="font-medium">{targetInstance.name}</span>」开启 Memory Pro 服务？
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  确认为 Agent「<span className="font-medium text-gray-900">{targetInstance.name}</span>」开启 Memory Pro 服务？
                 </p>
                 {isFromFree && (
-                  <p className="text-[14px] text-[#020617] leading-relaxed">
+                  <p className="text-gray-500 text-sm leading-relaxed">
                     Free 版的记忆数据将自动迁移到 Pro 版。
                   </p>
                 )}
-                <p className="text-[14px] text-[#020617] leading-relaxed">
+                <p className="text-gray-500 text-sm leading-relaxed">
                   开启后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
+
+                <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <p className="text-amber-700 text-sm">开启 Pro 版后不支持回退到 Free 版</p>
+                </div>
               </div>
             ),
             confirmText: '确认开启',
+            confirmClass: 'bg-blue-500 hover:bg-blue-600',
             confirmDisabled: false,
           };
         }
@@ -718,37 +729,38 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             title: '关闭 Memory 服务',
             content: (
               <div className="space-y-3">
-                <p className="text-[14px] text-[#020617] leading-relaxed">
-                  确认关闭 Agent「<span className="font-medium">{targetInstance.name}</span>」的 Memory 服务？
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  确认关闭 Agent「<span className="font-medium text-gray-900">{targetInstance.name}</span>」的 Memory 服务？
                 </p>
-                <p className="text-[14px] text-[#737373] leading-relaxed">
+                <p className="text-gray-500 text-sm leading-relaxed">
                   关闭后将重启 Gateway 服务，届时会有短暂的服务中断。
                 </p>
                 {isProVersion ? (
-                  <div className="p-3 bg-[#FEF2F2] rounded-lg border border-[#FECACA]">
-                    <p className="text-[13px] text-[#DC2626] font-medium">所有记忆数据将被清除，此操作不可恢复</p>
+                  <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                    <p className="text-red-600 text-sm font-medium">所有记忆数据将被清除，此操作不可恢复</p>
                   </div>
                 ) : (
-                  <p className="text-[14px] text-[#737373] leading-relaxed">
+                  <p className="text-gray-500 text-sm leading-relaxed">
                     记忆数据将保留在本地，重新开启后可继续使用。
                   </p>
                 )}
                 {/* 二次确认输入框 */}
                 <div className="pt-2">
-                  <label className="block text-[14px] text-[#020617] mb-2">
-                    请输入「<span className="font-medium text-[#DC2626]">关闭</span>」以确认：
+                  <label className="block text-sm text-gray-700 mb-2">
+                    请输入「<span className="font-medium text-red-600">关闭</span>」以确认：
                   </label>
                   <input
                     type="text"
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value)}
                     placeholder="请输入「关闭」"
-                    className="w-full h-9 px-3 border border-[#E5E5E5] rounded-[4px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1447E6] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   />
                 </div>
               </div>
             ),
             confirmText: '确认关闭',
+            confirmClass: 'bg-red-500 hover:bg-red-600 disabled:bg-red-300',
             confirmDisabled: confirmText !== '关闭',
           };
         }
@@ -759,77 +771,50 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
 
     const config = getDialogConfig();
     if (!config) return null;
-
-    // 警示弹窗（批量关闭等危险操作）
-    if (config.isAlert) {
-      return (
-        <AlertDialog open={true} onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-          <AlertDialogContent className="sm:max-w-[420px]">
-            <button
-              type="button"
-              aria-label="关闭"
-              onClick={closeDialog}
-              className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-            >
-              <X className="size-5" />
-              <span className="sr-only">关闭</span>
-            </button>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-[#0A0A0A]">{config.title}</AlertDialogTitle>
-              <AlertDialogDescription asChild>
-                <div>{config.content}</div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={closeDialog} disabled={isProcessing}>
-                取消
-              </AlertDialogCancel>
-              <AlertDialogAction
-                className="bg-destructive text-white hover:bg-destructive/90"
-                onClick={executeStatusChange}
-                disabled={isProcessing || config.confirmDisabled}
-              >
-                {isProcessing && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                {config.confirmText}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      );
-    }
-
+    
     return (
-      <Dialog open={true} onOpenChange={(isOpen) => !isOpen && closeDialog()}>
-        <DialogContent className="sm:max-w-[420px]">
-          <DialogHeader>
-            <DialogTitle className="text-[16px] font-semibold text-[#020617]">
-              {config.title}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="py-2">
-            {config.content}
-          </div>
-
-          <DialogFooter className="flex gap-3 justify-end pt-2">
-            <Button
-              variant="outline"
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div 
+          className="bg-white rounded-lg w-[420px] max-w-[90vw] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200"
+          style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.12)' }}
+        >
+          {/* 弹窗头部 */}
+          <div className="flex items-center justify-between px-6 py-4">
+            <h3 className="text-lg font-semibold text-gray-900">{config.title}</h3>
+            <button
               onClick={closeDialog}
               disabled={isProcessing}
+              className="p-1 rounded-md hover:bg-gray-100 transition-colors disabled:opacity-50"
+            >
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+          
+          {/* 弹窗内容 */}
+          <div className="px-6 py-5">
+            {config.content}
+          </div>
+          
+          {/* 弹窗底部 */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            <button
+              onClick={closeDialog}
+              disabled={isProcessing}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               取消
-            </Button>
-            <Button
-              variant="dialog-confirm"
+            </button>
+            <button
               onClick={executeStatusChange}
               disabled={isProcessing || config.confirmDisabled}
+              className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors disabled:opacity-70 flex items-center gap-2 ${config.confirmClass}`}
             >
               {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
               {config.confirmText}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </button>
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -846,115 +831,54 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
   ];
 
   return (
-    <div
-      className="bg-white rounded-xl border border-[#e5e5e5] relative overflow-hidden"
-    >
-      {/* 加载遮罩 */}
-      {loading && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
-          <div className="flex items-center gap-2 text-sm text-[#737373]">
-            <Loader2 className="w-4 h-4 animate-spin text-[#355EF1]" />
-            <span>正在加载实例状态...</span>
-          </div>
-        </div>
-      )}
-
-      {/* 工具栏 - 符合设计规范的 header */}
-      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
-        <div className="flex items-center gap-4">
+    <div>
+      {/* 工具栏 - 放在表格卡片外部 */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
           <h2 className="font-semibold text-[#0A0A0A]">记忆空间列表</h2>
-          {/* 批量操作按钮 - 常驻显示 */}
-          <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-            {(() => {
-              // 统计选中实例的状态分布
-              const noneCount = selectedInstances.filter(i => i.memoryStatus === 'none').length;
-              const freeCount = selectedInstances.filter(i => i.memoryStatus === 'free').length;
-              const proCount = selectedInstances.filter(i => i.memoryStatus === 'pro').length;
-              // 是否有选中且可操作的实例
-              const canEnableFree = noneCount > 0;
-              const canEnablePro = (noneCount > 0 || freeCount > 0);
-              const canDisable = (freeCount > 0 || proCount > 0);
-              const hasSelection = selectedIds.size > 0;
-              
-              return (
-                <>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={handleBatchEnableFree}
-                        disabled={!hasSelection || !canEnableFree}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
-                          hasSelection && canEnableFree
-                            ? 'text-[#355EF1] bg-blue-50 hover:bg-blue-100'
-                            : 'text-[#A3A3A3] bg-gray-100 cursor-not-allowed'
-                        }`}
-                      >
-                        批量开通 Free 版{canEnableFree ? `（${noneCount}）` : ''}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      {!hasSelection 
-                        ? '请先勾选实例' 
-                        : !canEnableFree 
-                          ? '所选实例均已开通记忆服务'
-                          : `为 ${noneCount} 个未开启的实例开通 Free 版`}
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={handleBatchEnablePro}
-                        disabled={!hasSelection || !canEnablePro || !isProActive}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
-                          hasSelection && canEnablePro && isProActive
-                            ? 'text-purple-600 bg-purple-50 hover:bg-purple-100'
-                            : 'text-[#A3A3A3] bg-gray-100 cursor-not-allowed'
-                        }`}
-                      >
-                        批量开通 Pro 版{canEnablePro ? `（${noneCount + freeCount}）` : ''}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      {!hasSelection 
-                        ? '请先勾选实例' 
-                        : !isProActive 
-                          ? '请先开通 Memory Pro 服务' 
-                          : !canEnablePro
-                            ? '所选实例均已开通 Pro 版'
-                            : `为 ${noneCount + freeCount} 个实例开通 Pro 版`}
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={handleBatchDisable}
-                        disabled={!hasSelection || !canDisable}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-colors ${
-                          hasSelection && canDisable
-                            ? 'text-red-600 bg-red-50 hover:bg-red-100'
-                            : 'text-[#A3A3A3] bg-gray-100 cursor-not-allowed'
-                        }`}
-                      >
-                        批量关闭{canDisable ? `（${freeCount + proCount}）` : ''}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      {!hasSelection 
-                        ? '请先勾选实例' 
-                        : !canDisable 
-                          ? '所选实例均未开通记忆服务'
-                          : `关闭 ${freeCount + proCount} 个实例的记忆服务${proCount > 0 ? `（含 ${proCount} 个 Pro 版）` : ''}`}
-                    </TooltipContent>
-                  </Tooltip>
-                </>
-              );
-            })()}
-          </div>
+          {/* 批量操作按钮 */}
+          {(() => {
+            // 统计选中实例的状态分布
+            const noneCount = selectedInstances.filter(i => i.memoryStatus === 'none').length;
+            const freeCount = selectedInstances.filter(i => i.memoryStatus === 'free').length;
+            const proCount = selectedInstances.filter(i => i.memoryStatus === 'pro').length;
+            // 是否有选中且可操作的实例
+            const canEnableFree = noneCount > 0;
+            const canEnablePro = (noneCount > 0 || freeCount > 0);
+            const canDisable = (freeCount > 0 || proCount > 0);
+            const hasSelection = selectedIds.size > 0;
+            
+            return (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleBatchEnableFree}
+                  disabled={!hasSelection || !canEnableFree}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#E5E5E5] text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
+                >
+                  批量开通 Free 版{canEnableFree ? `（${noneCount}）` : ''}
+                </button>
+                <button
+                  onClick={handleBatchEnablePro}
+                  disabled={!hasSelection || !canEnablePro || !isProActive}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#E5E5E5] text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
+                >
+                  批量开通 Pro 版{canEnablePro ? `（${noneCount + freeCount}）` : ''}
+                </button>
+                <button
+                  onClick={handleBatchDisable}
+                  disabled={!hasSelection || !canDisable}
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#E5E5E5] text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
+                >
+                  批量关闭{canDisable ? `（${freeCount + proCount}）` : ''}
+                </button>
+              </div>
+            );
+          })()}
         </div>
         <div className="flex flex-wrap gap-3 items-center">
           {/* 自定义工具栏右侧（位于搜索框左侧）：承载一键升级记忆插件等全局入口 */}
           {toolbarRight}
-          {/* 搜索框 - 符合设计规范 */}
+          {/* 搜索框 */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
             <Input
@@ -966,17 +890,30 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
             />
           </div>
 
-          {/* 刷新按钮 - 符合设计规范 */}
+          {/* 刷新按钮 */}
           <button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E5E5E5] bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="刷新列表"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
+
+    <div
+      className="bg-white rounded-xl border border-[#e5e5e5] relative overflow-hidden"
+    >
+      {/* 加载遮罩 */}
+      {loading && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl z-10 flex items-center justify-center">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+            <span>正在加载实例状态...</span>
+          </div>
+        </div>
+      )}
 
       {/* 表格 - 使用原生 table */}
       <div className="overflow-x-auto overflow-y-visible">
@@ -1003,15 +940,35 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] tracking-wide" style={{ width: '30%' }}>
                 <span>Agent 名称/ID</span>
               </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '25%' }}>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '20%' }}>
                 创建人
               </th>
               {/* Agent 类型 —— 与管控端 Agent 列表保持一致：纯灰色文本，不使用 Badge / 颜色，避免视觉权重抢戏 */}
-              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] normal-case" style={{ width: '13%' }}>
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] normal-case" style={{ width: '16%' }}>
                 Agent 类型
               </th>
+              {/* 分组 - 与管控端 Agent 列表（OpenClawMonitor）同款列头筛选 */}
+              <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide whitespace-nowrap" style={{ width: '12%', minWidth: '120px' }}>
+                <Popover open={groupColFilterOpen} onOpenChange={setGroupColFilterOpen}>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-1 group/grp">
+                      <span>分组</span>
+                      <Filter className={`w-3.5 h-3.5 transition-colors ${groupFilter ? 'text-blue-500' : 'text-gray-400 group-hover/grp:text-gray-600'}`} />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                    <GroupColumnFilter
+                      groups={getGroupsForMode(hasOneid)}
+                      value={groupFilter}
+                      hasOneid={hasOneid}
+                      onConfirm={(v) => { setGroupFilter(v); setCurrentPage(1); setGroupColFilterOpen(false); }}
+                      onCancel={() => setGroupColFilterOpen(false)}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </th>
               {/* 记忆管理 - 带筛选 */}
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '32%' }}>
+              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '22%' }}>
                 <div className="flex items-center gap-2 relative z-40">
                   记忆管理
                   <button
@@ -1030,7 +987,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       setShowMemoryFilter(!showMemoryFilter);
                     }}
                   >
-                    <Filter className={`w-3.5 h-3.5 ${selectedMemoryStates.size < 3 ? 'text-[#355EF1]' : 'text-[#A3A3A3]'}`} />
+                    <Filter className={`w-3.5 h-3.5 ${selectedMemoryStates.size < 3 ? 'text-blue-500' : 'text-gray-400'}`} />
                   </button>
                   {showMemoryFilter && memoryFilterPosition && (
                     <>
@@ -1040,7 +997,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         style={{ pointerEvents: 'auto' }}
                       />
                       <div 
-                        className="fixed w-48 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 will-change-transform" 
+                        className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 will-change-transform" 
                         style={{
                           top: `${memoryFilterPosition.top}px`,
                           left: `${memoryFilterPosition.left}px`,
@@ -1062,26 +1019,25 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                                   }
                                   setTempSelectedMemoryStates(newSet);
                                 }}
-                                className="w-4 h-4 rounded border-gray-300 text-[#355EF1] focus:ring-blue-500"
+                                className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                               />
-                              <span className="text-sm text-[#334155] normal-case">
+                              <span className="text-sm text-gray-700 normal-case">
                                 {opt.label}
                               </span>
                             </label>
                           ))}
                         </div>
-                        <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
-                          <button
-                            className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50"
+                        <div className="border-t border-gray-100 p-2 flex gap-2">
+                          <button 
+                            className="flex-1 px-3 py-1.5 text-sm border border-gray-200 rounded-md hover:bg-gray-50"
                             onClick={() => {
                               setTempSelectedMemoryStates(new Set(['none', 'free', 'pro']));
                             }}
                           >
                             重置
                           </button>
-                          <Button
-                            size="sm"
-                            className="flex-1"
+                          <button 
+                            className="flex-1 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
                             onClick={() => {
                               setSelectedMemoryStates(new Set(tempSelectedMemoryStates));
                               setShowMemoryFilter(false);
@@ -1089,7 +1045,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                             }}
                           >
                             确认
-                          </Button>
+                          </button>
                         </div>
                       </div>
                     </>
@@ -1102,24 +1058,24 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           {(showSelectAllBanner || isSelectAll) && (
             <tbody>
               <tr>
-                <td colSpan={5} className="px-0 py-0">
+                <td colSpan={6} className="px-0 py-0">
                   <div className="bg-blue-50 border-b border-blue-100 px-6 py-2.5 text-center text-sm">
                     {isSelectAll ? (
-                      <span className="text-[#355EF1]">
+                      <span className="text-blue-700">
                         已选择全部 <strong>{selectedIds.size}</strong> 个 Agent。
                         <button
                           onClick={handleClearSelection}
-                          className="ml-2 text-[#355EF1] hover:text-[#1447E6] font-medium underline underline-offset-2"
+                          className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2"
                         >
                           清除选择
                         </button>
                       </span>
                     ) : (
-                      <span className="text-[#355EF1]">
+                      <span className="text-blue-700">
                         已选择此页 <strong>{selectableInPage.length}</strong> 个实例。
                         <button
                           onClick={handleSelectAllPages}
-                          className="ml-2 text-[#355EF1] hover:text-[#1447E6] font-medium underline underline-offset-2"
+                          className="ml-2 text-blue-600 hover:text-blue-800 font-medium underline underline-offset-2"
                         >
                           选择全部 {totalSelectableCount} 个 Agent
                         </button>
@@ -1141,7 +1097,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </>
             ) : paginatedList.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">
                   暂无符合条件的实例
                 </td>
               </tr>
@@ -1215,12 +1171,12 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                         {onOpenDetail ? (
                           <button
                             onClick={() => onOpenDetail(oc)}
-                            className="text-xs font-mono cursor-pointer text-[#355EF1] hover:text-[#355EF1] hover:underline"
+                            className="text-xs font-mono cursor-pointer text-blue-500 hover:text-blue-700 hover:underline"
                           >
                             {oc.id}
                           </button>
                         ) : (
-                          <span className="text-xs font-mono text-[#355EF1]">{oc.id}</span>
+                          <span className="text-xs font-mono text-blue-500">{oc.id}</span>
                         )}
                       </div>
                     </td>
@@ -1233,6 +1189,10 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                       <span className="text-xs font-medium text-[#737373]">
                         {AGENT_TYPE_DISPLAY[oc.agentType ?? 'openclaw'] ?? (oc.agentType ?? 'OpenClaw')}
                       </span>
+                    </td>
+                    {/* 分组 - 复用 Agent 列表同款单元格组件 */}
+                    <td className="px-4 py-4">
+                      <GroupCell creator={oc.creator} hasOneid={hasOneid} />
                     </td>
                     {/* 记忆管理 - 三态 Switch
                         插件升级中（isLocked）：与「开通中」视觉一致，spinner 直接叠在 Pro 档位标签左侧；
@@ -1258,22 +1218,34 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
 
       {/* 底部：翻页 - 与 Agent 列表保持一致 */}
       {!loading && (
-        <div className="px-6 py-3 border-t border-gray-50">
-          <Pagination
-            total={filteredList.length}
-            current={currentPage}
-            pageSize={PAGE_SIZE}
-            showTotal={(total) => `共 ${total} 条记录`}
-            size="default"
-            className="w-full justify-between"
-            hideOnSinglePage
-            onChange={(page) => { setCurrentPage(page); }}
-          />
+        <div className="px-6 py-3 border-t border-gray-50 flex items-center justify-between">
+          <span className="text-xs text-gray-400">
+            共 {filteredList.length} 条记录
+            {filteredList.length > 0 && `，第 ${currentPage} / ${totalPages} 页`}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-xs text-gray-400 px-2">第 {currentPage} 页</span>
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-blue-500 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
       {/* 确认弹窗 */}
       <ConfirmDialog />
+    </div>
     </div>
   );
 };

@@ -45,7 +45,7 @@ export const DisableConfirmDialog: React.FC<DisableConfirmDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="max-w-[500px]">
         <DialogHeader className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
             <span className="text-xl">!</span>
@@ -106,9 +106,9 @@ export const DisableConfirmDialog: React.FC<DisableConfirmDialogProps> = ({
             取消
           </Button>
           <Button
-            variant="destructive"
             onClick={handleConfirm}
             disabled={!isChecked}
+            className="bg-[#dc2626] text-white hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             确认关闭
           </Button>

@@ -1253,10 +1253,10 @@ export default function TokensMonitor() {
                       </TableCell>
                       <TableCell className="text-sm text-[#737373]">{inst.creator || "—"}</TableCell>
                       {hasOneid && <TableCell className="text-sm text-[#737373]">{inst.department || "—"}</TableCell>}
-                      <TableCell className="text-sm text-[#737373]">{fmt(inst.requests)}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(inst.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(inst.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#09090b]">{fmt(inst.total)}</TableCell>
+                      <TableCell>{fmt(inst.requests)}</TableCell>
+                      <TableCell>{fmt(inst.inputTokens)}</TableCell>
+                      <TableCell>{fmt(inst.outputTokens)}</TableCell>
+                      <TableCell className="font-medium">{fmt(inst.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1305,15 +1305,15 @@ export default function TokensMonitor() {
                       <TableCell style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>
                         <UITooltip>
                           <UITooltipTrigger asChild>
-                            <span className="text-sm text-[#525252] truncate block max-w-[180px]">{m.id}</span>
+                            <span className="font-medium truncate block max-w-[180px]">{m.id}</span>
                           </UITooltipTrigger>
                           <UITooltipContent side="top" className="text-xs max-w-xs break-all">{m.id}</UITooltipContent>
                         </UITooltip>
                       </TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(m.requests)}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(m.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(m.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#09090b]">{fmt(m.total)}</TableCell>
+                      <TableCell>{fmt(m.requests)}</TableCell>
+                      <TableCell>{fmt(m.inputTokens)}</TableCell>
+                      <TableCell>{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="font-medium">{fmt(m.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1359,11 +1359,11 @@ export default function TokensMonitor() {
                     <TableRow><TableCell colSpan={5} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                   ) : modelPaged.map((m) => (
                     <TableRow key={m.name}>
-                      <TableCell className="text-sm font-medium text-[#09090b]">{m.name}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(m.requests)}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(m.inputTokens)}</TableCell>
-                      <TableCell className="text-sm text-[#737373]">{fmt(m.outputTokens)}</TableCell>
-                      <TableCell className="text-sm font-medium text-[#09090b]">{fmt(m.total)}</TableCell>
+                      <TableCell className="font-medium">{m.name}</TableCell>
+                      <TableCell>{fmt(m.requests)}</TableCell>
+                      <TableCell>{fmt(m.inputTokens)}</TableCell>
+                      <TableCell>{fmt(m.outputTokens)}</TableCell>
+                      <TableCell className="font-medium">{fmt(m.total)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1418,12 +1418,12 @@ export default function TokensMonitor() {
                       <TableRow><TableCell colSpan={6} className="text-center text-sm text-[#A3A3A3] py-12">暂无数据</TableCell></TableRow>
                     ) : deptPaged.map((d) => (
                       <TableRow key={d.departmentId}>
-                        <TableCell className="text-sm font-medium text-[#09090b]">{d.departmentName}</TableCell>
+                        <TableCell className="font-medium">{d.departmentName}</TableCell>
                         <TableCell className="text-sm text-[#737373]">{d.path.replace(/\//g, " / ")}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{fmt(d.requests)}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{fmt(d.inputTokens)}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{fmt(d.outputTokens)}</TableCell>
-                        <TableCell className="text-sm font-medium text-[#09090b]">{fmt(d.totalTokens)}</TableCell>
+                        <TableCell>{fmt(d.requests)}</TableCell>
+                        <TableCell>{fmt(d.inputTokens)}</TableCell>
+                        <TableCell>{fmt(d.outputTokens)}</TableCell>
+                        <TableCell className="font-medium">{fmt(d.totalTokens)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1482,11 +1482,11 @@ export default function TokensMonitor() {
                     const q = IS_GLOBAL_BY_GROUP ? getGroupQuotaInfo(g) : null;
                     return (
                       <TableRow key={g.groupId}>
-                        <TableCell className="text-sm font-medium text-[#09090b]">{g.groupName}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{fmt(g.requests)}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{fmt(g.inputTokens)}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{fmt(g.outputTokens)}</TableCell>
-                        <TableCell className="text-sm font-medium text-[#09090b]">{fmt(g.totalTokens)}</TableCell>
+                        <TableCell className="font-medium">{g.groupName}</TableCell>
+                        <TableCell>{fmt(g.requests)}</TableCell>
+                        <TableCell>{fmt(g.inputTokens)}</TableCell>
+                        <TableCell>{fmt(g.outputTokens)}</TableCell>
+                        <TableCell className="font-medium">{fmt(g.totalTokens)}</TableCell>
                         {IS_GLOBAL_BY_GROUP && q && (
                           <TableCell className="text-sm">
                             {q.unlimited ? (
@@ -1747,16 +1747,16 @@ export default function TokensMonitor() {
                       return (
                       <TableRow key={s.sessionId} className="cursor-pointer" onClick={() => navigate(`/admin/session/${s.sessionId}`)}>
                         <TableCell fixed="left">
-                          <div className="text-sm text-[#525252]">{s.sessionName}</div>
+                          <div className="text-sm">{s.sessionName}</div>
                           <div className="text-xs text-[#A3A3A3] font-mono mt-0.5">{s.sessionId}</div>
                         </TableCell>
-                        <TableCell className="text-sm text-[#525252]">{s.channel}</TableCell>
-                        <TableCell className="text-sm text-[#525252]">{s.model}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{s.lastActiveTime}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{s.rounds}</TableCell>
-                        <TableCell className="text-sm text-[#737373] font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
-                        <TableCell className="text-sm text-[#737373] font-mono">${s.cost.toFixed(4)}</TableCell>
-                        <TableCell className="text-sm text-[#737373]">{s.duration}</TableCell>
+                        <TableCell>{s.channel}</TableCell>
+                        <TableCell>{s.model}</TableCell>
+                        <TableCell className="text-[#737373]">{s.lastActiveTime}</TableCell>
+                        <TableCell>{s.rounds}</TableCell>
+                        <TableCell className="font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
+                        <TableCell className="font-mono">${s.cost.toFixed(4)}</TableCell>
+                        <TableCell className="text-[#737373]">{s.duration}</TableCell>
                         <TableCell fixed="right">
                           <Button
                             onClick={(e) => {
@@ -1988,11 +1988,7 @@ export default function TokensMonitor() {
                       <TableRow
                         key={v.version}
                         onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
-                        className={
-                          isUpgradeable
-                            ? "cursor-pointer"
-                            : "cursor-not-allowed opacity-60"
-                        }
+                        className={isUpgradeable ? "cursor-pointer" : "cursor-default"}
                       >
                         <TableCell className="py-2">
                           <RadioGroupItem

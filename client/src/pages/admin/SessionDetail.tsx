@@ -4,8 +4,10 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
 import { SurfaceCard } from "@/components/ui/Surface";
+import { BackButton } from "@/components/ui/back-button";
+import { StatusTag } from "@/components/ui/status-tag";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { StatNumber } from "@/components/ui/Typography";
 import {
   Tooltip as UITooltip,
@@ -142,14 +144,8 @@ export default function SessionDetail({ params }: SessionDetailProps) {
     <div className="page-enter space-y-8">
 
       {/* 返回按钮 */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => window.history.back()}
-          className="flex items-center gap-1 px-3 py-2 rounded-xl border border-gray-200 text-[#737373] hover:bg-gray-50 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">返回</span>
-        </button>
+      <div>
+        <BackButton onClick={() => window.history.back()} />
       </div>
 
       {/* 会话标题 */}
@@ -241,154 +237,78 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
       {/* ══ 交互链 ═════════════════════════════════════════════════════════════ */}
       <div>
-        <p className="text-sm font-medium text-[#334155] mb-4">交互链</p>
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
-         >
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-50 bg-gray-50/50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">时间</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">角色</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">内容</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">模型</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">停止原因</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">INPUT</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">OUTPUT</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">CACHE R/W</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">TOKENS</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">成本</th>
-
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {INTERACTION_CHAIN.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-4 py-3 text-sm text-[#737373]">{item.timestamp}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                        item.role === "user" ? "bg-blue-100 text-[#355EF1]" :
-                        item.role === "assistant" ? "bg-purple-100 text-purple-700" :
-                        "bg-gray-100 text-[#334155]"
-                      }`}>
+        <p className="text-sm font-medium text-[#0A0A0A] mb-4">交互链</p>
+        <SurfaceCard className="overflow-hidden">
+          <Table scrollX={1280}>
+            <TableHeader>
+              <TableRow>
+                <TableHead fixed="left" style={{ minWidth: 180 }}>时间</TableHead>
+                <TableHead style={{ minWidth: 100 }}>角色</TableHead>
+                <TableHead style={{ minWidth: 280 }}>内容</TableHead>
+                <TableHead style={{ minWidth: 140 }}>模型</TableHead>
+                <TableHead style={{ minWidth: 100 }}>停止原因</TableHead>
+                <TableHead style={{ minWidth: 80 }}>INPUT</TableHead>
+                <TableHead style={{ minWidth: 80 }}>OUTPUT</TableHead>
+                <TableHead style={{ minWidth: 100 }}>CACHE R/W</TableHead>
+                <TableHead style={{ minWidth: 100 }}>TOKENS</TableHead>
+                <TableHead fixed="right" style={{ minWidth: 80 }}>成本</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {INTERACTION_CHAIN.map((item, idx) => {
+                const tokensTotal = (() => {
+                  if (item.input === "—" || item.output === "—") return "—";
+                  const inputNum = parseInt((item.input as string).replace("K", "")) * 1000;
+                  const outputNum = parseInt(item.output as string);
+                  return (inputNum + outputNum).toLocaleString();
+                })();
+                const roleVariant: "blue" | "gray" =
+                  item.role === "user"
+                    ? "blue"
+                    : item.role === "assistant"
+                      ? "blue"
+                      : "gray";
+                // assistant 用紫色覆盖（StatusTag 不支持 purple，用 className 覆盖）
+                const isAssistant = item.role === "assistant";
+                return (
+                  <TableRow key={idx}>
+                    <TableCell fixed="left" className="text-[#0A0A0A] tabular-nums">{item.timestamp}</TableCell>
+                    <TableCell>
+                      <StatusTag
+                        mode="fill"
+                        variant={roleVariant}
+                        className={isAssistant ? "bg-[#F3E8FF] text-[#7E22CE]" : ""}
+                      >
                         {item.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373] max-w-xs truncate">
+                      </StatusTag>
+                    </TableCell>
+                    <TableCell className="text-[#0A0A0A] max-w-[320px]">
                       <TooltipProvider>
                         <UITooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.content}</span>
+                            <span className="block truncate cursor-help">{item.content}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="max-w-xs">
                             {item.content}
                           </TooltipContent>
                         </UITooltip>
                       </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373]">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.model}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.model}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373]">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.stopReason}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.stopReason}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373] text-right">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.input}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.input}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373] text-right">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.output}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.output}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373] text-right">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.cacheRW}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.cacheRW}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373] text-right font-mono">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{(() => {
-                              if (item.input === "—" || item.output === "—") return "—";
-                              // Handle input with K suffix (e.g., "17K" -> 17000)
-                              const inputStr = (item.input as string).replace('K', '');
-                              const inputNum = parseInt(inputStr) * 1000;
-                              const outputNum = parseInt(item.output as string);
-                              return (inputNum + outputNum).toLocaleString();
-                            })()}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {(() => {
-                              if (item.input === "—" || item.output === "—") return "—";
-                              const inputStr = (item.input as string).replace('K', '');
-                              const inputNum = parseInt(inputStr) * 1000;
-                              const outputNum = parseInt(item.output as string);
-                              return (inputNum + outputNum).toLocaleString();
-                            })()}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-[#737373] text-right font-mono">
-                      <TooltipProvider>
-                        <UITooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{item.cost === "—" ? "—" : `$${item.cost}`}</span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top">
-                            {item.cost === "—" ? "—" : `$${item.cost}`}
-                          </TooltipContent>
-                        </UITooltip>
-                      </TooltipProvider>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    </TableCell>
+                    <TableCell className="text-[#0A0A0A]">{item.model}</TableCell>
+                    <TableCell className="text-[#0A0A0A]">{item.stopReason}</TableCell>
+                    <TableCell className="tabular-nums text-[#0A0A0A]">{item.input}</TableCell>
+                    <TableCell className="tabular-nums text-[#0A0A0A]">{item.output}</TableCell>
+                    <TableCell className="tabular-nums text-[#0A0A0A]">{item.cacheRW}</TableCell>
+                    <TableCell className="tabular-nums text-[#0A0A0A]">{tokensTotal}</TableCell>
+                    <TableCell fixed="right" className="tabular-nums text-[#0A0A0A]">
+                      {item.cost === "—" ? "—" : `$${item.cost}`}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </SurfaceCard>
       </div>
 
     </div>

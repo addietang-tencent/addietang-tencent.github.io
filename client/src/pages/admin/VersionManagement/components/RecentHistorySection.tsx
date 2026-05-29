@@ -13,6 +13,7 @@ import {
   CheckCircle2, XCircle, Loader2, ArrowUpRight, Code2, FlaskConical, User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import {
   MOCK_HISTORY,
   HISTORY_ACTION_LABEL,
@@ -85,32 +86,32 @@ export default function RecentHistorySection({
           <p className="text-sm text-[#A3A3A3]">暂无记录</p>
         </div>
       ) : (
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-50 bg-gray-50/50">
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[14%]">
                 任务 ID
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">
+              </TableHead>
+              <TableHead className="w-[28%]">
                 {action === "agent-upgrade" ? "更新内容" : "命令"}
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
+              </TableHead>
+              <TableHead className="w-[14%]">
                 执行人
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[16%]">
+              </TableHead>
+              <TableHead className="w-[16%]">
                 执行时间
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">
+              </TableHead>
+              <TableHead>
                 结果
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {records.map((r) => (
               <RecordRow key={r.id} record={r} />
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       )}
     </section>
   );
@@ -122,15 +123,15 @@ function RecordRow({ record }: { record: HistoryRecord }) {
     : 0;
 
   return (
-    <tr className="hover:bg-gray-50/50 transition-colors">
-      <td className="px-6 py-3">
+    <TableRow>
+      <TableCell>
         <span className="text-xs font-mono text-[#737373] bg-gray-50 px-1.5 py-0.5 rounded select-all">
           {record.taskId}
         </span>
-      </td>
+      </TableCell>
 
       {/* 内容（按类型动态展示） */}
-      <td className="px-6 py-3">
+      <TableCell>
         {record.action === "agent-upgrade" && (
           <div className="space-y-0.5">
             <div className="text-sm text-[#0A0A0A] truncate max-w-[280px] flex items-center gap-1.5">
@@ -171,10 +172,10 @@ function RecordRow({ record }: { record: HistoryRecord }) {
             )}
           </div>
         )}
-      </td>
+      </TableCell>
 
       {/* 执行人 */}
-      <td className="px-6 py-3">
+      <TableCell>
         {record.isAuto ? (
           <div className="inline-flex items-center gap-1.5 text-sm">
             <Sparkles className="w-3.5 h-3.5 text-[#355EF1]" />
@@ -186,15 +187,15 @@ function RecordRow({ record }: { record: HistoryRecord }) {
             <span className="text-[#334155] truncate max-w-[120px]">{record.operator}</span>
           </div>
         )}
-      </td>
+      </TableCell>
 
       {/* 执行时间 */}
-      <td className="px-6 py-3 text-sm text-[#737373] tabular-nums whitespace-nowrap">
+      <TableCell className="text-sm text-[#737373] tabular-nums whitespace-nowrap">
         {record.operatedAt}
-      </td>
+      </TableCell>
 
       {/* 结果 */}
-      <td className="px-6 py-3">
+      <TableCell>
         <div className="flex items-center gap-2">
           {record.failedCount === 0 ? (
             <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -210,8 +211,8 @@ function RecordRow({ record }: { record: HistoryRecord }) {
             )}
           </span>
         </div>
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 

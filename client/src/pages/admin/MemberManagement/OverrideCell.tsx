@@ -20,6 +20,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { toast } from "sonner";
 import type { OverrideStatus, UserOrg, UserOverrideInfo } from "./types";
 import { MOCK_EFFECTIVE_CONFIG } from "./mock";
@@ -105,28 +106,28 @@ function EffectiveDetailCard({ user }: { user: UserOrg }) {
         </div>
       </div>
       <div className="px-4 py-3">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs text-[#A3A3A3]">
-              <th className="py-1.5 font-medium w-16">资源</th>
-              <th className="py-1.5 font-medium">最终生效</th>
-              <th className="py-1.5 font-medium w-14 text-right">来源</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="w-full text-sm">
+          <TableHeader>
+            <TableRow className="text-left text-xs text-[#A3A3A3]">
+              <TableHead className="w-16">资源</TableHead>
+              <TableHead>最终生效</TableHead>
+              <TableHead className="w-14 text-right">来源</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((r) => (
-              <tr key={r.label} className="border-t border-gray-50">
-                <td className="py-2 text-[#737373]">{r.label}</td>
-                <td className="py-2 text-[#0A0A0A] break-all" title={r.value}>
+              <TableRow key={r.label} className="border-t border-gray-50">
+                <TableCell className="text-[#737373]">{r.label}</TableCell>
+                <TableCell className="text-[#0A0A0A] break-all" title={r.value}>
                   {r.value}
-                </td>
-                <td className="py-2 text-xs text-[#A3A3A3] text-right">
+                </TableCell>
+                <TableCell className="text-xs text-[#A3A3A3] text-right">
                   {r.source}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

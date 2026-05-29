@@ -495,11 +495,11 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 tracking-wide">实例名称/ID</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Memory 状态</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">记忆空间 ID</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wide">更新时间</th>
+              <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] tracking-wide">实例名称/ID</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">Memory 状态</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">记忆空间 ID</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">更新时间</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -514,7 +514,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                 </>
               ) : paginatedList.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
+                  <td colSpan={4} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
                     暂无符合条件的实例
                   </td>
                 </tr>
@@ -530,7 +530,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-semibold"
+                            className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-semibold"
                             style={{ backgroundColor: avatarColor }}
                           >
                             {oc.name.charAt(0)}
@@ -548,10 +548,10 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-mono text-sm text-gray-500">{oc.memoryId}</span>
+                        <span className="font-mono text-sm text-[#737373]">{oc.memoryId}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-500">{oc.updatedAt}</span>
+                        <span className="text-sm text-[#737373]">{oc.updatedAt}</span>
                       </td>
                     </tr>
                   );

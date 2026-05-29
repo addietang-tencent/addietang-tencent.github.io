@@ -11,7 +11,7 @@
 import { useState, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { StatusTag } from "@/components/ui/status-tag";
+import { Badge } from "@/components/ui/badge";
 import { AllUsersTag } from "@/components/ui/all-users-tag";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -217,9 +217,9 @@ export function ScopeEditPopover({
 
     if (labels.length === 0) {
       return (
-        <StatusTag variant="gray">
+        <Badge variant="outline">
           未选分组
-        </StatusTag>
+        </Badge>
       );
     }
 
@@ -232,18 +232,18 @@ export function ScopeEditPopover({
         <TooltipTrigger asChild>
           <span className="inline-flex items-center gap-1 cursor-default flex-wrap">
             {visibleLabels.map((label, idx) => (
-              <StatusTag
+              <Badge
                 key={`${label}-${idx}`}
-                variant="gray"
+                variant="outline"
                 className="max-w-[140px]"
               >
                 <span className="block truncate max-w-[124px]">{label}</span>
-              </StatusTag>
+              </Badge>
             ))}
             {rest > 0 && (
-              <StatusTag variant="gray">
+              <Badge variant="outline">
                 +{rest}
-              </StatusTag>
+              </Badge>
             )}
           </span>
         </TooltipTrigger>

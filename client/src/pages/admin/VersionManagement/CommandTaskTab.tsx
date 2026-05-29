@@ -10,19 +10,20 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
-  Plus, Search, Code2, MoreVertical, Edit2, Trash2, Play,
+  Plus, Search, Code2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell,
+} from "@/components/ui/table";
+import { StatusTag } from "@/components/ui/status-tag";
 import {
   MOCK_COMMAND_TEMPLATES,
   type CommandTemplate,
@@ -107,34 +108,21 @@ export default function CommandTaskTab() {
             </p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[22%]">
-                  命令 ID / 名称
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[8%]">
-                  类型
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">
-                  命令内容
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
-                  创建人
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
-                  最近执行
-                </th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
-                  操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[22%]">命令 ID / 名称</TableHead>
+                <TableHead className="w-[8%]">类型</TableHead>
+                <TableHead>命令内容</TableHead>
+                <TableHead className="w-[14%]">创建人</TableHead>
+                <TableHead className="w-[14%]">最近执行</TableHead>
+                <TableHead className="w-[14%]">操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {templates.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
-                    {/* ID 上、名称下：参考 TAT 命令列表 */}
+                <TableRow key={t.id}>
+                  <TableCell>
                     <CopyableId id={t.id} primary />
                     <div className="text-sm font-medium text-[#0A0A0A] mt-0.5">{t.name}</div>
                     {t.description && (
@@ -142,13 +130,11 @@ export default function CommandTaskTab() {
                         {t.description}
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center text-xs font-medium px-2 py-0.5 rounded bg-blue-50 text-[#355EF1]">
-                      {t.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
+                  </TableCell>
+                  <TableCell>
+                    <StatusTag mode="fill" variant="blue">{t.type}</StatusTag>
+                  </TableCell>
+                  <TableCell>
                     <TooltipProvider delayDuration={150}>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -166,63 +152,42 @@ export default function CommandTaskTab() {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-[#334155] truncate max-w-[120px]">{t.createdBy}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm text-[#0A0A0A] truncate max-w-[120px]">{t.createdBy}</div>
                     <div className="text-[11px] text-[#A3A3A3] tabular-nums">{t.createdAt.slice(0, 10)}</div>
-                  </td>
-                  <td className="px-6 py-4">
+                  </TableCell>
+                  <TableCell>
                     {t.lastRunAt ? (
-                      <div className="text-sm text-[#334155] tabular-nums">{t.lastRunAt.slice(5, 16)}</div>
+                      <div className="text-sm text-[#0A0A0A] tabular-nums">{t.lastRunAt.slice(5, 16)}</div>
                     ) : (
                       <span className="text-sm text-[#A3A3A3]">从未执行</span>
                     )}
                     <div className="text-[11px] text-[#A3A3A3] tabular-nums">
                       共 {t.totalRuns} 次
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-xs text-[#355EF1] hover:bg-blue-50 hover:text-[#355EF1]"
-                        onClick={() => setDispatchTarget(t)}
-                      >
-                        <Play className="w-3.5 h-3.5 mr-0.5" />
-                        下发
-                      </Button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0">
-                            <MoreVertical className="w-4 h-4 text-[#A3A3A3]" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-32">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setEditTarget(t);
-                              setCreateOpen(true);
-                            }}
-                          >
-                            <Edit2 className="w-3.5 h-3.5 mr-2" />
-                            编辑
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600 focus:text-red-700"
-                            onClick={() => setDeleteTarget(t)}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 mr-2" />
-                            删除
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                  <TableActionCell actionsClassName="gap-3">
+                    <Button variant="link" onClick={() => setDispatchTarget(t)}>
+                      下发
+                    </Button>
+                    <Button
+                      variant="link"
+                      onClick={() => {
+                        setEditTarget(t);
+                        setCreateOpen(true);
+                      }}
+                    >
+                      编辑
+                    </Button>
+                    <Button variant="link" onClick={() => setDeleteTarget(t)}>
+                      删除
+                    </Button>
+                  </TableActionCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         )}
       </section>
 

@@ -233,6 +233,13 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* ─── 全站字体统一：强制 PingFang SC ───────────────────────────
+   * 业务侧 inline style fontFamily / Tailwind font-mono / font-din 等都被强制覆盖为 PingFang SC。
+   * 仅 SVG <text> 等极少数标签保留自身定义（避免影响图表/图标内文字）。
+   * ──────────────────────────────────────────────────────────── */
+  *:not(svg):not(svg *) {
+    font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif !important;
+  }
   /* 防止弹窗打开时页面晃动：确保 body 被锁定滚动时保持滚动条占位 */
   body[data-scroll-locked] {
     overflow: hidden !important;
@@ -392,28 +399,120 @@
   }
 
   /* ─── 表格字号一致性规则 ───────────────────────────────────────
-   * 表格内所有组件（按钮、Select、Input、分页器等）字号跟随表格密度：
-   *   - default (14px / text-sm): 所有后代组件 font-size 继承 14px
-   *   - compact (12px / text-xs): 所有后代组件 font-size 继承 12px
+   * 表格相关所有元素字号统一 12px：
+   *   - Table 单元格 / 表头 / 表尾
+   *   - 表格内任意后代元素（按钮/Input/Select/Switch/Label/code/pre/div 等）
+   *   - 分页器（[data-slot="pagination"]）及其内部所有元素
+   *   - 数量统计 / 摘要文字（位于 SurfaceCard 内、与 table-container 同级的兄弟元素）
    * Badge 字号不变（始终保持自身尺寸），通过 [data-slot="badge"] 豁免。
-   * 分页器与表格同级（通常在同一个 SurfaceCard 内），通过 :has() 向上匹配
-   * 容器再向下覆盖分页器字号，保证分页器也跟随密度变化。
    * ──────────────────────────────────────────────────────────── */
 
-  /* 表格内部组件：跟随密度字号 */
-  table[data-density="default"] :where(button, input, select, [role="combobox"], label, span, p, a):not([data-slot="badge"], [data-slot="badge"] *) {
-    font-size: 0.875rem; /* 14px */
-  }
-  table[data-density="compact"] :where(button, input, select, [role="combobox"], label, span, p, a):not([data-slot="badge"], [data-slot="badge"] *) {
-    font-size: 0.75rem; /* 12px */
+  /* 1) 表格单元格自身字号（强制覆盖业务侧 className 中的 text-sm 等） */
+  [data-slot="table"],
+  [data-slot="table-head"],
+  [data-slot="table-cell"],
+  [data-slot="table-action-cell"],
+  [data-slot="table-footer"] {
+    font-size: 0.75rem !important; /* 12px */
   }
 
-  /* 分页器跟随表格密度（分页器与表格同在一个 SurfaceCard 容器内） */
-  [data-surface="card"]:has([data-density="default"]) > :not([data-slot="table-container"]) :where(button, input, select, span, a):not([data-slot="badge"], [data-slot="badge"] *) {
-    font-size: 0.875rem; /* 14px */
+  /* 2) 表格内部所有后代元素：统一 12px（强制覆盖业务侧 text-sm/text-base 等） */
+  table[data-density="default"] *:not([data-slot="badge"]):not([data-slot="badge"] *),
+  table[data-density="compact"] *:not([data-slot="badge"]):not([data-slot="badge"] *) {
+    font-size: 0.75rem !important; /* 12px */
   }
-  [data-surface="card"]:has([data-density="compact"]) > :not([data-slot="table-container"]) :where(button, input, select, span, a):not([data-slot="badge"], [data-slot="badge"] *) {
-    font-size: 0.75rem; /* 12px */
+
+  /* 3) 分页器：所有内部元素强制 12px（无论 size="default" 还是 "small"） */
+  [data-slot="pagination"],
+  [data-slot="pagination"] *:not([data-slot="badge"]):not([data-slot="badge"] *) {
+    font-size: 0.75rem !important; /* 12px */
+  }
+
+  /* 4) 数量统计 / 摘要文字：表格容器同级的兄弟元素全部 12px */
+  [data-surface="card"]:has([data-density="default"]) > :not([data-slot="table-container"]) *:not([data-slot="badge"]):not([data-slot="badge"] *),
+  [data-surface="card"]:has([data-density="compact"]) > :not([data-slot="table-container"]) *:not([data-slot="badge"]):not([data-slot="badge"] *) {
+    font-size: 0.75rem !important; /* 12px */
+  }
+
+  /* ─── 表格自动固定列规则（v2026.05） ───────────────────────────
+   * Table 组件默认开启 autoFixedColumns，给 <table data-auto-fixed="true">：
+   *   - 自动 sticky 每行第一个 TableHead / TableCell（首列）
+   *   - 自动 sticky 每行的 TableActionCell（操作列）
+   * 仅作用于"未显式声明 [data-fixed]"的单元格；业务侧已写 fixed="left"/"right" 的列优先级更高，不被覆盖。
+   * 当窄屏 / 大表格触发横向滚动时，首列与操作列保持可见，避免列被挤碎。
+   *
+   * z-index：
+   *   - 表头自动固定列 z-50（高于业务表头 popover z-40）
+   *   - 表体自动固定列 z-20
+   * ──────────────────────────────────────────────────────────── */
+
+  /* 表头：第一个 th + 所有 action-cell，仅当未显式 fixed 时 */
+  table[data-auto-fixed="true"] > thead > tr > th:first-child:not([data-fixed]) {
+    position: sticky;
+    left: 0;
+    z-index: 50;
+    background-color: #FAFAFA;
+  }
+  table[data-auto-fixed="true"] > thead > tr > [data-slot="table-action-cell"]:not([data-fixed]),
+  table[data-auto-fixed="true"] > thead > tr > th:last-child:not([data-fixed]):where([data-slot="table-action-cell"]) {
+    position: sticky;
+    right: 0;
+    z-index: 50;
+    background-color: #FAFAFA;
+  }
+
+  /* 表体：第一个 td + action-cell，仅当未显式 fixed 时 */
+  table[data-auto-fixed="true"] > tbody > tr > td:first-child:not([data-fixed]) {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background-color: #FFFFFF;
+    transition: background-color 0.15s ease;
+  }
+  table[data-auto-fixed="true"] > tbody > tr > [data-slot="table-action-cell"]:not([data-fixed]) {
+    position: sticky;
+    right: 0;
+    z-index: 20;
+    background-color: #FFFFFF;
+    transition: background-color 0.15s ease;
+  }
+
+  /* 行 hover / selected 时同步固定列底色 */
+  table[data-auto-fixed="true"] > tbody > tr:hover > td:first-child:not([data-fixed]),
+  table[data-auto-fixed="true"] > tbody > tr:hover > [data-slot="table-action-cell"]:not([data-fixed]) {
+    background-color: #F9FAFB;
+  }
+  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"] > td:first-child:not([data-fixed]),
+  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"] > [data-slot="table-action-cell"]:not([data-fixed]) {
+    background-color: rgba(20, 71, 230, 0.06);
+  }
+  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"]:hover > td:first-child:not([data-fixed]),
+  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"]:hover > [data-slot="table-action-cell"]:not([data-fixed]) {
+    background-color: rgba(20, 71, 230, 0.10);
+  }
+
+  /* 横向滚动时显示边界分隔线（仅当存在内容溢出 + 已偏移） */
+  [data-slot="table-container"][data-scroll-left="true"] table[data-auto-fixed="true"] > thead > tr > th:first-child:not([data-fixed])::after,
+  [data-slot="table-container"][data-scroll-left="true"] table[data-auto-fixed="true"] > tbody > tr > td:first-child:not([data-fixed])::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: -1px;
+    width: 1px;
+    background-color: #f0f0f0;
+    pointer-events: none;
+  }
+  [data-slot="table-container"][data-scroll-right="true"] table[data-auto-fixed="true"] > thead > tr > [data-slot="table-action-cell"]:not([data-fixed])::after,
+  [data-slot="table-container"][data-scroll-right="true"] table[data-auto-fixed="true"] > tbody > tr > [data-slot="table-action-cell"]:not([data-fixed])::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: -1px;
+    width: 1px;
+    background-color: #f0f0f0;
+    pointer-events: none;
   }
 
   /* 收起态侧栏：内容区居中对齐图标 */

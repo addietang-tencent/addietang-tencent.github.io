@@ -969,6 +969,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </th>
               {/* 记忆管理 - 带筛选 */}
               <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide" style={{ width: '22%' }}>
+
                 <div className="flex items-center gap-2 relative z-40">
                   记忆管理
                   <button
@@ -1097,7 +1098,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
               </>
             ) : paginatedList.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-400">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-[#A3A3A3]">
                   暂无符合条件的实例
                 </td>
               </tr>

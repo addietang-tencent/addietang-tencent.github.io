@@ -14,6 +14,10 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell,
+} from "@/components/ui/table";
+import { StatusTag } from "@/components/ui/status-tag";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, Download, Server, Shield } from "lucide-react";
 
@@ -118,63 +122,55 @@ export default function ServerManagement() {
                   导入镜像
                 </Button>
               </div>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-50 bg-gray-50/50">
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">镜像 ID / 名称</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">状态</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">硬盘</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作系统</th>
-                    <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">创建时间</th>
-                    <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>镜像 ID / 名称</TableHead>
+                    <TableHead>状态</TableHead>
+                    <TableHead>硬盘</TableHead>
+                    <TableHead>操作系统</TableHead>
+                    <TableHead>创建时间</TableHead>
+                    <TableHead>操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {images.map((img) => (
-                    <tr key={img.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4">
+                    <TableRow key={img.id}>
+                      <TableCell>
                         <p className="text-sm font-medium text-[#0A0A0A]">{img.name}</p>
                         <p className="text-xs text-[#A3A3A3] font-mono">{img.id}</p>
-                      </td>
-                      <td className="px-6 py-4">
+                      </TableCell>
+                      <TableCell>
                         {img.status === "available" ? (
-                          <span className="badge-running text-xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                            可用
-                          </span>
+                          <StatusTag mode="fill" variant="green">可用</StatusTag>
                         ) : (
-                          <span className="badge-pending text-xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block" />
-                            创建中
-                          </span>
+                          <StatusTag mode="fill" variant="gray">创建中</StatusTag>
                         )}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-[#737373]">{img.disk}</td>
-                      <td className="px-6 py-4 text-sm text-[#737373]">{img.os}</td>
-                      <td className="px-6 py-4 text-sm text-[#737373]">{img.createTime}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-3">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-[#A3A3A3]">生效</span>
-                            <Switch
-                              checked={img.active}
-                              onCheckedChange={(v) => {
-                                setImages(images.map((i) => ({ ...i, active: i.id === img.id ? v : false })));
-                                if (v) toast.success(`镜像 ${img.name} 已设为生效`);
-                              }}
-                            />
-                          </div>
-                          <button
-                            onClick={() => { setImages(images.filter((i) => i.id !== img.id)); toast.success("镜像已删除"); }}
-                            className="text-[#A3A3A3] hover:text-red-500 transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                      </TableCell>
+                      <TableCell className="text-[#737373]">{img.disk}</TableCell>
+                      <TableCell className="text-[#737373]">{img.os}</TableCell>
+                      <TableCell className="text-[#737373]">{img.createTime}</TableCell>
+                      <TableActionCell actionsClassName="gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[#A3A3A3]">生效</span>
+                          <Switch
+                            checked={img.active}
+                            onCheckedChange={(v) => {
+                              setImages(images.map((i) => ({ ...i, active: i.id === img.id ? v : false })));
+                              if (v) toast.success(`镜像 ${img.name} 已设为生效`);
+                            }}
+                          />
                         </div>
-                      </td>
-                    </tr>
+                        <button
+                          onClick={() => { setImages(images.filter((i) => i.id !== img.id)); toast.success("镜像已删除"); }}
+                          className="text-[#A3A3A3] hover:text-red-500 transition-colors">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </TableActionCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </TabsContent>
 
@@ -196,40 +192,39 @@ export default function ServerManagement() {
                       添加规则
                     </Button>
                   </div>
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-50 bg-gray-50/50">
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">来源</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">协议端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">策略</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">备注</th>
-                        <th className="text-right px-6 py-3 text-xs font-medium text-[#737373]">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
+                  <Table density="compact">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>来源</TableHead>
+                        <TableHead>协议端口</TableHead>
+                        <TableHead>端口</TableHead>
+                        <TableHead>策略</TableHead>
+                        <TableHead>备注</TableHead>
+                        <TableHead>操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {inboundRules.map((rule) => (
-                        <tr key={rule.id} className="hover:bg-gray-50/50">
-                          <td className="px-6 py-3 text-sm text-[#334155] font-mono">{rule.source}</td>
-                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.protocol}</td>
-                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.port}</td>
-                          <td className="px-6 py-3">
-                            <span className={`text-sm font-medium ${rule.policy === "允许" ? "text-green-600" : "text-red-500"}`}>
+                        <TableRow key={rule.id}>
+                          <TableCell className="text-[#0A0A0A] font-mono">{rule.source}</TableCell>
+                          <TableCell className="text-[#737373]">{rule.protocol}</TableCell>
+                          <TableCell className="text-[#737373]">{rule.port}</TableCell>
+                          <TableCell>
+                            <StatusTag mode="text" variant={rule.policy === "允许" ? "green" : "red"}>
                               {rule.policy}
-                            </span>
-                          </td>
-                          <td className="px-6 py-3 text-sm text-[#A3A3A3]">{rule.remark || "-"}</td>
-                          <td className="px-6 py-3">
-                            <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditRule(rule, "inbound")} className="text-[#355EF1] hover:underline text-xs">编辑</button>
-                              <button onClick={() => { setInboundRules(inboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}
-                                className="text-[#355EF1] hover:underline text-xs">删除</button>
-                            </div>
-                          </td>
-                        </tr>
+                            </StatusTag>
+                          </TableCell>
+                          <TableCell className="text-[#A3A3A3]">{rule.remark || "-"}</TableCell>
+                          <TableActionCell>
+                            <Button variant="link" onClick={() => openEditRule(rule, "inbound")}>编辑</Button>
+                            <Button variant="link" onClick={() => { setInboundRules(inboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}>
+                              删除
+                            </Button>
+                          </TableActionCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </TabsContent>
 
@@ -243,40 +238,39 @@ export default function ServerManagement() {
                       添加规则
                     </Button>
                   </div>
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-50 bg-gray-50/50">
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">目标</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">协议端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">端口</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">策略</th>
-                        <th className="text-left px-6 py-3 text-xs font-medium text-[#737373]">备注</th>
-                        <th className="text-right px-6 py-3 text-xs font-medium text-[#737373]">操作</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
+                  <Table density="compact">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>目标</TableHead>
+                        <TableHead>协议端口</TableHead>
+                        <TableHead>端口</TableHead>
+                        <TableHead>策略</TableHead>
+                        <TableHead>备注</TableHead>
+                        <TableHead>操作</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {outboundRules.map((rule) => (
-                        <tr key={rule.id} className="hover:bg-gray-50/50">
-                          <td className="px-6 py-3 text-sm text-[#334155] font-mono">{rule.source}</td>
-                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.protocol}</td>
-                          <td className="px-6 py-3 text-sm text-[#737373]">{rule.port}</td>
-                          <td className="px-6 py-3">
-                            <span className={`text-sm font-medium ${rule.policy === "允许" ? "text-green-600" : "text-red-500"}`}>
+                        <TableRow key={rule.id}>
+                          <TableCell className="text-[#0A0A0A] font-mono">{rule.source}</TableCell>
+                          <TableCell className="text-[#737373]">{rule.protocol}</TableCell>
+                          <TableCell className="text-[#737373]">{rule.port}</TableCell>
+                          <TableCell>
+                            <StatusTag mode="text" variant={rule.policy === "允许" ? "green" : "red"}>
                               {rule.policy}
-                            </span>
-                          </td>
-                          <td className="px-6 py-3 text-sm text-[#A3A3A3]">{rule.remark || "-"}</td>
-                          <td className="px-6 py-3">
-                            <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => openEditRule(rule, "outbound")} className="text-[#355EF1] hover:underline text-xs">编辑</button>
-                              <button onClick={() => { setOutboundRules(outboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}
-                                className="text-[#355EF1] hover:underline text-xs">删除</button>
-                            </div>
-                          </td>
-                        </tr>
+                            </StatusTag>
+                          </TableCell>
+                          <TableCell className="text-[#A3A3A3]">{rule.remark || "-"}</TableCell>
+                          <TableActionCell>
+                            <Button variant="link" onClick={() => openEditRule(rule, "outbound")}>编辑</Button>
+                            <Button variant="link" onClick={() => { setOutboundRules(outboundRules.filter((r) => r.id !== rule.id)); toast.success("规则已删除"); }}>
+                              删除
+                            </Button>
+                          </TableActionCell>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               </TabsContent>
             </Tabs>

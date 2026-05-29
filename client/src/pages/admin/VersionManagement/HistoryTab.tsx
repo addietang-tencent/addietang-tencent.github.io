@@ -35,6 +35,7 @@ import {
   type HistoryRecord,
   type HistoryAction,
 } from "./mockData";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import CopyableId from "./components/CopyableId";
 
 type ActionFilter = "all" | HistoryAction;
@@ -142,48 +143,48 @@ export default function HistoryTab({ scope = "all" }: Props) {
         style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
       >
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[14%]">
                   任务 ID
-                </th>
+                </TableHead>
                 {scope === "all" && (
-                  <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%] min-w-[110px]">
+                  <TableHead className="w-[10%] min-w-[110px]">
                     类型
-                  </th>
+                  </TableHead>
                 )}
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[28%]">
+                <TableHead className="w-[28%]">
                   运维内容
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[12%]">
+                </TableHead>
+                <TableHead className="w-[12%]">
                   执行方
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[14%]">
+                </TableHead>
+                <TableHead className="w-[14%]">
                   执行时间
-                </th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[15%]">
+                </TableHead>
+                <TableHead className="w-[15%]">
                   结果
-                </th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide w-[8%]">
+                </TableHead>
+                <TableHead className="text-right w-[8%]">
                   操作
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filtered.length === 0 ? (
-                <tr>
-                  <td colSpan={scope === "all" ? 7 : 6} className="px-6 py-16 text-center text-sm text-[#A3A3A3]">
+                <TableRow>
+                  <TableCell colSpan={scope === "all" ? 7 : 6} className="px-6 py-16 text-center text-sm text-[#A3A3A3]">
                     暂无符合条件的记录
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 filtered.map((r) => (
                   <HistoryRow key={r.id} record={r} showType={scope === "all"} onDetail={() => setDetailRecord(r)} />
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -235,25 +236,25 @@ function HistoryRow({
   const overall = getOverallStatus(record);
 
   return (
-    <tr className="hover:bg-gray-50/50 transition-colors">
+    <TableRow>
       {/* 任务 ID（可复制） */}
-      <td className="px-6 py-4">
+      <TableCell>
         <CopyableId id={record.taskId} primary />
-      </td>
+      </TableCell>
 
       {/* 类型（仅 scope=all 显示） */}
       {showType && (
-        <td className="px-6 py-4">
+        <TableCell>
           <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap ${getActionTagColor(record.action)}`}>
             {record.action === "command-execute" && <Code2 className="w-3 h-3 mr-1" />}
             {record.action === "agent-upgrade" && <ArrowUpRight className="w-3 h-3 mr-1" />}
             {HISTORY_ACTION_LABEL[record.action]}
           </span>
-        </td>
+        </TableCell>
       )}
 
       {/* 运维内容（按类型动态展示） */}
-      <td className="px-6 py-4">
+      <TableCell>
         {record.action === "agent-upgrade" && (
           <div className="space-y-0.5">
             <div className="text-sm text-[#0A0A0A] truncate max-w-[280px]">{record.assetName}</div>
@@ -290,10 +291,10 @@ function HistoryRow({
             )}
           </div>
         )}
-      </td>
+      </TableCell>
 
       {/* 执行方 */}
-      <td className="px-6 py-4">
+      <TableCell>
         {record.isAuto ? (
           <div className="inline-flex items-center gap-1.5 text-sm">
             <Sparkles className="w-3.5 h-3.5 text-[#355EF1]" />
@@ -305,10 +306,10 @@ function HistoryRow({
             <span className="text-[#334155] truncate max-w-[120px]">{record.operator}</span>
           </div>
         )}
-      </td>
+      </TableCell>
 
       {/* 执行时间 */}
-      <td className="px-6 py-4">
+      <TableCell>
         <div className="text-sm text-[#737373] tabular-nums whitespace-nowrap">
           {record.operatedAt}
         </div>
@@ -317,10 +318,10 @@ function HistoryRow({
             计划：{record.scheduledAt}
           </div>
         )}
-      </td>
+      </TableCell>
 
       {/* 结果（综合状态徽标 + 进度条 + 数字） */}
-      <td className="px-6 py-4">
+      <TableCell>
         <div className="space-y-1.5">
           <span className={`inline-flex items-center text-[11px] font-medium px-1.5 py-0.5 rounded whitespace-nowrap ${overall.color}`}>
             {overall.label}
@@ -343,18 +344,18 @@ function HistoryRow({
             </span>
           </div>
         </div>
-      </td>
+      </TableCell>
 
       {/* 操作 */}
-      <td className="px-6 py-4 text-right">
+      <TableActionCell className="text-right">
         <button
           onClick={onDetail}
           className="text-sm text-[#355EF1] hover:text-[#355EF1] font-medium"
         >
           详情
         </button>
-      </td>
-    </tr>
+      </TableActionCell>
+    </TableRow>
   );
 }
 
@@ -420,26 +421,26 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 <div>
                   <div className="text-xs text-gray-500 mb-1">命令参数</div>
                   <div className="rounded-lg border border-gray-100 overflow-hidden">
-                    <table className="w-full text-xs">
-                      <thead className="bg-gray-50">
-                        <tr className="border-b border-gray-100">
-                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium w-[36%]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[36%]">
                             参数名
-                          </th>
-                          <th className="text-left px-3 py-1.5 text-[11px] text-gray-500 font-medium">
+                          </TableHead>
+                          <TableHead>
                             参数值
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {Object.entries(record.commandExtra.paramValues).map(([k, v]) => (
-                          <tr key={k}>
-                            <td className="px-3 py-1.5 font-mono text-gray-900 break-all">{k}</td>
-                            <td className="px-3 py-1.5 font-mono text-gray-700 break-all">{v}</td>
-                          </tr>
+                          <TableRow key={k}>
+                            <TableCell className="font-mono text-gray-900 break-all">{k}</TableCell>
+                            <TableCell className="font-mono text-gray-700 break-all">{v}</TableCell>
+                          </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
                   {record.commandExtra.commandContentTemplate && (
                     <details className="text-xs mt-2">
@@ -496,42 +497,42 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                 className="bg-white rounded-xl border border-gray-100 overflow-hidden"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
               >
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-50 bg-gray-50/50">
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
                         Agent
-                      </th>
-                      <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide w-[16%]">
+                      </TableHead>
+                      <TableHead className="w-[16%]">
                         状态
-                      </th>
+                      </TableHead>
                       {record.action === "command-execute" ? (
                         <>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%]">
+                          <TableHead className="w-[10%]">
                             退出码
-                          </th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide w-[10%]">
+                          </TableHead>
+                          <TableHead className="w-[10%]">
                             耗时
-                          </th>
-                          <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">
+                          </TableHead>
+                          <TableHead>
                             输出
-                          </th>
+                          </TableHead>
                         </>
                       ) : (
-                        <th className="px-4 py-2.5 text-left text-xs font-medium text-[#737373] uppercase tracking-wide">
+                        <TableHead>
                           备注
-                        </th>
+                        </TableHead>
                       )}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {record.perInstanceResult.map((r) => (
-                      <tr key={r.instanceId} className="hover:bg-gray-50/50">
-                        <td className="px-4 py-3">
+                      <TableRow key={r.instanceId}>
+                        <TableCell>
                           <div className="text-sm text-[#0A0A0A]">{r.instanceName}</div>
                           <div className="text-xs text-[#A3A3A3] font-mono mt-0.5">{r.instanceId}</div>
-                        </td>
-                        <td className="px-4 py-3">
+                        </TableCell>
+                        <TableCell>
                           {r.status === "success" && (
                             <span className="inline-flex items-center gap-1 text-xs text-green-600">
                               <CheckCircle2 className="w-3.5 h-3.5" /> 成功
@@ -547,16 +548,16 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                               <Loader2 className="w-3.5 h-3.5 animate-spin" /> 进行中
                             </span>
                           )}
-                        </td>
+                        </TableCell>
                         {record.action === "command-execute" ? (
                           <>
-                            <td className="px-4 py-3 text-sm text-[#334155] font-mono tabular-nums">
+                            <TableCell className="text-sm text-[#334155] font-mono tabular-nums">
                               {r.exitCode ?? "—"}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-[#737373] tabular-nums">
+                            </TableCell>
+                            <TableCell className="text-sm text-[#737373] tabular-nums">
                               {r.durationMs ? `${(r.durationMs / 1000).toFixed(2)}s` : "—"}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-[#737373]">
+                            </TableCell>
+                            <TableCell className="text-sm text-[#737373]">
                               {r.stderr ? (
                                 <code className="text-xs text-red-600 font-mono break-all">{r.stderr}</code>
                               ) : r.stdout ? (
@@ -564,15 +565,15 @@ function HistoryDetailDialog({ record, onClose }: { record: HistoryRecord | null
                               ) : (
                                 "—"
                               )}
-                            </td>
+                            </TableCell>
                           </>
                         ) : (
-                          <td className="px-4 py-3 text-sm text-[#737373]">{r.message || "—"}</td>
+                          <TableCell className="text-sm text-[#737373]">{r.message || "—"}</TableCell>
                         )}
-                      </tr>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}

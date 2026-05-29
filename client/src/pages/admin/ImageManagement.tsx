@@ -26,6 +26,7 @@ import { RadioCard } from "@/components/ui/radio-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { StatusTag } from "@/components/ui/status-tag";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogBody,
@@ -417,7 +418,7 @@ function ImageScopePopover({
 
   const renderScopeText = () => {
     if (scopeData.visibilityScope === "all" || selectedGroupPaths.length === 0) {
-      return <span className="text-sm font-normal text-[#0A0A0A]">全部用户</span>;
+      return <Badge variant="outline">全部用户</Badge>;
     }
     const firstName = selectedGroupPaths[0];
     const rest = selectedGroupPaths.length - 1;
@@ -425,9 +426,13 @@ function ImageScopePopover({
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex max-w-full items-center gap-1 cursor-default text-sm font-normal text-[#0A0A0A]">
-            <span className="truncate">{firstName}</span>
-            {rest > 0 && <span className="shrink-0">+{rest}</span>}
+          <span className="inline-flex max-w-full items-center gap-1 cursor-default">
+            <Badge variant="outline" className="max-w-[140px]">
+              <span className="block truncate max-w-[124px]">{firstName}</span>
+            </Badge>
+            {rest > 0 && (
+              <Badge variant="outline">+{rest}</Badge>
+            )}
           </span>
         </TooltipTrigger>
         <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
@@ -1235,7 +1240,7 @@ export default function ImageManagement() {
             onImportCustom={(agentType) => openImportFor(agentType)}
             renderScope={(agentType) => {
               const scopeData = getTypeScope(agentType);
-              // 应用范围文字标签：参考模型配置列样式（纯文字 + 铅笔图标 + +N 折叠 + Tooltip）
+              // 应用范围标签：统一 Badge variant="outline"（白底描边），与 ScopeEditPopover / AllUsersTag 一致
               const isAll = scopeData.visibilityScope === "all" || scopeData.visibilityGroupIds.length === 0;
               const groupPaths = scopeData.visibilityGroupIds.map((gid) => getGroupPath(gid, ALL_GROUPS));
               const firstName = groupPaths[0];
@@ -1244,13 +1249,17 @@ export default function ImageManagement() {
               return (
                 <div className="inline-flex items-center gap-1.5 min-h-[20px] max-w-[220px]">
                   {isAll ? (
-                    <span className="text-sm font-normal text-[#0A0A0A]">全部用户</span>
+                    <Badge variant="outline">全部用户</Badge>
                   ) : (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="inline-flex max-w-full items-center gap-1 cursor-default text-sm font-normal text-[#0A0A0A]">
-                          <span className="truncate">{firstName}</span>
-                          {rest > 0 && <span className="shrink-0">+{rest}</span>}
+                        <span className="inline-flex max-w-full items-center gap-1 cursor-default">
+                          <Badge variant="outline" className="max-w-[140px]">
+                            <span className="block truncate max-w-[124px]">{firstName}</span>
+                          </Badge>
+                          {rest > 0 && (
+                            <Badge variant="outline">+{rest}</Badge>
+                          )}
                         </span>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">

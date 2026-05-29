@@ -854,110 +854,141 @@ export default function NodeContentPanel({
                 autoFocus
               />
             </div>
-            <div className="max-h-[420px] overflow-y-auto border border-[#e5e5e5] rounded-xl divide-y divide-gray-50 bg-white">
-              {addFilteredUsers.length === 0 ? (
-                <p className="text-xs text-gray-400 text-center py-6">
-                  没有可添加的用户
-                </p>
-              ) : (
-                addFilteredUsers.map((m) => {
-                  const isInCurrentGroup = m.groupIds.includes(nodeId);
-                  const isDisabled = isInCurrentGroup;
-                  // 部门：用户所有 oneid-dept 分组的完整路径（主部门排首位）
-                  const deptPaths = showDept
-                    ? m.groupIds
-                        .filter((gid) => groupMap.get(gid)?.source === "oneid-dept")
-                        .map((gid) => ({
-                          path: getPrimaryDeptPath(gid, groups),
-                          isPrimary: gid === m.primaryGroupId,
-                        }))
-                        .sort((a, b) =>
-                          a.isPrimary ? -1 : b.isPrimary ? 1 : 0
-                        )
-                        .map((d) => d.path)
-                    : [];
-                  // 分组：
-                  //   OneID 模式：oneid-dept + oneid-group（完整路径）；无部门数据时只 oneid-group
-                  //   普通模式：manual（完整路径）
-                  const groupPaths = m.groupIds
-                    .filter((gid) => {
-                      const g = groupMap.get(gid);
-                      if (!g) return false;
-                      if (hasOneid) {
-                        return showDept
-                          ? g.source === "oneid-dept" || g.source === "oneid-group"
-                          : g.source === "oneid-group";
-                      }
-                      return g.source === "manual";
-                    })
-                    .map((gid) => getPrimaryDeptPath(gid, groups));
-                  const tooltipText = isInCurrentGroup
-                    ? "该用户已在当前分组"
-                    : "";
-                  const row = (
-                    <label
-                      key={m.userId}
-                      className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${
-                        isDisabled
-                          ? "opacity-50 cursor-not-allowed bg-gray-100"
-                          : "bg-white hover:bg-gray-50 cursor-pointer"
-                      }`}
-                    >
-                      <Checkbox
-                        checked={isInCurrentGroup || addSelected.includes(m.userId)}
-                        disabled={isDisabled}
-                        onCheckedChange={() => {
-                          if (isDisabled) return;
-                          setAddSelected((prev) =>
-                            prev.includes(m.userId)
-                              ? prev.filter((id) => id !== m.userId)
-                              : [...prev, m.userId]
-                          );
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm text-gray-900 block truncate">
-                          {m.userId}
-                        </span>
-                        {showDept && (
-                          <span className="text-xs text-gray-400 block break-all">
-                            部门：{deptPaths.length > 0 ? deptPaths.join("、") : "—"}
-                          </span>
-                        )}
-                        <span className="text-xs text-gray-400 block break-all">
-                          分组：{groupPaths.length > 0 ? groupPaths.join("、") : "—"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <StatusTag variant={m.role === "admin" ? "blue" : "gray"}>
-                          {m.role === "admin" ? "管理员" : "用户"}
-                        </StatusTag>
-                        {m.status === "active" ? (
-                          <StatusTag variant="green" dot>正常</StatusTag>
-                        ) : (
-                          <StatusTag variant="red" dot>禁用</StatusTag>
-                        )}
-                      </div>
-                    </label>
-                  );
-                  return isDisabled ? (
-                    <Tooltip key={m.userId}>
-                      <TooltipTrigger asChild>{row}</TooltipTrigger>
-                      <TooltipContent>{tooltipText}</TooltipContent>
-                    </Tooltip>
+            <div className="max-h-[420px] overflow-y-auto border border-[#E5E5E5] rounded-[4px] bg-white">
+              <Table density="compact">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-10"></TableHead>
+                    <TableHead>用户 ID</TableHead>
+                    {showDept && <TableHead>所属部门</TableHead>}
+                    <TableHead>当前分组</TableHead>
+                    <TableHead className="w-24">角色</TableHead>
+                    <TableHead className="w-20">状态</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {addFilteredUsers.length === 0 ? (
+                    <TableRow className="hover:bg-transparent">
+                      <TableCell
+                        colSpan={showDept ? 6 : 5}
+                        className="text-center text-xs text-[#A3A3A3] py-6"
+                      >
+                        没有可添加的用户
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    row
-                  );
-                })
-              )}
+                    addFilteredUsers.map((m) => {
+                      const isInCurrentGroup = m.groupIds.includes(nodeId);
+                      const isDisabled = isInCurrentGroup;
+                      // 部门：用户所有 oneid-dept 分组的完整路径（主部门排首位）
+                      const deptPaths = showDept
+                        ? m.groupIds
+                            .filter((gid) => groupMap.get(gid)?.source === "oneid-dept")
+                            .map((gid) => ({
+                              path: getPrimaryDeptPath(gid, groups),
+                              isPrimary: gid === m.primaryGroupId,
+                            }))
+                            .sort((a, b) =>
+                              a.isPrimary ? -1 : b.isPrimary ? 1 : 0
+                            )
+                            .map((d) => d.path)
+                        : [];
+                      // 分组
+                      const groupPaths = m.groupIds
+                        .filter((gid) => {
+                          const g = groupMap.get(gid);
+                          if (!g) return false;
+                          if (hasOneid) {
+                            return showDept
+                              ? g.source === "oneid-dept" || g.source === "oneid-group"
+                              : g.source === "oneid-group";
+                          }
+                          return g.source === "manual";
+                        })
+                        .map((gid) => getPrimaryDeptPath(gid, groups));
+                      const tooltipText = isInCurrentGroup
+                        ? "该用户已在当前分组"
+                        : "";
+                      const isChecked =
+                        isInCurrentGroup || addSelected.includes(m.userId);
+                      const onToggle = () => {
+                        if (isDisabled) return;
+                        setAddSelected((prev) =>
+                          prev.includes(m.userId)
+                            ? prev.filter((id) => id !== m.userId)
+                            : [...prev, m.userId]
+                        );
+                      };
+                      const row = (
+                        <TableRow
+                          key={m.userId}
+                          onClick={onToggle}
+                          className={
+                            isDisabled
+                              ? "opacity-50 cursor-not-allowed bg-[#FAFAFA] hover:bg-[#FAFAFA]"
+                              : "cursor-pointer"
+                          }
+                        >
+                          <TableCell className="w-10">
+                            <Checkbox
+                              checked={isChecked}
+                              disabled={isDisabled}
+                              onCheckedChange={onToggle}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </TableCell>
+                          <TableCell className="text-sm text-[#0A0A0A]">
+                            {m.userId}
+                          </TableCell>
+                          {showDept && (
+                            <TableCell className="text-xs text-[#737373]">
+                              {deptPaths.length > 0 ? deptPaths.join("、") : "—"}
+                            </TableCell>
+                          )}
+                          <TableCell className="text-xs text-[#737373]">
+                            {groupPaths.length > 0 ? groupPaths.join("、") : "—"}
+                          </TableCell>
+                          <TableCell className="w-24">
+                            <StatusTag
+                              mode="fill"
+                              variant={m.role === "admin" ? "blue" : "gray"}
+                            >
+                              {m.role === "admin" ? "管理员" : "用户"}
+                            </StatusTag>
+                          </TableCell>
+                          <TableCell className="w-20">
+                            {m.status === "active" ? (
+                              <StatusTag mode="text" variant="green">
+                                正常
+                              </StatusTag>
+                            ) : (
+                              <StatusTag mode="text" variant="red">
+                                禁用
+                              </StatusTag>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                      return isDisabled ? (
+                        <Tooltip key={m.userId}>
+                          <TooltipTrigger asChild>{row}</TooltipTrigger>
+                          <TooltipContent>{tooltipText}</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        row
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
             </div>
             {addSelected.length > 0 && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-[#737373]">
                   已选择 {addSelected.length} 名用户
                 </span>
                 <button
-                  className="text-xs text-blue-500 hover:text-blue-600 hover:underline"
+                  className="text-xs text-[#355EF1] hover:text-[#1447E6] hover:underline"
                   onClick={() => setAddSelected([])}
                 >
                   清除选择
@@ -1203,24 +1234,26 @@ function SourceBadge({ source }: { source: ConfigEntry["source"] }) {
 /** 异常分组：本分组配置条目后的红色提示标签 */
 function LocalAnomalyHint() {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-red-600 bg-red-50 border border-red-100 rounded px-1.5 py-0.5 shrink-0">
-      <span className="w-1 h-1 rounded-full bg-red-500" />
+    <StatusTag mode="dot" variant="red" className="text-xs shrink-0">
       请前往对应配置页解绑或删除
-    </span>
+    </StatusTag>
   );
 }
 
 /**
  * VPC / 子网被云端删除时的「请前往网络管理页面更新配置」轻量提示。
- * 胶囊形态（与同模块红色 LocalAnomalyHint 同款结构），改用黄色（amber）配色，
- * 用于表达「需要前往更新」的待处理状态，与「请前往对应配置页解绑或删除」的红色异常胶囊形成色阶区分。
+ * 黄色（amber）配色，用于表达「需要前往更新」的待处理状态，与红色异常胶囊形成色阶区分。
+ * 注：StatusTag 当前未提供 yellow 变体，沿用 Badge 自定义样式（amber tokens 与 Alert variant="warning" 对齐）。
  */
 function ConfigOutdatedHint() {
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 shrink-0">
-      <span className="w-1 h-1 rounded-full bg-red-500" />
+    <Badge
+      variant="outline"
+      className="gap-1 border-[#FED7AA] bg-[#FFF7ED] text-[#FF6900] shrink-0"
+    >
+      <span className="w-1 h-1 rounded-full bg-[#FF6900]" />
       请前往网络管理更新配置
-    </span>
+    </Badge>
   );
 }
 
@@ -1230,9 +1263,9 @@ function PublicNetworkDetail({ meta, source }: { meta: Record<string, string | n
     <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
       <span>
         公网 IP：
-        <span className={`font-medium ${meta.allocated ? "text-emerald-600" : "text-gray-400"}`}>
+        <StatusTag mode="text" variant={meta.allocated ? "green" : "gray"} className="ml-1 text-xs">
           {meta.allocated ? "已分配" : "未分配"}
-        </span>
+        </StatusTag>
       </span>
       <span className="text-gray-200">|</span>
       <span>计费模式：<span className="font-medium text-gray-700">{String(meta.billingMode)}</span></span>
@@ -1248,10 +1281,9 @@ function PolicyEntryValue({ entry }: { entry: ConfigEntry }) {
   if (!entry.meta) return null;
   if ("enabled" in entry.meta) {
     return (
-      <span className={`inline-flex items-center gap-1 text-xs font-medium ${entry.meta.enabled ? "text-emerald-600" : "text-gray-400"}`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${entry.meta.enabled ? "bg-emerald-500" : "bg-gray-300"}`} />
+      <StatusTag mode="dot" variant={entry.meta.enabled ? "green" : "gray"} className="text-xs">
         {entry.meta.enabled ? "已开启" : "已关闭"}
-      </span>
+      </StatusTag>
     );
   }
   if ("value" in entry.meta) {
@@ -1633,7 +1665,7 @@ function ConfigOverviewTab({
                                     return zones.map((zone, idx) => (
                                       <div key={`preset-zone-${zone}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
                                         <span className="text-xs text-gray-500 shrink-0">子网：</span>
-                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{zone}</span>
+                                        <Badge variant="secondary">{zone}</Badge>
                                         <span className="text-xs font-semibold text-gray-700">自动分配</span>
                                       </div>
                                     ));
@@ -1655,7 +1687,7 @@ function ConfigOverviewTab({
                                       {subnets.map((subnet, idx) => (
                                         <div key={`${subnet.subnetId}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
                                           <span className="text-xs text-gray-500 shrink-0">子网：</span>
-                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{subnet.zone}</span>
+                                          <Badge variant="secondary">{subnet.zone}</Badge>
                                           {/* 与线上保持一致：仅展示 subnetId（不展示子网名 / CIDR） */}
                                           <span className="text-xs font-semibold text-gray-700">
                                             {subnet.subnetId}
@@ -1665,7 +1697,7 @@ function ConfigOverviewTab({
                                       {zonesAllDeleted.map((zone, idx) => (
                                         <div key={`zone-empty-${zone}-${idx}`} className="flex items-center gap-2 flex-wrap pl-4">
                                           <span className="text-xs text-gray-500 shrink-0">子网：</span>
-                                          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-xs text-gray-600">{zone}</span>
+                                          <Badge variant="secondary">{zone}</Badge>
                                           <span className="text-xs text-gray-400">无可用子网</span>
                                           <ConfigOutdatedHint />
                                         </div>

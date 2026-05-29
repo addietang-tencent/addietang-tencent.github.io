@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { AlertTriangle, Users, FolderX } from "lucide-react";
 import type { SyncResult } from "./types";
 
@@ -66,33 +67,33 @@ export default function SyncResultDialog({
 
               {/* 分组异常表格 */}
               <div className="border border-[#e5e5e5] rounded-xl overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-[#e5e5e5]">
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
+                <Table className="w-full text-sm">
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 border-b border-[#e5e5e5]">
+                      <TableHead className="text-left uppercase tracking-wide">
                         分组名称
-                      </th>
-                      <th className="text-center px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
+                      </TableHead>
+                      <TableHead className="text-center uppercase tracking-wide">
                         分组总人数
-                      </th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
+                      </TableHead>
+                      <TableHead className="text-left uppercase tracking-wide">
                         已应用配置
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {result.anomalousGroups.map((group) => (
-                      <tr
+                      <TableRow
                         key={group.groupId}
                         className="border-b border-gray-50 last:border-b-0"
                       >
-                        <td className="px-4 py-3 text-[#0A0A0A] font-medium">
+                        <TableCell className="text-[#0A0A0A] font-medium">
                           {group.groupName}
-                        </td>
-                        <td className="px-4 py-3 text-center text-[#737373] tabular-nums">
+                        </TableCell>
+                        <TableCell className="text-center text-[#737373] tabular-nums">
                           {group.memberCount}
-                        </td>
-                        <td className="px-4 py-3">
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-wrap gap-1.5">
                             {group.boundConfigs.map((config) => (
                               <span
@@ -103,11 +104,11 @@ export default function SyncResultDialog({
                               </span>
                             ))}
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}
@@ -133,33 +134,33 @@ export default function SyncResultDialog({
 
               {/* 用户异常表格 */}
               <div className="border border-[#e5e5e5] rounded-xl overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 border-b border-[#e5e5e5]">
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
+                <Table className="w-full text-sm">
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 border-b border-[#e5e5e5]">
+                      <TableHead className="text-left uppercase tracking-wide">
                         用户
-                      </th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wide">
+                      </TableHead>
+                      <TableHead className="text-left uppercase tracking-wide">
                         异常原因
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {result.anomalousUsers.map((user) => (
-                      <tr
+                      <TableRow
                         key={user.userId}
                         className="border-b border-gray-50 last:border-b-0"
                       >
-                        <td className="px-4 py-3 text-[#0A0A0A] font-medium">
+                        <TableCell className="text-[#0A0A0A] font-medium">
                           {user.displayName}
-                        </td>
-                        <td className="px-4 py-3 text-[#737373]">
+                        </TableCell>
+                        <TableCell className="text-[#737373]">
                           {user.reason}
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}

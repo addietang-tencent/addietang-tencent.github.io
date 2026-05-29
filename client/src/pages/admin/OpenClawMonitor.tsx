@@ -2378,17 +2378,18 @@ export default function AgentMonitor() {
           </Table>
 
           {/* Pagination */}
-          <div className="px-4 py-3 border-t border-[#f0f0f0]">
-            <Pagination
-              total={versionFiltered.length}
-              current={safePage}
-              pageSize={PAGE_SIZE}
-              showTotal={(total) => `共 ${total} 条记录`}
-              className="w-full justify-between"
-              hideOnSinglePage
-              onChange={(page) => { setPage(page); }}
-            />
-          </div>
+          {versionFiltered.length > PAGE_SIZE && (
+            <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <Pagination
+                total={versionFiltered.length}
+                current={safePage}
+                pageSize={PAGE_SIZE}
+                showTotal={(total) => `共 ${total} 条记录`}
+                className="w-full justify-between"
+                onChange={(page) => { setPage(page); }}
+              />
+            </div>
+          )}
         </SurfaceCard>
 
       </div>

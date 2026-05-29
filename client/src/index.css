@@ -623,6 +623,28 @@
   .page-enter {
     animation: pageEnter 0.25s ease-out;
   }
+
+  /* Hide scrollbar but keep scroll functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Anchor highlight pulse */
+  .anchor-highlight {
+    animation: anchorPulse 1.5s ease-out;
+    outline: 2px solid rgba(20, 71, 230, 0.25);
+    outline-offset: -1px;
+    border-radius: 8px;
+  }
+  @keyframes anchorPulse {
+    0% { outline-color: rgba(20, 71, 230, 0.3); }
+    20% { outline-color: rgba(20, 71, 230, 0.25); }
+    100% { outline-color: rgba(20, 71, 230, 0); }
+  }
   @keyframes pageEnter {
     from {
       opacity: 0;

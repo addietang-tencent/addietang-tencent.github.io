@@ -6,13 +6,17 @@ import { useState, useEffect, useRef, useLayoutEffect, useMemo, Fragment } from 
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { SurfaceCard } from "@/components/ui/Surface";
+import { Card } from "@/components/ui/card";
+import { CardTitle, MetaText } from "@/components/ui/Typography";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createPortal } from "react-dom";
 import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogBody,
@@ -28,10 +32,11 @@ import {
 } from "@/components/ui/command";
 import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
-import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus, CircleAlert } from "lucide-react";
+import { Plus, Trash2, Pencil, Info, ExternalLink, Loader2, Check, ChevronDown, ChevronRight, ChevronLeft, Shield, Search, X, AlertTriangle, Minus, CircleAlert, Globe } from "lucide-react";
 
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScopeEditPopover } from "@/components/ScopeEditPopover";
 // 与「模型配置 · 应用范围」对齐：共享 MemberManagement 的分组 mock，
 //   - 列表行 badge 渲染完整分组路径
 //   - 应用范围 Popover 使用同款树形多选（按 source 分桶 + 父子级联）
@@ -252,8 +257,8 @@ const SECURITY_GROUP_DIALOG_PAGE_SIZE = 5;
 const CLAWPRO_SG_NAME_REGEX = /^[A-Za-z][a-zA-Z0-9-]{1,30}[a-zA-Z0-9]$/;
 // 命名规则（非法态红色错误、提交 toast 复用此简短版本）
 const CLAWPRO_SG_NAME_RULE = "支持字母、数字、短横线，以字母开头，3–32 个字符";
-// 完整 hint（合法态灰字提示：规则 + 命名特点）
-const CLAWPRO_SG_NAME_HINT = `${CLAWPRO_SG_NAME_RULE}；创建后不可修改，对应的云端安全组由 ClawPro 自动创建并命名。`;
+// 命名补充说明（与规则分两行展示，避免长句换行不可控）
+const CLAWPRO_SG_NAME_NOTE = "创建后不可修改，对应的云端安全组由 ClawPro 自动创建并命名。";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // mock data / 初始化数据
@@ -1235,9 +1240,14 @@ function CreateSecurityGroupDialog({
                 名称格式不正确：{CLAWPRO_SG_NAME_RULE}。
               </p>
             ) : (
-              <p className="text-xs text-[#737373] leading-relaxed">
-                {CLAWPRO_SG_NAME_HINT}
-              </p>
+              <div className="space-y-0.5">
+                <p className="text-xs text-[#737373] leading-relaxed">
+                  {CLAWPRO_SG_NAME_RULE}
+                </p>
+                <p className="text-xs text-[#737373] leading-relaxed">
+                  {CLAWPRO_SG_NAME_NOTE}
+                </p>
+              </div>
             )}
           </div>
 
@@ -1252,40 +1262,29 @@ function CreateSecurityGroupDialog({
 
           <div className="space-y-2">
             <Label className="text-xs font-medium text-[#525252]">快速添加常用规则</Label>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
               {COMMON_RULE_OPTIONS.map((option) => {
                 const isChecked = checkedOptions.includes(option.key);
                 return (
                   <label
                     key={option.key}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-colors cursor-pointer ${
-                      isChecked ? "bg-[#eff4ff]/50 border-[#355EF1]" : "bg-white border-[#e5e5e5] hover:bg-[#f5f5f5]"
-                    }`}
+                    className="inline-flex items-center gap-2 cursor-pointer select-none"
                   >
-                    <div className="flex items-center justify-center">
-                      <div className={`w-3.5 h-3.5 rounded-sm border flex items-center justify-center transition-colors ${
-                        isChecked ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"
-                      }`}>
-                        {isChecked && <Check className="w-2.5 h-2.5 text-white stroke-[3]" />}
-                      </div>
-                      <input
-                        type="checkbox"
-                        className="hidden"
-                        checked={isChecked}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          onOptionToggle(option.key, checked);
-                          if (checked) {
-                            if (option.key === "allow-public") {
-                              onPreviewTabChange("outbound");
-                            } else if (option.key === "allow-ssh") {
-                              onPreviewTabChange("inbound");
-                            }
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={(v) => {
+                        const checked = v === true;
+                        onOptionToggle(option.key, checked);
+                        if (checked) {
+                          if (option.key === "allow-public") {
+                            onPreviewTabChange("outbound");
+                          } else if (option.key === "allow-ssh") {
+                            onPreviewTabChange("inbound");
                           }
-                        }}
-                      />
-                    </div>
-                    <span className={`text-xs font-medium ${isChecked ? "text-blue-900" : "text-[#525252]"}`}>
+                        }
+                      }}
+                    />
+                    <span className="text-sm text-[#0A0A0A]">
                       {option.label}
                     </span>
                   </label>
@@ -1317,47 +1316,47 @@ function CreateSecurityGroupDialog({
               </Alert>
             )}
 
-            <div className="border border-[#E5E5E5] rounded-[4px] overflow-hidden">
-              <div className="flex items-center px-3 border-b border-[#e5e5e5] bg-white" style={{ minHeight: "36px" }}>
-                {(["outbound", "inbound"] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => onPreviewTabChange(tab)}
-                    className={`relative px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                      previewTab === tab
-                        ? "text-[#355EF1] border-b-2 border-blue-600 -mb-px"
-                        : "text-[#737373] hover:text-[#525252]"
-                    }`}
-                  >
-                    {tab === "outbound" ? "出站规则" : "入站规则"} ({tab === "outbound" ? previewOutbound.length : previewInbound.length})
-                  </button>
-                ))}
-              </div>
+            <div className="space-y-2">
+              <SegmentGroup>
+                <SegmentOption
+                  active={previewTab === "outbound"}
+                  onClick={() => onPreviewTabChange("outbound")}
+                >
+                  出站规则
+                  <span className="ml-1 text-[#A3A3A3]">({previewOutbound.length})</span>
+                </SegmentOption>
+                <SegmentOption
+                  active={previewTab === "inbound"}
+                  onClick={() => onPreviewTabChange("inbound")}
+                >
+                  入站规则
+                  <span className="ml-1 text-[#A3A3A3]">({previewInbound.length})</span>
+                </SegmentOption>
+              </SegmentGroup>
 
-              <div className="max-h-40 overflow-y-auto scrollbar-on-hover">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="bg-[#fafafa]/50 border-b border-[#e5e5e5]">
-                      <th className="px-3 py-2 text-left font-medium text-[#737373]">{previewTab === "outbound" ? "目标" : "来源"}</th>
-                      <th className="px-3 py-2 text-left font-medium text-[#737373]">协议</th>
-                      <th className="px-3 py-2 text-left font-medium text-[#737373]">端口</th>
-                      <th className="px-3 py-2 text-left font-medium text-[#737373]">策略</th>
-                      <th className="px-3 py-2 text-left font-medium text-[#A3A3A3]">说明</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {previewRules.length > 0 ? (
-                      previewRules.map((rule, index) => {
-                        // 如果这条规则只属于某一个 checkedOption，并且我们能检测到它，给予轻微高亮
-                        // 简单起见，利用 remark 里的关键字或者来源作为匹配判断
-                        // 这里我们仅为规则行添加一个非常轻的过渡背景类（如果不需要具体判断谁引起的，直接用默认即可，React会自动应用动画，这里为了明显反馈，我们让所有展示出来的规则都自带淡入高亮效果）。
-                        // 此处通过在渲染时添加动画类名实现每次重渲染的高亮闪烁，或者简单使用 hover
-                        return (
-                          <tr key={`preview-${previewTab}-${rule.source}-${rule.port}-${index}`} className="animate-in fade-in bg-white border-b border-gray-50 last:border-0 hover:bg-[#f5f5f5]/60 transition-colors">
-                            <td className="px-3 py-2 text-[#525252]">{rule.source}</td>
-                            <td className="px-3 py-2 text-[#525252]">{rule.protocol}</td>
-                            <td className="px-3 py-2 text-[#525252]">{rule.port}</td>
-                            <td className="px-3 py-2">
+              <div className="overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
+                <div className="max-h-40 overflow-y-auto scrollbar-on-hover">
+                  <Table density="compact">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{previewTab === "outbound" ? "目标" : "来源"}</TableHead>
+                        <TableHead>协议</TableHead>
+                        <TableHead>端口</TableHead>
+                        <TableHead>策略</TableHead>
+                        <TableHead>说明</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {previewRules.length > 0 ? (
+                        previewRules.map((rule, index) => (
+                          <TableRow
+                            key={`preview-${previewTab}-${rule.source}-${rule.port}-${index}`}
+                            className="animate-in fade-in"
+                          >
+                            <TableCell>{rule.source}</TableCell>
+                            <TableCell>{rule.protocol}</TableCell>
+                            <TableCell>{rule.port}</TableCell>
+                            <TableCell>
                               {rule.policy === "允许" ? (
                                 <StatusTag mode="fill" variant="green">
                                   {rule.policy}
@@ -1367,20 +1366,20 @@ function CreateSecurityGroupDialog({
                                   {rule.policy}
                                 </StatusTag>
                               )}
-                            </td>
-                            <td className="px-3 py-2 text-[#A3A3A3]">{rule.remark || "—"}</td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr className="bg-white">
-                        <td colSpan={5} className="px-3 py-6 text-center text-[#A3A3A3]">
-                          暂无规则
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                            </TableCell>
+                            <TableCell className="text-[#737373]">{rule.remark || "—"}</TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-[#A3A3A3]">
+                            暂无规则
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
           </div>
@@ -2098,16 +2097,16 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
   const tone = allDeleted ? "text-amber-600" : "text-[#A3A3A3]";
   const sepTone = allDeleted ? "text-amber-300" : "text-[#A3A3A3]";
   const deletedPill = deleted.length > 0 && (
-    <span className={`inline-flex items-start gap-2 text-xs ${tone} leading-relaxed max-w-full break-all`}>
-      <span className="min-w-0">
+    <span className={`inline-flex items-start gap-2 text-[13px] ${tone} max-w-full break-all`}>
+      <span className="min-w-0 text-[13px]">
         {deleted.map((s, i) => (
           <Fragment key={s.id}>
-            {i > 0 && <span className={sepTone}>、</span>}
-            <span className={`font-mono ${tone}`}>{s.id}</span>
+            {i > 0 && <span className={`text-[13px] ${sepTone}`}>、</span>}
+            <span className={`text-[13px] ${tone}`}>{s.id}</span>
           </Fragment>
         ))}
       </span>
-      <span className="shrink-0">已从腾讯云控制台被删除</span>
+      <span className="shrink-0 text-[13px]">已从腾讯云控制台被删除</span>
     </span>
   );
 
@@ -2115,7 +2114,7 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
   if (allDeleted) {
     return (
       <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0 cursor-default">
-        <span className="text-xs text-[#737373] shrink-0">无可用子网</span>
+        <span className="text-[13px] text-[#A3A3A3] shrink-0">无可用子网</span>
         {deletedPill}
       </div>
     );
@@ -2130,18 +2129,16 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
             <span
               key={s.id}
               ref={(el) => { tagRefs.current[i] = el; }}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#f5f5f5] text-xs whitespace-nowrap shrink-0"
+              className="shrink-0"
             >
-              <span className="font-mono text-[#737373]">{s.id}</span>
-              <span className="text-[#A3A3A3]">|</span>
-              <span className="text-[#525252]">{s.name}</span>
-              <span className="text-[#A3A3A3]">|</span>
-              <span className="font-mono text-[#A3A3A3]">{s.cidr}</span>
+              <Badge variant="outline">
+                {s.id} | {s.name} | {s.cidr}
+              </Badge>
             </span>
           ))}
           {/* 折叠提示 */}
           {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-xs text-[#A3A3A3] whitespace-nowrap shrink-0">
+            <span className="inline-flex items-center px-1.5 py-0.5 text-[13px] text-[#A3A3A3] whitespace-nowrap shrink-0">
               …共 {healthy.length} 个可用子网
             </span>
           )}
@@ -2151,13 +2148,9 @@ function SubnetBadgesRow({ subnets }: { subnets: SubnetEntity[] }) {
               <span
                 key={`m-${s.id}`}
                 ref={(el) => { tagRefs.current[i] = el; }}
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#f5f5f5] text-xs whitespace-nowrap"
+                className="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs whitespace-nowrap"
               >
-                <span className="font-mono text-[#737373]">{s.id}</span>
-                <span className="text-[#A3A3A3]">|</span>
-                <span className="text-[#525252]">{s.name}</span>
-                <span className="text-[#A3A3A3]">|</span>
-                <span className="font-mono text-[#A3A3A3]">{s.cidr}</span>
+                {s.id} | {s.name} | {s.cidr}
               </span>
             ))}
             <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-xs text-[#A3A3A3] whitespace-nowrap" />
@@ -3126,7 +3119,7 @@ export default function SecurityGroupManagement() {
                           key={sg.name}
                           htmlFor={`tpl-${sg.name}`}
                           className={`w-full text-left px-4 py-2.5 border-b border-[#E5E5E5] last:border-b-0 cursor-pointer transition-colors flex items-start gap-3 ${
-                            isSelected ? "bg-[#EFF6FF]" : "hover:bg-[#FAFAFA]"
+                            isSelected ? "bg-[#f4f4f5]" : "hover:bg-[#fafafa]"
                           }`}
                         >
                           <RadioGroupItem
@@ -3136,7 +3129,7 @@ export default function SecurityGroupManagement() {
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className={`text-sm font-medium truncate ${isSelected ? "text-[#1447E6]" : "text-[#0A0A0A]"}`}>{sg.name}</span>
+                              <span className={`text-sm truncate text-[#0A0A0A] ${isSelected ? "font-medium" : ""}`}>{sg.name}</span>
                             </div>
                             <p className="text-xs text-[#737373] mt-0.5 truncate">{sg.remark || "—"}</p>
                           </div>
@@ -3153,39 +3146,81 @@ export default function SecurityGroupManagement() {
               </div>
             </div>
 
-            {selectedSecurityGroup && (
-              <div className="space-y-3">
-                <div className="text-sm font-medium text-[#0A0A0A]">规则预览</div>
-                <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
-                  <div className="flex items-center px-4 border-b border-[#E5E5E5]" style={{ minHeight: "44px" }}>
-                    {(["outbound", "inbound"] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        onClick={() => onPreviewTabChange(tab)}
-                        className={`relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap ${
-                          previewTab === tab
-                            ? "text-[#1447E6] border-b-2 border-[#1447E6] -mb-px"
-                            : "text-[#737373] hover:text-[#525252]"
-                        }`}
+            {selectedSecurityGroup && (() => {
+              const previewRulesList = previewTab === "outbound"
+                ? selectedSecurityGroup.outboundRules
+                : selectedSecurityGroup.inboundRules;
+              return (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-[#0A0A0A]">规则预览</div>
+                  <div>
+                    <SegmentGroup>
+                      <SegmentOption
+                        active={previewTab === "outbound"}
+                        onClick={() => onPreviewTabChange("outbound")}
                       >
-                        {tab === "outbound" ? "出站规则" : "入站规则"}
-                        <span className="ml-1.5 text-xs text-[#A3A3A3]">
-                          ({tab === "outbound" ? selectedSecurityGroup.outboundCount : selectedSecurityGroup.inboundCount})
-                        </span>
-                      </button>
-                    ))}
-                    <span className="ml-auto text-xs text-[#A3A3A3] pr-2">仅预览，不可编辑</span>
+                        出站规则
+                        <span className="ml-1 text-[#A3A3A3]">({selectedSecurityGroup.outboundCount})</span>
+                      </SegmentOption>
+                      <SegmentOption
+                        active={previewTab === "inbound"}
+                        onClick={() => onPreviewTabChange("inbound")}
+                      >
+                        入站规则
+                        <span className="ml-1 text-[#A3A3A3]">({selectedSecurityGroup.inboundCount})</span>
+                      </SegmentOption>
+                    </SegmentGroup>
                   </div>
-                  <div className="max-h-64 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}>
-                    <RuleTableBody
-                      rules={previewTab === "outbound" ? selectedSecurityGroup.outboundRules : selectedSecurityGroup.inboundRules}
-                      type={previewTab}
-                      readonly={true}
-                    />
+
+                  <div className="overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
+                    <div className="max-h-64 overflow-y-auto scrollbar-on-hover">
+                      <Table density="compact">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{previewTab === "outbound" ? "目标" : "来源"}</TableHead>
+                            <TableHead>协议</TableHead>
+                            <TableHead>端口</TableHead>
+                            <TableHead>策略</TableHead>
+                            <TableHead>备注</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {previewRulesList.length > 0 ? (
+                            previewRulesList.map((rule) => (
+                              <TableRow key={rule.id}>
+                                <TableCell>{rule.source}</TableCell>
+                                <TableCell>{rule.protocol}</TableCell>
+                                <TableCell>{rule.port}</TableCell>
+                                <TableCell>
+                                  {rule.policy === "允许" ? (
+                                    <StatusTag mode="fill" variant="green">
+                                      {rule.policy}
+                                    </StatusTag>
+                                  ) : (
+                                    <StatusTag mode="fill" variant="gray">
+                                      {rule.policy}
+                                    </StatusTag>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-[#737373]">{rule.remark || "—"}</TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={5} className="text-center text-[#A3A3A3]">
+                                {previewTab === "outbound"
+                                  ? "出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用"
+                                  : "暂无入站规则"}
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </DialogBody>
 
@@ -3299,108 +3334,96 @@ export default function SecurityGroupManagement() {
               布局：两 banner 同属"页面级告知区"，用内层 gap-3（12px）聚合为一组；
                    告知区与下方配置卡片之间保持外层 gap-6（24px）喘息空间。 */}
           {currentSg && (
-            <div className="flex flex-col gap-3">
-              <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-[4px] px-4 py-3">
-                <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <div className="text-xs text-amber-700 leading-relaxed space-y-1.5">
-                  <p>
-                    当前企业下所有 Agent 云服务器共用同一个 ClawPro 安全组，修改规则将对所有 Agent 立即统一生效，请谨慎操作。
-                  </p>
-                </div>
-              </div>
-
-              {/* 蓝色说明框（仅已配置态显示）
-                  [004] 结构：小标题 + 作用范围 + 一致性保障
-                        （"了解更多"链接暂移除，等详细说明文章上线后再挂回） */}
-              <div className="relative flex items-start gap-2.5 rounded-[4px] border border-blue-100 bg-[#eff4ff] px-4 py-3">
-                <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-400" />
-                <div className="flex-1 text-xs leading-relaxed text-[#355EF1] space-y-1">
-                  <p>• 作用范围：此处规则变更仅作用于由 ClawPro 创建并托管的专属云端安全组，不会影响您原有的其他云端安全组及其资源。</p>
-                  <p>• 一致性保障：规则始终以 ClawPro 侧配置为准。所有变更会自动同步至云端；若云端规则被其他方式修改，系统会定时检查并自动恢复为 ClawPro 中的设定。</p>
-                </div>
-              </div>
-            </div>
+            <Alert variant="operation-info">
+              <AlertOperationInfoIcon />
+              <AlertDescription>
+                <p>
+                  当前企业下所有 Agent 云服务器共用同一个 ClawPro 安全组，
+                  <span className="font-semibold text-[#DC2626]">修改规则将对所有 Agent 立即统一生效，请谨慎操作。</span>
+                </p>
+                <p>• 作用范围：此处规则变更仅作用于由 ClawPro 创建并托管的专属云端安全组，不会影响您原有的其他云端安全组及其资源。</p>
+                <p>• 一致性保障：规则始终以 ClawPro 侧配置为准。所有变更会自动同步至云端；若云端规则被其他方式修改，系统会定时检查并自动恢复为 ClawPro 中的设定。</p>
+              </AlertDescription>
+            </Alert>
           )}
 
 
           {/* ===== 模块一：已绑定安全组 ===== */}
-          <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-5">
-              <span className="text-base font-semibold text-[#0A0A0A]">ClawPro 安全组</span>
-              {currentSg && (
-                <Button
-                  variant="claw-outline"
-                  size="claw-sm"
-                  onClick={() => openSelectSecurityGroupDialog()}
-                >
-                  配置
-                </Button>
-              )}
-            </div>
-
-            <div className="px-6 pb-6">
-              {currentSg ? (
-                <div className="w-full space-y-5">
-                  {/* 安全组名称 */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">安全组名称</h4>
-                    <p className="text-xs text-[#737373] mb-2">{currentSg.remark || "当前企业的默认安全组"}</p>
-                    <div className="px-4 py-2.5 border border-[#E5E5E5] rounded-[4px] text-sm text-[#0A0A0A]">
-                      {currentSg.name}
-                    </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-[#0A0A0A]">ClawPro 安全组</h3>
+            {currentSg ? (
+              <Card className="overflow-hidden py-0 gap-0">
+              <div className="px-5 pt-5 pb-5 flex flex-col">
+                {/* Header：标题 + 副标题 + 右上角配置按钮 */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle as="h3" className="truncate">{currentSg.name}</CardTitle>
+                    <MetaText as="p" className="mt-1 line-clamp-2">
+                      {currentSg.remark || "当前企业的默认安全组"}
+                    </MetaText>
                   </div>
-                  {/* 云端安全组 */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-[#0A0A0A] mb-1">云端安全组</h4>
-                    <p className="text-xs text-[#737373] mb-2">由 ClawPro 自动生成并托管的云端安全组</p>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="px-4 py-2.5 border border-[#E5E5E5] rounded-[4px] text-sm text-[#1447E6] hover:text-[#1039C4] transition-colors flex items-center gap-1">
-                          对应 {currentSg.cloudSgs.length} 个云端安全组
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[380px] p-0" align="start">
-                        <div className="px-4 py-4 space-y-3">
-                          <p className="text-xs text-[#334155] leading-relaxed">
-                            在云端控制台中，「{currentSg.name}」对应以下由 ClawPro 自动生成的云端安全组：
-                          </p>
-                          <div className="grid grid-cols-[130px_1fr] gap-3 text-[11px] font-medium text-[#737373] uppercase tracking-wide">
-                            <span>ID</span>
-                            <span>名称</span>
-                          </div>
-                          <ul className="space-y-2.5">
-                            {[...currentSg.cloudSgs]
-                              .sort((a, b) => a.seq - b.seq)
-                              .map((sg) => (
-                                <li
-                                  key={sg.sgId}
-                                  className="grid grid-cols-[130px_1fr] gap-3 text-xs leading-relaxed items-center"
-                                >
-                                  <span className="font-mono text-[#334155]">{sg.sgId}</span>
-                                  <span className="text-[#737373] truncate" title={sg.cloudSgName}>
-                                    {sg.cloudSgName}
-                                  </span>
-                                </li>
-                              ))}
-                          </ul>
-                        </div>
-                        {currentSg.cloudSgs.length > 1 && (
-                          <div className="px-4 pb-4">
-                            <div className="flex items-start gap-2.5 bg-[#eff4ff] border border-blue-100 rounded-[4px] px-3 py-2.5">
-                              <Info className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
-                              <p className="text-xs text-blue-700 leading-relaxed">
-                                当 Agent 数量超过单个云端安全组的承载上限时，ClawPro 会自动创建更多云端安全组来承载，所有安全组规则保持一致。
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                  <Button
+                    variant="claw-outline"
+                    size="claw-sm"
+                    onClick={() => openSelectSecurityGroupDialog()}
+                    className="shrink-0"
+                  >
+                    配置
+                  </Button>
                 </div>
-              ) : (
-                /* 未配置态：引导配置（对齐 Figma 812:4043） */
+
+                {/* 内部灰色区块：云端安全组列表 */}
+                <div className="mt-4 rounded-[4px] bg-[#FAFAFA] px-4 py-3 space-y-2">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-1 shrink-0">
+                      <MetaText tone="secondary">
+                        对应 {currentSg.cloudSgs.length} 个云端安全组
+                      </MetaText>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-help">
+                              <Info className="w-3.5 h-3.5" />
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[320px] text-xs leading-relaxed">
+                            在云端控制台中，「{currentSg.name}」对应以下由 ClawPro 自动生成的云端安全组：
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    {[...currentSg.cloudSgs]
+                      .sort((a, b) => a.seq - b.seq)
+                      .map((sg) => (
+                        <div
+                          key={sg.sgId}
+                          className="inline-flex items-baseline gap-2 px-2.5 py-1 rounded-[4px] bg-white border border-[#E5E5E5] min-w-0 max-w-full"
+                        >
+                          <MetaText tone="body" className="shrink-0">
+                            ID：{sg.sgId}
+                          </MetaText>
+                          <MetaText tone="secondary" className="shrink-0" aria-hidden>｜</MetaText>
+                          <MetaText tone="body" className="truncate" title={sg.cloudSgName}>
+                            名称：{sg.cloudSgName}
+                          </MetaText>
+                        </div>
+                      ))}
+                  </div>
+                  {currentSg.cloudSgs.length > 1 && (
+                    <div className="flex items-start gap-2 bg-white border border-[#E5E5E5] rounded-[4px] px-3 py-2.5 mt-2">
+                      <Info className="w-3.5 h-3.5 text-[#737373] mt-0.5 shrink-0" />
+                      <MetaText tone="secondary" className="leading-relaxed">
+                        当 Agent 数量超过单个云端安全组的承载上限时，ClawPro 会自动创建更多云端安全组来承载，所有安全组规则保持一致。
+                      </MetaText>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+              <div className="px-6 py-6">
+                {/* 未配置态：引导配置（对齐 Figma 812:4043） */}
                 <div className="flex flex-col items-center justify-center gap-5 py-5">
                   {/* 配图 + 文字 */}
                   <div className="flex flex-col items-center gap-1">
@@ -3437,14 +3460,15 @@ export default function SecurityGroupManagement() {
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
+            )}
           </div>
 
           {/* ===== 模块二：出站规则 / 入站规则 ===== */}
-          <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
-            {/* 规则 Tab + 添加按钮 */}
-            <div className="flex items-center justify-between border-b border-[#E5E5E5] px-6" style={{ minHeight: "48px" }}>
+          <div className="space-y-3">
+            {/* 规则 Tab + 添加按钮（独立于表格容器之外） */}
+            <div className="flex items-center justify-between">
               <SegmentGroup>
                 <SegmentOption active={securityTab === "outbound"} onClick={() => setSecurityTab("outbound")}>
                   出站规则
@@ -3483,7 +3507,7 @@ export default function SecurityGroupManagement() {
             </div>
 
             {/* 规则表 */}
-            <div className="bg-white">
+            <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
               {currentSg ? (
                 <RuleTableBody
                   rules={securityTab === "outbound" ? outboundRules : inboundRules}
@@ -3544,7 +3568,34 @@ export default function SecurityGroupManagement() {
           </Alert>
 
           {/* VPC 列表 */}
-          <h3 className="text-base font-semibold text-[#0A0A0A] mb-3">私有网络与子网配置</h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-semibold text-[#0A0A0A]">私有网络与子网配置</h3>
+            <Button variant="claw-primary" size="claw-sm" onClick={() => {
+              const placeholder: VpcListItem = {
+                id: NEW_GROUP_VPC_ID,
+                vpcId: "",
+                vpcName: "",
+                cidr: "",
+                type: "group",
+                associatedGroups: [],
+                subnetStrategy: "specified",
+                zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                instanceCount: 0,
+              };
+              setEditVpcDraft({
+                vpcId: "",
+                subnetStrategy: "specified",
+                zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
+                associatedGroups: [],
+              });
+              setEditAutoCleaned(null);
+              setZoneSubnetPickerOpen({});
+              setShowEditVpcDialog(placeholder);
+            }}>
+              <Plus className="w-3.5 h-3.5" />
+              添加网络分组策略
+            </Button>
+          </div>
           <SurfaceCard className="overflow-hidden">
             {/* 表格 */}
             <Table>
@@ -3572,24 +3623,21 @@ export default function SecurityGroupManagement() {
 
                   return (
                     <Fragment key={row.id}>
-                      {/* 主行 — 复用 TableRow 内置 hover / border-b，不再额外覆盖 */}
-                      <TableRow>
+                      {/* 主行 — 整行可点击展开/收起 */}
+                      <TableRow className="cursor-pointer" onClick={() => toggleVpcExpanded(row.id)}>
                         {/* VPC：展开箭头 + 名称 + 轻类型标签（视觉弱化） + id·CIDR */}
                         <TableCell className="py-4 whitespace-normal">
                           <div className="flex items-start gap-2 min-w-0">
-                            <button
-                              type="button"
-                              onClick={() => toggleVpcExpanded(row.id)}
-                              className="mt-0.5 shrink-0 text-[#A3A3A3] hover:text-[#1447E6] transition-colors"
+                            <span
+                              className="mt-0.5 shrink-0 text-[#A3A3A3] transition-colors"
                               aria-label={expandedVpcIds.has(row.id) ? "收起详情" : "展开详情"}
-                              title={expandedVpcIds.has(row.id) ? "收起详情" : "展开详情"}
                             >
                               {expandedVpcIds.has(row.id) ? (
                                 <ChevronDown className="w-3.5 h-3.5" />
                               ) : (
                                 <ChevronRight className="w-3.5 h-3.5" />
                               )}
-                            </button>
+                            </span>
                             <div className="flex flex-col gap-0.5 min-w-0">
                               {(() => {
                                 const vpcDeleted = isVpcResourceDeleted(row);
@@ -3604,9 +3652,8 @@ export default function SecurityGroupManagement() {
                                       {hasAnomaly && (
                                         <Tooltip>
                                           <TooltipTrigger asChild>
-                                            <span className="inline-flex items-center gap-0.5 text-sm text-amber-600 whitespace-nowrap shrink-0 cursor-default">
-                                              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                                              <span>配置待更新</span>
+                                            <span>
+                                              <StatusTag variant="red">配置待更新</StatusTag>
                                             </span>
                                           </TooltipTrigger>
                                           <TooltipContent side="top" className="max-w-[300px] text-xs leading-relaxed">
@@ -3645,7 +3692,7 @@ export default function SecurityGroupManagement() {
                         <TableCell className="py-4 whitespace-nowrap">
                           {row.type === "enterprise" ? (
                             <span className="inline-flex items-center gap-1 align-middle">
-                              <StatusTag mode="fill" variant="green">预设策略</StatusTag>
+                              <Badge variant="outline">预设策略</Badge>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="inline-flex items-center text-[#A3A3A3] hover:text-[#737373] cursor-default">
@@ -3664,7 +3711,7 @@ export default function SecurityGroupManagement() {
                           )}
                         </TableCell>
                         {/* 操作：TableActionCell 内统一 link（品牌蓝）文字按钮 */}
-                        <TableActionCell className="py-4 whitespace-nowrap">
+                        <TableActionCell className="py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center gap-3">
                             <Button
                               variant="link"
@@ -3747,31 +3794,27 @@ export default function SecurityGroupManagement() {
                         </TableActionCell>
                       </TableRow>
 
-                      {/* 次级详情行：仅展开时渲染，按可用区纵向展示（视觉弱化，作当前行补充说明） */}
+                      {/* 次级详情行：仅展开时渲染，按可用区纵向展示 */}
                       {expandedVpcIds.has(row.id) && (
-                        <TableRow>
-                          <TableCell colSpan={4} className="px-4 py-4 whitespace-normal">
-                            <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] p-4">
-                              <div className="text-[11px] text-[#A3A3A3] mb-2">子网配置明细</div>
-                              <div className="flex flex-col gap-1">
+                        <TableRow className="hover:bg-transparent" onClick={(e) => e.stopPropagation()}>
+                          <TableCell colSpan={4} className="px-5 pb-4 pt-4 whitespace-normal">
+                            <div className="rounded-[4px] bg-[#FAFAFA] px-4 py-3">
+                              <div className="flex flex-col gap-2">
                                 {AVAILABLE_ZONES.map((zone) => {
                                   const subnets = effectiveZoneSubnets[zone] ?? [];
                                   const isAssigned = subnets.length > 0;
-                                  // 自动分配 VPC 模式：后端尚未返回实际命中的子网标识，与线上保持一致：
-                                  // 每个可用区只展示"自动分配"四字（不渲染 subnet-id/name/cidr）
                                   const rowIsAutoAssigned = row.subnetStrategy === "auto";
                                   return (
-                                    <div key={zone} className="flex items-start gap-2 min-w-0">
-                                      <span className="text-xs font-medium shrink-0 w-16 text-[#737373] leading-6">
+                                    <div key={zone} className="flex items-start gap-3 min-w-0">
+                                      <span className="text-[13px] text-[#737373] shrink-0 w-16 leading-[22px]">
                                         {zone}
                                       </span>
-                                      <span className="text-xs text-[#A3A3A3] shrink-0 leading-6">:</span>
                                       {rowIsAutoAssigned ? (
-                                        <span className="text-xs text-[#A3A3A3]">自动分配</span>
+                                        <Badge variant="outline">自动分配</Badge>
                                       ) : isAssigned ? (
                                         <SubnetBadgesRow subnets={subnets} />
                                       ) : (
-                                        <span className="text-xs text-[#A3A3A3]">未分配</span>
+                                        <span className="text-[13px] text-[#A3A3A3]">未分配</span>
                                       )}
                                     </div>
                                   );
@@ -3784,40 +3827,6 @@ export default function SecurityGroupManagement() {
                     </Fragment>
                   );
                 })}
-                {/* 表格末尾：添加分组网络策略入口（弱化为文字按钮，左对齐紧贴预设策略行下方） */}
-                <TableRow>
-                  <TableCell colSpan={4} className="py-2.5 whitespace-normal">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const placeholder: VpcListItem = {
-                          id: NEW_GROUP_VPC_ID,
-                          vpcId: "",
-                          vpcName: "",
-                          cidr: "",
-                          type: "group",
-                          associatedGroups: [],
-                          subnetStrategy: "specified",
-                          zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
-                          instanceCount: 0,
-                        };
-                        setEditVpcDraft({
-                          vpcId: "",
-                          subnetStrategy: "specified",
-                          zoneSubnets: AVAILABLE_ZONES.reduce<Record<string, string[]>>((acc, z) => { acc[z] = []; return acc; }, {}),
-                          associatedGroups: [],
-                        });
-                        setEditAutoCleaned(null);
-                        setZoneSubnetPickerOpen({});
-                        setShowEditVpcDialog(placeholder);
-                      }}
-                      className="inline-flex items-center gap-1 px-2 py-1 -mx-2 rounded-[4px] text-xs text-[#737373] hover:text-[#525252] hover:bg-[#f5f5f5] transition-colors"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      添加分组网络策略
-                    </button>
-                  </TableCell>
-                </TableRow>
               </TableBody>
             </Table>
 
@@ -3870,7 +3879,7 @@ export default function SecurityGroupManagement() {
                   {showEditVpcDialog?.type === "enterprise"
                     ? "编辑预设策略"
                     : showEditVpcDialog?.id === NEW_GROUP_VPC_ID
-                      ? "添加分组策略"
+                      ? "添加网络分组策略"
                       : "编辑分组策略"}
                 </DialogTitle>
               </DialogHeader>
@@ -3980,7 +3989,12 @@ export default function SecurityGroupManagement() {
                                 (r.associatedGroups ?? []).forEach((name) => occupiedNames.add(name));
                               });
                               currentRowNames.forEach((name) => occupiedNames.delete(name));
-                              const nameToNode = new Map(ALL_GROUPS_SHARED.map((g) => [g.name, g]));
+                              // 仅展示部门 / 自定义分组（屏蔽用户组桶 oneid-group），与历史 GroupTagSelector 行为一致
+                              const visibleGroups = ALL_GROUPS_SHARED.filter(
+                                (g) => g.source === "oneid-dept" || g.source === "manual"
+                              );
+                              const nameToNode = new Map(visibleGroups.map((g) => [g.name, g]));
+                              const idToName = new Map(visibleGroups.map((g) => [g.id, g.name]));
                               const disabledIds = new Set<string>();
                               occupiedNames.forEach((name) => {
                                 const node = nameToNode.get(name);
@@ -3991,12 +4005,38 @@ export default function SecurityGroupManagement() {
                               const disabledTooltip = isNewRow
                                 ? "该用户组已配置策略，请编辑已有策略。"
                                 : "该用户组已配置策略，请选择其他用户组。";
+                              // name ↔ id 互转（外部 state 仍用 name 数组）
+                              const selectedIds: string[] = [];
+                              editVpcDraft.associatedGroups.forEach((name) => {
+                                const node = nameToNode.get(name);
+                                if (node) selectedIds.push(node.id);
+                              });
+                              const selectedLabels = selectedIds.map(
+                                (id) => getGroupPath(id, ALL_GROUPS_SHARED)
+                              );
                               return (
-                                <GroupTagSelector
-                                  value={editVpcDraft.associatedGroups}
+                                <ScopeEditPopover
+                                  scope="groups"
+                                  hideAllOption
+                                  emptyPlaceholder="请选择分组"
+                                  selectedGroupIds={selectedIds}
+                                  groups={visibleGroups.map((g) => ({
+                                    id: g.id,
+                                    name: g.name,
+                                    parentId: g.parentId ?? null,
+                                  }))}
+                                  scopeLabels={selectedLabels}
+                                  maxVisibleBadges={3}
                                   disabledIds={disabledIds}
                                   disabledTooltip={disabledTooltip}
-                                  onChange={(next) => setEditVpcDraft((prev) => ({ ...prev, associatedGroups: next }))}
+                                  onConfirm={(_s, ids) => {
+                                    const names: string[] = [];
+                                    ids.forEach((id) => {
+                                      const n = idToName.get(id);
+                                      if (n) names.push(n);
+                                    });
+                                    setEditVpcDraft((prev) => ({ ...prev, associatedGroups: names }));
+                                  }}
                                 />
                               );
                             })()}
@@ -4017,24 +4057,24 @@ export default function SecurityGroupManagement() {
                                   <button
                                     type="button"
                                     data-state={editVpcPickerOpen ? "open" : "closed"}
-                                    className="w-full h-9 px-3 py-[5px] rounded-[4px] border border-[#d3d6db] bg-white text-sm text-[#020617] hover:border-[#355EF1] data-[state=open]:border-[#355EF1] transition-colors flex items-center justify-between gap-2"
+                                    className="w-full h-9 px-3 py-1 rounded-[4px] border border-[#E5E5E5] bg-white text-[13px] text-[#020617] hover:border-[#355EF1] focus:border-[#355EF1] focus:outline-none focus:ring-1 focus:ring-[#355EF1]/20 data-[state=open]:border-[#355EF1] transition-colors flex items-center justify-between gap-2"
                                   >
                                     {triggerVpc ? (
                                       isAutoAssigned ? (
                                         <span className="text-[#020617]">自动分配</span>
                                       ) : (
                                         <span className="flex items-center gap-2 min-w-0 text-[#020617]">
-                                          <span className="font-mono shrink-0">{triggerVpc.id}</span>
+                                          <span className="shrink-0">{triggerVpc.id}</span>
                                           <span className="text-[#A3A3A3] shrink-0">|</span>
                                           <span className="truncate">{triggerVpc.name}</span>
                                           <span className="text-[#A3A3A3] shrink-0">|</span>
-                                          <span className="font-mono shrink-0">{triggerVpc.cidr}</span>
+                                          <span className="shrink-0">{triggerVpc.cidr}</span>
                                         </span>
                                       )
                                     ) : (
-                                      <span className="text-[#b0b6c3]">请选择 VPC</span>
+                                      <span className="text-[#A3A3A3]">请选择 VPC</span>
                                     )}
-                                    <ChevronDown className={`w-4 h-4 text-[#7b818f] shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
+                                    <ChevronDown className={`w-4 h-4 text-[#A3A3A3] shrink-0 transition-transform ${editVpcPickerOpen ? "rotate-180" : ""}`} />
                                   </button>
                                 </PopoverTrigger>
                                 <PopoverContent
@@ -4047,7 +4087,7 @@ export default function SecurityGroupManagement() {
                                   sideOffset={4}
                                 >
                                   <Command>
-                                    <CommandInput placeholder="搜索 VPC ID / 名称…" className="text-sm" />
+                                    <CommandInput placeholder="搜索 VPC ID / 名称…" className="text-[13px]" />
                                     <CommandList className="max-h-72 overflow-y-auto p-2">
                                       <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的 VPC</CommandEmpty>
                                       <CommandGroup className="p-0">
@@ -4066,7 +4106,7 @@ export default function SecurityGroupManagement() {
                                             }}
                                             className="cursor-pointer h-8 rounded-[6px] px-3 py-[9px] data-[selected=true]:bg-[#f3f3f4]"
                                           >
-                                            <div className="flex-1 min-w-0 flex items-center gap-2 text-sm">
+                                            <div className="flex-1 min-w-0 flex items-center gap-2 text-[13px]">
                                               <span className={isAutoAssigned ? "text-[#355EF1] font-medium" : "text-[#020617]"}>自动分配</span>
                                             </div>
                                             {isAutoAssigned && (
@@ -4091,12 +4131,12 @@ export default function SecurityGroupManagement() {
                                               }}
                                               className="cursor-pointer h-8 rounded-[6px] px-3 py-[9px] data-[selected=true]:bg-[#f3f3f4]"
                                             >
-                                              <div className={`flex-1 min-w-0 flex items-center gap-2 text-sm ${selected ? "text-[#355EF1] font-medium" : "text-[#020617]"}`}>
-                                                <span className="font-mono shrink-0">{vpc.id}</span>
+                                              <div className={`flex-1 min-w-0 flex items-center gap-2 text-[13px] ${selected ? "text-[#355EF1] font-medium" : "text-[#020617]"}`}>
+                                                <span className="shrink-0">{vpc.id}</span>
                                                 <span className="text-[#A3A3A3] shrink-0">|</span>
                                                 <span className="truncate">{vpc.name}</span>
                                                 <span className="text-[#A3A3A3] shrink-0">|</span>
-                                                <span className="font-mono shrink-0">{vpc.cidr}</span>
+                                                <span className="shrink-0">{vpc.cidr}</span>
                                               </div>
                                               {selected && (
                                                 <Check className="w-4 h-4 text-[#355EF1] shrink-0 ml-2" />
@@ -4198,7 +4238,7 @@ export default function SecurityGroupManagement() {
                                               >
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                   <span className="font-medium text-[#0A0A0A] truncate max-w-[140px]">{subnet.name}</span>
-                                                  <span className="text-[#737373] font-mono">{subnet.cidr}</span>
+                                                  <span className="text-[#737373]">{subnet.cidr}</span>
                                                   <span className={`tabular-nums ${remainingLow ? "text-[#F59E0B]" : "text-[#737373]"}`}>
                                                     · 剩余 IP {subnet.remainingIp}/{subnet.totalIp}
                                                   </span>
@@ -4261,7 +4301,7 @@ export default function SecurityGroupManagement() {
                                           sideOffset={4}
                                         >
                                           <Command>
-                                            <CommandInput placeholder="搜索子网 ID / 名称…" className="text-sm" />
+                                            <CommandInput placeholder="搜索子网 ID / 名称…" className="text-[13px]" />
                                             <CommandList className="max-h-72 overflow-y-auto p-2">
                                               <CommandEmpty className="py-3 text-xs text-[#A3A3A3] text-center">未找到匹配的子网</CommandEmpty>
                                               <CommandGroup className="p-0">
@@ -4283,12 +4323,12 @@ export default function SecurityGroupManagement() {
                                                       }}
                                                       className="cursor-pointer h-8 rounded-[6px] px-3 py-[9px] data-[selected=true]:bg-[#f3f3f4]"
                                                     >
-                                                      <div className="flex-1 min-w-0 flex items-center gap-2 text-sm text-[#020617]">
-                                                        <span className="font-mono shrink-0">{subnet.id}</span>
+                                                      <div className="flex-1 min-w-0 flex items-center gap-2 text-[13px] text-[#020617]">
+                                                        <span className="shrink-0">{subnet.id}</span>
                                                         <span className="text-[#A3A3A3] shrink-0">|</span>
                                                         <span className="truncate">{subnet.name}</span>
                                                         <span className="text-[#A3A3A3] shrink-0">|</span>
-                                                        <span className="font-mono shrink-0">{subnet.cidr}</span>
+                                                        <span className="shrink-0">{subnet.cidr}</span>
                                                       </div>
                                                       <span className={`shrink-0 text-xs tabular-nums ml-2 ${remainingLow ? "text-[#F59E0B]" : "text-[#737373]"}`}>
                                                         剩余 IP {subnet.remainingIp}/{subnet.totalIp}
@@ -4521,33 +4561,49 @@ export default function SecurityGroupManagement() {
         )}
 
         {activeTab === "public" && (
-        <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-5">
-            <h2 className="text-base font-semibold text-[#0A0A0A]">公网配置</h2>
-            {!isPublicEditing && (
-              <Button variant="claw-outline" size="claw-sm" onClick={() => setIsPublicEditing(true)}>
-                更改配置
-              </Button>
-            )}
+        <div className="bg-white rounded-lg border border-[#E5E5E5] overflow-hidden max-w-[960px]">
+          {/* 卡片头部：图标 + 标题 + 描述 + 编辑按钮 */}
+          <div className="px-5 pt-5 pb-4">
+            <div className="flex items-start gap-3">
+              <div className="shrink-0">
+                <img src="/assets/admin-network-features/public-fast-access.svg" className="w-10 h-10 shrink-0" alt="" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-[14px] font-semibold text-[#020617]">公网配置</h3>
+                <p className="text-[12px] text-[#737373] leading-relaxed mt-1">配置 Agent 云服务器的公网 IP 和带宽策略。用户组公网配置优先于默认公网配置。</p>
+              </div>
+              {!isPublicEditing ? (
+                <Button variant="claw-outline" size="claw-sm" className="shrink-0" onClick={() => setIsPublicEditing(true)}>
+                  编辑
+                </Button>
+              ) : (
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button variant="claw-outline" size="claw-sm" onClick={handlePublicDiscard}>取消</Button>
+                  <Button variant="dialog-confirm" size="claw-sm" onClick={handlePublicSave}>保存</Button>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="px-6 pb-6">
+          {/* 内容区 */}
+          <div className="px-5 pb-4">
+            <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden px-4 py-3">
           {!isPublicEditing ? (
             /* ── 只读展示模式 ── */
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-[#0A0A0A]">是否分配公网 IP</span>
-                <span className="text-sm text-[#334155]">{savedPublicConfig.assignPublicIp ? "分配" : "不分配"}</span>
+                <span className="text-[13px] text-[#737373]">是否分配公网 IP</span>
+                <span className="text-[13px] text-[#020617] leading-5">{savedPublicConfig.assignPublicIp ? "分配" : "不分配"}</span>
               </div>
               {savedPublicConfig.assignPublicIp && (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-[#0A0A0A]">带宽计费模式</span>
-                    <span className="text-sm text-[#334155]">{savedPublicConfig.billingMode === "monthly" ? "包月带宽" : "按流量计费"}</span>
+                    <span className="text-[13px] text-[#737373]">带宽计费模式</span>
+                    <span className="text-[13px] text-[#020617] leading-5">{savedPublicConfig.billingMode === "monthly" ? "包月带宽" : "按流量计费"}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-[#0A0A0A]">带宽上限</span>
-                    <span className="text-sm text-[#334155]">{savedPublicConfig.bandwidth} Mbps</span>
+                    <span className="text-[13px] text-[#737373]">带宽上限</span>
+                    <span className="text-[13px] text-[#020617] leading-5">{savedPublicConfig.bandwidth} Mbps</span>
                   </div>
                 </>
               )}
@@ -4558,7 +4614,7 @@ export default function SecurityGroupManagement() {
               {/* 是否分配公网 IP */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm font-medium text-[#0A0A0A]">是否分配公网 IP</span>
+                  <span className="text-[13px] text-[#737373]">是否分配公网 IP</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -4571,26 +4627,16 @@ export default function SecurityGroupManagement() {
                   </TooltipProvider>
                 </div>
                 <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="assignPublicIp"
-                      checked={publicConfig.assignPublicIp === true}
-                      onChange={() => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: true })); setIsPublicDirty(true); }}
-                      className="w-4 h-4 accent-[#1447E6] cursor-pointer"
-                    />
-                    <span className="text-sm text-[#334155]">分配</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="assignPublicIp"
-                      checked={publicConfig.assignPublicIp === false}
-                      onChange={() => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: false })); setIsPublicDirty(true); }}
-                      className="w-4 h-4 accent-[#1447E6] cursor-pointer"
-                    />
-                    <span className="text-sm text-[#334155]">不分配</span>
-                  </label>
+                  <RadioGroup value={publicConfig.assignPublicIp ? "true" : "false"} onValueChange={(v) => { setPublicConfig((prev) => ({ ...prev, assignPublicIp: v === "true" })); setIsPublicDirty(true); }} className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <RadioGroupItem value="true" />
+                      <span className="text-[13px] text-[#020617] leading-5">分配</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <RadioGroupItem value="false" />
+                      <span className="text-[13px] text-[#020617] leading-5">不分配</span>
+                    </label>
+                  </RadioGroup>
                 </div>
               </div>
 
@@ -4600,7 +4646,7 @@ export default function SecurityGroupManagement() {
                 {/* 带宽计费模式 */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm font-medium text-[#0A0A0A]">带宽计费模式</span>
+                    <span className="text-[13px] text-[#737373]">带宽计费模式</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -4614,33 +4660,23 @@ export default function SecurityGroupManagement() {
                     </TooltipProvider>
                   </div>
                   <div className="flex items-center gap-6">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="billingMode"
-                        checked={publicConfig.billingMode === "monthly"}
-                        onChange={() => handleBillingModeChange("monthly")}
-                        className="w-4 h-4 accent-[#1447E6] cursor-pointer"
-                      />
-                      <span className="text-sm text-[#334155]">包月带宽</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="billingMode"
-                        checked={publicConfig.billingMode === "traffic"}
-                        onChange={() => handleBillingModeChange("traffic")}
-                        className="w-4 h-4 accent-[#1447E6] cursor-pointer"
-                      />
-                      <span className="text-sm text-[#334155]">按流量计费</span>
-                    </label>
+                    <RadioGroup value={publicConfig.billingMode} onValueChange={(v) => handleBillingModeChange(v as "monthly" | "traffic")} className="flex items-center gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <RadioGroupItem value="monthly" />
+                        <span className="text-[13px] text-[#020617] leading-5">包月带宽</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <RadioGroupItem value="traffic" />
+                        <span className="text-[13px] text-[#020617] leading-5">按流量计费</span>
+                      </label>
+                    </RadioGroup>
                   </div>
                 </div>
 
                 {/* 带宽上限 */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-sm font-medium text-[#0A0A0A]">带宽上限</span>
+                    <span className="text-[13px] text-[#737373]">带宽上限</span>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -4652,24 +4688,22 @@ export default function SecurityGroupManagement() {
                       </Tooltip>
                     </TooltipProvider>
                   </div>
-                  <div className="flex items-center gap-4">
-                    {/* 滑块 */}
-                    <div className="w-[360px]">
-                      <Slider
-                        min={1}
-                        max={publicConfig.billingMode === "monthly" ? 20 : 200}
-                        step={1}
-                        value={[publicConfig.bandwidth]}
-                        onValueChange={([val]) => { setPublicConfig((prev) => ({ ...prev, bandwidth: val })); setIsPublicDirty(true); }}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between mt-1">
-                        <span className="text-xs text-[#A3A3A3]">1 Mbps</span>
-                        <span className="text-xs text-[#A3A3A3]">{publicConfig.billingMode === "monthly" ? "20" : "200"} Mbps</span>
+                  <div>
+                    <div className="flex items-center gap-4">
+                      {/* 滑块 */}
+                      <div className="w-[360px]">
+                        <Slider
+                          min={1}
+                          max={publicConfig.billingMode === "monthly" ? 20 : 200}
+                          step={1}
+                          value={[publicConfig.bandwidth]}
+                          onValueChange={([val]) => { setPublicConfig((prev) => ({ ...prev, bandwidth: val })); setIsPublicDirty(true); }}
+                          className="w-full"
+                        />
                       </div>
-                    </div>
-                    {/* 输入框 */}
-                    <div className="relative flex items-center gap-1.5 shrink-0">
+                      {/* 输入框 */}
+                      {/* 输入框 */}
+                      <div className="relative flex items-center gap-1.5 shrink-0">
                       {/* 包月带宽常驻气泡提示 - 使用 Portal 避免被卡片 overflow 裁剪 */}
                       {publicConfig.billingMode === "monthly" && showBandwidthTip && tipPos && createPortal(
                         <div
@@ -4687,7 +4721,7 @@ export default function SecurityGroupManagement() {
                         </div>,
                         document.body
                       )}
-                      <input
+                      <Input
                         ref={bandwidthInputRef}
                         type="number"
                         min={1}
@@ -4704,22 +4738,24 @@ export default function SecurityGroupManagement() {
                             setIsPublicDirty(true);
                           }
                         }}
-                        className="w-20 h-9 text-sm text-center border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-20 h-9 text-sm text-center"
                       />
-                      <span className="text-sm text-[#737373]">Mbps</span>
+                      <span className="text-[13px] text-[#737373]">Mbps</span>
+                    </div>
+                    </div>
+                    <div className="flex justify-between mt-1 w-[360px]">
+                      <span className="text-xs text-[#A3A3A3]">1 Mbps</span>
+                      <span className="text-xs text-[#A3A3A3]">{publicConfig.billingMode === "monthly" ? "20" : "200"} Mbps</span>
                     </div>
                   </div>
                 </div>
               </>
             )}
 
-            {/* 操作按钮 */}
-            <div className="flex items-center gap-3 pt-2">
-              <Button variant="claw-outline" size="claw-sm" onClick={handlePublicDiscard}>取消</Button>
-              <Button variant="claw-primary" size="claw-sm" onClick={handlePublicSave}>保存</Button>
-            </div>
+            {/* 操作按钮已移至卡片头部 */}
             </div>
           )}
+            </div>
           </div>
         </div>
         )}
@@ -4851,34 +4887,39 @@ export default function SecurityGroupManagement() {
         },
       })}
 
-      {/* ─── 确认切换安全组二次确认弹窗 ──────────────────────────────────────────────────────────────── */}
-      <Dialog open={isConfirmSwitchDialogOpen} onOpenChange={setIsConfirmSwitchDialogOpen}>
-        <DialogContent
-          className="sm:max-w-md"
-          style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-        >
-          <DialogHeader>
-            <DialogTitle>
+      {/* ─── 确认切换安全组二次确认弹窗（警示） ──────────────────────────────────────────────────── */}
+      <AlertDialog open={isConfirmSwitchDialogOpen} onOpenChange={setIsConfirmSwitchDialogOpen}>
+        <AlertDialogContent className="sm:max-w-[560px]">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setIsConfirmSwitchDialogOpen(false)}
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+          >
+            <X className="size-5" />
+            <span className="sr-only">关闭</span>
+          </button>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#0A0A0A]">
               确认导入规则到当前 ClawPro 安全组
-            </DialogTitle>
-          </DialogHeader>
-          <DialogBody className="flex-1">
-            <Alert variant="warning" className="w-full px-3 py-3">
-              <CircleAlert />
-              <AlertDescription>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>ClawPro 将把所选规则模板的规则<span className="font-semibold">复制</span>到当前 ClawPro 安全组，当前企业下<span className="font-semibold">所有 Agent 所在云服务器</span>将立即使用新规则。</li>
-                  <li>所选规则模板在云端对应的原安全组<span className="font-semibold">不受影响</span>，其关联的其他云端资源也不会被影响。</li>
-                </ul>
-              </AlertDescription>
-            </Alert>
-          </DialogBody>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmSwitchDialogOpen(false)}>
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <Alert variant="warning" className="w-full px-3 py-3 mt-2">
+                <CircleAlert />
+                <AlertDescription>
+                  <ul className="list-disc pl-4 space-y-1">
+                    <li>ClawPro 将把所选规则模板的规则<span className="font-semibold">复制</span>到当前 ClawPro 安全组，当前企业下<span className="font-semibold">所有 Agent 所在云服务器</span>将立即使用新规则。</li>
+                    <li>所选规则模板在云端对应的原安全组<span className="font-semibold">不受影响</span>，其关联的其他云端资源也不会被影响。</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsConfirmSwitchDialogOpen(false)}>
               取消
-            </Button>
-            <Button
-              variant="dialog-confirm"
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={() => {
                 if (sgDialogPreviewSecurityGroup) {
                   applyCurrentSecurityGroup(sgDialogPreviewSecurityGroup);
@@ -4894,10 +4935,10 @@ export default function SecurityGroupManagement() {
               }}
             >
               确认导入
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* ─── 添加规则弹窗 ───────────────────────────────────────────────────────────────── */}
       <Dialog

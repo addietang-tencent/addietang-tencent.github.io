@@ -18,6 +18,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Alert, AlertDescription, AlertTitle, AlertInfoIcon } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,7 +27,6 @@ import { RadioCard } from "@/components/ui/radio-card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import { StatusTag } from "@/components/ui/status-tag";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogBody,
@@ -75,7 +75,10 @@ import {
   Pencil,
   Users,
   History,
+  Minus,
 } from "lucide-react";
+
+import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 
 import AgentTypesTable, {
   type AgentTypeRowData,
@@ -107,7 +110,7 @@ import {
   type ActivePush,
 } from "@/lib/upgradePushStore";
 import type { UserGroup } from "./MemberManagement/types";
-import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
+import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import { ScopeEditPopover } from "@/components/ScopeEditPopover";
 
 // ─── 系统预设 Agent 类型 ────────────────────────────────────────────────
@@ -212,6 +215,8 @@ interface ImageScopeData {
 }
 
 const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
+/** 「全部用户」对应的用户总数（来自用户管理列表的 mock 数据） */
+const TOTAL_USER_COUNT = MOCK_USERS.length + MOCK_USERS_MANUAL.length;
 
 function getGroupPath(groupId: string, groups: UserGroup[]): string {
   const map = new Map(groups.map((g) => [g.id, g]));
@@ -1166,16 +1171,17 @@ export default function ImageManagement() {
                 typeCount={views.length}
                 enabledTypeCount={views.filter((v) => v.view.enabled.isEnabled).length}
               />
-              <NewVersionPushNotice
-                pushable={pushable}
-                onViewAllRecords={() => {
-                  setDrawerInitialFilter(undefined);
-                  setDrawerInitialPushableOnly(true);
-                  setShowAllRecordsDrawer(true);
-                }}
-              />
             </div>
             <div className="flex items-center gap-2">
+            {/* 新版本推送提醒 —— 放在二级按钮（版本更新记录）旁 */}
+            <NewVersionPushNotice
+              pushable={pushable}
+              onViewAllRecords={() => {
+                setDrawerInitialFilter(undefined);
+                setDrawerInitialPushableOnly(true);
+                setShowAllRecordsDrawer(true);
+              }}
+            />
             <Button
               variant="claw-outline"
               size="claw"
@@ -1272,6 +1278,7 @@ export default function ImageManagement() {
                     selectedGroupIds={scopeData.visibilityGroupIds}
                     groups={ALL_GROUPS}
                     showBadges={false}
+                    totalUserCount={TOTAL_USER_COUNT}
                     onConfirm={(scope, groupIds) => handleScopeChange(agentType, scope, groupIds)}
                   />
                 </div>

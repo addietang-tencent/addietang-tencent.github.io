@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { StatusTag } from "@/components/ui/status-tag";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Table,
@@ -118,11 +119,9 @@ export default function AgentTypesTable({
             <TableHead fixed="left" style={{ width: 240, minWidth: 240, maxWidth: 240 }}>
               Agent 类型
             </TableHead>
-            <TableHead style={{ minWidth: 120 }}>维护方</TableHead>
             <TableHead style={{ minWidth: 160 }}>Agent 版本</TableHead>
-            <TableHead style={{ minWidth: 80 }}>来源</TableHead>
-            <TableHead style={{ minWidth: 240 }}>镜像</TableHead>
-            <TableHead style={{ minWidth: 80 }}>状态</TableHead>
+            <TableHead style={{ minWidth: 320 }}>镜像</TableHead>
+            <TableHead style={{ minWidth: 100 }}>镜像状态</TableHead>
             <TableHead style={{ minWidth: 160 }}>应用范围</TableHead>
             <TableHead style={{ minWidth: 100 }}>用户可见</TableHead>
             <TableHead fixed="right" style={{ minWidth: 200, width: "1%" }}>操作</TableHead>
@@ -213,7 +212,7 @@ function AgentTypeRow({
     <TableRow
       id={`section-${row.agentType}`}
       data-anchor={row.agentType}
-      className="group"
+      className="group [&>td]:py-4 [&>td]:align-top"
     >
       {/* 1. Agent 类型 */}
       <TableCell
@@ -239,18 +238,6 @@ function AgentTypeRow({
         </div>
       </TableCell>
 
-      {/* 1.5 维护方 */}
-      <TableCell className="py-4">
-        {selected ? (
-          selected.source === "public" ? (
-            <Badge color="blue">腾讯云维护更新</Badge>
-          ) : (
-            <span className="text-sm text-[#525252]">企业自维护</span>
-          )
-        ) : (
-          <span className="text-sm text-[#D4D4D4]">—</span>
-        )}
-      </TableCell>
 
       {/* 2. Agent 版本 */}
       <TableCell className="py-4">
@@ -262,28 +249,18 @@ function AgentTypeRow({
             onViewHistory={() => onViewPublicHistory(selected.id)}
           />
         ) : (
-          <span className="text-sm text-[#D4D4D4]">—</span>
+          <span className="text-sm text-[#A3A3A3]">—</span>
         )}
       </TableCell>
 
-      {/* 3. 来源（公共/自定义） */}
-      <TableCell className="py-4">
-        {selected ? (
-          selected.source === "public" ? (
-            <Badge variant="outline">公共</Badge>
-          ) : (
-            <Badge variant="outline">自定义</Badge>
-          )
-        ) : (
-          <span className="text-xs text-[#A3A3A3]">-</span>
-        )}
-      </TableCell>
-
-      {/* 4. 镜像（名称 + ID + 切换图标 / 空态 link） */}
-      <TableCell className="py-4 whitespace-normal">
+      {/* 3. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID） */}
+      <TableCell className="whitespace-normal">
         {selected ? (
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
+              <StatusTag mode="fill" variant={selected.source === "public" ? "blue" : "gray"}>
+                {selected.source === "public" ? "公共" : "自定义"}
+              </StatusTag>
               <span className="text-sm font-medium text-gray-900 truncate min-w-0">
                 {selected.name}
               </span>
@@ -309,28 +286,26 @@ function AgentTypeRow({
             </div>
           </div>
         ) : (
-          <Button variant="link" size="sm" onClick={onOpenSwitchDialog}>
-            选择镜像
-          </Button>
+          <span className="text-sm text-[#A3A3A3]">尚未选择镜像</span>
         )}
       </TableCell>
 
-      {/* 3.5 状态（独立列） */}
-      <TableCell className="py-4">
+      {/* 4. 镜像状态（独立列） */}
+      <TableCell>
         {selected ? (
           <ImageStatusBadge status={selected.status} />
         ) : (
-          <span className="text-sm text-[#D4D4D4]">—</span>
+          <span className="text-sm text-[#A3A3A3]">—</span>
         )}
       </TableCell>
 
-      {/* 4. 应用范围（外部注入） */}
-      <TableCell className="py-4 whitespace-normal">
+      {/* 5. 应用范围（外部注入） */}
+      <TableCell className="whitespace-normal">
         {scopeSlot}
       </TableCell>
 
-      {/* 5. 用户可见 */}
-      <TableCell className="py-4">
+      {/* 6. 用户可见 */}
+      <TableCell>
         {isDefault ? (
           <Tooltip>
             <TooltipTrigger asChild>
@@ -380,7 +355,7 @@ function AgentTypeRow({
       </TableCell>
 
       {/* 6. 操作：「设为首选 / 删除」两枚文字按钮（条件不满足时禁用） */}
-      <TableActionCell fixed="right" className="py-4">
+      <TableActionCell fixed="right">
         <div className="flex items-center gap-4">
           {/* 设为首选 — 仅在「未首选 + 已选镜像 + 用户可见」三者满足时展示 */}
           {!isDefault && selected && isEnabled && (
@@ -447,6 +422,63 @@ function AgentVersionCell({
             </TooltipContent>
           </Tooltip>
         )}
+      </div>
+      {isPublic && (
+        <div className="mt-0.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <StatusTag variant="gray">腾讯云维护更新</StatusTag>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              由腾讯云持续维护更新，自动跟随官方版本
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 镜像复合单元 ─────────────────────────────────────────────────────
+function ImageCombinedCell({
+  image,
+  onSwitchImage,
+}: {
+  image: ViewImage;
+  onSwitchImage: () => void;
+}) {
+  const isPublic = image.source === "public";
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <StatusTag variant={isPublic ? "blue" : "gray"}>
+          {isPublic ? "公共" : "自定义"}
+        </StatusTag>
+        <span className="text-sm font-medium text-gray-900 truncate min-w-0">
+          {image.name}
+        </span>
+        {/* 切换镜像 */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={onSwitchImage}
+              className="cursor-pointer self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors shrink-0"
+              aria-label="切换镜像"
+              title="切换镜像"
+            >
+              <Pencil className="w-3 h-3" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            切换镜像
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <div className="flex items-center gap-2 text-xs text-[#737373] mt-0.5 flex-wrap">
+        <span className="truncate">{image.id}</span>
       </div>
     </div>
   );

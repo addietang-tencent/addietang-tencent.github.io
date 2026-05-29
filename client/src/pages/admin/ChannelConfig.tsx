@@ -39,7 +39,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import { toast } from "sonner";
 import { Plus, Trash2, ChevronDown, ChevronRight, AlertCircle, X } from "lucide-react";
 import { ScopeEditPopover } from "@/components/ScopeEditPopover";
@@ -290,19 +289,23 @@ export default function ChannelConfig() {
         <h1 className="text-2xl font-bold text-[#0A0A0A]">通道配置</h1>
       </div>
 
-      {/* Tab 切换器（与 Agent 工具库同款 SegmentGroup） */}
+      {/* Tab 切换器（与 Agent 工具库同款 LineTabs：黑色下划线） */}
       <div className="mb-1">
-        <SegmentGroup>
+        <div className="flex items-center gap-2 border-b border-[#f0f0f0]">
           {CHANNEL_TABS.map((tab) => (
-            <SegmentOption
+            <button
               key={tab.id}
-              active={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id)}
+              className={`relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A] -mb-px"
+                  : "text-[#737373] hover:text-[#0A0A0A]"
+              }`}
             >
               {tab.label}
-            </SegmentOption>
+            </button>
           ))}
-        </SegmentGroup>
+        </div>
       </div>
 
       {/* Tab 描述（仅一行） */}
@@ -316,9 +319,9 @@ export default function ChannelConfig() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead style={{ width: "100%", minWidth: 240 }}>产品</TableHead>
-                <TableHead style={{ width: 88 }}>用户可见</TableHead>
-                <TableHead style={{ width: 120, minWidth: 120 }}>分组</TableHead>
+                <TableHead style={{ minWidth: 280 }}>产品</TableHead>
+                <TableHead style={{ width: "100%", minWidth: 200 }}>应用范围</TableHead>
+                <TableHead style={{ width: 160, minWidth: 160 }}>用户可见</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -331,6 +334,17 @@ export default function ChannelConfig() {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <ScopeEditPopover
+                      scope={builtinScopes[ch.id]?.scope || "all"}
+                      selectedGroupIds={builtinScopes[ch.id]?.groupIds || []}
+                      groups={ALL_GROUPS}
+                      maxVisibleBadges={5}
+                      onConfirm={(scope, groupIds) => {
+                        setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
                     <Switch
                       checked={builtinVisibility[ch.id] || false}
                       onCheckedChange={(v) => {
@@ -338,16 +352,6 @@ export default function ChannelConfig() {
                         setBuiltinVisibility(updated);
                         saveBuiltinChannelVisibility(updated);
                         toast.success(`${ch.name} 已${v ? "开启用户可见" : "关闭用户可见"}`);
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <ScopeEditPopover
-                      scope={builtinScopes[ch.id]?.scope || "all"}
-                      selectedGroupIds={builtinScopes[ch.id]?.groupIds || []}
-                      groups={ALL_GROUPS}
-                      onConfirm={(scope, groupIds) => {
-                        setBuiltinScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
                       }}
                     />
                   </TableCell>
@@ -405,53 +409,53 @@ export default function ChannelConfig() {
                 <TableHeader>
                   <TableRow>
                     <TableHead style={{ minWidth: 280 }}>通道名</TableHead>
-                    <TableHead style={{ width: 140 }}>用户可见</TableHead>
-                    <TableHead style={{ width: "100%" }}>分组</TableHead>
-                    <TableHead fixed="right" style={{ width: 96, minWidth: 96, maxWidth: 96 }}>操作</TableHead>
+                    <TableHead style={{ width: "100%", minWidth: 200 }}>应用范围</TableHead>
+                    <TableHead style={{ width: 160, minWidth: 160 }}>用户可见</TableHead>
+                    <TableHead style={{ width: 160, minWidth: 160, maxWidth: 160 }}>操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {customChannels.map((ch) => (
                     <Fragment key={ch.id}>
-                      <TableRow>
+                      <TableRow
+                        className="cursor-pointer"
+                        onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
+                      >
                         <TableCell>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <p className="text-sm font-medium text-[#0A0A0A] truncate">{ch.name}</p>
-                              <Badge variant="secondary" className="shrink-0 font-mono">
-                                {ch.channelId}
-                              </Badge>
-                            </div>
-                            <button
-                              className="mt-1 text-xs text-[#A3A3A3] hover:text-[#355EF1] flex items-center gap-0.5 transition-colors"
-                              onClick={() => setExpandedCustomId(expandedCustomId === ch.id ? null : ch.id)}
-                              title="查看详情"
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="shrink-0 w-4 h-4 inline-flex items-center justify-center text-[#737373]"
+                              aria-hidden="true"
                             >
                               {expandedCustomId === ch.id
-                                ? <ChevronDown className="w-3 h-3" />
-                                : <ChevronRight className="w-3 h-3" />
+                                ? <ChevronDown className="w-3.5 h-3.5" />
+                                : <ChevronRight className="w-3.5 h-3.5" />
                               }
-                              <span>详情</span>
-                            </button>
+                            </span>
+                            <p className="text-sm font-medium text-[#0A0A0A] truncate">{ch.name}</p>
+                            <Badge variant="secondary" className="shrink-0 font-mono">
+                              {ch.channelId}
+                            </Badge>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <Switch
-                            checked={ch.visible}
-                            onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
-                          />
-                        </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <ScopeEditPopover
                             scope={customScopes[ch.id]?.scope || "all"}
                             selectedGroupIds={customScopes[ch.id]?.groupIds || []}
                             groups={ALL_GROUPS}
+                            maxVisibleBadges={5}
                             onConfirm={(scope, groupIds) => {
                               setCustomScopes((prev) => ({ ...prev, [ch.id]: { scope, groupIds } }));
                             }}
                           />
                         </TableCell>
-                        <TableActionCell fixed="right">
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Switch
+                            checked={ch.visible}
+                            onCheckedChange={(v) => toggleCustomVisible(ch.id, v)}
+                          />
+                        </TableCell>
+                        <TableActionCell onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="link"
                             size="sm"

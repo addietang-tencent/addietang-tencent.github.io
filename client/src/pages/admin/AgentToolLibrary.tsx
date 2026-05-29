@@ -6,7 +6,7 @@
  */
 import { useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, ExternalLink, Check } from "lucide-react";
+import { ShieldCheck, ExternalLink, Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusTag } from "@/components/ui/status-tag";
@@ -94,8 +94,12 @@ export default function AgentToolLibrary() {
           <p className="text-xs text-[#0A0A0A] leading-relaxed flex items-center gap-2">
             <span>由腾讯云 Agent Storage 提供服务，独享 50GB 免费空间</span>
             {!securityServiceActive ? (
-              <Badge variant="outline" className="cursor-pointer" onClick={() => setSecurityApplyDialogOpen(true)}>
-                恶意 Skills 扫描 API：未开通
+              <Badge variant="outline" className="cursor-pointer gap-1.5 pr-1.5" onClick={() => setSecurityApplyDialogOpen(true)}>
+                <span>恶意 Skills 扫描 API：未开通</span>
+                <span className="inline-flex items-center gap-0.5 text-[#355EF1] hover:text-[#1d4ed8] font-medium">
+                  一键开通
+                  <ArrowRight className="w-3 h-3" />
+                </span>
               </Badge>
             ) : (
               <HoverCard openDelay={300}>

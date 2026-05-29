@@ -4,18 +4,24 @@
  * 包含：用户配额 / 模型配额 / 功能权限开关
  * 全宽卡片布局，每张卡片支持按分组设置多行规则 + 全部用户兜底行
  */
-import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { Alert, AlertDescription, AlertOperationInfoIcon } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertOperationInfoIcon, AlertInfoIcon } from "@/components/ui/alert";
 import {
-  Pencil, Check, X,
-  HelpCircle, Info,
+  Check, X,
+  HelpCircle as _HelpCircle, Info,
   Plus, Trash2, Search,
   ChevronDown, ChevronRight, Minus, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell, TableActionCell } from "@/components/ui/table";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Popover, PopoverContent, PopoverTrigger,
@@ -24,7 +30,7 @@ import { toast } from "sonner";
 import { StatusTag } from "@/components/ui/status-tag";
 import { SegmentGroup, SegmentOption } from "@/components/ui/segment";
 import {
-  Dialog, DialogContent,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -431,17 +437,18 @@ function GroupTagSelector({
         <div
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
-          className="relative w-full h-9 px-2.5 py-1 rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-7"
+          data-state={open ? "open" : "closed"}
+          className="group relative w-full min-h-9 px-3 py-[5px] rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] data-[state=open]:border-[#1447E6] transition-colors cursor-pointer flex items-center flex-wrap gap-1 pr-8 text-sm"
         >
           {selectedIds.length === 0 ? (
-            <span className="text-xs text-gray-400 px-1">选择分组…</span>
+            <span className="text-[#A3A3A3]">请选择分组</span>
           ) : (
             selectedIds.map((id) => {
               const path = getGroupPath(id, ALL_GROUPS);
               return (
                 <span
                   key={id}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] max-w-full"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#F5F5F5] text-[#0A0A0A] text-[11px] max-w-full"
                 >
                   <span className="truncate">{path}</span>
                   <button
@@ -450,7 +457,7 @@ function GroupTagSelector({
                       e.stopPropagation();
                       onChange(selectedIds.filter((x) => x !== id));
                     }}
-                    className="text-blue-400 hover:text-blue-700 shrink-0"
+                    className="text-[#A3A3A3] hover:text-[#0A0A0A] shrink-0"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -458,39 +465,42 @@ function GroupTagSelector({
               );
             })
           )}
-          {hover && selectedIds.length > 0 && (
+          {/* 右侧图标：默认 ChevronDown；hover 且有已选时显示清空 */}
+          {hover && selectedIds.length > 0 ? (
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 onChange([]);
               }}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center shrink-0"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#A3A3A3] hover:bg-[#737373] flex items-center justify-center shrink-0"
               title="清空"
             >
               <X className="w-2.5 h-2.5 text-white" />
             </button>
+          ) : (
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-[#737373] transition-transform duration-200 group-data-[state=open]:rotate-180 pointer-events-none" />
           )}
         </div>
       </PopoverTrigger>
       <PopoverContent
-        className="p-0"
+        className="p-0 rounded-[4px] border border-[#E5E5E5] shadow-md"
         style={{ width: "var(--radix-popover-trigger-width)" }}
         align="start"
         sideOffset={4}
       >
-        <div className="p-2.5 border-b border-[#e5e5e5]">
+        <div className="p-2.5 border-b border-[#E5E5E5]">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3] pointer-events-none" />
             <Input
               type="text"
-              placeholder="搜索分组…"
+              placeholder="搜索分组"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-8 pl-8 pr-7 text-xs"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373]">
                 <X className="w-3 h-3" />
               </button>
             )}
@@ -498,7 +508,7 @@ function GroupTagSelector({
         </div>
         <div className="max-h-[280px] overflow-y-auto p-1.5">
           {activeSources.length === 0 ? (
-            <p className="text-[11px] text-gray-400 text-center py-4">暂无分组</p>
+            <p className="text-xs text-[#A3A3A3] text-center py-4">暂无分组</p>
           ) : (
             activeSources.map((source) => {
               const trees = treesMap[source] || [];
@@ -506,7 +516,7 @@ function GroupTagSelector({
               if (!hasVisibleTrees) return null;
               return (
                 <div key={source} className="mb-1.5 last:mb-0">
-                  <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-gray-400 uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
+                  <div className="px-2 pt-1.5 pb-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wide">{SOURCE_LABELS[source]}</div>
                   {trees.map((root) => renderNode(root, 0))}
                 </div>
               );
@@ -518,136 +528,39 @@ function GroupTagSelector({
   );
 }
 
-// ─── 分组名称展示（保存后的只读态：单行 + +N 折叠） ──────────────────────────
+// ─── 分组名称展示（保存后的只读态：独立 tag + 最多 5 个 + 溢出 +N） ──────────
 
 function GroupBadges({ groupIds }: { groupIds: string[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const moreRef = useRef<HTMLSpanElement>(null);
-  const [visibleCount, setVisibleCount] = useState(groupIds.length);
-
   const paths = useMemo(
     () => groupIds.map((id) => getGroupPath(id, ALL_GROUPS)),
     [groupIds]
   );
 
-  useLayoutEffect(() => {
-    if (groupIds.length === 0) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    // 先尝试放全部（在 effect 开始时暂时设为全部，让 DOM 渲染出所有标签供测量）
-    const computeVisible = () => {
-      const available = container.clientWidth;
-      if (available <= 0) return;
-
-      // 间隙宽度（gap-1 = 4px）
-      const gap = 4;
-      // 逐个累加宽度找到能塞下的最大 n
-      let totalW = 0;
-      let fitCount = 0;
-      for (let i = 0; i < paths.length; i++) {
-        const el = tagRefs.current[i];
-        if (!el) break;
-        const w = el.offsetWidth;
-        const add = totalW === 0 ? w : w + gap;
-        if (totalW + add <= available) {
-          totalW += add;
-          fitCount = i + 1;
-        } else {
-          break;
-        }
-      }
-
-      if (fitCount === paths.length) {
-        setVisibleCount(paths.length);
-        return;
-      }
-
-      // 放不下全部：需要预留 "…等 N 个分组" 占位
-      // 依次从 fitCount 递减，直到能塞下 "已展示标签 + 空间 + 更多标签"
-      const moreEl = moreRef.current;
-      if (!moreEl) {
-        setVisibleCount(Math.max(1, fitCount));
-        return;
-      }
-      for (let n = fitCount; n >= 1; n--) {
-        // 重新计算 n 个标签的总宽
-        let w = 0;
-        for (let i = 0; i < n; i++) {
-          const el = tagRefs.current[i];
-          if (!el) continue;
-          w += el.offsetWidth + (i === 0 ? 0 : gap);
-        }
-        // 临时设置 more 文案以测量（X = 总数）
-        moreEl.textContent = `…共 ${paths.length} 个分组`;
-        const moreW = moreEl.offsetWidth;
-        if (w + gap + moreW <= available) {
-          setVisibleCount(n);
-          return;
-        }
-      }
-      // 至少展示 1 个
-      setVisibleCount(1);
-    };
-
-    computeVisible();
-    const observer = new ResizeObserver(computeVisible);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [paths, groupIds.length]);
-
   if (groupIds.length === 0) return <span className="text-xs text-gray-500 font-medium">预设策略</span>;
 
-  const omitted = paths.length - visibleCount;
+  const maxVisible = 5;
+  const visible = paths.slice(0, maxVisible);
+  const overflow = paths.length - maxVisible;
+  const tooltipText = paths.join("\n");
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          ref={containerRef}
-          className="flex items-center gap-1 w-full overflow-hidden cursor-default"
-        >
-          {/* 可见标签 */}
-          {paths.slice(0, visibleCount).map((p, i) => (
-            <span
-              key={i}
-              ref={(el) => { tagRefs.current[i] = el; }}
-              className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap shrink-0"
-            >
-              {p}
-            </span>
-          ))}
-          {/* 折叠提示 */}
-          {omitted > 0 && (
-            <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap shrink-0">
-              …共 {paths.length} 个分组
-            </span>
-          )}
-          {/* 隐藏测量区：渲染所有标签 + more 文案，供 useLayoutEffect 读取宽度 */}
-          <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
-            {paths.map((p, i) => (
-              <span
-                key={`m-${i}`}
-                ref={(el) => { tagRefs.current[i] = el; }}
-                className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] whitespace-nowrap"
-              >
-                {p}
-              </span>
-            ))}
-            <span
-              ref={moreRef}
-              className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-gray-500 whitespace-nowrap"
-            />
-          </div>
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-[360px] text-xs leading-relaxed">
-        <div className="space-y-0.5">
-          {paths.map((p, i) => <div key={i}>{p}</div>)}
-        </div>
-      </TooltipContent>
-    </Tooltip>
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {visible.map((name, i) => (
+        <Badge key={i} variant="outline" className="shrink-0 max-w-[160px] cursor-default">
+          <span className="truncate">{name}</span>
+        </Badge>
+      ))}
+      {overflow > 0 && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="outline" className="shrink-0 cursor-default">+{overflow}</Badge>
+          </TooltipTrigger>
+          <TooltipContent side="right" align="start" className="max-w-[360px] text-xs leading-relaxed whitespace-pre-line">
+            {tooltipText}
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </div>
   );
 }
 
@@ -780,6 +693,124 @@ const EDIT_ROW_CLASS = "flex items-center gap-3 min-h-10 py-1.5";
 
 // ─── 子组件：配额策略卡片 ────────────────────────────────────────────────────
 
+/**
+ * Token 配额值编辑器：触发器是一个仿 Select 的下拉按钮，
+ * 点击后弹出 Popover：顶部 SegmentGroup（无限制/自定义），
+ * 选择自定义时显示 Input；底部右对齐取消/确认按钮。
+ * 仅在点击「确认」时通过 onCommit 同步外部状态。
+ */
+function TokenValueEditor({
+  mode,
+  valStr,
+  onCommit,
+}: {
+  mode: "custom" | "unlimited";
+  valStr: string;
+  onCommit: (nextMode: "custom" | "unlimited", nextValStr: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draftMode, setDraftMode] = useState<"custom" | "unlimited">(mode);
+  const [draftValStr, setDraftValStr] = useState<string>(valStr);
+
+  // 每次打开时，用当前外部值初始化草稿
+  const handleOpenChange = (v: boolean) => {
+    if (v) {
+      setDraftMode(mode);
+      setDraftValStr(valStr);
+    }
+    setOpen(v);
+  };
+
+  const handleConfirm = () => {
+    if (draftMode === "custom") {
+      const n = parseInt(draftValStr, 10);
+      if (isNaN(n) || n < 0) {
+        toast.error("请输入有效数值");
+        return;
+      }
+    }
+    onCommit(draftMode, draftMode === "unlimited" ? "" : draftValStr);
+    setOpen(false);
+  };
+
+  const triggerLabel =
+    mode === "unlimited"
+      ? "无限制"
+      : valStr === ""
+        ? ""
+        : Number(valStr).toLocaleString();
+  const isPlaceholder = mode === "custom" && valStr === "";
+
+  return (
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          data-state={open ? "open" : "closed"}
+          className="group relative w-32 h-9 px-3 pr-8 rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] data-[state=open]:border-[#1447E6] transition-colors cursor-pointer flex items-center text-left text-sm"
+        >
+          <span
+            className={`truncate ${isPlaceholder ? "text-[#A3A3A3]" : "text-[#0A0A0A]"} tabular-nums`}
+          >
+            {isPlaceholder ? "请输入" : triggerLabel}
+          </span>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-[#737373] transition-transform duration-200 group-data-[state=open]:rotate-180 pointer-events-none" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="p-0 rounded-[4px] border border-[#E5E5E5] shadow-md"
+        align="start"
+        sideOffset={4}
+        style={{ width: 240 }}
+      >
+        <div className="px-3.5 pt-3.5 pb-3 space-y-2.5">
+          <SegmentGroup className="w-full">
+            <SegmentOption
+              active={draftMode === "unlimited"}
+              onClick={() => setDraftMode("unlimited")}
+              className="flex-1"
+            >
+              无限制
+            </SegmentOption>
+            <SegmentOption
+              active={draftMode === "custom"}
+              onClick={() => setDraftMode("custom")}
+              className="flex-1"
+            >
+              自定义
+            </SegmentOption>
+          </SegmentGroup>
+          {draftMode === "unlimited" && (
+            <p className="text-xs text-[#737373] leading-relaxed">不限制数量上限</p>
+          )}
+          {draftMode === "custom" && (
+            <Input
+              type="number"
+              autoFocus
+              value={draftValStr}
+              onChange={(e) => setDraftValStr(e.target.value)}
+              className="h-9 text-xs bg-white"
+              placeholder="请输入数量"
+            />
+          )}
+        </div>
+        <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#E5E5E5]">
+          <Button size="sm" variant="outline" className="h-7 text-xs px-3" onClick={() => setOpen(false)}>取消</Button>
+          <Button
+            size="sm"
+            variant="dialog-confirm"
+            className="h-7 text-xs px-3"
+            disabled={draftMode === "custom" && draftValStr.trim() === ""}
+            onClick={handleConfirm}
+          >
+            确认
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 interface QuotaPolicyCardProps {
   icon: React.ReactNode;
   iconBg: string;
@@ -789,301 +820,431 @@ interface QuotaPolicyCardProps {
   rules: PolicyRule<TokenLimit>[];
   onRulesChange: (rules: PolicyRule<TokenLimit>[]) => void;
   extraContent?: React.ReactNode;
+  /** 可选：在配额列右侧追加「时间维度」列（卡片级单值，所有行共用） */
+  timeDimension?: {
+    value: "daily" | "monthly";
+    onChange: (v: "daily" | "monthly") => void;
+  };
 }
 
-function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRulesChange, extraContent }: QuotaPolicyCardProps) {
+function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRulesChange, extraContent, timeDimension }: QuotaPolicyCardProps) {
   // integer 类型（如 Agent 数量上限）不需要无限制/自定义切换，配额列可以缩短，让分组列更长
   const valueColClass = type === "integer" ? "w-32" : "w-60";
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [draftGroupIds, setDraftGroupIds] = useState<string[]>([]);
-  const [draftValue, setDraftValue] = useState<string>("");
-  const [draftMode, setDraftMode] = useState<"custom" | "unlimited">("custom");
-  const [addingNew, setAddingNew] = useState(false);
-
-  const getDisabledIds = (excludeRuleId?: string) =>
-    rules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
+  // 卡片级编辑态：编辑期间所有规则都可改
+  const [cardEditing, setCardEditing] = useState(false);
+  const [editRules, setEditRules] = useState<PolicyRule<TokenLimit>[]>([]);
+  const [editValueStrs, setEditValueStrs] = useState<Record<string, string>>({});
+  const [editModes, setEditModes] = useState<Record<string, "custom" | "unlimited">>({});
 
   const fallbackRule = rules.find((r) => r.groupIds.length === 0)!;
   const groupRules = rules.filter((r) => r.groupIds.length > 0);
 
-  const displayValue = (v: TokenLimit) => (v === "unlimited" || v === -1) ? "无限制" : Number(v).toLocaleString();
-
-  const startEdit = (rule: PolicyRule<TokenLimit>) => {
-    setEditingId(rule.id);
-    setDraftGroupIds([...rule.groupIds]);
-    if (rule.value === "unlimited") { setDraftMode("unlimited"); setDraftValue(""); }
-    else { setDraftMode("custom"); setDraftValue(String(rule.value)); }
-    setAddingNew(false);
+  const displayValue = (v: TokenLimit) => {
+    if (v === "unlimited" || v === -1) return "无限制";
+    const num = Number(v).toLocaleString();
+    return type === "integer" ? `${num} 个` : num;
   };
 
-  const startAdd = () => { setAddingNew(true); setEditingId(null); setDraftGroupIds([]); setDraftValue(type === "integer" ? "3" : "100000"); setDraftMode("custom"); };
-  const cancelEdit = () => { setEditingId(null); setAddingNew(false); };
+  // 在编辑态下，分组冲突依据当前草稿
+  const getDisabledIds = (excludeRuleId: string) =>
+    editRules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
 
-  const saveEdit = (ruleId?: string) => {
-    let finalValue: TokenLimit;
-    if (type === "token" && draftMode === "unlimited") { finalValue = "unlimited"; }
-    else {
-      const n = parseInt(draftValue, 10);
-      if (isNaN(n) || n < 0) { toast.error("请输入有效数值"); return; }
-      if (type === "integer" && n > 999) { toast.error("请输入 0-999 之间的整数"); return; }
-      finalValue = n;
+  const buildBlankGroupRule = (): PolicyRule<TokenLimit> => ({
+    id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    groupIds: [],
+    value: type === "integer" ? 3 : 100000,
+  });
+
+  const startCardEdit = () => {
+    let initial = [...rules];
+    // 没有分组规则时，自动展示一行空白，无需显式「添加」
+    if (!initial.some((r) => r.groupIds.length > 0)) {
+      const blank = buildBlankGroupRule();
+      const fbIdx = initial.findIndex((r) => r.id === fallbackRule.id);
+      initial = [...initial.slice(0, fbIdx), blank, ...initial.slice(fbIdx)];
     }
-    if (addingNew) {
-      if (draftGroupIds.length === 0) { toast.error("请选择至少一个分组"); return; }
-      const newRule: PolicyRule<TokenLimit> = { id: `rule-${Date.now()}`, groupIds: draftGroupIds, value: finalValue };
-      onRulesChange([...groupRules, newRule, fallbackRule]);
-      toast.success("策略已保存");
-    } else if (ruleId) {
-      onRulesChange(rules.map((r) => r.id === ruleId ? { ...r, groupIds: draftGroupIds, value: finalValue } : r));
-      toast.success("策略已保存");
-    }
-    cancelEdit();
+    const strs: Record<string, string> = {};
+    const modes: Record<string, "custom" | "unlimited"> = {};
+    initial.forEach((r) => {
+      strs[r.id] = r.value === "unlimited" ? "" : String(r.value);
+      modes[r.id] = r.value === "unlimited" ? "unlimited" : "custom";
+    });
+    setEditRules(initial);
+    setEditValueStrs(strs);
+    setEditModes(modes);
+    setCardEditing(true);
   };
 
-  const deleteRule = (ruleId: string) => { onRulesChange(rules.filter((r) => r.id !== ruleId)); toast.success("策略已删除"); };
+  const cancelCardEdit = () => {
+    setCardEditing(false);
+    setEditRules([]);
+    setEditValueStrs({});
+    setEditModes({});
+  };
 
-  // 值编辑控件（无限制/自定义 + 输入框）
-  const renderValueEditor = () => (
-    <>
-      {type === "token" && (
-        <div className="flex gap-1 shrink-0">
-          <Button variant="plain" size="sm" className="h-9 px-3 text-xs" data-state={draftMode === "unlimited" ? "active" : undefined} onClick={() => setDraftMode("unlimited")}>无限制</Button>
-          <Button variant="plain" size="sm" className="h-9 px-3 text-xs" data-state={draftMode === "custom" ? "active" : undefined} onClick={() => setDraftMode("custom")}>自定义</Button>
-        </div>
-      )}
-      {(type === "integer" || draftMode === "custom") && (
-        <Input type="number" value={draftValue} onChange={(e) => setDraftValue(e.target.value)} className="h-9 text-xs bg-white w-32" placeholder={type === "integer" ? "0-999" : "数量"} />
-      )}
-    </>
-  );
+  const saveCardEdit = () => {
+    const finalRules: PolicyRule<TokenLimit>[] = [];
+    for (const r of editRules) {
+      const isFallback = r.id === fallbackRule.id;
+      const mode = editModes[r.id] ?? "custom";
+      const valStr = editValueStrs[r.id] ?? "";
+      let finalValue: TokenLimit;
+      if (type === "token" && mode === "unlimited") {
+        finalValue = "unlimited";
+      } else {
+        const n = parseInt(valStr, 10);
+        if (isNaN(n) || n < 0) {
+          toast.error(`请输入有效数值（${isFallback ? "预设策略" : "分组策略"}）`);
+          return;
+        }
+        if (type === "integer" && n > 999) {
+          toast.error("请输入 0-999 之间的整数");
+          return;
+        }
+        finalValue = n;
+      }
+      if (!isFallback && r.groupIds.length === 0) {
+        // 编辑态下若新增空白行未被填写，跳过（视为不保存该行）
+        continue;
+      }
+      finalRules.push({ ...r, value: finalValue });
+    }
+    const finalGroupRules = finalRules.filter((r) => r.id !== fallbackRule.id);
+    const finalFallback = finalRules.find((r) => r.id === fallbackRule.id)!;
+    onRulesChange([...finalGroupRules, finalFallback]);
+    toast.success("策略已保存");
+    cancelCardEdit();
+  };
+
+  const updateGroups = (id: string, groupIds: string[]) =>
+    setEditRules((prev) => prev.map((r) => (r.id === id ? { ...r, groupIds } : r)));
+  const updateValueStr = (id: string, valStr: string) =>
+    setEditValueStrs((prev) => ({ ...prev, [id]: valStr }));
+  const updateMode = (id: string, mode: "custom" | "unlimited") =>
+    setEditModes((prev) => ({ ...prev, [id]: mode }));
+
+  const removeRule = (id: string) => {
+    setEditRules((prev) => prev.filter((r) => r.id !== id));
+    setEditValueStrs((prev) => { const { [id]: _omit, ...rest } = prev; return rest; });
+    setEditModes((prev) => { const { [id]: _omit, ...rest } = prev; return rest; });
+  };
+
+  const addBlankGroupRow = () => {
+    const blank = buildBlankGroupRule();
+    setEditRules((prev) => {
+      const fbIdx = prev.findIndex((r) => r.id === fallbackRule.id);
+      return [...prev.slice(0, fbIdx), blank, ...prev.slice(fbIdx)];
+    });
+    setEditValueStrs((prev) => ({ ...prev, [blank.id]: type === "integer" ? "3" : "100000" }));
+    setEditModes((prev) => ({ ...prev, [blank.id]: "custom" }));
+  };
+
+  // 编辑态：值编辑控件
+  const renderValueEditor = (ruleId: string) => {
+    const mode = editModes[ruleId] ?? "custom";
+    const valStr = editValueStrs[ruleId] ?? "";
+    if (type === "integer") {
+      return (
+        <Input
+          type="number"
+          value={valStr}
+          onChange={(e) => updateValueStr(ruleId, e.target.value)}
+          className="h-9 text-xs bg-white w-32"
+          placeholder="0-999"
+        />
+      );
+    }
+    return (
+      <TokenValueEditor
+        mode={mode}
+        valStr={valStr}
+        onCommit={(nextMode, nextValStr) => {
+          updateMode(ruleId, nextMode);
+          updateValueStr(ruleId, nextValStr);
+        }}
+      />
+    );
+  };
+
+  const editFallback = editRules.find((r) => r.id === fallbackRule.id);
+  const editGroupRules = editRules.filter((r) => r.id !== fallbackRule.id);
 
   return (
     <Card className="overflow-hidden h-full py-0 gap-0">
       <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-1.5">
-          {icon}
-          <h3 className="text-[14px] font-semibold text-[#020617]">{title}</h3>
-        </div>
-        <p className="text-[12px] text-[#737373] leading-relaxed">{description}</p>
-      </div>
-
-      {/* 预设策略区域 */}
-      <div className="px-5 pb-4">
-        {editingId === fallbackRule.id ? (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
-            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <div className="flex-1 flex items-center justify-end gap-2">{renderValueEditor()}</div>
+        <div className="flex items-start gap-3">
+          <div className="shrink-0">{icon}</div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[14px] font-semibold text-[#020617]">{title}</h3>
+            <p className="text-[12px] text-[#737373] leading-relaxed mt-1">{description}</p>
+          </div>
+          {cardEditing ? (
             <div className="flex items-center gap-2 shrink-0">
-              <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
-              <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit(fallbackRule.id)}><Check className="w-4 h-4" /></Button>
+              <Button variant="claw-outline" size="claw-sm" onClick={cancelCardEdit}>取消</Button>
+              <Button variant="dialog-confirm" size="claw-sm" onClick={saveCardEdit}>保存</Button>
             </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
-            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <span className="flex-1 text-right text-[20px] font-bold text-[#020617] font-din tabular-nums">{displayValue(fallbackRule.value)}</span>
-            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0 text-[14px]" onClick={() => startEdit(fallbackRule)}>编辑</Button>
-          </div>
-        )}
+          ) : (
+            <Button variant="claw-outline" size="claw-sm" className="shrink-0" onClick={startCardEdit}>
+              编辑
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* 分组策略区域 */}
-      <div className="px-5 flex-1 flex flex-col">
-        {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="pt-3">
-            {/* 表头 */}
-            <div className="flex items-center gap-3 pb-2">
-              <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
-              <span className={`${valueColClass} text-[12px] font-medium text-[#a3a3a3]`}>配额</span>
-              <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
+      {cardEditing ? (
+        /* 编辑态：预设策略灰底卡片 + 分组策略灰底卡片 */
+        <div className="px-5 pb-4 space-y-2">
+          {/* 预设策略 */}
+          {editFallback && (
+            <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+              <Table density="compact">
+                <colgroup>
+                  <col style={{ width: 120 }} />
+                  <col />
+                  <col style={{ width: 160 }} />
+                  {timeDimension && <col style={{ width: 120 }} />}
+                  <col style={{ width: 80 }} />
+                </colgroup>
+                <TableBody>
+                  <TableRow className="border-0">
+                    <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                    <TableCell><Badge variant="outline">{editGroupRules.some(r => r.groupIds.length > 0) ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">{renderValueEditor(editFallback.id)}</div>
+                    </TableCell>
+                    {timeDimension && (
+                      <TableCell>
+                        <Select value={timeDimension.value} onValueChange={(v) => timeDimension.onChange(v as "daily" | "monthly")}>
+                          <SelectTrigger className="h-9 w-full text-sm bg-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="daily">每日</SelectItem>
+                            <SelectItem value="monthly">每月</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                    )}
+                    <TableActionCell />
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
+          )}
 
-            {/* 分组策略行 */}
-            {groupRules.map((rule) => (
-              <div key={rule.id}>
-                {editingId === rule.id ? (
-                  <div className={EDIT_ROW_CLASS}>
-                    <div className="flex-1 min-w-0">
-                      <GroupTagSelector
-                        selectedIds={draftGroupIds}
-                        disabledIds={getDisabledIds(rule.id)}
-                        onChange={setDraftGroupIds}
-                      />
-                    </div>
-                    <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                    <div className="w-32 flex items-center justify-end gap-2 h-9">
-                      <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit(rule.id)}><Check className="w-4 h-4" /></Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`${ROW_CLASS} border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors`}>
-                    <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                    <span className={`${valueColClass} text-right text-[14px] text-[#020617] font-medium tabular-nums`}>{displayValue(rule.value)}</span>
-                    <div className="w-16 flex items-center justify-end gap-3">
-                      <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => startEdit(rule)}>编辑</Button>
-                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => deleteRule(rule.id)}>删除</Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* 新增态 */}
-            {addingNew && (
-              <div className={EDIT_ROW_CLASS}>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <GroupTagSelector
-                    selectedIds={draftGroupIds}
-                    disabledIds={getDisabledIds()}
-                    onChange={setDraftGroupIds}
-                  />
-                </div>
-                <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderValueEditor()}</div>
-                <div className="w-32 flex items-center justify-end gap-2 h-9">
-                  <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit()}><Check className="w-4 h-4" /></Button>
-                </div>
-              </div>
+          {/* 分组策略 + 添加按钮 */}
+          <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+            {editGroupRules.length > 0 && (
+              <Table density="compact">
+                <colgroup>
+                  <col style={{ width: 120 }} />
+                  <col />
+                  <col style={{ width: 160 }} />
+                  {timeDimension && <col style={{ width: 120 }} />}
+                  <col style={{ width: 80 }} />
+                </colgroup>
+                <TableBody>
+                  {editGroupRules.map((rule, idx) => (
+                    <TableRow key={rule.id} className={idx < editGroupRules.length - 1 ? "border-b border-[#EFEFEF]" : "border-0"}>
+                      <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                      <TableCell>
+                        <GroupTagSelector
+                          selectedIds={rule.groupIds}
+                          disabledIds={getDisabledIds(rule.id)}
+                          onChange={(ids) => updateGroups(rule.id, ids)}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">{renderValueEditor(rule.id)}</div>
+                      </TableCell>
+                      {timeDimension && (
+                        <TableCell className="text-[13px] text-[#020617]">{timeDimension.value === "daily" ? "每日" : "每月"}</TableCell>
+                      )}
+                      <TableActionCell>
+                        <Button variant="link" size="sm" onClick={() => removeRule(rule.id)}>删除</Button>
+                      </TableActionCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
+            {/* 添加分组按钮 —— 拉通底部 */}
+            <button
+              type="button"
+              onClick={addBlankGroupRow}
+              className={`w-full flex items-center justify-center gap-1 px-3 py-2.5 text-[13px] text-[#737373] ${editGroupRules.length > 0 ? "border-t border-dashed border-[#D4D4D4]" : ""} hover:text-[#020617] transition-colors`}
+            >
+              <Plus className="w-3.5 h-3.5" />添加分组策略
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        /* 视图态 */
+        <div className="px-5 pb-4 space-y-2">
+          {/* 预设策略 */}
+          <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+            <Table density="compact">
+              <colgroup>
+                <col style={{ width: 120 }} />
+                <col />
+                <col style={{ width: 160 }} />
+              </colgroup>
+              <TableBody>
+                <TableRow className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                  <TableCell><Badge variant="outline">{groupRules.length > 0 ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                  <TableCell className="text-[13px] text-[#020617] font-medium tabular-nums">
+                    {displayValue(fallbackRule.value)}{timeDimension && `/${timeDimension.value === "daily" ? "每日" : "每月"}`}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 分组策略 */}
+          {groupRules.length > 0 && (
+            <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+              <Table density="compact">
+                <colgroup>
+                  <col style={{ width: 120 }} />
+                  <col />
+                  <col style={{ width: 160 }} />
+                </colgroup>
+                <TableBody>
+                  {groupRules.map((rule, idx) => (
+                    <TableRow key={rule.id} className={`hover:bg-transparent ${idx < groupRules.length - 1 ? "border-b border-[#EFEFEF]" : "border-0"}`}>
+                      <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                      <TableCell><GroupBadges groupIds={rule.groupIds} /></TableCell>
+                      <TableCell className="text-[13px] text-[#020617] font-medium tabular-nums">
+                        {displayValue(rule.value)}{timeDimension && `/${timeDimension.value === "daily" ? "每日" : "每月"}`}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 卡片底部 footer */}
-      <CardFooter className="px-5 py-3 flex-col items-start gap-3">
-        {!addingNew && (
-          <Button variant="outline" size="sm" onClick={startAdd}>
-            <Plus className="w-3.5 h-3.5" />添加分组策略
-          </Button>
-        )}
-        {extraContent}
-      </CardFooter>
+      {extraContent && (
+        <CardFooter className="px-5 pt-0 pb-3 flex-col items-start gap-3">
+          {extraContent}
+        </CardFooter>
+      )}
     </Card>
   );
 }
 
-// ─── 子组件：功能开关策略卡片 ────────────────────────────────────────────────
+// ─── 子组件：策略编辑卡片（PolicyEditCard） ──────────────────────────────────
+
+interface AccessModeRowConfig {
+  /** 当前访问方式 */
+  mode: "public" | "private";
+  /** 保存回调 */
+  onModeChange: (m: "public" | "private") => void;
+  /** info tooltip 内容 */
+  tooltipContent: React.ReactNode;
+}
 
 interface TogglePolicyCardProps {
   icon: React.ReactNode;
   iconBg: string;
   title: string;
-  description: string;
+  description: React.ReactNode;
   rules: PolicyRule<boolean>[];
   /** 返回 false 表示变更被拒绝（如前置校验失败），卡片不会弹成功 toast / 不会关闭编辑态 */
   onRulesChange: (rules: PolicyRule<boolean>[]) => boolean | void;
   extraContent?: React.ReactNode;
+  /** 标题右侧附加内容（如 Tag + 查看详情按钮） */
+  titleExtra?: React.ReactNode;
   /** 指定哪一行（rule.id）正在 loading：该行权限列显示「配置中，请勿关闭」 */
   loadingRuleId?: string | null;
+  /** 可选：在预设策略行上方插入一行「访问方式」 */
+  accessModeRow?: AccessModeRowConfig;
+  /** 可选：禁用编辑按钮并在预设策略区域显示提示信息（ReactNode 支持 link） */
+  disabledMessage?: React.ReactNode;
 }
 
-function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChange, extraContent, loadingRuleId }: TogglePolicyCardProps) {
+function PolicyEditCard({ icon, iconBg, title, description, rules, onRulesChange, extraContent, titleExtra, loadingRuleId, accessModeRow, disabledMessage }: TogglePolicyCardProps) {
   // 任一行处于 loading 时，权限列加宽以容纳"配置中，请勿关闭"文案
   const valueColClass = loadingRuleId ? "w-32" : "w-24";
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [draftGroupIds, setDraftGroupIds] = useState<string[]>([]);
-  const [draftValue, setDraftValue] = useState<boolean>(true);
-  const [addingNew, setAddingNew] = useState(false);
-  // 二次确认弹窗：切换兜底值时会清空分组规则
-  const [confirmFallbackDraft, setConfirmFallbackDraft] = useState<boolean | null>(null);
-
-  const getDisabledIds = (excludeRuleId?: string) =>
-    rules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
+  // 卡片级编辑态
+  const [cardEditing, setCardEditing] = useState(false);
+  const [editFallbackValue, setEditFallbackValue] = useState<boolean>(true);
+  const [editGroupRules, setEditGroupRules] = useState<PolicyRule<boolean>[]>([]);
+  // 访问方式草稿（仅在 accessModeRow 存在时使用）
+  const [editAccessMode, setEditAccessMode] = useState<"public" | "private">("public");
 
   const fallbackRule = rules.find((r) => r.groupIds.length === 0)!;
   const groupRules = rules.filter((r) => r.groupIds.length > 0);
-  // 分组规则的值 = 兜底值的相反（「例外」语义）
-  const groupRuleValue = !fallbackRule.value;
+  // 视图态：分组规则的值 = 兜底值的相反（「例外」语义）
+  // 编辑态：以草稿兜底为基准
+  const editGroupRuleValue = !editFallbackValue;
 
-  const startEdit = (rule: PolicyRule<boolean>) => {
-    setEditingId(rule.id);
-    setDraftGroupIds([...rule.groupIds]);
-    // 分组规则编辑时值固定为 !fallback，兜底行编辑时为其本身
-    setDraftValue(rule.groupIds.length === 0 ? rule.value : groupRuleValue);
-    setAddingNew(false);
-  };
-  const startAdd = () => {
-    setAddingNew(true);
-    setEditingId(null);
-    setDraftGroupIds([]);
-    setDraftValue(groupRuleValue); // 预填为例外值
-  };
-  const cancelEdit = () => { setEditingId(null); setAddingNew(false); };
+  const buildBlankGroupRule = (): PolicyRule<boolean> => ({
+    id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    groupIds: [],
+    value: !editFallbackValue,
+  });
 
-  const saveEdit = (ruleId?: string) => {
-    if (addingNew) {
-      if (draftGroupIds.length === 0) { toast.error("请选择至少一个分组"); return; }
-      const result = onRulesChange([...groupRules, { id: `rule-${Date.now()}`, groupIds: draftGroupIds, value: groupRuleValue }, fallbackRule]);
-      if (result === false) return;
-      toast.success("策略已保存");
-      cancelEdit();
-      return;
+  const startCardEdit = () => {
+    let initial = [...groupRules];
+    if (initial.length === 0) {
+      // 没有分组规则时，自动放一行空白可填
+      initial = [{ id: `rule-${Date.now()}`, groupIds: [], value: !fallbackRule.value }];
     }
-    if (!ruleId) return;
-    // 兜底行保存：若值发生变化且有分组规则 → 弹二次确认
-    if (ruleId === fallbackRule.id) {
-      if (draftValue !== fallbackRule.value && groupRules.length > 0) {
-        setConfirmFallbackDraft(draftValue);
-        return;
-      }
-      // 直接保存兜底值
-      const result = onRulesChange(rules.map((r) => r.id === ruleId ? { ...r, value: draftValue } : r));
-      if (result === false) return;
-      toast.success("策略已保存");
-      cancelEdit();
-      return;
-    }
-    // 分组规则保存：只更新 groupIds（value 永远跟随兜底相反值）
-    const result = onRulesChange(rules.map((r) => r.id === ruleId ? { ...r, groupIds: draftGroupIds, value: groupRuleValue } : r));
+    setEditFallbackValue(fallbackRule.value);
+    setEditGroupRules(initial);
+    if (accessModeRow) setEditAccessMode(accessModeRow.mode);
+    setCardEditing(true);
+  };
+
+  const cancelCardEdit = () => {
+    setCardEditing(false);
+    setEditGroupRules([]);
+  };
+
+  const saveCardEdit = () => {
+    // 仅保留填了分组的规则；统一以草稿兜底的相反值作为分组值（例外语义）
+    const finalGroupRules = editGroupRules
+      .filter((r) => r.groupIds.length > 0)
+      .map((r) => ({ ...r, value: !editFallbackValue }));
+    const finalFallback: PolicyRule<boolean> = { ...fallbackRule, value: editFallbackValue };
+    const result = onRulesChange([...finalGroupRules, finalFallback]);
     if (result === false) return;
+    // 同步保存访问方式
+    if (accessModeRow) accessModeRow.onModeChange(editAccessMode);
     toast.success("策略已保存");
-    cancelEdit();
+    cancelCardEdit();
   };
 
-  // 确认切换兜底值：清空所有分组规则 + 更新兜底值
-  const handleConfirmFallbackSwitch = () => {
-    if (confirmFallbackDraft === null) return;
-    const newValue = confirmFallbackDraft;
-    const result = onRulesChange([{ ...fallbackRule, value: newValue }]);
-    if (result !== false) {
-      toast.success("已更新预设策略，分组策略已清空");
-      cancelEdit();
-    }
-    setConfirmFallbackDraft(null);
-  };
+  const updateGroups = (id: string, groupIds: string[]) =>
+    setEditGroupRules((prev) => prev.map((r) => (r.id === id ? { ...r, groupIds } : r)));
 
-  const deleteRule = (ruleId: string) => {
-    const result = onRulesChange(rules.filter((r) => r.id !== ruleId));
-    if (result === false) return;
-    toast.success("策略已删除");
-  };
+  const removeRule = (id: string) =>
+    setEditGroupRules((prev) => prev.filter((r) => r.id !== id));
 
-  // 兜底值直接切换（点击即保存，无需编辑态）
-  const handleFallbackToggle = (newValue: boolean) => {
-    if (newValue === fallbackRule.value) { cancelEdit(); return; }
-    // 若值发生变化且有分组规则 → 弹二次确认
-    if (groupRules.length > 0) {
-      setConfirmFallbackDraft(newValue);
-      return;
-    }
-    const result = onRulesChange(rules.map((r) => r.id === fallbackRule.id ? { ...r, value: newValue } : r));
-    if (result === false) return;
-    toast.success("策略已保存");
-    cancelEdit();
-  };
+  const addBlankGroupRow = () =>
+    setEditGroupRules((prev) => [...prev, buildBlankGroupRule()]);
 
-  const renderFallbackValueEditor = () => (
-    <>
-      <Button variant="plain" size="sm" data-state={fallbackRule.value ? "active" : undefined} onClick={() => handleFallbackToggle(true)} className="h-9 px-3 text-xs">开启</Button>
-      <Button variant="plain" size="sm" data-state={!fallbackRule.value ? "active" : undefined} onClick={() => handleFallbackToggle(false)} className="h-9 px-3 text-xs">关闭</Button>
-    </>
+  const getDisabledIds = (excludeRuleId: string) =>
+    editGroupRules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
+
+  const renderFallbackEditor = () => (
+    <Select value={editFallbackValue ? "on" : "off"} onValueChange={(v) => setEditFallbackValue(v === "on")}>
+      <SelectTrigger className="h-7 w-[80px] text-xs">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="on">开启</SelectItem>
+        <SelectItem value="off">关闭</SelectItem>
+      </SelectContent>
+    </Select>
   );
-  // 分组规则编辑态：展示静态文字（值固定为例外值，不可改）
-  const renderGroupRuleStaticValue = () => (
-    <StatusTag mode="fill" variant={groupRuleValue ? "green" : "gray"}>{groupRuleValue ? "开启" : "关闭"}</StatusTag>
-  );
+
   // 行内 loading 文字
   const renderLoading = () => (
     <span className="inline-flex items-center gap-1.5 text-xs text-blue-500 font-medium whitespace-nowrap">
@@ -1094,134 +1255,628 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
   return (
     <Card className="overflow-hidden h-full py-0 gap-0">
       <div className="px-5 pt-5 pb-4">
-        <div className="flex items-center gap-3 mb-1.5">
-          {icon}
-          <h3 className="text-[14px] font-semibold text-[#020617] flex-1">{title}</h3>
-        </div>
-        <p className="text-[12px] text-[#737373] leading-relaxed">{description}</p>
-      </div>
-
-      {/* 预设策略区域 */}
-      <div className="px-5 pb-4">
-        {editingId === fallbackRule.id ? (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
-            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <span className="flex-1" />
-            {renderFallbackValueEditor()}
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[60px]">
-            <span className="text-[13px] text-[#737373] shrink-0">预设策略</span>
-            <span className="flex-1" />
-            {loadingRuleId === fallbackRule.id
-              ? renderLoading()
-              : <StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
-            <Button variant="link-dark" size="sm" className="h-auto px-0 shrink-0 text-[14px]" onClick={() => startEdit(fallbackRule)} disabled={!!loadingRuleId}>编辑</Button>
-          </div>
-        )}
-      </div>
-
-      {/* 分组策略区域 */}
-      <div className="px-5 flex-1 flex flex-col">
-        {(groupRules.length > 0 || addingNew || (editingId && editingId !== fallbackRule.id)) && (
-          <div className="pt-3">
-            {/* 表头 */}
-            <div className="flex items-center gap-3 pb-2">
-              <span className="flex-1 text-[12px] font-medium text-[#a3a3a3]">分组</span>
-              <span className={`${valueColClass} text-right text-[12px] font-medium text-[#a3a3a3]`}>权限</span>
-              <span className="w-16 text-right text-[12px] font-medium text-[#a3a3a3]">操作</span>
+        <div className="flex items-start gap-3">
+          <div className={`shrink-0${disabledMessage ? " grayscale opacity-100" : ""}`}>{icon}</div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 overflow-visible">
+              <h3 className="text-[14px] font-semibold text-[#020617] whitespace-nowrap">{title}</h3>
+              {titleExtra}
             </div>
-
-            {groupRules.map((rule) => (
-              <div key={rule.id}>
-                {editingId === rule.id ? (
-                  <div className={EDIT_ROW_CLASS}>
-                    <div className="flex-1 min-w-0">
-                      <GroupTagSelector
-                        selectedIds={draftGroupIds}
-                        disabledIds={getDisabledIds(rule.id)}
-                        onChange={setDraftGroupIds}
-                      />
-                    </div>
-                    <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                    <div className="w-32 flex items-center justify-end gap-2 h-9">
-                      <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit(rule.id)}><Check className="w-4 h-4" /></Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`${ROW_CLASS} border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors`}>
-                    <div className="flex-1 min-w-0"><GroupBadges groupIds={rule.groupIds} /></div>
-                    <div className={`${valueColClass} text-right`}>
-                      {loadingRuleId === rule.id
-                        ? renderLoading()
-                        : <StatusTag mode="fill" variant={rule.value ? "green" : "gray"}>{rule.value ? "开启" : "关闭"}</StatusTag>}
-                    </div>
-                    <div className="w-16 flex items-center justify-end gap-3">
-                      <Button variant="link-dark" size="sm" className="h-auto px-0 text-[14px]" onClick={() => startEdit(rule)} disabled={!!loadingRuleId}>编辑</Button>
-                      <Button variant="link-dark" size="sm" className="h-auto px-0" onClick={() => deleteRule(rule.id)} disabled={!!loadingRuleId}>删除</Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* 新增态 */}
-            {addingNew && (
-              <div className={EDIT_ROW_CLASS}>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <GroupTagSelector
-                    selectedIds={draftGroupIds}
-                    disabledIds={getDisabledIds()}
-                    onChange={setDraftGroupIds}
-                  />
-                </div>
-                <div className={`${valueColClass} flex items-center justify-end gap-1 h-9`}>{renderGroupRuleStaticValue()}</div>
-                <div className="w-32 flex items-center justify-end gap-2 h-9">
-                  <Button variant="ghost" size="icon-sm" className="w-8 h-8" onClick={cancelEdit}><X className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon-sm" className="w-8 h-8 text-[#1447E6]" onClick={() => saveEdit()}><Check className="w-4 h-4" /></Button>
-                </div>
-              </div>
-            )}
+            <p className="text-[12px] text-[#737373] leading-relaxed mt-1">{description}</p>
           </div>
-        )}
+          {cardEditing ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button variant="claw-outline" size="claw-sm" onClick={cancelCardEdit}>取消</Button>
+              <Button variant="dialog-confirm" size="claw-sm" onClick={saveCardEdit}>保存</Button>
+            </div>
+          ) : (
+            <Button variant="claw-outline" size="claw-sm" className="shrink-0" onClick={startCardEdit} disabled={!!loadingRuleId || !!disabledMessage}>
+              编辑
+            </Button>
+          )}
+        </div>
       </div>
+
+      {disabledMessage ? (
+        /* 禁用态：显示提示信息 */
+        <div className="px-5 pb-4 space-y-2">
+          <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+            <Table density="compact">
+              <colgroup>
+                <col style={{ width: 120 }} />
+                <col />
+                <col style={{ width: 100 }} />
+              </colgroup>
+              <TableBody>
+                <TableRow className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline">全部用户</Badge>
+                      <span className="text-[13px] text-[#A3A3A3]">{disabledMessage}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <StatusTag mode="fill" variant="gray">关闭</StatusTag>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ) : cardEditing ? (
+        /* 编辑态 */
+        <div className="px-5 pb-4 space-y-2">
+          {/* 预设策略 */}
+          <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+            <Table density="compact">
+              <colgroup>
+                <col style={{ width: 120 }} />
+                <col />
+                {accessModeRow && <col style={{ width: 140 }} />}
+                <col style={{ width: 100 }} />
+                <col style={{ width: 80 }} />
+              </colgroup>
+              <TableBody>
+                <TableRow className="border-0">
+                  <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                  <TableCell><Badge variant="outline">{editGroupRules.some(r => r.groupIds.length > 0) ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                  {accessModeRow && (
+                    <TableCell>
+                      <Select value={editAccessMode} onValueChange={(v: "public" | "private") => setEditAccessMode(v)}>
+                        <SelectTrigger className="h-7 w-[120px] text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div><SelectItem value="public">公网访问</SelectItem></div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-[280px] text-xs leading-relaxed">
+                              <p><span className="font-semibold">公网访问：</span>用户通过公网直接访问 Agent 面板（WebUI），连接云服务器公网 IP。适用于大多数场景，<span className="text-white font-semibold">推荐选择</span>。</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div><SelectItem value="private">私网访问</SelectItem></div>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-[280px] text-xs leading-relaxed">
+                              <p><span className="font-semibold">私网访问：</span>用户通过同一私有网络访问 Agent 面板（WebUI），连接云服务器内网 IP。使用前需先自行将企业内网与腾讯云私有网络（VPC）打通，并在「网络管理」中将云服务器绑定至该 VPC。配置完成后，企业用户可通过企业内网访问面板，但无法通过公网访问。</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    <div className="flex items-center">{renderFallbackEditor()}</div>
+                  </TableCell>
+                  <TableActionCell />
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 分组策略 + 添加按钮 */}
+          <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+            <Table density="compact">
+              <colgroup>
+                <col style={{ width: 120 }} />
+                <col />
+                {accessModeRow && <col style={{ width: 140 }} />}
+                <col style={{ width: 100 }} />
+                <col style={{ width: 80 }} />
+              </colgroup>
+              <TableBody>
+                {editGroupRules.map((rule, idx) => (
+                  <TableRow key={rule.id} className={idx < editGroupRules.length - 1 ? "border-b border-[#EFEFEF]" : "border-0"}>
+                    <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                    <TableCell>
+                      <GroupTagSelector
+                        selectedIds={rule.groupIds}
+                        disabledIds={getDisabledIds(rule.id)}
+                        onChange={(ids) => updateGroups(rule.id, ids)}
+                      />
+                    </TableCell>
+                    {accessModeRow && (
+                      <TableCell className="text-[13px] text-[#020617]">
+                        {editAccessMode === "public" ? "公网访问" : "私网访问"}
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <div className="flex items-center">
+                        <StatusTag mode="fill" variant={editGroupRuleValue ? "green" : "gray"}>{editGroupRuleValue ? "开启" : "关闭"}</StatusTag>
+                      </div>
+                    </TableCell>
+                    <TableActionCell>
+                      <Button variant="link" size="sm" onClick={() => removeRule(rule.id)}>删除</Button>
+                    </TableActionCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {/* 添加分组按钮 —— 拉通底部 */}
+            <button
+              type="button"
+              onClick={addBlankGroupRow}
+              disabled={!!loadingRuleId}
+              className="w-full flex items-center justify-center gap-1 px-3 py-2.5 text-[13px] text-[#737373] border-t border-dashed border-[#D4D4D4] hover:text-[#020617] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus className="w-3.5 h-3.5" />添加分组策略
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* 视图态 */
+        <div className="px-5 pb-4 space-y-2">
+          {/* 预设策略 */}
+          <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+            <Table density="compact">
+              <colgroup>
+                <col style={{ width: 120 }} />
+                <col />
+                {accessModeRow && <col style={{ width: 140 }} />}
+                <col style={{ width: 100 }} />
+              </colgroup>
+              <TableBody>
+                <TableRow className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                  <TableCell><Badge variant="outline">{groupRules.length > 0 ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                  {accessModeRow && (
+                    <TableCell>
+                      <span className="inline-flex items-center gap-1.5 text-[13px] text-[#020617]">
+                        {accessModeRow.mode === "public" ? "公网访问" : "私网访问"}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-default"><Info className="w-3.5 h-3.5 text-[#A3A3A3]" /></span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
+                            <p className="mb-1.5"><span className="font-semibold">公网访问：</span>用户通过公网直接访问 Agent 面板（WebUI），连接云服务器公网 IP。适用于大多数场景，<span className="text-white font-semibold">推荐选择</span>。</p>
+                            <p><span className="font-semibold">私网访问：</span>用户通过同一私有网络访问 Agent 面板（WebUI），连接云服务器内网 IP。使用前需先自行将企业内网与腾讯云私有网络（VPC）打通，并在「网络管理」中将云服务器绑定至该 VPC。配置完成后，企业用户可通过企业内网访问面板，但无法通过公网访问。</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </span>
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    {loadingRuleId === fallbackRule.id
+                      ? renderLoading()
+                      : <StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 分组策略 */}
+          {groupRules.length > 0 && (
+            <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
+              <Table density="compact">
+                <colgroup>
+                  <col style={{ width: 120 }} />
+                  <col />
+                  {accessModeRow && <col style={{ width: 140 }} />}
+                  <col style={{ width: 100 }} />
+                </colgroup>
+                <TableBody>
+                  {groupRules.map((rule, idx) => (
+                    <TableRow key={rule.id} className={`hover:bg-transparent ${idx < groupRules.length - 1 ? "border-b border-[#EFEFEF]" : "border-0"}`}>
+                      <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                      <TableCell><GroupBadges groupIds={rule.groupIds} /></TableCell>
+                      {accessModeRow && (
+                        <TableCell className="text-[13px] text-[#020617]">
+                          {accessModeRow.mode === "public" ? "公网访问" : "私网访问"}
+                        </TableCell>
+                      )}
+                      <TableCell>
+                        {loadingRuleId === rule.id
+                          ? renderLoading()
+                          : <StatusTag mode="fill" variant={rule.value ? "green" : "gray"}>{rule.value ? "开启" : "关闭"}</StatusTag>}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 卡片底部 footer */}
-      <CardFooter className="px-5 py-3 flex-col items-start gap-3">
-        {!addingNew && groupRules.length === 0 && (
-          <Button variant="outline" size="sm" onClick={startAdd} disabled={!!loadingRuleId}>
-            <Plus className="w-3.5 h-3.5" />添加分组策略
-          </Button>
-        )}
-        {extraContent}
-      </CardFooter>
-
-      {/* 兜底值切换二次确认弹窗 */}
-      <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
-        <AlertDialogContent className="sm:max-w-[420px]">
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={() => setConfirmFallbackDraft(null)}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-          >
-            <X className="size-5" />
-            <span className="sr-only">关闭</span>
-          </button>
-          <AlertDialogHeader>
-            <AlertDialogTitle>切换后将清空分组策略</AlertDialogTitle>
-            <AlertDialogDescription>
-              分组策略是基于「预设策略」的例外设置。切换「预设策略」后，现有分组策略将全部清空，需重新添加。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmFallbackSwitch}>确认切换</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {extraContent && (
+        <CardFooter className="px-5 pt-0 pb-3 flex-col items-start gap-3">
+          {extraContent}
+        </CardFooter>
+      )}
     </Card>
+  );
+}
+
+// 保持向后兼容的别名
+const TogglePolicyCard = PolicyEditCard;
+
+// ─── Hover 气泡组件（白底黑字，hover 触发） ─────────────────────────────────
+
+function HoverPopover({ trigger, children, width = 280 }: { trigger: React.ReactNode; children: React.ReactNode; width?: number }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <span onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+          {trigger}
+        </span>
+      </PopoverTrigger>
+      <PopoverContent
+        className="p-3 bg-white text-[#020617] shadow-md border border-[#E5E5E5]"
+        style={{ width }}
+        align="start"
+        sideOffset={6}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── 卡片级 Hover 气泡（hover 整个卡片时在卡片下方显示等宽气泡） ─────────────
+
+function CardHoverPopover({ children, popoverContent }: { children: React.ReactNode; popoverContent: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <div onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+          {children}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent
+        className="p-3 bg-white text-[#020617] shadow-md border border-[#E5E5E5] w-[var(--radix-popover-trigger-width)] max-h-[180px] overflow-y-auto"
+        align="start"
+        sideOffset={4}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+      >
+        {popoverContent}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── 方案2 侧边栏编辑器：配额类（直接展示编辑态表格，无卡片包裹） ──────────
+
+function SheetQuotaEditor({
+  card,
+  timeDimension,
+  onDone,
+  hideActions,
+  saveRef,
+  addRef,
+  onDisableChange,
+}: {
+  card: { key: string; type: "integer" | "token"; rules: PolicyRule<TokenLimit>[]; onRulesChange: (rules: PolicyRule<TokenLimit>[]) => void };
+  timeDimension?: { value: "daily" | "monthly"; onChange: (v: "daily" | "monthly") => void };
+  onDone: () => void;
+  hideActions?: boolean;
+  saveRef?: React.MutableRefObject<(() => void) | null>;
+  addRef?: React.MutableRefObject<(() => void) | null>;
+  onDisableChange?: (disabled: boolean) => void;
+}) {
+  const fallbackRule = card.rules.find((r) => r.groupIds.length === 0)!;
+  const [editRules, setEditRules] = useState<PolicyRule<TokenLimit>[]>(() => {
+    let initial = [...card.rules];
+    if (!initial.some((r) => r.groupIds.length > 0)) {
+      const blank: PolicyRule<TokenLimit> = { id: `rule-${Date.now()}`, groupIds: [], value: card.type === "integer" ? 3 : 100000 };
+      const fbIdx = initial.findIndex((r) => r.id === fallbackRule.id);
+      initial = [...initial.slice(0, fbIdx), blank, ...initial.slice(fbIdx)];
+    }
+    return initial;
+  });
+  const [editValueStrs, setEditValueStrs] = useState<Record<string, string>>(() => {
+    const strs: Record<string, string> = {};
+    editRules.forEach((r) => { strs[r.id] = r.value === "unlimited" ? "" : String(r.value); });
+    return strs;
+  });
+  const [editModes, setEditModes] = useState<Record<string, "custom" | "unlimited">>(() => {
+    const modes: Record<string, "custom" | "unlimited"> = {};
+    editRules.forEach((r) => { modes[r.id] = r.value === "unlimited" ? "unlimited" : "custom"; });
+    return modes;
+  });
+
+  const editFallback = editRules.find((r) => r.id === fallbackRule.id);
+  const editGroupRules = editRules.filter((r) => r.id !== fallbackRule.id);
+
+  const getDisabledIds = (excludeRuleId: string) =>
+    editRules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
+
+  const updateGroups = (id: string, groupIds: string[]) =>
+    setEditRules((prev) => prev.map((r) => (r.id === id ? { ...r, groupIds } : r)));
+  const updateValueStr = (id: string, valStr: string) =>
+    setEditValueStrs((prev) => ({ ...prev, [id]: valStr }));
+  const updateMode = (id: string, mode: "custom" | "unlimited") =>
+    setEditModes((prev) => ({ ...prev, [id]: mode }));
+  const removeRule = (id: string) => {
+    setEditRules((prev) => prev.filter((r) => r.id !== id));
+    setEditValueStrs((prev) => { const { [id]: _omit, ...rest } = prev; return rest; });
+    setEditModes((prev) => { const { [id]: _omit, ...rest } = prev; return rest; });
+  };
+  const addBlankGroupRow = () => {
+    const blank: PolicyRule<TokenLimit> = { id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, groupIds: [], value: card.type === "integer" ? 3 : 100000 };
+    setEditRules((prev) => {
+      const fbIdx = prev.findIndex((r) => r.id === fallbackRule.id);
+      return [...prev.slice(0, fbIdx), blank, ...prev.slice(fbIdx)];
+    });
+    setEditValueStrs((prev) => ({ ...prev, [blank.id]: card.type === "integer" ? "3" : "100000" }));
+    setEditModes((prev) => ({ ...prev, [blank.id]: "custom" }));
+  };
+
+  const renderValueEditor = (ruleId: string) => {
+    const mode = editModes[ruleId] ?? "custom";
+    const valStr = editValueStrs[ruleId] ?? "";
+    if (card.type === "integer") {
+      return <Input type="number" value={valStr} onChange={(e) => updateValueStr(ruleId, e.target.value)} className="h-9 text-xs bg-white w-32" placeholder="0-999" />;
+    }
+    return (
+      <TokenValueEditor mode={mode} valStr={valStr} onCommit={(nextMode, nextValStr) => { updateMode(ruleId, nextMode); updateValueStr(ruleId, nextValStr); }} />
+    );
+  };
+
+  const handleSave = () => {
+    const finalRules: PolicyRule<TokenLimit>[] = [];
+    for (const r of editRules) {
+      const isFallback = r.id === fallbackRule.id;
+      const mode = editModes[r.id] ?? "custom";
+      const valStr = editValueStrs[r.id] ?? "";
+      // 过滤掉空值的分组策略行（适用范围为空 或 配额值为空）
+      if (!isFallback) {
+        if (r.groupIds.length === 0) continue;
+        if (mode === "custom" && valStr.trim() === "") continue;
+      } else {
+        // 预设策略行：值为空时跳过本次保存（保留原值）
+        if (mode === "custom" && valStr.trim() === "") continue;
+      }
+      let finalValue: TokenLimit;
+      if (card.type === "token" && mode === "unlimited") {
+        finalValue = "unlimited";
+      } else {
+        const n = parseInt(valStr, 10);
+        if (isNaN(n) || n < 0) continue;
+        if (card.type === "integer" && n > 999) continue;
+        finalValue = n;
+      }
+      finalRules.push({ ...r, value: finalValue });
+    }
+    const finalGroupRules = finalRules.filter((r) => r.id !== fallbackRule.id);
+    const finalFallbackRule = finalRules.find((r) => r.id === fallbackRule.id) ?? fallbackRule;
+    card.onRulesChange([...finalGroupRules, finalFallbackRule]);
+    toast.success("策略已保存");
+    onDone();
+  };
+
+  // 暴露 save/add 给外部
+  if (saveRef) saveRef.current = handleSave;
+  if (addRef) addRef.current = addBlankGroupRow;
+
+  // 通知外部按钮不再禁用
+  useEffect(() => { if (onDisableChange) onDisableChange(false); }, []);
+
+  return (
+    <div className="space-y-4">
+      {/* 合并的策略表格 */}
+      <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+        <Table density="compact">
+          <colgroup>
+            <col style={{ width: 80 }} />
+            <col />
+            <col style={{ width: 140 }} />
+            {timeDimension && <col style={{ width: 100 }} />}
+            <col style={{ width: 100 }} />
+          </colgroup>
+          <TableHeader>
+            <TableRow>
+              <TableHead>策略类型</TableHead>
+              <TableHead>适用范围</TableHead>
+              <TableHead>配额值</TableHead>
+              {timeDimension && (
+                <TableHead>
+                  <span className="inline-flex items-center gap-1">
+                    时间维度
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-default"><Info className="w-3.5 h-3.5 text-gray-400" /></span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs max-w-[320px] leading-relaxed">
+                        达到上限后暂停服务，{timeDimension.value === "daily" ? "每天 0 点重置" : "每月 1 号 0 点重置"}
+                      </TooltipContent>
+                    </Tooltip>
+                  </span>
+                </TableHead>
+              )}
+              <TableHead>操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* 预设策略行 */}
+            {editFallback && (
+              <TableRow className="border-0">
+                <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                <TableCell><Badge variant="outline">{editGroupRules.some(r => r.groupIds.length > 0) ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                <TableCell><div className="flex items-center gap-1">{renderValueEditor(editFallback.id)}</div></TableCell>
+                {timeDimension && (
+                  <TableCell>
+                    <Select value={timeDimension.value} onValueChange={(v) => timeDimension.onChange(v as "daily" | "monthly")}>
+                      <SelectTrigger className="h-9 w-full text-sm bg-white"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">每日</SelectItem>
+                        <SelectItem value="monthly">每月</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                )}
+                <TableActionCell />
+              </TableRow>
+            )}
+            {/* 分组策略行 */}
+            {editGroupRules.map((rule, idx) => (
+              <TableRow key={rule.id} className="border-0">
+                <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                <TableCell>
+                  <GroupTagSelector selectedIds={rule.groupIds} disabledIds={getDisabledIds(rule.id)} onChange={(ids) => updateGroups(rule.id, ids)} />
+                </TableCell>
+                <TableCell><div className="flex items-center gap-1">{renderValueEditor(rule.id)}</div></TableCell>
+                {timeDimension && <TableCell className="text-[13px] text-[#020617]">{timeDimension.value === "daily" ? "每日" : "每月"}</TableCell>}
+                <TableActionCell><Button variant="link" size="sm" onClick={() => removeRule(rule.id)}>删除</Button></TableActionCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {/* 添加分组策略 - 表格下方全宽虚线幽灵按钮 */}
+        <button
+          type="button"
+          onClick={addBlankGroupRow}
+          className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#E5E5E5] hover:bg-[#FAFAFA] transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" />添加分组策略
+        </button>
+      </div>
+
+      {/* 操作按钮 */}
+      {!hideActions && (
+        <div className="flex items-center justify-end gap-2 pt-1">
+          <Button variant="claw-outline" size="claw-sm" onClick={onDone}>取消</Button>
+          <Button variant="dialog-confirm" size="claw-sm" onClick={handleSave}>保存</Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── 方案2 侧边栏编辑器：开关类（直接展示编辑态表格，无卡片包裹） ──────────
+
+function SheetToggleEditor({
+  card,
+  onDone,
+  hideActions,
+  saveRef,
+  addRef,
+  onDisableChange,
+}: {
+  card: { key: string; title: string; rules: PolicyRule<boolean>[]; onRulesChange: (rules: PolicyRule<boolean>[]) => boolean | void };
+  cardKey: string;
+  onDone: () => void;
+  hideActions?: boolean;
+  saveRef?: React.MutableRefObject<(() => void) | null>;
+  addRef?: React.MutableRefObject<(() => void) | null>;
+  onDisableChange?: (disabled: boolean) => void;
+}) {
+  const fallbackRule = card.rules.find((r) => r.groupIds.length === 0)!;
+  const groupRules = card.rules.filter((r) => r.groupIds.length > 0);
+
+  const [editFallbackValue, setEditFallbackValue] = useState<boolean>(fallbackRule.value);
+  const [editGroupRules, setEditGroupRules] = useState<PolicyRule<boolean>[]>(() => {
+    if (groupRules.length === 0) return [{ id: `rule-${Date.now()}`, groupIds: [], value: !fallbackRule.value }];
+    return [...groupRules];
+  });
+
+  const editGroupRuleValue = !editFallbackValue;
+
+  const getDisabledIds = (excludeRuleId: string) =>
+    editGroupRules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
+
+  const updateGroups = (id: string, groupIds: string[]) =>
+    setEditGroupRules((prev) => prev.map((r) => (r.id === id ? { ...r, groupIds } : r)));
+  const removeRule = (id: string) =>
+    setEditGroupRules((prev) => prev.filter((r) => r.id !== id));
+  const addBlankGroupRow = () =>
+    setEditGroupRules((prev) => [...prev, { id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, groupIds: [], value: !editFallbackValue }]);
+
+  const handleSave = () => {
+    const finalGroupRules = editGroupRules
+      .filter((r) => r.groupIds.length > 0)
+      .map((r) => ({ ...r, value: !editFallbackValue }));
+    const finalFallback: PolicyRule<boolean> = { ...fallbackRule, value: editFallbackValue };
+    const result = card.onRulesChange([...finalGroupRules, finalFallback]);
+    if (result === false) return;
+    toast.success("策略已保存");
+    onDone();
+  };
+
+  // 暴露 save/add 给外部
+  if (saveRef) saveRef.current = handleSave;
+  if (addRef) addRef.current = addBlankGroupRow;
+
+  // 通知外部按钮不再禁用
+  useEffect(() => { if (onDisableChange) onDisableChange(false); }, []);
+
+  return (
+    <div className="space-y-4">
+      {/* 合并的策略表格 */}
+      <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+        <Table density="compact">
+          <colgroup>
+            <col style={{ width: 80 }} />
+            <col />
+            <col style={{ width: 120 }} />
+            <col style={{ width: 100 }} />
+          </colgroup>
+          <TableHeader>
+            <TableRow>
+              <TableHead>策略类型</TableHead>
+              <TableHead>适用范围</TableHead>
+              <TableHead>权限</TableHead>
+              <TableHead>操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {/* 预设策略行 */}
+            <TableRow className="border-0">
+              <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+              <TableCell><Badge variant="outline">{editGroupRules.some(r => r.groupIds.length > 0) ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+              <TableCell>
+                <Select value={editFallbackValue ? "on" : "off"} onValueChange={(v) => setEditFallbackValue(v === "on")}>
+                  <SelectTrigger className="h-9 w-[120px] text-sm bg-white"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="on"><StatusTag mode="fill" variant="green">开启</StatusTag></SelectItem>
+                    <SelectItem value="off"><StatusTag mode="fill" variant="gray">关闭</StatusTag></SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+              <TableActionCell />
+            </TableRow>
+            {/* 分组策略行 */}
+            {editGroupRules.map((rule, idx) => (
+              <TableRow key={rule.id} className="border-0">
+                <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                <TableCell>
+                  <GroupTagSelector selectedIds={rule.groupIds} disabledIds={getDisabledIds(rule.id)} onChange={(ids) => updateGroups(rule.id, ids)} />
+                </TableCell>
+                <TableCell>
+                  <StatusTag mode="fill" variant={editGroupRuleValue ? "green" : "gray"}>{editGroupRuleValue ? "开启" : "关闭"}</StatusTag>
+                </TableCell>
+                <TableActionCell><Button variant="link" size="sm" onClick={() => removeRule(rule.id)}>删除</Button></TableActionCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        {/* 添加分组策略 - 表格下方全宽虚线幽灵按钮 */}
+        <button
+          type="button"
+          onClick={addBlankGroupRow}
+          className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#E5E5E5] hover:bg-[#FAFAFA] transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" />添加分组策略
+        </button>
+      </div>
+
+      {/* 操作按钮 */}
+      {!hideActions && (
+        <div className="flex items-center justify-end gap-2 pt-1">
+          <Button variant="claw-outline" size="claw-sm" onClick={onDone}>取消</Button>
+          <Button variant="dialog-confirm" size="claw-sm" onClick={handleSave}>保存</Button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1229,6 +1884,13 @@ function TogglePolicyCard({ icon, iconBg, title, description, rules, onRulesChan
 
 export default function PlatformPolicy() {
   const [, navigate] = useLocation();
+
+  // 挂载时禁止外层容器滚动，卸载时恢复
+  useEffect(() => {
+    const inset = document.querySelector('[data-slot="admin-sidebar-inset"]') as HTMLElement | null;
+    if (inset) inset.style.overflow = "hidden";
+    return () => { if (inset) inset.style.overflow = ""; };
+  }, []);
 
   // ── 用户配额规则 ──
   const [clawRules, setClawRules] = useState<PolicyRule<TokenLimit>[]>([
@@ -1306,7 +1968,7 @@ export default function PlatformPolicy() {
   const [lobsterDoctorRules, setLobsterDoctorRules] = useState<PolicyRule<boolean>[]>(() => [
     // 与「允许用户访问 Agent 云端浏览器」同款持久化策略：从 localStorage 恢复开关状态，
     // 避免管控端切换开关后用户端无法感知（用户端 OpenClawDetail 读同一个 key）。
-    { id: "ld-fallback", groupIds: [], value: localStorage.getItem("admin_allow_lobster_doctor") === "true" },
+    { id: "ld-fallback", groupIds: [], value: localStorage.getItem("admin_allow_lobster_doctor") !== "false" },
   ]);
   const [modelQuotaRules, setModelQuotaRules] = useState<PolicyRule<boolean>[]>([{ id: "mq-fallback", groupIds: [], value: true }]);
 
@@ -1321,6 +1983,16 @@ export default function PlatformPolicy() {
 
   // 计算面板规则是否已开启（任一规则值为 true）
   const isPanelEnabled = (rs: PolicyRule<boolean>[]) => rs.some((r) => r.value);
+
+  // 检查是否已配置安全组
+  const hasSecurityGroup = useMemo(() => {
+    const snapshotRaw = localStorage.getItem("admin_default_security_group_snapshot");
+    if (!snapshotRaw) return false;
+    try {
+      const snapshot = JSON.parse(snapshotRaw);
+      return snapshot && Array.isArray(snapshot.inboundRules);
+    } catch { return false; }
+  }, []);
   // 找到触发开启的那一行（next 中 value=true 但 prev 中 false 的第一行；找不到则返回兜底行）
   const findTriggeredEnableRule = (prev: PolicyRule<boolean>[], next: PolicyRule<boolean>[]) => {
     const prevMap = new Map(prev.map((r) => [r.id, r.value]));
@@ -1483,184 +2155,1249 @@ export default function PlatformPolicy() {
     }
   };
 
+  // ── Tab 方案切换 ──
+  const [activeTab, setActiveTab] = useState<"plan1" | "plan2" | "plan21" | "plan22" | "plan3" | "plan4">("plan4");
+  // ── 方案4 锚点导航聚焦 ──
+  const [activeAnchor, setActiveAnchor] = useState<string>("claw");
+  const [highlightKey, setHighlightKey] = useState<string | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const triggerHighlight = (key: string) => {
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    setHighlightKey(key);
+    highlightTimerRef.current = setTimeout(() => setHighlightKey(null), 1500);
+  };
+  // ── 方案1 子 tab ──
+  const [plan1SubTab, setPlan1SubTab] = useState<"quota" | "permission">("quota");
+
+  // ── 方案2 侧边栏编辑状态 ──
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheetEditingCard, setSheetEditingCard] = useState<{
+    type: "quota" | "toggle";
+    title: string;
+    cardKey: string;
+  } | null>(null);
+  const [plan2IsEditing, setPlan2IsEditing] = useState(false);
+  const [plan2EditingRowId, setPlan2EditingRowId] = useState<string | null>(null);
+  const [plan2IsAddingRow, setPlan2IsAddingRow] = useState(false);
+  const [plan2RowDraft, setPlan2RowDraft] = useState<{ mode: "custom" | "unlimited"; valStr: string; toggleVal?: boolean; groupIds?: string[] }>({ mode: "custom", valStr: "" });
+  const plan2SaveRef = useRef<(() => void) | null>(null);
+  const plan2AddRef = useRef<(() => void) | null>(null);
+  const [plan2DisableActions, setPlan2DisableActions] = useState(false);
+
+  // ── 方案3 二级编辑页状态 ──
+  const [plan3EditingKey, setPlan3EditingKey] = useState<string | null>(null);
+  const [plan3ResetCount, setPlan3ResetCount] = useState(0);
+  const [plan3IsEditing, setPlan3IsEditing] = useState(false);
+  const plan3SaveRef = useRef<(() => void) | null>(null);
+
   // ── 龙虾医生详情弹窗 ──
   const [showLobsterDoctorDialog, setShowLobsterDoctorDialog] = useState(false);
 
+  // ── 方案2/方案3 共用的卡片数据定义 ──
+  const quotaCards = [
+    { key: "claw", icon: "/assets/admin-platform-policy/user-agent-limit.svg", iconClass: "w-[42px]", title: "单用户 Agent 数量上限", description: "单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整", type: "integer" as const, rules: clawRules, onRulesChange: setClawRules },
+    { key: "token", icon: "/assets/admin-platform-policy/user-daily-token-limit.svg", iconClass: "w-10", title: "单用户每日 Tokens 上限", description: "单用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整", type: "token" as const, rules: tokenRules, onRulesChange: setTokenRules },
+    { key: "global", icon: "/assets/admin-platform-policy/global-token-limit.svg", iconClass: "w-10", title: "全局 Tokens 上限", description: "全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后将暂停服务", type: "token" as const, rules: globalTokenRules, onRulesChange: handleGlobalTokenRulesChange },
+  ];
+
+  const toggleCards = [
+    { key: "configModel", icon: "/assets/admin-platform-policy/allow-config-model.svg", title: "允许用户「配置模型」", navTitle: "配置模型", description: "开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整", rules: configModelRules, onRulesChange: setConfigModelRules },
+    { key: "configChannel", icon: "/assets/admin-platform-policy/allow-config-channel.svg", title: "允许用户「配置通道」", navTitle: "配置通道", description: "开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整", rules: configChannelRules, onRulesChange: setConfigChannelRules },
+    { key: "customModel", icon: "/assets/admin-platform-policy/allow-custom-model.svg", title: "允许用户「添加自定义模型」", navTitle: "添加自定义模型", description: "开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内", rules: customModelRules, onRulesChange: setCustomModelRules },
+    { key: "terminal", icon: "/assets/admin-platform-policy/allow-agent-terminal.svg", title: "允许用户「进入 Agent 终端」", navTitle: "进入 Agent 终端", description: "开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端", rules: terminalRules, onRulesChange: setTerminalRules },
+    { key: "selfUpgrade", icon: "/assets/admin-platform-policy/allow-agent-self-upgrade.svg", title: "允许用户「自助更新版本」", navTitle: "自助更新版本", description: "开启后，员工可在 Agent 详细配置中点击「一键更新」自助更新到管理员设置的版本", rules: selfUpgradeRules, onRulesChange: handleSelfUpgradeRulesChange },
+    { key: "panel", icon: "/assets/admin-platform-policy/allow-agent-panel.svg", title: "允许用户「访问 Agent 面板」", navTitle: "访问 Agent 面板", description: "开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口", rules: panelRules, onRulesChange: handlePanelRulesChange },
+    { key: "chatView", icon: "/assets/admin-platform-policy/allow-chat-view.svg", title: "允许用户「使用对话视图」", navTitle: "使用对话视图", description: "开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话", rules: chatViewRules, onRulesChange: setChatViewRules },
+    { key: "cloudBrowser", icon: "/assets/admin-platform-policy/allow-cloud-browser.svg", title: "允许用户「访问云端浏览器」", navTitle: "访问云端浏览器", description: "开启后，用户可在对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作", rules: cloudBrowserRules, onRulesChange: handleCloudBrowserRulesChange },
+    { key: "lobsterDoctor", icon: "/assets/admin-platform-policy/allow-lobster-doctor.svg", title: "允许用户「使用龙虾医生」", navTitle: "使用龙虾医生", description: "开启后，所有用户在用户端可免费使用「龙虾医生」AI 诊断功能", rules: lobsterDoctorRules, onRulesChange: handleLobsterDoctorRulesChange },
+    { key: "modelQuota", icon: "/assets/admin-platform-policy/allow-model-quota.svg", title: "允许用户「查看模型额度」", navTitle: "查看模型额度", description: "开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况", rules: modelQuotaRules, onRulesChange: setModelQuotaRules },
+  ];
+
+  // ── 方案2：固定高度摘要卡片 ──
+  const FixedHeightQuotaCard = ({ card }: { card: typeof quotaCards[number] }) => {
+    const fallback = card.rules.find((r) => r.groupIds.length === 0);
+    const groupRules = card.rules.filter((r) => r.groupIds.length > 0);
+    const groupRulesCount = groupRules.length;
+    const displayValue = (v: TokenLimit) => {
+      if (v === "unlimited" || v === -1) return "无限制";
+      return card.type === "integer" ? `${Number(v).toLocaleString()} 个` : Number(v).toLocaleString();
+    };
+    const handleCardClick = () => {
+      setSheetEditingCard({ type: "quota", title: card.title, cardKey: card.key });
+      setPlan2IsEditing(activeTab === "plan22");
+      setSheetOpen(true);
+    };
+    const popoverContent = (
+      <div className="border border-[#E5E5E5] rounded">
+        <Table density="compact">
+          <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 80 }} /></colgroup>
+          <TableBody>
+            <TableRow className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">预设策略</TableCell><TableCell className="text-[12px]"><span className="inline-block bg-[#F5F5F5] text-[#262626] text-[11px] px-1.5 py-0.5 rounded">全部用户</span></TableCell><TableCell className="text-[12px] text-right">{fallback ? displayValue(fallback.value) : "-"}</TableCell></TableRow>
+            {groupRules.filter(r => r.groupIds.length > 0).map((r, idx) => (
+              <TableRow key={r.id} className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">分组策略{idx + 1}</TableCell><TableCell className="text-[12px] whitespace-normal"><div className="flex flex-wrap gap-1">{r.groupIds.map(id => <span key={id} className="inline-block bg-[#F5F5F5] text-[#262626] text-[11px] px-1.5 py-0.5 rounded">{getGroupPath(id, ALL_GROUPS)}</span>)}</div></TableCell><TableCell className="text-[12px] text-right">{displayValue(r.value)}</TableCell></TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+    return (
+      <CardHoverPopover popoverContent={popoverContent}>
+        <Card className="overflow-hidden h-[180px] py-0 gap-0 flex flex-col cursor-pointer hover:border-[#1447E6] transition-colors" onClick={handleCardClick}>
+          <div className="px-5 pt-5 pb-4 flex-1 min-h-0 flex flex-col">
+            <div className="flex items-start gap-3">
+              <img src={card.icon} className={`shrink-0 ${card.iconClass}`} />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[14px] font-semibold text-[#020617] truncate">{card.title}</h3>
+                <p className="text-[12px] text-[#737373] leading-relaxed mt-1 line-clamp-2">{card.description}</p>
+              </div>
+            </div>
+            {/* 策略摘要 - 灰色底卡片 */}
+            <div className="mt-6 rounded-[4px] bg-[#FAFAFA] px-3 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-4 text-[12px]">
+                <span className="text-[#737373]">预设策略：<span className="text-[#020617] font-medium">{fallback ? displayValue(fallback.value) : "-"}</span>{card.key === "global" && <span className="text-[#737373]">/{globalTokenTimeDim === "daily" ? "每日" : "每月"}</span>}</span>
+                <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupRulesCount} 条</span></span>
+              </div>
+              <span className="text-[12px] text-[#1447E6] inline-flex items-center gap-0.5">
+                配置详情<ChevronRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </div>
+        </Card>
+      </CardHoverPopover>
+    );
+  };
+
+  const FixedHeightToggleCard = ({ card }: { card: typeof toggleCards[number] }) => {
+    const fallback = card.rules.find((r) => r.groupIds.length === 0);
+    const groupRules = card.rules.filter((r) => r.groupIds.length > 0);
+    const groupRulesCount = groupRules.length;
+    const handleCardClick = () => {
+      setSheetEditingCard({ type: "toggle", title: card.title, cardKey: card.key });
+      setPlan2IsEditing(activeTab === "plan22");
+      setSheetOpen(true);
+    };
+    const popoverContent = (
+      <div className="border border-[#E5E5E5] rounded">
+        <Table density="compact">
+          <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 70 }} /></colgroup>
+          <TableBody>
+            <TableRow className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">预设策略</TableCell><TableCell className="text-[12px]"><span className="inline-block bg-[#F5F5F5] text-[#262626] text-[11px] px-1.5 py-0.5 rounded">全部用户</span></TableCell><TableCell className="text-[12px] text-right"><StatusTag mode="fill" variant={fallback?.value ? "green" : "gray"}>{fallback?.value ? "开启" : "关闭"}</StatusTag></TableCell></TableRow>
+            {groupRules.filter(r => r.groupIds.length > 0).map((r, idx) => (
+              <TableRow key={r.id} className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">分组策略{idx + 1}</TableCell><TableCell className="text-[12px] whitespace-normal"><div className="flex flex-wrap gap-1">{r.groupIds.map(id => <span key={id} className="inline-block bg-[#F5F5F5] text-[#262626] text-[11px] px-1.5 py-0.5 rounded">{getGroupPath(id, ALL_GROUPS)}</span>)}</div></TableCell><TableCell className="text-[12px] text-right"><StatusTag mode="fill" variant={r.value ? "green" : "gray"}>{r.value ? "开启" : "关闭"}</StatusTag></TableCell></TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+    return (
+      <CardHoverPopover popoverContent={popoverContent}>
+        <Card className="overflow-hidden h-[180px] py-0 gap-0 flex flex-col cursor-pointer hover:border-[#1447E6] transition-colors" onClick={handleCardClick}>
+          <div className="px-5 pt-5 pb-4 flex-1 min-h-0 flex flex-col">
+            <div className="flex items-start gap-3">
+              <img src={card.icon} className="shrink-0 w-10" />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[14px] font-semibold text-[#020617] truncate">{card.title}</h3>
+                <p className="text-[12px] text-[#737373] leading-relaxed mt-1 line-clamp-2">{card.description}</p>
+              </div>
+            </div>
+            {/* 策略摘要 - 灰色底卡片 */}
+            <div className="mt-6 rounded-[4px] bg-[#FAFAFA] px-3 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-4 text-[12px]">
+                <span className="text-[#737373] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallback?.value ? "green" : "gray"}>{fallback?.value ? "开启" : "关闭"}</StatusTag></span>
+                <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupRulesCount} 条</span></span>
+              </div>
+              <span className="text-[12px] text-[#1447E6] inline-flex items-center gap-0.5">
+                配置详情<ChevronRight className="w-3.5 h-3.5" />
+              </span>
+            </div>
+          </div>
+        </Card>
+      </CardHoverPopover>
+    );
+  };
+
+  // ── 方案3：三列卡片（复用方案2样式），点击编辑进入二级页 ──
+  const Plan3QuotaCard = ({ card }: { card: typeof quotaCards[number] }) => {
+    const fallback = card.rules.find((r) => r.groupIds.length === 0);
+    const groupRules = card.rules.filter((r) => r.groupIds.length > 0);
+    const groupRulesCount = groupRules.length;
+    const displayValue = (v: TokenLimit) => {
+      if (v === "unlimited" || v === -1) return "无限制";
+      return card.type === "integer" ? `${Number(v).toLocaleString()} 个` : Number(v).toLocaleString();
+    };
+    const popoverContent = (
+      <Table density="compact">
+        <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 80 }} /></colgroup>
+        <TableHeader>
+          <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead className="text-right">配额值</TableHead></TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">预设策略</TableCell><TableCell className="text-[12px]">全部用户</TableCell><TableCell className="text-[12px] text-right">{fallback ? displayValue(fallback.value) : "-"}</TableCell></TableRow>
+          {groupRules.map((r) => (
+            <TableRow key={r.id} className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">分组策略</TableCell><TableCell className="text-[12px] whitespace-normal">{r.groupIds.map(id => getGroupPath(id, ALL_GROUPS)).join("、")}</TableCell><TableCell className="text-[12px] text-right">{displayValue(r.value)}</TableCell></TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+    return (
+      <CardHoverPopover popoverContent={popoverContent}>
+        <Card className="overflow-hidden h-[180px] py-0 gap-0 flex flex-col">
+          <div className="px-4 pt-4 pb-3 flex-1 min-h-0">
+            <div className="flex items-start gap-2.5">
+              <img src={card.icon} className={`shrink-0 ${card.iconClass}`} />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[13px] font-semibold text-[#020617] truncate">{card.title}</h3>
+                <p className="text-[11px] text-[#737373] leading-relaxed mt-1 line-clamp-2">{card.description}</p>
+              </div>
+            </div>
+          </div>
+          <div className="px-4 pb-3 flex items-center justify-between border-t border-[#f0f0f0] pt-2.5">
+            <div className="flex items-center gap-3 text-[12px]">
+              <span className="text-[#737373]">预设：<span className="text-[#020617] font-medium">{fallback ? displayValue(fallback.value) : "-"}</span></span>
+              <span className="text-[#737373]">分组：<span className="text-[#020617] font-medium">{groupRulesCount} 条</span></span>
+            </div>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => { setPlan3EditingKey(card.key); setPlan3IsEditing(false); }}>编辑</Button>
+          </div>
+        </Card>
+      </CardHoverPopover>
+    );
+  };
+
+  const Plan3ToggleCard = ({ card }: { card: typeof toggleCards[number] }) => {
+    const fallback = card.rules.find((r) => r.groupIds.length === 0);
+    const groupRules = card.rules.filter((r) => r.groupIds.length > 0);
+    const groupRulesCount = groupRules.length;
+    const popoverContent = (
+      <Table density="compact">
+        <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 70 }} /></colgroup>
+        <TableHeader>
+          <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead className="text-right">权限</TableHead></TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">预设策略</TableCell><TableCell className="text-[12px]">全部用户</TableCell><TableCell className="text-[12px] text-right"><StatusTag mode="fill" variant={fallback?.value ? "green" : "gray"}>{fallback?.value ? "开启" : "关闭"}</StatusTag></TableCell></TableRow>
+          {groupRules.map((r) => (
+            <TableRow key={r.id} className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">分组策略</TableCell><TableCell className="text-[12px] whitespace-normal">{r.groupIds.map(id => getGroupPath(id, ALL_GROUPS)).join("、")}</TableCell><TableCell className="text-[12px] text-right"><StatusTag mode="fill" variant={r.value ? "green" : "gray"}>{r.value ? "开启" : "关闭"}</StatusTag></TableCell></TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+    return (
+      <CardHoverPopover popoverContent={popoverContent}>
+        <Card className="overflow-hidden h-[180px] py-0 gap-0 flex flex-col">
+          <div className="px-4 pt-4 pb-3 flex-1 min-h-0">
+            <div className="flex items-start gap-2.5">
+              <img src={card.icon} className="shrink-0 w-9" />
+              <div className="min-w-0 flex-1">
+                <h3 className="text-[13px] font-semibold text-[#020617] truncate">{card.title}</h3>
+                <p className="text-[11px] text-[#737373] leading-relaxed mt-1 line-clamp-2">{card.description}</p>
+              </div>
+            </div>
+          </div>
+          <div className="px-4 pb-3 flex items-center justify-between border-t border-[#f0f0f0] pt-2.5">
+            <div className="flex items-center gap-3 text-[12px]">
+              <span className="text-[#737373] inline-flex items-center gap-1">预设：<StatusTag mode="fill" variant={fallback?.value ? "green" : "gray"}>{fallback?.value ? "开启" : "关闭"}</StatusTag></span>
+              <span className="text-[#737373]">分组：<span className="text-[#020617] font-medium">{groupRulesCount} 条</span></span>
+            </div>
+            <Button variant="claw-outline" size="claw-sm" onClick={() => { setPlan3EditingKey(card.key); setPlan3IsEditing(false); }}>编辑</Button>
+          </div>
+        </Card>
+      </CardHoverPopover>
+    );
+  };
+
+  // 方案3 所有卡片合并列表（用于二级页导航）
+  const allPlan3Cards = useMemo(() => [
+    ...quotaCards.map(c => ({ ...c, cardType: "quota" as const })),
+    ...toggleCards.map(c => ({ ...c, cardType: "toggle" as const })),
+  ], [quotaCards, toggleCards]);
+
+  // 方案3 二级页：渲染只读视图
+  const renderPlan3ReadOnly = () => {
+    if (!plan3EditingKey) return null;
+    const quotaCard = quotaCards.find(c => c.key === plan3EditingKey);
+    if (quotaCard) {
+      const fallback = quotaCard.rules.find(r => r.groupIds.length === 0);
+      const groupRules = quotaCard.rules.filter(r => r.groupIds.length > 0);
+      const displayValue = (v: TokenLimit) => {
+        if (v === "unlimited" || v === -1) return "无限制";
+        return quotaCard.type === "integer" ? `${Number(v).toLocaleString()} 个` : Number(v).toLocaleString();
+      };
+      return (
+        <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+          <Table density="compact">
+            <colgroup>
+              <col style={{ width: 80 }} />
+              <col />
+              <col style={{ width: 140 }} />
+              {plan3EditingKey === "global" && <col style={{ width: 100 }} />}
+            </colgroup>
+            <TableHeader>
+              <TableRow>
+                <TableHead>策略类型</TableHead>
+                <TableHead>适用范围</TableHead>
+                <TableHead>配额值</TableHead>
+                {plan3EditingKey === "global" && <TableHead>时间维度</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fallback && (
+                <TableRow className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                  <TableCell><Badge variant="outline">{groupRules.length > 0 ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                  <TableCell className="text-[13px] text-[#020617] font-medium">{displayValue(fallback.value)}</TableCell>
+                  {plan3EditingKey === "global" && <TableCell className="text-[13px] text-[#020617]">{globalTokenTimeDim === "daily" ? "每日" : "每月"}</TableCell>}
+                </TableRow>
+              )}
+              {groupRules.map((rule, idx) => (
+                <TableRow key={rule.id} className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                  <TableCell><GroupBadges groupIds={rule.groupIds} /></TableCell>
+                  <TableCell className="text-[13px] text-[#020617] font-medium">{displayValue(rule.value)}</TableCell>
+                  {plan3EditingKey === "global" && <TableCell className="text-[13px] text-[#020617]">{globalTokenTimeDim === "daily" ? "每日" : "每月"}</TableCell>}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      );
+    }
+    const toggleCard = toggleCards.find(c => c.key === plan3EditingKey);
+    if (toggleCard) {
+      const fallback = toggleCard.rules.find(r => r.groupIds.length === 0);
+      const groupRules = toggleCard.rules.filter(r => r.groupIds.length > 0);
+      return (
+        <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+          <Table density="compact">
+            <colgroup>
+              <col style={{ width: 80 }} />
+              <col />
+              <col style={{ width: 120 }} />
+            </colgroup>
+            <TableHeader>
+              <TableRow>
+                <TableHead>策略类型</TableHead>
+                <TableHead>适用范围</TableHead>
+                <TableHead>权限</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fallback && (
+                <TableRow className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                  <TableCell><Badge variant="outline">{groupRules.length > 0 ? <><span>全部用户</span><span className="ml-1 text-[#A3A3A3] font-normal">分组策略用户除外</span></> : "全部用户"}</Badge></TableCell>
+                  <TableCell><StatusTag mode="fill" variant={fallback.value ? "green" : "gray"}>{fallback.value ? "开启" : "关闭"}</StatusTag></TableCell>
+                </TableRow>
+              )}
+              {groupRules.map((rule, idx) => (
+                <TableRow key={rule.id} className="hover:bg-transparent border-0">
+                  <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                  <TableCell><GroupBadges groupIds={rule.groupIds} /></TableCell>
+                  <TableCell><StatusTag mode="fill" variant={rule.value ? "green" : "gray"}>{rule.value ? "开启" : "关闭"}</StatusTag></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // 方案3 二级页：渲染编辑态表格
+  const renderPlan3Editor = () => {
+    if (!plan3EditingKey) return null;
+    const editorKey = `${plan3EditingKey}-${plan3ResetCount}`;
+    const quotaCard = quotaCards.find(c => c.key === plan3EditingKey);
+    if (quotaCard) {
+      const timeDimension = plan3EditingKey === "global" ? {
+        value: globalTokenTimeDim,
+        onChange: (m: "daily" | "monthly") => { setGlobalTokenTimeDim(m); localStorage.setItem("admin_global_token_time_dim", m); },
+      } : undefined;
+      return (
+        <SheetQuotaEditor
+          key={editorKey}
+          card={quotaCard}
+          timeDimension={timeDimension}
+          onDone={() => { setPlan3IsEditing(false); setPlan3ResetCount(c => c + 1); }}
+          hideActions
+          saveRef={plan3SaveRef}
+        />
+      );
+    }
+    const toggleCard = toggleCards.find(c => c.key === plan3EditingKey);
+    if (toggleCard) {
+      return (
+        <SheetToggleEditor
+          key={editorKey}
+          card={toggleCard}
+          cardKey={plan3EditingKey}
+          onDone={() => { setPlan3IsEditing(false); setPlan3ResetCount(c => c + 1); }}
+          hideActions
+          saveRef={plan3SaveRef}
+        />
+      );
+    }
+    return null;
+  };
+
+  // ── 渲染弹窗编辑内容（方案2）──
+  const renderSheetContent = () => {
+    if (!sheetEditingCard) return null;
+    const { type, cardKey } = sheetEditingCard;
+    if (type === "quota") {
+      const card = quotaCards.find((c) => c.key === cardKey);
+      if (!card) return null;
+      const timeDimension = cardKey === "global" ? {
+        value: globalTokenTimeDim,
+        onChange: (m: "daily" | "monthly") => { setGlobalTokenTimeDim(m); localStorage.setItem("admin_global_token_time_dim", m); },
+      } : undefined;
+      return (
+        <div className="space-y-3">
+          {/* 编辑提示 + 取消/保存按钮（plan22 隐藏，由弹窗 footer 提供保存按钮） */}
+          {activeTab !== "plan22" && (
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] text-[#020617] font-medium">正在编辑</span>
+              <div className="flex items-center gap-2">
+                <Button variant="claw-outline" size="claw-sm" onClick={() => setPlan2IsEditing(false)}>取消</Button>
+                <Button variant="dialog-confirm" size="claw-sm" onClick={() => plan2SaveRef.current?.()}>保存</Button>
+              </div>
+            </div>
+          )}
+          <SheetQuotaEditor
+            card={card}
+            timeDimension={timeDimension}
+            onDone={() => setPlan2IsEditing(false)}
+            hideActions
+            saveRef={plan2SaveRef}
+            addRef={plan2AddRef}
+            onDisableChange={setPlan2DisableActions}
+          />
+        </div>
+      );
+    }
+    if (type === "toggle") {
+      const card = toggleCards.find((c) => c.key === cardKey);
+      if (!card) return null;
+      return (
+        <div className="space-y-3">
+          {/* 编辑提示 + 取消/保存按钮（plan22 隐藏） */}
+          {activeTab !== "plan22" && (
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] text-[#020617] font-medium">正在编辑</span>
+              <div className="flex items-center gap-2">
+                <Button variant="claw-outline" size="claw-sm" onClick={() => setPlan2IsEditing(false)}>取消</Button>
+                <Button variant="dialog-confirm" size="claw-sm" onClick={() => plan2SaveRef.current?.()}>保存</Button>
+              </div>
+            </div>
+          )}
+          <SheetToggleEditor
+            card={card}
+            cardKey={cardKey}
+            onDone={() => setPlan2IsEditing(false)}
+            hideActions
+            saveRef={plan2SaveRef}
+            addRef={plan2AddRef}
+            onDisableChange={setPlan2DisableActions}
+          />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // ── 渲染弹窗只读内容（方案2）──
+  const renderPlan2ReadOnly = () => {
+    if (!sheetEditingCard) return null;
+    const { type, cardKey } = sheetEditingCard;
+
+    const startRowEdit = (ruleId: string, currentValue: TokenLimit | boolean, currentGroupIds?: string[]) => {
+      setPlan2EditingRowId(ruleId);
+      if (typeof currentValue === "boolean") {
+        setPlan2RowDraft({ mode: "custom", valStr: "", toggleVal: currentValue, groupIds: currentGroupIds ?? [] });
+      } else if (currentValue === "unlimited") {
+        setPlan2RowDraft({ mode: "unlimited", valStr: "", groupIds: currentGroupIds ?? [] });
+      } else {
+        setPlan2RowDraft({ mode: "custom", valStr: String(currentValue), groupIds: currentGroupIds ?? [] });
+      }
+    };
+
+    const cancelRowEdit = () => setPlan2EditingRowId(null);
+
+    if (type === "quota") {
+      const card = quotaCards.find((c) => c.key === cardKey);
+      if (!card) return null;
+      const fallback = card.rules.find(r => r.groupIds.length === 0 && r.id.includes("fallback"));
+      const groupRules = card.rules.filter(r => r !== fallback);
+      const displayValue = (v: TokenLimit) => {
+        if (v === "unlimited" || v === -1) return "无限制";
+        return card.type === "integer" ? `${Number(v).toLocaleString()} 个` : Number(v).toLocaleString();
+      };
+
+      const saveRowEdit = (ruleId: string) => {
+        let finalValue: TokenLimit;
+        if (card.type === "token" && plan2RowDraft.mode === "unlimited") {
+          finalValue = "unlimited";
+        } else {
+          const n = parseInt(plan2RowDraft.valStr, 10);
+          if (isNaN(n) || n < 0) { toast.error("请输入有效数值"); return; }
+          if (card.type === "integer" && n > 999) { toast.error("请输入 0-999 之间的整数"); return; }
+          finalValue = n;
+        }
+        // 添加新行时同步保存 groupIds，编辑已有行时仅修改 value
+        card.onRulesChange(card.rules.map(r => r.id === ruleId
+          ? (plan2IsAddingRow
+            ? { ...r, value: finalValue, groupIds: plan2RowDraft.groupIds ?? r.groupIds }
+            : { ...r, value: finalValue })
+          : r));
+        setPlan2EditingRowId(null);
+        setPlan2IsAddingRow(false);
+        toast.success("已保存");
+      };
+
+      const renderRowValue = (rule: PolicyRule<TokenLimit>) => {
+        if (plan2EditingRowId === rule.id) {
+          return card.type === "integer" ? (
+            <Input type="number" value={plan2RowDraft.valStr} onChange={(e) => setPlan2RowDraft(d => ({ ...d, valStr: e.target.value }))} className="h-8 w-28 text-xs bg-white" placeholder="0-999" />
+          ) : (
+            <TokenValueEditor mode={plan2RowDraft.mode} valStr={plan2RowDraft.valStr} onCommit={(m, v) => setPlan2RowDraft({ mode: m, valStr: v })} />
+          );
+        }
+        return <span className="text-[13px] text-[#020617] font-medium">{displayValue(rule.value)}</span>;
+      };
+
+      const renderRowScope = (rule: PolicyRule<TokenLimit>, isFallback: boolean) => {
+        if (isFallback) {
+          return <span className="text-[13px] text-[#020617]">{groupRules.length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}</span>;
+        }
+        // 仅在添加新行时允许编辑适用范围
+        if (plan2EditingRowId === rule.id && plan2IsAddingRow) {
+          const disabledIds = groupRules.filter(r => r.id !== rule.id && r.groupIds.length > 0).flatMap(r => r.groupIds);
+          return <GroupTagSelector selectedIds={plan2RowDraft.groupIds ?? []} disabledIds={disabledIds} onChange={(ids) => setPlan2RowDraft(d => ({ ...d, groupIds: ids }))} />;
+        }
+        return rule.groupIds.length > 0 ? <GroupBadges groupIds={rule.groupIds} /> : <span className="text-[13px] text-[#A3A3A3]">请选择分组</span>;
+      };
+
+      const renderRowActions = (rule: PolicyRule<TokenLimit>, isFallback: boolean) => {
+        if (plan2EditingRowId === rule.id) {
+          const noGroup = plan2IsAddingRow && (!plan2RowDraft.groupIds || plan2RowDraft.groupIds.length === 0);
+          const noValue = plan2RowDraft.mode === "custom" && plan2RowDraft.valStr.trim() === "";
+          const disableSave = noValue || noGroup;
+          return (
+            <div className="flex items-center gap-2">
+              <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={() => {
+                // 取消时如果是新增行则一并删除
+                if (plan2IsAddingRow) {
+                  card.onRulesChange(card.rules.filter(r => r.id !== rule.id));
+                }
+                setPlan2EditingRowId(null);
+                setPlan2IsAddingRow(false);
+              }}>取消</Button>
+              <Button variant="link" size="sm" className={`h-auto px-0 text-[12px] ${disableSave ? "text-[#A3A3A3] pointer-events-none" : "text-[#1447E6]"}`} disabled={disableSave} onClick={() => saveRowEdit(rule.id)}>保存</Button>
+            </div>
+          );
+        }
+        return (
+          <div className="flex items-center gap-2">
+            <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={() => startRowEdit(rule.id, rule.value, rule.groupIds)}>编辑</Button>
+            {!isFallback && <Button variant="link" size="sm" className="h-auto px-0 text-[12px] text-red-500" onClick={() => { card.onRulesChange(card.rules.filter(r => r.id !== rule.id)); toast.success("已删除"); }}>删除</Button>}
+          </div>
+        );
+      };
+
+      const isInlineEdit = activeTab === "plan21";
+      return (
+        <div className="space-y-3">
+          {/* 汇总 + 编辑按钮 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-[13px]">
+              <span className="text-[#737373]">预设策略：<span className="text-[#020617] font-medium">{fallback ? displayValue(fallback.value) : "-"}</span>{cardKey === "global" && <span className="text-[#737373]">/{globalTokenTimeDim === "daily" ? "每日" : "每月"}</span>}</span>
+              <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupRules.filter(r => r.groupIds.length > 0).length} 个</span></span>
+            </div>
+            {!isInlineEdit && (
+              <Button variant="claw-outline" size="claw-sm" onClick={() => setPlan2IsEditing(true)}>编辑</Button>
+            )}
+          </div>
+          <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+            <Table density="compact">
+              <colgroup><col style={{ width: 80 }} /><col /><col style={{ width: 160 }} />{cardKey === "global" && <col style={{ width: 100 }} />}{isInlineEdit && <col style={{ width: 100 }} />}</colgroup>
+              <TableHeader>
+                <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead>配额值</TableHead>{cardKey === "global" && (
+                  <TableHead>
+                    <span className="inline-flex items-center gap-1">
+                      时间维度
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-default"><Info className="w-3.5 h-3.5 text-gray-400" /></span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs max-w-[320px] leading-relaxed">
+                          达到上限后暂停服务，{globalTokenTimeDim === "daily" ? "每天 0 点重置" : "每月 1 号 0 点重置"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </span>
+                  </TableHead>
+                )}{isInlineEdit && <TableHead>操作</TableHead>}</TableRow>
+              </TableHeader>
+              <TableBody>
+                {fallback && (
+                  <TableRow className="hover:bg-transparent border-0">
+                    <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                    <TableCell>{isInlineEdit ? renderRowScope(fallback, true) : <span className="text-[13px] text-[#020617]">{groupRules.length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}</span>}</TableCell>
+                    <TableCell>{isInlineEdit ? renderRowValue(fallback) : <span className="text-[13px] text-[#020617] font-medium">{displayValue(fallback.value)}</span>}</TableCell>
+                    {cardKey === "global" && <TableCell className="text-[13px] text-[#020617]">{globalTokenTimeDim === "daily" ? "每日" : "每月"}</TableCell>}
+                    {isInlineEdit && <TableCell>{renderRowActions(fallback, true)}</TableCell>}
+                  </TableRow>
+                )}
+                {groupRules.filter(r => r.groupIds.length > 0 || plan2EditingRowId === r.id).map((rule, idx) => (
+                  <TableRow key={rule.id} className="hover:bg-transparent border-0">
+                    <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                    <TableCell>{isInlineEdit ? renderRowScope(rule, false) : <GroupBadges groupIds={rule.groupIds} />}</TableCell>
+                    <TableCell>{isInlineEdit ? renderRowValue(rule) : <span className="text-[13px] text-[#020617] font-medium">{displayValue(rule.value)}</span>}</TableCell>
+                    {cardKey === "global" && <TableCell className="text-[13px] text-[#020617]">{globalTokenTimeDim === "daily" ? "每日" : "每月"}</TableCell>}
+                    {isInlineEdit && <TableCell>{renderRowActions(rule, false)}</TableCell>}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {/* plan21 下表格底部添加分组策略按钮 */}
+            {isInlineEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  const blank: PolicyRule<TokenLimit> = { id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, groupIds: [], value: card.type === "integer" ? 3 : 100000 };
+                  card.onRulesChange([...card.rules.filter(r => r.id !== fallback?.id), blank, ...(fallback ? [fallback] : [])]);
+                  setPlan2IsAddingRow(true);
+                  startRowEdit(blank.id, blank.value, []);
+                }}
+                disabled={plan2EditingRowId !== null}
+                className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#E5E5E5] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-3.5 h-3.5" />添加分组策略
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (type === "toggle") {
+      const card = toggleCards.find((c) => c.key === cardKey);
+      if (!card) return null;
+      const fallback = card.rules.find(r => r.groupIds.length === 0 && r.id.includes("fallback"));
+      const allGroupRules = card.rules.filter(r => r !== fallback);
+
+      const isInlineEdit = activeTab === "plan21";
+      const toggleGroupValue = !(fallback?.value); // 分组策略权限与预设相反
+      const startToggleRowEdit = (rule: PolicyRule<boolean>) => {
+        setPlan2EditingRowId(rule.id);
+        setPlan2RowDraft({ mode: "custom", valStr: "", toggleVal: rule.value, groupIds: rule.groupIds });
+      };
+      const renderToggleRowScope = (rule: PolicyRule<boolean>, isFallback: boolean) => {
+        if (isFallback) return <span className="text-[13px] text-[#020617]">{allGroupRules.filter(r => r.groupIds.length > 0).length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}</span>;
+        // 仅在添加新行时允许编辑适用范围
+        if (plan2EditingRowId === rule.id && plan2IsAddingRow) {
+          const disabledIds = allGroupRules.filter(r => r.id !== rule.id && r.groupIds.length > 0).flatMap(r => r.groupIds);
+          return <GroupTagSelector selectedIds={plan2RowDraft.groupIds ?? []} disabledIds={disabledIds} onChange={(ids) => setPlan2RowDraft(d => ({ ...d, groupIds: ids }))} />;
+        }
+        return rule.groupIds.length > 0 ? <GroupBadges groupIds={rule.groupIds} /> : <span className="text-[13px] text-[#A3A3A3]">请选择分组</span>;
+      };
+      const renderToggleRowValue = (rule: PolicyRule<boolean>, isFallback: boolean) => {
+        if (isFallback && plan2EditingRowId === rule.id) {
+          return (
+            <Select value={plan2RowDraft.toggleVal ? "on" : "off"} onValueChange={(v) => setPlan2RowDraft(d => ({ ...d, toggleVal: v === "on" }))}>
+              <SelectTrigger className="h-9 w-[120px] text-sm bg-white"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="on"><StatusTag mode="fill" variant="green">开启</StatusTag></SelectItem>
+                <SelectItem value="off"><StatusTag mode="fill" variant="gray">关闭</StatusTag></SelectItem>
+              </SelectContent>
+            </Select>
+          );
+        }
+        const v = isFallback ? rule.value : toggleGroupValue;
+        return <StatusTag mode="fill" variant={v ? "green" : "gray"}>{v ? "开启" : "关闭"}</StatusTag>;
+      };
+      const renderToggleRowActions = (rule: PolicyRule<boolean>, isFallback: boolean) => {
+        if (plan2EditingRowId === rule.id) {
+          const noGroup = plan2IsAddingRow && !isFallback && (!plan2RowDraft.groupIds || plan2RowDraft.groupIds.length === 0);
+          return (
+            <div className="flex items-center gap-2">
+              <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={() => {
+                if (plan2IsAddingRow) {
+                  card.onRulesChange(card.rules.filter(r => r.id !== rule.id) as PolicyRule<boolean>[]);
+                }
+                setPlan2EditingRowId(null);
+                setPlan2IsAddingRow(false);
+              }}>取消</Button>
+              <Button variant="link" size="sm" className={`h-auto px-0 text-[12px] ${noGroup ? "text-[#A3A3A3] pointer-events-none" : "text-[#1447E6]"}`} disabled={noGroup} onClick={() => {
+                if (isFallback) {
+                  // 仅修改预设值（同时联动分组策略行的相反值）
+                  card.onRulesChange(card.rules.map(r => r.id === rule.id ? { ...r, value: !!plan2RowDraft.toggleVal } : { ...r, value: !plan2RowDraft.toggleVal }));
+                } else if (plan2IsAddingRow) {
+                  // 添加新行时保存 groupIds
+                  card.onRulesChange(card.rules.map(r => r.id === rule.id ? { ...r, groupIds: plan2RowDraft.groupIds!, value: toggleGroupValue } : r));
+                }
+                setPlan2EditingRowId(null);
+                setPlan2IsAddingRow(false);
+                toast.success("已保存");
+              }}>保存</Button>
+            </div>
+          );
+        }
+        return (
+          <div className="flex items-center gap-2">
+            <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={() => startToggleRowEdit(rule)}>编辑</Button>
+            {!isFallback && <Button variant="link" size="sm" className="h-auto px-0 text-[12px] text-red-500" onClick={() => { card.onRulesChange(card.rules.filter(r => r.id !== rule.id) as PolicyRule<boolean>[]); toast.success("已删除"); }}>删除</Button>}
+          </div>
+        );
+      };
+
+      return (
+        <div className="space-y-3">
+          {/* 特殊卡片附加信息 */}
+          {cardKey === "panel" && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 text-[13px]">
+                <span className="text-[#737373]">访问方式：</span>
+                <span className="text-[#020617] font-medium">{panelAccessMode === "private" ? "私网访问" : "公网访问"}</span>
+              </div>
+              {panelPort && (
+                <Alert variant="info" className="w-full">
+                  <AlertInfoIcon />
+                  <AlertDescription className="text-xs">
+                    {panelSgRuleId ? `已分配随机端口 ${panelPort} 并自动添加安全组放通规则` : `已分配随机端口 ${panelPort}`}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          )}
+          {cardKey === "cloudBrowser" && isCloudBrowserEnabled(cloudBrowserRules) && cloudBrowserSgRuleId && (
+            <Alert variant="info" className="w-full">
+              <AlertInfoIcon />
+              <AlertDescription className="text-xs">已为安全组添加 6080 端口放通规则</AlertDescription>
+            </Alert>
+          )}
+          {/* 汇总 + 编辑按钮 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-[13px]">
+              <span className="text-[#737373] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallback?.value ? "green" : "gray"}>{fallback?.value ? "开启" : "关闭"}</StatusTag></span>
+              <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{allGroupRules.filter(r => r.groupIds.length > 0).length} 个</span></span>
+            </div>
+            {!isInlineEdit && (
+              <Button variant="claw-outline" size="claw-sm" onClick={() => setPlan2IsEditing(true)}>编辑</Button>
+            )}
+          </div>
+          <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+            <Table density="compact">
+              <colgroup><col style={{ width: 80 }} /><col /><col style={{ width: 140 }} />{isInlineEdit && <col style={{ width: 100 }} />}</colgroup>
+              <TableHeader>
+                <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead>权限</TableHead>{isInlineEdit && <TableHead>操作</TableHead>}</TableRow>
+              </TableHeader>
+              <TableBody>
+                {fallback && (
+                  <TableRow className="hover:bg-transparent border-0">
+                    <TableCell className="text-[13px] text-[#737373]">预设策略</TableCell>
+                    <TableCell>{isInlineEdit ? renderToggleRowScope(fallback, true) : <span className="text-[13px] text-[#020617]">{allGroupRules.length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}</span>}</TableCell>
+                    <TableCell>{isInlineEdit ? renderToggleRowValue(fallback, true) : <StatusTag mode="fill" variant={fallback.value ? "green" : "gray"}>{fallback.value ? "开启" : "关闭"}</StatusTag>}</TableCell>
+                    {isInlineEdit && <TableCell>{renderToggleRowActions(fallback, true)}</TableCell>}
+                  </TableRow>
+                )}
+                {allGroupRules.filter(r => r.groupIds.length > 0 || plan2EditingRowId === r.id).map((rule, idx) => (
+                  <TableRow key={rule.id} className="hover:bg-transparent border-0">
+                    <TableCell className="text-[13px] text-[#737373]">分组策略{idx + 1}</TableCell>
+                    <TableCell>{isInlineEdit ? renderToggleRowScope(rule, false) : <GroupBadges groupIds={rule.groupIds} />}</TableCell>
+                    <TableCell>{isInlineEdit ? renderToggleRowValue(rule, false) : <StatusTag mode="fill" variant={rule.value ? "green" : "gray"}>{rule.value ? "开启" : "关闭"}</StatusTag>}</TableCell>
+                    {isInlineEdit && <TableCell>{renderToggleRowActions(rule, false)}</TableCell>}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {/* plan21 下表格底部添加分组策略按钮 */}
+            {isInlineEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  const blank: PolicyRule<boolean> = { id: `rule-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, groupIds: [], value: toggleGroupValue };
+                  card.onRulesChange([...card.rules.filter(r => r.id !== fallback?.id), blank, ...(fallback ? [fallback] : [])]);
+                  setPlan2IsAddingRow(true);
+                  startToggleRowEdit(blank);
+                }}
+                disabled={plan2EditingRowId !== null}
+                className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#E5E5E5] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-3.5 h-3.5" />添加分组策略
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="page-enter space-y-8">
+    <div className="page-enter space-y-6 h-[calc(100vh-120px)] overflow-hidden flex flex-col">
       {/* 页面标题 */}
-      <div>
+      <div className="shrink-0">
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
         <p className="text-sm text-gray-500 mt-1">管理平台默认配额、全局限制和功能权限开关，支持按分组设置不同策略</p>
       </div>
 
       {/* 优先级说明信息条 */}
-      <Alert variant="operation-info">
+      <Alert variant="operation-info" className="shrink-0">
         <AlertOperationInfoIcon />
         <AlertDescription>
           <ul className="space-y-1 list-disc pl-4">
             <li>无需按分组设置策略时，直接使用<span className="font-medium">「预设策略」</span>，全部用户应用该策略。</li>
-            <li>需要按分组设置策略时，添加<span className="font-medium">「分组策略」</span>，优先采用本分组策略；本分组无则采用最近的上级分组策略；均无则使用<span className="font-medium">「预设策略」</span>。若用户属于多个分组，用户将在用户端创建 Agent 时自行选择分组，该 Agent 即拥有所选分组对应的策略权限。</li>
+            <li>需要按分组设置策略时，添加<span className="font-medium">「分组策略」</span>，优先采用本分组策略；本分组无则采用最近的上级分组策略；均无则使用<span className="font-medium">「预设策略」</span>。</li>
+            <li>若用户属于多个分组，用户将在用户端创建 Agent 时自行选择分组，该 Agent 即拥有所选分组对应的策略权限。</li>
           </ul>
         </AlertDescription>
       </Alert>
 
-      {/* ── 板块一：用户配额 ── */}
-      <section>
-        <h2 className="text-[16px] font-semibold text-[#020617] mb-4">用户配额</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <QuotaPolicyCard
-            icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0" />}
-            iconBg=""
-            title="单用户 Agent 数量上限"
-            description="单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
-            type="integer"
-            rules={clawRules}
-            onRulesChange={setClawRules}
-          />
-          <QuotaPolicyCard
-            icon={<img src="/assets/admin-platform-policy/user-daily-token-limit.svg" className="shrink-0" />}
-            iconBg=""
-            title="单用户每日 Tokens 上限"
-            description="单用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
-            type="token"
-            rules={tokenRules}
-            onRulesChange={setTokenRules}
-          />
-        </div>
-      </section>
+      {/* ════════════ 方案1：Tab 切换（配额设置 / 功能权限开关） ════════════ */}
+      {activeTab === "plan1" && (
+        <div className="space-y-6">
+          <SegmentGroup>
+            <SegmentOption active={plan1SubTab === "quota"} onClick={() => setPlan1SubTab("quota")}>配额设置</SegmentOption>
+            <SegmentOption active={plan1SubTab === "permission"} onClick={() => setPlan1SubTab("permission")}>功能权限开关</SegmentOption>
+          </SegmentGroup>
 
-      {/* ── 板块二：模型配额 ── */}
-      <section>
-        <h2 className="text-[16px] font-semibold text-[#020617] mb-4">模型配额</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <QuotaPolicyCard
-            icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0" />}
-            iconBg=""
-            title="全局 Tokens 上限"
-            description="全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后将暂停服务"
-            type="token"
-            rules={globalTokenRules}
-            onRulesChange={handleGlobalTokenRulesChange}
-            extraContent={
-              <TimeDimensionIndicator
-                mode={globalTokenTimeDim}
-                onSave={(m) => { setGlobalTokenTimeDim(m); localStorage.setItem("admin_global_token_time_dim", m); }}
+          {plan1SubTab === "quota" && (
+            <div className="grid grid-cols-1 gap-4 max-w-[960px]">
+              <QuotaPolicyCard
+                icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0 w-[42px]" />}
+                iconBg=""
+                title="单用户 Agent 数量上限"
+                description="单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+                type="integer"
+                rules={clawRules}
+                onRulesChange={setClawRules}
               />
-            }
-          />
-        </div>
-      </section>
+              <QuotaPolicyCard
+                icon={<img src="/assets/admin-platform-policy/user-daily-token-limit.svg" className="shrink-0 w-10" />}
+                iconBg=""
+                title="单用户每日 Tokens 上限"
+                description="单用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+                type="token"
+                rules={tokenRules}
+                onRulesChange={setTokenRules}
+              />
+              <QuotaPolicyCard
+                icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0 w-10" />}
+                iconBg=""
+                title="全局 Tokens 上限"
+                description="全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后将暂停服务"
+                type="token"
+                rules={globalTokenRules}
+                onRulesChange={handleGlobalTokenRulesChange}
+                timeDimension={{
+                  value: globalTokenTimeDim,
+                  onChange: (m) => { setGlobalTokenTimeDim(m); localStorage.setItem("admin_global_token_time_dim", m); },
+                }}
+              />
+            </div>
+          )}
 
-      {/* ── 板块三：功能权限开关 ── */}
-      <section>
-        <h2 className="text-[16px] font-semibold text-[#020617] mb-4">功能权限开关</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0" />} iconBg="" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0" />} iconBg="" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
-          <TogglePolicyCard
-            icon={<img src="/assets/admin-platform-policy/allow-agent-self-upgrade.svg" className="shrink-0" />}
-            iconBg=""
-            title="允许员工自助更新 Agent 版本"
-            description="开启后，员工可在 Agent 详细配置中点击「一键更新」自助更新到管理员设置的版本。关闭后，所有更新动作只能由管理员推送或批量发起"
-            rules={selfUpgradeRules}
-            onRulesChange={handleSelfUpgradeRulesChange}
-          />
-          <TogglePolicyCard
-            icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0" />}
-            iconBg=""
-            title="允许用户访问 Agent 面板"
-            description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 Agent 面板"
-            rules={panelRules}
-            onRulesChange={handlePanelRulesChange}
-            loadingRuleId={panelLoadingRuleId}
-            extraContent={
-              <div className="space-y-3">
-                <AccessModeIndicator
-                  mode={panelAccessMode}
-                  onSave={(m) => { setPanelAccessMode(m); localStorage.setItem("admin_panel_access_mode", m); }}
-                />
-                {panelPort && (
-                  <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
-                    <span className="text-xs text-blue-700 leading-relaxed">
-                      {panelSgRuleId
-                        ? `已为您分配随机端口 ${panelPort} 并自动为默认安全组添加该端口放通规则，`
-                        : `已为您分配随机端口 ${panelPort}，`}
-                      如用户端仍无法访问面板，请在网络管理的
-                      <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
-                      处检查是否生效
-                    </span>
+          {plan1SubTab === "permission" && (
+            <div className="grid grid-cols-1 gap-4 max-w-[960px]">
+              <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户配置模型" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
+              <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户配置通道" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
+              <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户添加自定义模型" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「允许用户配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
+              <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户进入 Agent 终端" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
+              <TogglePolicyCard
+                icon={<img src="/assets/admin-platform-policy/allow-agent-self-upgrade.svg" className="shrink-0 w-10" />}
+                iconBg=""
+                title="允许员工自助更新 Agent 版本"
+                description="开启后，员工可在 Agent 详细配置中点击「一键更新」自助更新到管理员设置的版本。关闭后，所有更新动作只能由管理员推送或批量发起"
+                rules={selfUpgradeRules}
+                onRulesChange={handleSelfUpgradeRulesChange}
+              />
+              <TogglePolicyCard
+                icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0 w-10" />}
+                iconBg=""
+                title="允许用户访问 Agent 面板"
+                description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 Agent 面板"
+                rules={panelRules}
+                onRulesChange={handlePanelRulesChange}
+                loadingRuleId={panelLoadingRuleId}
+                accessModeRow={{
+                  mode: panelAccessMode,
+                  onModeChange: (m) => { setPanelAccessMode(m); localStorage.setItem("admin_panel_access_mode", m); },
+                  tooltipContent: (
+                    <>
+                      <p className="mb-1.5 text-justify"><span className="font-medium">公网访问：</span>用户通过公网直接访问 Agent 面板（WebUI），连接云服务器公网 IP。适用于大多数场景，推荐选择。</p>
+                      <p className="text-justify"><span className="font-medium">私网访问：</span>用户通过同一私有网络访问 Agent 面板（WebUI），连接云服务器内网 IP。使用前需先自行将企业内网与腾讯云私有网络（VPC）打通，并在「网络管理」中将云服务器绑定至该 VPC。配置完成后，企业用户可通过企业内网访问面板，但无法通过公网访问。</p>
+                    </>
+                  ),
+                }}
+                extraContent={
+                  panelPort ? (
+                    <Alert variant="info" className="w-full">
+                      <AlertInfoIcon />
+                      <AlertDescription>
+                        {panelSgRuleId
+                          ? `已为您分配随机端口 ${panelPort} 并自动为默认安全组添加该端口放通规则，`
+                          : `已为您分配随机端口 ${panelPort}，`}
+                        如用户端仍无法访问面板，请在网络管理的
+                        <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
+                        处检查是否生效
+                      </AlertDescription>
+                    </Alert>
+                  ) : undefined
+                }
+              />
+              <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-chat-view.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户使用对话视图" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
+              <TogglePolicyCard
+                icon={<img src="/assets/admin-platform-policy/allow-cloud-browser.svg" className="shrink-0 w-10" />}
+                iconBg=""
+                title="允许用户访问 Agent 云端浏览器"
+                description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
+                rules={cloudBrowserRules}
+                onRulesChange={handleCloudBrowserRulesChange}
+                extraContent={
+                  isCloudBrowserEnabled(cloudBrowserRules) && cloudBrowserSgRuleId ? (
+                    <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
+                      <span className="text-xs text-blue-700 leading-relaxed">
+                        已为您当前的安全组添加该功能所需的 6080 端口放通规则，如用户端仍无法访问，请在网络管理的
+                        <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
+                        处检查是否生效
+                      </span>
+                    </div>
+                  ) : undefined
+                }
+              />
+              <TogglePolicyCard
+                icon={<img src="/assets/admin-platform-policy/allow-lobster-doctor.svg" className="shrink-0 w-10" />}
+                iconBg=""
+                title="允许用户使用龙虾医生"
+                description="开启后，所有用户在用户端可免费使用「龙虾医生」AI 诊断功能，自动检测并对话式修复 Agent 运行问题"
+                rules={lobsterDoctorRules}
+                onRulesChange={handleLobsterDoctorRulesChange}
+                titleExtra={
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto px-0 text-[13px] shrink-0"
+                    onClick={() => setShowLobsterDoctorDialog(true)}
+                  >
+                    使用说明（每次使用产生费用）
+                  </Button>
+                }
+              />
+              <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-model-quota.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户查看模型额度" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ════════════ 方案2 / 方案2-1 / 方案2-2：三列布局 + 固定高度卡片 + 弹窗（方案2-1 行内编辑、方案2-2 默认进入编辑态） ════════════ */}
+      {(activeTab === "plan2" || activeTab === "plan21" || activeTab === "plan22") && (
+        <div className="space-y-8">
+          <section>
+            <h2 className="text-[16px] font-semibold text-[#020617] mb-4">配额设置</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {quotaCards.map((card) => (
+                <FixedHeightQuotaCard key={card.key} card={card} />
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-[16px] font-semibold text-[#020617] mb-4">功能权限开关</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {toggleCards.map((card) => (
+                <FixedHeightToggleCard key={card.key} card={card} />
+              ))}
+            </div>
+          </section>
+
+          {/* 方案2 编辑弹窗 */}
+          <Dialog open={sheetOpen} onOpenChange={(v) => { setSheetOpen(v); if (!v) { setPlan2IsEditing(false); setPlan2EditingRowId(null); setPlan2IsAddingRow(false); } }}>
+            <DialogContent className="sm:max-w-[960px]">
+              <DialogHeader>
+                <DialogTitle>{sheetEditingCard?.title ?? "策略详情"}</DialogTitle>
+              </DialogHeader>
+              <DialogBody className="overflow-y-auto max-h-[60vh]">
+                {(plan2IsEditing && activeTab !== "plan21") ? renderSheetContent() : renderPlan2ReadOnly()}
+              </DialogBody>
+              {!plan2IsEditing && activeTab !== "plan21" && activeTab !== "plan22" && (
+                <DialogFooter>
+                  <Button variant="dialog-confirm" size="claw-sm" onClick={() => setSheetOpen(false)}>完成</Button>
+                </DialogFooter>
+              )}
+              {plan2IsEditing && activeTab !== "plan21" && activeTab !== "plan22" && (
+                <DialogFooter>
+                  <Button variant="dialog-confirm" size="claw-sm" disabled>完成</Button>
+                </DialogFooter>
+              )}
+              {activeTab === "plan22" && (
+                <DialogFooter>
+                  <Button variant="claw-outline" size="claw-sm" onClick={() => setSheetOpen(false)}>取消</Button>
+                  <Button variant="dialog-confirm" size="claw-sm" onClick={() => { plan2SaveRef.current?.(); setSheetOpen(false); }}>保存</Button>
+                </DialogFooter>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+
+      {/* ════════════ 方案3：三列卡片 + 点击编辑进入二级页面 ════════════ */}
+      {activeTab === "plan3" && !plan3EditingKey && (
+        <div className="space-y-8">
+          <section>
+            <h2 className="text-[16px] font-semibold text-[#020617] mb-4">配额设置</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {quotaCards.map((card) => (
+                <Plan3QuotaCard key={card.key} card={card} />
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-[16px] font-semibold text-[#020617] mb-4">功能权限开关</h2>
+            <div className="grid grid-cols-3 gap-4">
+              {toggleCards.map((card) => (
+                <Plan3ToggleCard key={card.key} card={card} />
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* 方案3 二级编辑页面 */}
+      {activeTab === "plan3" && plan3EditingKey && (
+        <div className="space-y-4">
+          {/* 返回面包屑 */}
+          <div className="flex items-center gap-2">
+            <Button variant="link" size="sm" className="h-auto px-0 text-[13px] text-[#737373]" onClick={() => setPlan3EditingKey(null)}>
+              <ChevronRight className="w-3.5 h-3.5 rotate-180" />返回策略列表
+            </Button>
+            <span className="text-[#d4d4d4]">/</span>
+            <span className="text-[13px] text-[#020617] font-medium">
+              {allPlan3Cards.find(c => c.key === plan3EditingKey)?.title ?? "编辑策略"}
+            </span>
+          </div>
+
+          {/* 左导航 + 右编辑区：统一外框 */}
+          <div className="flex min-h-[520px] border border-[#E5E5E5] rounded-[4px] bg-white overflow-hidden">
+            {/* 左侧导航 */}
+            <div className="w-[220px] shrink-0 border-r border-[#E5E5E5] overflow-y-auto">
+              <div className="p-3 space-y-0.5">
+                <div className="px-3 py-2 text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">配额设置</div>
+                {quotaCards.map((card) => (
+                  <button
+                    key={card.key}
+                    onClick={() => { setPlan3EditingKey(card.key); setPlan3IsEditing(false); }}
+                    className={`w-full text-left px-3 py-2 rounded text-[13px] transition-colors ${plan3EditingKey === card.key ? "bg-[#f0f4ff] text-[#1447E6] font-medium" : "text-[#020617] hover:bg-[#f5f5f5]"}`}
+                  >
+                    {card.title}
+                  </button>
+                ))}
+                <div className="px-3 py-2 text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide mt-3">功能权限开关</div>
+                {toggleCards.map((card) => (
+                  <button
+                    key={card.key}
+                    onClick={() => { setPlan3EditingKey(card.key); setPlan3IsEditing(false); }}
+                    className={`w-full text-left px-3 py-2 rounded text-[13px] transition-colors ${plan3EditingKey === card.key ? "bg-[#f0f4ff] text-[#1447E6] font-medium" : "text-[#020617] hover:bg-[#f5f5f5]"}`}
+                  >
+                    {card.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 右侧编辑区 */}
+            <div className="flex-1 min-w-0 p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-[15px] font-semibold text-[#020617]">
+                  {allPlan3Cards.find(c => c.key === plan3EditingKey)?.title}
+                </h3>
+                {plan3IsEditing ? (
+                  <div className="flex items-center gap-2">
+                    <Button variant="claw-outline" size="claw-sm" onClick={() => { setPlan3IsEditing(false); setPlan3ResetCount(c => c + 1); }}>取消</Button>
+                    <Button variant="dialog-confirm" size="claw-sm" onClick={() => plan3SaveRef.current?.()}>保存</Button>
                   </div>
+                ) : (
+                  <Button variant="claw-outline" size="claw-sm" onClick={() => setPlan3IsEditing(true)}>编辑</Button>
                 )}
               </div>
-            }
-          />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-chat-view.svg" className="shrink-0" />} iconBg="" title="允许用户使用对话视图" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
-          <TogglePolicyCard
-            icon={<img src="/assets/admin-platform-policy/allow-cloud-browser.svg" className="shrink-0" />}
-            iconBg=""
-            title="允许用户访问 Agent 云端浏览器"
-            description="开启后，用户可在「我的 Agent」对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「允许用户使用对话视图」）"
-            rules={cloudBrowserRules}
-            onRulesChange={handleCloudBrowserRulesChange}
-            extraContent={
-              isCloudBrowserEnabled(cloudBrowserRules) && cloudBrowserSgRuleId ? (
-                <div className="inline-flex items-start gap-2.5 bg-blue-50 rounded-xl px-3 py-2">
-                  <span className="text-xs text-blue-700 leading-relaxed">
-                    已为您当前的安全组添加该功能所需的 6080 端口放通规则，如用户端仍无法访问，请在网络管理的
-                    <button onClick={() => navigate("/admin/security-group")} className="underline underline-offset-2 font-medium hover:text-blue-900 transition-colors mx-0.5">安全组规则</button>
-                    处检查是否生效
-                  </span>
-                </div>
-              ) : undefined
-            }
-          />
-          <TogglePolicyCard
-            icon={<img src="/assets/admin-platform-policy/allow-lobster-doctor.svg" className="shrink-0" />}
-            iconBg=""
-            title="允许用户使用龙虾医生"
-            description="开启后，所有用户在用户端可免费使用「龙虾医生」AI 诊断功能，自动检测并对话式修复 Agent 运行问题"
-            rules={lobsterDoctorRules}
-            onRulesChange={handleLobsterDoctorRulesChange}
-            extraContent={
-              lobsterDoctorRules.some((r) => r.value) ? (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
-                  <p className="text-xs text-blue-700 leading-relaxed">
-                    龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，详见{" "}
-                    <button onClick={() => setShowLobsterDoctorDialog(true)} className="inline-flex items-center text-blue-700 hover:opacity-70 transition-opacity" title="查看详情"><HelpCircle className="w-3.5 h-3.5" /></button>
-                  </p>
-                </div>
-              ) : undefined
-            }
-          />
-          <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-model-quota.svg" className="shrink-0" />} iconBg="" title="允许用户查看模型额度" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
+              <p className="text-[12px] text-[#737373] leading-relaxed mb-4">
+                {allPlan3Cards.find(c => c.key === plan3EditingKey)?.description}
+              </p>
+              {plan3IsEditing ? renderPlan3Editor() : renderPlan3ReadOnly()}
+            </div>
+          </div>
         </div>
-      </section>
+      )}
+
+      {/* ════════════ 方案4：锚点导航 + 瀑布流单列卡片 ════════════ */}
+      {activeTab === "plan4" && (
+        <div className="flex gap-[36px] flex-1 min-h-0">
+          {/* 左侧瀑布流卡片 - 可滚动 */}
+          <div id="plan4-scroll-container" className="flex-1 min-w-0 overflow-y-auto space-y-8 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+            <section id="plan4-section-quota">
+              <h2 className="text-[16px] font-semibold text-[#020617] mb-4">配额设置</h2>
+              <div className="space-y-4">
+                <div id="plan4-claw" className={`rounded-lg transition-shadow ${highlightKey === "claw" ? "anchor-highlight" : ""}`}>
+                  <QuotaPolicyCard
+                    icon={<img src="/assets/admin-platform-policy/user-agent-limit.svg" className="shrink-0 w-[42px]" />}
+                    iconBg=""
+                    title="单用户 Agent 数量上限"
+                    description="单用户最多可以创建的 Agent 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+                    type="integer"
+                    rules={clawRules}
+                    onRulesChange={setClawRules}
+                  />
+                </div>
+                <div id="plan4-token" className={`rounded-lg transition-shadow ${highlightKey === "token" ? "anchor-highlight" : ""}`}>
+                  <QuotaPolicyCard
+                    icon={<img src="/assets/admin-platform-policy/user-daily-token-limit.svg" className="shrink-0 w-10" />}
+                    iconBg=""
+                    title="单用户每日 Tokens 上限"
+                    description="单用户每日最多可消耗的 Tokens 数量，新用户创建时自动应用此默认值，可在用户管理中对单个用户单独调整"
+                    type="token"
+                    rules={tokenRules}
+                    onRulesChange={setTokenRules}
+                  />
+                </div>
+                <div id="plan4-global" className={`rounded-lg transition-shadow ${highlightKey === "global" ? "anchor-highlight" : ""}`}>
+                  <QuotaPolicyCard
+                    icon={<img src="/assets/admin-platform-policy/global-token-limit.svg" className="shrink-0 w-10" />}
+                    iconBg=""
+                    title="全局 Tokens 上限"
+                    description="全局 Tokens 指所有企业用户使用所有模型所消耗的总 Tokens 数量，达到上限后将暂停服务"
+                    type="token"
+                    rules={globalTokenRules}
+                    onRulesChange={handleGlobalTokenRulesChange}
+                    timeDimension={{
+                      value: globalTokenTimeDim,
+                      onChange: (m) => { setGlobalTokenTimeDim(m); localStorage.setItem("admin_global_token_time_dim", m); },
+                    }}
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-[16px] font-semibold text-[#020617] mb-4">功能权限开关</h2>
+              <div className="space-y-4">
+                <div id="plan4-configModel" className={`rounded-lg transition-shadow ${highlightKey === "configModel" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-model.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「配置模型」" description="开启后，用户可在 Agent 详细配置中自行选择和切换模型。关闭后，模型配置区域将锁定，用户无法调整（适用于管理员已统一预配置模型的场景）" rules={configModelRules} onRulesChange={setConfigModelRules} />
+                </div>
+                <div id="plan4-configChannel" className={`rounded-lg transition-shadow ${highlightKey === "configChannel" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-config-channel.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「配置通道」" description="开启后，用户可在 Agent 详细配置中自行添加和管理通道。关闭后，通道配置区域将锁定，用户无法调整（适用于管理员已统一预配置通道的场景）" rules={configChannelRules} onRulesChange={setConfigChannelRules} />
+                </div>
+                <div id="plan4-customModel" className={`rounded-lg transition-shadow ${highlightKey === "customModel" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-custom-model.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「添加自定义模型」" description="开启后，用户可在 Agent 中自行添加自定义模型，不在企业管控和 Tokens 覆盖范围内（注意需要先开启「配置模型」）" rules={customModelRules} onRulesChange={setCustomModelRules} />
+                </div>
+                <div id="plan4-terminal" className={`rounded-lg transition-shadow ${highlightKey === "terminal" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-terminal.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「进入 Agent 终端」" description="开启后，所有用户在用户端可看到「进入终端」选项，进入对应 Agent 云服务器的终端" rules={terminalRules} onRulesChange={setTerminalRules} />
+                </div>
+                <div id="plan4-selfUpgrade" className={`rounded-lg transition-shadow ${highlightKey === "selfUpgrade" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-self-upgrade.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「自助更新版本」" description="开启后，员工可在 Agent 详细配置中点击「一键更新」自助更新到管理员设置的版本。关闭后，所有更新动作只能由管理员推送或批量发起" rules={selfUpgradeRules} onRulesChange={handleSelfUpgradeRulesChange} />
+                </div>
+                <div id="plan4-panel" className={`rounded-lg transition-shadow ${highlightKey === "panel" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-agent-panel.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「访问 Agent 面板」" description="开启后，系统会为企业分配一个随机端口并自动添加一条安全组规则放通该端口，用户可通过该端口访问 Agent 面板" rules={panelRules} onRulesChange={handlePanelRulesChange} loadingRuleId={panelLoadingRuleId} accessModeRow={hasSecurityGroup ? { mode: panelAccessMode, onModeChange: (m) => { setPanelAccessMode(m); localStorage.setItem("admin_panel_access_mode", m); }, tooltipContent: "选择用户访问 Agent 面板的网络方式" } : undefined} disabledMessage={!hasSecurityGroup ? <>请先前往 <button onClick={() => navigate("/admin/security-group?tab=security")} className="text-[#1447E6] hover:underline">网络管理/安全组</button> 配置至少一个安全组，再开启该功能</> : undefined} />
+                </div>
+                <div id="plan4-chatView" className={`rounded-lg transition-shadow ${highlightKey === "chatView" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-chat-view.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「使用对话视图」" description="开启后，用户可在「我的 Agent」中使用对话视图，通过浏览器与 AI 对话（建议提前配置默认模型，用户创建 Agent 后 AI 即可正常回复）" rules={chatViewRules} onRulesChange={setChatViewRules} />
+                </div>
+                <div id="plan4-cloudBrowser" className={`rounded-lg transition-shadow ${highlightKey === "cloudBrowser" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-cloud-browser.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「访问云端浏览器」" description="开启后，用户可在对话视图里访问云端浏览器，查看 AI 浏览器执行过程并进入操作（注意需要先开启「对话视图」）" rules={cloudBrowserRules} onRulesChange={handleCloudBrowserRulesChange} disabledMessage={!hasSecurityGroup ? <>请先前往 <button onClick={() => navigate("/admin/security-group?tab=security")} className="text-[#1447E6] hover:underline">网络管理/安全组</button> 配置至少一个安全组，再开启该功能</> : undefined} />
+                </div>
+                <div id="plan4-lobsterDoctor" className={`rounded-lg transition-shadow ${highlightKey === "lobsterDoctor" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-lobster-doctor.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「使用龙虾医生」" description={<>开启后，所有用户在用户端可免费使用「龙虾医生」AI 诊断功能，自动检测并对话式修复 Agent 运行问题。<span className="text-[#020617] font-medium">龙虾医生每次诊断会产生费用消耗</span>，详见 <button onClick={(e) => { e.stopPropagation(); setShowLobsterDoctorDialog(true); }} className="text-[#1447E6] hover:underline">使用说明</button></>} rules={lobsterDoctorRules} onRulesChange={handleLobsterDoctorRulesChange} />
+                </div>
+                <div id="plan4-modelQuota" className={`rounded-lg transition-shadow ${highlightKey === "modelQuota" ? "anchor-highlight" : ""}`}>
+                  <TogglePolicyCard icon={<img src="/assets/admin-platform-policy/allow-model-quota.svg" className="shrink-0 w-10" />} iconBg="" title="允许用户「查看模型额度」" description="开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况" rules={modelQuotaRules} onRulesChange={setModelQuotaRules} />
+                </div>
+              </div>
+            </section>
+            {/* 底部占位，确保最后的卡片也能滚动到顶部 */}
+            <div className="h-[10vh] shrink-0" />
+          </div>
+
+          {/* 右侧锚点导航 - 固定 */}
+          <div className="w-[16vw] shrink-0 self-start sticky top-0 overflow-hidden">
+            <div className="overflow-hidden">
+              {/* 导航列表 */}
+              <div className="overflow-y-auto max-h-full">
+                <p className="text-[11px] text-[#A3A3A3] pl-3 py-1.5 uppercase tracking-wide">配额设置</p>
+                <div className="ml-3 relative before:absolute before:left-0 before:top-[8px] before:bottom-[8px] before:w-px before:bg-[#E5E5E5]">
+                  {quotaCards.map((card, idx) => (
+                    <button
+                      key={card.key}
+                      type="button"
+                      onClick={() => { setActiveAnchor(card.key); triggerHighlight(card.key); const targetId = idx === 0 ? 'plan4-section-quota' : `plan4-${card.key}`; const el = document.getElementById(targetId); const container = document.getElementById('plan4-scroll-container'); if (el && container) { container.scrollTo({ top: el.offsetTop - container.offsetTop, behavior: 'smooth' }); }; }}
+                      className={`block w-full text-left pl-4 pr-4 py-2 text-[13px] whitespace-nowrap transition-colors relative ${activeAnchor === card.key ? "text-[#020617] font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-4 before:bg-[#020617] before:rounded-full" : "text-[#020617] hover:bg-[#f5f5f5]"}`}
+                    >
+                      {card.title}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#A3A3A3] pl-3 py-1.5 mt-3 uppercase tracking-wide">功能权限开关</p>
+                <div className="ml-3 relative before:absolute before:left-0 before:top-[8px] before:bottom-[8px] before:w-px before:bg-[#E5E5E5]">
+                  {toggleCards.map((card) => (
+                    <button
+                      key={card.key}
+                      type="button"
+                      onClick={() => { setActiveAnchor(card.key); triggerHighlight(card.key); const el = document.getElementById(`plan4-${card.key}`); const container = document.getElementById('plan4-scroll-container'); if (el && container) { container.scrollTo({ top: el.offsetTop - container.offsetTop, behavior: 'smooth' }); }; }}
+                      className={`block w-full text-left pl-4 pr-4 py-2 text-[13px] whitespace-nowrap transition-colors relative ${activeAnchor === card.key ? "text-[#020617] font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-4 before:bg-[#020617] before:rounded-full" : "text-[#020617] hover:bg-[#f5f5f5]"}`}
+                    >
+                      {card.navTitle}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 龙虾医生详情弹窗 */}
       <Dialog open={showLobsterDoctorDialog} onOpenChange={setShowLobsterDoctorDialog}>
         <DialogContent className="sm:max-w-[560px]">
-          <div className="py-1 space-y-4 text-sm text-gray-600 leading-relaxed">
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-900">工作原理</p>
-              <p>当用户点击「开始诊断」后，ClawPro 平台将完成以下步骤：</p>
-              <ol className="space-y-1.5 pl-5 list-decimal">
+          <DialogHeader>
+            <DialogTitle>龙虾医生使用说明</DialogTitle>
+          </DialogHeader>
+          <DialogBody className="space-y-5 text-[14px] text-[#334155] leading-relaxed">
+            <Alert variant="info">
+              <AlertInfoIcon />
+              <AlertDescription>龙虾医生每次诊断会产生部分底层资源费用和 Token 消耗，请注意费用消耗</AlertDescription>
+            </Alert>
+            <div className="space-y-3">
+              <p className="text-[14px] font-semibold text-[#020617]">费用消耗说明</p>
+              <ol className="space-y-2 pl-5 list-decimal text-[14px] text-[#334155]">
+                <li><span className="font-medium text-[#020617]">资源费用：</span>底层云资源费用可在 <a href="https://console.cloud.tencent.com/expense" target="_blank" rel="noopener noreferrer" className="text-[#1447E6] hover:underline">腾讯云费用中心</a> 查看</li>
+                <li><span className="font-medium text-[#020617]">Token 消耗：</span>诊断消耗的 Token 计入对应用户的 Token 消耗，可在 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }} className="text-[#1447E6] hover:underline">Tokens 监控</button> 查看</li>
+                <li><span className="font-medium text-[#020617]">诊断模型：</span>诊断所用模型将按照当前已启用的模型顺序使用，可前往 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/model-config"); }} className="text-[#1447E6] hover:underline">模型配置</button> 调整</li>
+              </ol>
+            </div>
+            <div className="space-y-3">
+              <p className="text-[14px] font-semibold text-[#020617]">工作原理</p>
+              <p className="text-[14px] text-[#334155]">当用户点击「开始诊断」后，ClawPro 平台将完成以下步骤：</p>
+              <ol className="space-y-2 pl-5 list-decimal text-[14px] text-[#334155]">
                 <li>创建一个临时按量计费的龙虾医生 Agent 节点</li>
                 <li>通过该节点对用户的目标 Agent 进行检测和修复</li>
                 <li>诊断结束后，临时节点自动销毁，不留存任何数据</li>
               </ol>
             </div>
-            <div className="pt-3 space-y-2">
-              <p className="text-sm font-medium text-gray-900">说明</p>
-              <ol className="space-y-1.5 pl-5 list-decimal text-gray-600">
-                <li><span className="font-medium text-gray-700">资源费用</span>：底层云资源费用可在 <a href="https://console.cloud.tencent.com/expense" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">腾讯云费用中心</a> 查看</li>
-                <li><span className="font-medium text-gray-700">Token 消耗</span>：诊断消耗的 Token 计入对应用户的 Token 消耗，可在 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/tokens-monitor"); }} className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">Tokens 监控</button> 查看</li>
-                <li><span className="font-medium text-gray-700">诊断模型</span>：诊断所用模型将按照当前已启用的模型顺序使用，可前往 <button onClick={() => { setShowLobsterDoctorDialog(false); navigate("/admin/model-config"); }} className="text-blue-600 hover:text-blue-800 underline underline-offset-2 transition-colors">模型配置</button> 调整</li>
-              </ol>
-            </div>
-          </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              variant="claw-outline"
+              size="claw-sm"
+              onClick={() => setShowLobsterDoctorDialog(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="dialog-confirm"
+              size="claw-sm"
+              onClick={() => setShowLobsterDoctorDialog(false)}
+            >
+              我知道了
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

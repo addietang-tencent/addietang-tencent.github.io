@@ -859,12 +859,12 @@ import {
 
 ## 12. Alert 提示组件
 
-**文件**: `client/src/components/ui/alert.tsx`  
+**文件**: `client/src/components/ui/alert.tsx`、`client/src/components/ui/admin-notice-alert.tsx`  
 **Token 定义**: `client/src/index.css`
 
 ### 基础规则
 
-所有页面信息提示、操作信息提示、警告提示、产品动态通知必须使用 shadcn Alert 标准结构，不允许在业务页面手写 `bg-blue-50` / `bg-amber-50` / `border-*` / `rounded-*` 拼装。
+所有页面信息提示、操作信息提示、警告提示、产品动态通知必须使用 shadcn Alert 标准结构，不允许在业务页面手写 `bg-blue-50` / `bg-amber-50` / `border-*` / `rounded-*` 拼装。管控端顶部常驻公告条必须使用 `AdminNoticeAlert`，不要替换页面内普通 Alert。
 
 统一视觉参数：圆角使用 `--alert-radius: var(--radius)`（当前为 `4px`，组件内为 `rounded-[var(--alert-radius)]`）、`px-4 py-2.5`（上下各 `10px`）、图标 `16px`、图标列固定 `16px`、图标与文字间距 `8px`。图标使用 `translate-y-px`，与 12px / 18px 行高文字首行视觉居中。标题与描述必须拆成 `AlertTitle` / `AlertDescription` 两个兄弟节点，默认 `gap-y-1`，标题与描述上下间距 `4px`。字体必须受 Typography 组件约束：`AlertDescription` 使用 `MetaText`（12px / regular / 1.5 / `tone="inherit"`），`AlertTitle` 使用 `MetaMedium`（12px / medium / 1.5 / `tone="inherit"`）。正文默认保持 inline flow，允许文案中的 `span` 在同一行展示。
 
@@ -919,7 +919,7 @@ import { Alert, AlertDescription, AlertOperationInfoIcon, AlertTitle } from "@/c
 
 ### Warning 类型（标准警告提示）
 
-用于配置缺失、配额不足、风险提示、需要处理但非阻断的警告信息。管控端公告栏中除「产品动态」外，其余公告均使用 `Alert variant="warning"`。
+用于配置缺失、配额不足、风险提示、需要处理但非阻断的警告信息。页面内警告提示使用 `Alert variant="warning"`；管控端顶部常驻公告条不要使用该变体，统一使用 `AdminNoticeAlert`。
 
 ```tsx
 import { CircleAlert } from "lucide-react";
@@ -961,9 +961,39 @@ import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/a
 | `--alert-product-news-foreground` | `var(--alert-info-foreground)` | 产品动态正文 |
 | `--alert-product-news-icon` | `var(--alert-info-icon)` | 产品动态图标 |
 
-### 带右侧操作区的公告栏写法
+### 管控端彩色背景公告条（AdminNoticeAlert）
 
-顶部常驻通知条可通过 `className` 增加第三列操作区，但颜色、字体、图标和基础间距必须由 Alert variant 与 token 控制。
+用于管控端顶部常驻通知条，设计稿场景包含「产品动态」「待配置」「资源告警」。必须使用 `AdminNoticeAlert`，只替换 `AdminNoticeBar` 这类顶部公告，不要迁移页面内普通 `Alert`。
+
+```tsx
+import { AdminNoticeAlert } from "@/components/ui/admin-notice-alert";
+
+<AdminNoticeAlert type="product-news" controls={<span>4/5</span>}>
+  <span>OpenClaw v2.4.0 已发布：记忆管理功能上线。</span>
+</AdminNoticeAlert>
+
+<AdminNoticeAlert type="pending-config" controls={<span>1/5</span>}>
+  <span>有 3 项基础配置未完成，</span>
+  <span className="font-medium text-[#020617] underline underline-offset-2">前往基础信息配置处理</span>
+</AdminNoticeAlert>
+
+<AdminNoticeAlert type="resource-alert" controls={<span>2/5</span>}>
+  <span>私有网络（VPC）配额已耗尽，</span>
+  <span className="text-[#020617] underline underline-offset-2">前往腾讯云控制台提交工单</span>
+</AdminNoticeAlert>
+```
+
+| 类型 | 标签文案 | 图标 / 颜色 | 用途 |
+|------|----------|-------------|------|
+| `product-news` | 产品动态 | 星光图标 / 蓝色 | 产品发布、版本更新、功能上线 |
+| `pending-config` | 待配置 | 感叹号图标 / 橙色 | 基础配置未完成 |
+| `resource-alert` | 资源告警 | 感叹号图标 / 橙色 | VPC、云服务器机型等资源配额告警 |
+
+视觉规则：外层高度 `40px`、圆角 `4px`、半透明白底 `rgba(255,255,255,0.76)`、白色描边、12px 正文；左侧标签高度 `22px`、圆角 `2px`、11px 文案；右侧操作区宽 `80.07px`，翻页控件宽 `44.07px`，关闭按钮位于 `left:64.07px; top:2px` 且 `16px` 常驻展示，颜色为 `#020617` / 50% 透明度，翻页控件仅在多条通知时展示。资源告警复用待配置的橙色标签样式和 icon，仅标签文案显示为「资源告警」。
+
+### 普通 Alert 带右侧操作区写法
+
+页面内普通 Alert 如需增加第三列操作区，可通过 `className` 扩展；颜色、字体、图标和基础间距必须由 Alert variant 与 token 控制。管控端顶部常驻公告条仍使用 `AdminNoticeAlert`。
 
 ```tsx
 <Alert

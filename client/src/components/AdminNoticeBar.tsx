@@ -4,15 +4,15 @@
  * - 三类通知：基础配置告警（橙色）、腾讯云配额告警（橙色）、产品动态（蓝色）
  * - 支持自动轮播（5s）+ 手动左右切换
  * - 只有 1 条通知时隐藏切换按钮
- * - 不可手动关闭，强制常驻
+ * - 关闭按钮常驻，点击后隐藏当前通知
  * - sticky top-0 固定在内容区顶部，不随页面滚动
  * - 跳转链接紧跟在通知文字末尾
  * - 产品动态图标使用星星符号
  */
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight, CircleAlert, ExternalLink } from "lucide-react";
-import { Alert, AlertDescription, AlertProductNewsIcon } from "@/components/ui/alert";
+import { ExternalLink } from "lucide-react";
+import { AdminNoticeAlert, type AdminNoticeAlertType } from "@/components/ui/admin-notice-alert";
 import { useAdminMode } from "@/contexts/AdminModeContext";
 
 // ─── 基础配置项完成状态（与 BasicInfo.tsx 保持一致） ──────────────────────
@@ -71,20 +71,17 @@ const QUOTA_ALERTS = [
 const PRODUCT_NEWS = [
   {
     id: "news1",
-    message: "【产品动态】OpenClaw v2.4.0 已发布：记忆管理功能上线，支持 Pro / Free 版本切换，Pro 版提供长期记忆存储与跨会话召回能力。",
+    message: "OpenClaw v2.4.0 已发布：记忆管理功能上线，支持 Pro / Free 版本切换，Pro 版提供长期记忆存储与跨会话召回能力。",
   },
   {
     id: "news2",
-    message: "【产品动态】OpenClaw v2.3.0 已发布：技能配置全面升级，支持公共技能库浏览、收藏与批量分发至指定用户或全体成员。",
+    message: "OpenClaw v2.3.0 已发布：技能配置全面升级，支持公共技能库浏览、收藏与批量分发至指定用户或全体成员。",
   },
 ];
 
-// ─── 通知条目类型 ─────────────────────────────────────────────────────────────
-type NoticeType = "warning" | "product-news";
-
 interface NoticeItem {
   id: string;
-  type: NoticeType;
+  type: AdminNoticeAlertType;
   message: string;
   action?: {
     label: string;
@@ -103,7 +100,7 @@ function buildNotices(stepStatus: Record<number, { label: string; done: boolean 
     const names = incompleteSteps.map((s) => s.label).join("、");
     notices.push({
       id: "basic-config",
-      type: "warning",
+      type: "pending-config",
       message: `有 ${incompleteSteps.length} 项基础配置未完成（${names}），未完成配置将影响用户端的正常使用，`,
       action: {
         label: "前往基础信息配置处理",
@@ -117,7 +114,7 @@ function buildNotices(stepStatus: Record<number, { label: string; done: boolean 
   for (const alert of QUOTA_ALERTS) {
     notices.push({
       id: `quota-${alert.id}`,
-      type: "warning",
+      type: "resource-alert",
       message: alert.message.replace("。", "，"),
       action: {
         label: "前往腾讯云控制台提交工单",
@@ -141,11 +138,40 @@ function buildNotices(stepStatus: Record<number, { label: string; done: boolean 
 
 const AUTO_PLAY_INTERVAL = 5000;
 
+function AdminNoticePrevIcon() {
+  return (
+    <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M4.59766 1.06067L1.06216 4.59619L4.59766 8.13169" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" />
+    </svg>
+  );
+}
+
+function AdminNoticeNextIcon() {
+  return (
+    <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M1.0625 1.06067L4.598 4.59619L1.0625 8.13169" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" />
+    </svg>
+  );
+}
+
+function AdminNoticeCloseIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path
+        d="M11.958 5.17139L9.12891 7.99951L11.958 10.8286L10.8271 11.9595L7.99805 9.13037L5.16992 11.9595L4.03906 10.8286L6.86719 7.99951L4.03906 5.17139L5.16992 4.04053L7.99805 6.86865L10.8271 4.04053L11.958 5.17139Z"
+        fill="#020617"
+        fillOpacity="0.5"
+      />
+    </svg>
+  );
+}
+
 export default function AdminNoticeBar() {
   const { isUnified } = useAdminMode();
   // [004] 每次渲染都重算通知列表，以便存量企业 ack 状态变化时能即时从通知条消失
   const STEP_STATUS = buildStepStatus(isUnified);
-  const NOTICES = buildNotices(STEP_STATUS);
+  const [dismissedNoticeIds, setDismissedNoticeIds] = useState<string[]>([]);
+  const NOTICES = buildNotices(STEP_STATUS).filter((notice) => !dismissedNoticeIds.includes(notice.id));
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -159,6 +185,12 @@ export default function AdminNoticeBar() {
     setCurrent((prev) => (prev - 1 + total) % total);
   }, [total]);
 
+  useEffect(() => {
+    if (total > 0 && current >= total) {
+      setCurrent(total - 1);
+    }
+  }, [current, total]);
+
   // 自动轮播
   useEffect(() => {
     if (total <= 1 || paused) return;
@@ -169,7 +201,10 @@ export default function AdminNoticeBar() {
   if (total === 0) return null;
 
   const notice = NOTICES[current];
-  const isWarning = notice.type === "warning";
+
+  const closeCurrentNotice = () => {
+    setDismissedNoticeIds((prev) => (prev.includes(notice.id) ? prev : [...prev, notice.id]));
+  };
 
   const noticeContent = (
     <>
@@ -181,14 +216,14 @@ export default function AdminNoticeBar() {
               href={notice.action.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-0.5 font-medium underline underline-offset-2 whitespace-nowrap text-current hover:opacity-80 transition-opacity"
+              className="inline-flex items-center gap-0.5 text-[#020617] underline underline-offset-2 whitespace-nowrap hover:opacity-80 transition-opacity"
             >
               {notice.action.label}
               <ExternalLink className="w-3 h-3" />
             </a>
           ) : (
             <Link href={notice.action.href}>
-              <span className="inline font-medium underline underline-offset-2 whitespace-nowrap cursor-pointer text-current hover:opacity-80 transition-opacity">
+              <span className="inline text-[#020617] underline underline-offset-2 whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity">
                 {notice.action.label}
               </span>
             </Link>
@@ -198,28 +233,38 @@ export default function AdminNoticeBar() {
     </>
   );
 
-  const renderControls = (className = "") =>
-    total > 1 ? (
-      <div className={`shrink-0 flex items-center gap-1 text-current ${className}`}>
-        <button
-          onClick={goPrev}
-          className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
-          aria-label="上一条"
-        >
-          <ChevronLeft className="w-3.5 h-3.5" />
-        </button>
-        <span className="text-xs tabular-nums text-current">
-          {current + 1}/{total}
-        </span>
-        <button
-          onClick={goNext}
-          className="p-0.5 rounded hover:bg-black/10 transition-colors text-current"
-          aria-label="下一条"
-        >
-          <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    ) : null;
+  const renderControls = () => (
+    <div className="relative h-5 w-[80.07px] text-[#3F3F3F]">
+      {total > 1 ? (
+        <div className="absolute left-0 top-0 h-5 w-[44.07px]">
+          <button
+            onClick={goPrev}
+            className="absolute left-[-10px] top-0 inline-flex size-5 items-center justify-center rounded-[2px] text-[#3F3F3F] transition-colors hover:bg-black/10 hover:text-[#020617] active:bg-black/15"
+            aria-label="上一条"
+          >
+            <AdminNoticePrevIcon />
+          </button>
+          <span className="absolute left-[11.54px] top-0 text-xs leading-5 tabular-nums text-[#3F3F3F]">
+            {current + 1}/{total}
+          </span>
+          <button
+            onClick={goNext}
+            className="absolute left-[36.54px] top-0 inline-flex size-5 items-center justify-center rounded-[2px] text-[#3F3F3F] transition-colors hover:bg-black/10 hover:text-[#020617] active:bg-black/15"
+            aria-label="下一条"
+          >
+            <AdminNoticeNextIcon />
+          </button>
+        </div>
+      ) : null}
+      <button
+        onClick={closeCurrentNotice}
+        className="absolute left-[64.07px] top-[2px] inline-flex size-4 items-center justify-center transition-opacity hover:opacity-80 active:opacity-100"
+        aria-label="关闭通知"
+      >
+        <AdminNoticeCloseIcon />
+      </button>
+    </div>
+  );
 
   return (
     <div
@@ -227,16 +272,9 @@ export default function AdminNoticeBar() {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <Alert
-        variant={isWarning ? "warning" : "product-news"}
-        className="has-[>svg]:grid-cols-[16px_minmax(0,1fr)_auto] gap-y-0"
-      >
-        {isWarning ? <CircleAlert /> : <AlertProductNewsIcon />}
-        <AlertDescription className="flex flex-1 min-w-0 items-baseline flex-wrap gap-x-1 leading-[1.5]">
-          {noticeContent}
-        </AlertDescription>
-        {renderControls("col-start-3")}
-      </Alert>
+      <AdminNoticeAlert type={notice.type} controls={renderControls()}>
+        {noticeContent}
+      </AdminNoticeAlert>
     </div>
   );
 }

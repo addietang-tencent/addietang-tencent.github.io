@@ -56,6 +56,7 @@ import {
   AlertProductNewsIcon,
   AlertTitle,
 } from "@/components/ui/alert";
+import { AdminNoticeAlert } from "@/components/ui/admin-notice-alert";
 import {
   Tooltip,
   TooltipContent,
@@ -480,20 +481,20 @@ const COMPONENTS: ComponentMeta[] = [
     group: "feedback",
     name: "Alert",
     cnName: "提示条",
-    description: "用于信息提示、操作说明、警告提示和产品动态。",
+    description: "用于信息提示、操作说明、警告提示、产品动态和管控端彩色公告条。",
     owner: "addietang / miekoyychen",
-    source: "client/src/components/ui/alert.tsx",
+    source: "client/src/components/ui/alert.tsx / admin-notice-alert.tsx",
     doc: "SKILL-GLOBAL-COMPONENTS.md · Alert 提示组件",
     platform: "Global 全局",
     adoption: "高频参考",
-    applicationSummary: "页面提示与操作说明高频参考。",
-    applicationScope: "信息提示、操作说明、警告、产品动态",
+    applicationSummary: "页面提示、操作说明与管控端顶部公告高频参考。",
+    applicationScope: "信息提示、操作说明、警告、产品动态、待配置、资源告警",
     moduleCount: 24,
     instanceCount: 54,
     tags: ["已接入预览", "高频参考"],
-    usage: ["页面常驻说明", "操作上下文提示", "警告提示", "产品动态通知"],
-    notes: ["普通说明用 info，操作说明用 operation-info。", "warning 标准图标使用 CircleAlert。", "不要手写 bg-blue / bg-amber 提示条。"],
-    migration: ["手写提示条 → Alert", "产品动态提示 → Alert variant=\"product-news\""],
+    usage: ["页面常驻说明", "操作上下文提示", "警告提示", "产品动态通知", "管控端顶部公告"],
+    notes: ["普通说明用 info，操作说明用 operation-info。", "warning 标准图标使用 CircleAlert。", "管控端顶部彩色公告用 AdminNoticeAlert，不要替换页面内普通 Alert。"],
+    migration: ["手写提示条 → Alert", "管控端顶部公告 → AdminNoticeAlert"],
   },
   {
     id: "dialog",
@@ -1026,13 +1027,31 @@ function FormPreview({ id }: { id: ComponentId }) {
 }
 
 function AlertPreview() {
+  const demoControls = <span className="text-xs tabular-nums text-[#3F3F3F]">4/5</span>;
+
   return (
     <PreviewPanel title="Alert 类型" layout="wide">
-      <div className="space-y-3">
-        <Alert variant="info"><AlertInfoIcon /><AlertDescription>普通信息提示，适合页面常驻说明和功能告知。</AlertDescription></Alert>
-        <Alert variant="operation-info"><AlertOperationInfoIcon /><AlertTitle>操作说明</AlertTitle><AlertDescription>用于批量操作前后的辅助说明。</AlertDescription></Alert>
-        <Alert variant="warning"><CircleAlert /><AlertTitle>注意事项</AlertTitle><AlertDescription>用于配置缺失、配额不足等非阻断提醒。</AlertDescription></Alert>
-        <Alert variant="product-news"><AlertProductNewsIcon /><AlertDescription>【产品动态】组件展示台已接入新的全状态示例。</AlertDescription></Alert>
+      <div className="space-y-4">
+        <div className="space-y-3">
+          <Alert variant="info"><AlertInfoIcon /><AlertDescription>普通信息提示，适合页面常驻说明和功能告知。</AlertDescription></Alert>
+          <Alert variant="operation-info"><AlertOperationInfoIcon /><AlertTitle>操作说明</AlertTitle><AlertDescription>用于批量操作前后的辅助说明。</AlertDescription></Alert>
+          <Alert variant="warning"><CircleAlert /><AlertTitle>注意事项</AlertTitle><AlertDescription>用于配置缺失、配额不足等非阻断提醒。</AlertDescription></Alert>
+          <Alert variant="product-news"><AlertProductNewsIcon /><AlertDescription>【产品动态】组件展示台已接入新的全状态示例。</AlertDescription></Alert>
+        </div>
+        <div className="space-y-3">
+          <MetaMedium tone="muted">管理端彩色背景公告条</MetaMedium>
+          <AdminNoticeAlert type="product-news" controls={demoControls}>
+            <span>OpenClaw v2.4.0 已发布：记忆管理功能上线。</span>
+          </AdminNoticeAlert>
+          <AdminNoticeAlert type="pending-config" controls={demoControls}>
+            <span>有 3 项基础配置未完成（导入企业用户、配置至少一个通道、配置安全组），未完成配置将影响用户端的正常使用，</span>
+            <span className="font-medium text-[#020617] underline underline-offset-2">前往基础信息配置处理</span>
+          </AdminNoticeAlert>
+          <AdminNoticeAlert type="resource-alert" controls={demoControls}>
+            <span>私有网络（VPC）配额已耗尽，将影响用户端云设备的正常创建与使用，</span>
+            <span className="text-[#020617] underline underline-offset-2">前往腾讯云控制台提交工单</span>
+          </AdminNoticeAlert>
+        </div>
       </div>
     </PreviewPanel>
   );

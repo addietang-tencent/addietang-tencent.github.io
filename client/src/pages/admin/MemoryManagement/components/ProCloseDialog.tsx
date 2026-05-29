@@ -58,25 +58,25 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
   if (hasActiveInstances) {
     return (
       <Dialog open={open} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[560px]">
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A]">
+            <DialogTitle className="text-gray-900">
               无法关闭服务
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-4 space-y-4">
-            <div className="text-sm text-[#334155]">
-              当前还有 <strong className="text-[#0A0A0A]">{ocCount}</strong> 个实例开通了 Memory Pro 服务。
+            <div className="text-sm text-gray-700">
+              当前还有 <strong className="text-gray-900">{ocCount}</strong> 个实例开通了 Memory Pro 服务。
             </div>
             
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <div className="text-sm text-amber-800">
                 <strong>请先关闭所有实例的 Memory Pro</strong>，再执行关闭服务操作。
               </div>
             </div>
 
-            <div className="text-sm text-[#737373]">
+            <div className="text-sm text-gray-600">
               您可以前往实例列表，使用「批量关闭」功能快速关闭多个实例的 Memory Pro。
             </div>
           </div>
@@ -85,7 +85,7 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
             <Button variant="outline" onClick={handleClose}>
               我知道了
             </Button>
-            <Button variant="dialog-confirm" onClick={handleGoToInstanceList}>
+            <Button onClick={handleGoToInstanceList}>
               前往实例列表
             </Button>
           </DialogFooter>
@@ -97,22 +97,22 @@ export const ProCloseDialog: React.FC<ProCloseDialogProps> = ({
   // 没有已开通的实例，允许关闭服务
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[560px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle className="text-[#0A0A0A]">
+          <DialogTitle className="text-gray-900">
             关闭 Memory Pro 服务
           </DialogTitle>
         </DialogHeader>
 
         <div className="py-4 space-y-4">
-          <div className="text-sm text-[#737373]">
+          <div className="text-sm text-gray-600">
             当前没有实例开通 Memory Pro 服务，可以安全关闭。
           </div>
 
           {/* 关闭影响说明 */}
           <div className="space-y-2">
-            <div className="font-medium text-[#0A0A0A]">关闭后将产生以下影响：</div>
-            <ul className="text-sm text-[#334155] space-y-1.5">
+            <div className="font-medium text-gray-900">关闭后将产生以下影响：</div>
+            <ul className="text-sm text-gray-700 space-y-1.5">
               <li className="flex items-start gap-2">
                 <span className="mt-1.5 w-1 h-1 rounded-full bg-gray-500 flex-shrink-0" />
                 <span>新创建的实例将<strong>无法开通 Memory Pro</strong></span>

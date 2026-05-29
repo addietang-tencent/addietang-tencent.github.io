@@ -553,7 +553,7 @@ export default function SessionManagement() {
           {/* 卡片功能展示 */}
           <div className="space-y-4 mb-8">
             {/* 第一块：会话数据 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5 bg-white">
               <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex items-center gap-[14px] py-5">
@@ -576,7 +576,7 @@ export default function SessionManagement() {
 
 
             {/* 第二块：运维观测和会话管理功能 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5 bg-white">
               <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在 Tokens 监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex items-center gap-[14px] py-5">

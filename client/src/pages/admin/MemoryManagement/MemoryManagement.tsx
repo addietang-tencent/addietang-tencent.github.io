@@ -5,10 +5,9 @@ import { InstanceTable, OcInstance, MemoryStatus } from './components/InstanceTa
 import { ProActivationDialog } from './components/ProActivationDialog';
 import { ProCloseDialog } from './components/ProCloseDialog';
 import { OneClickUpgradeDialog } from './components/OneClickUpgradeDialog';
-import { DefaultMemoryVersion, DefaultMemoryVersionType } from './components/DefaultMemoryVersion';
+import { DefaultMemoryVersion, MemoryVersionRule } from './components/DefaultMemoryVersion';
 import { AlertCircle, Loader2, CheckCircle2, X, Info, ChevronDown, ArrowUpCircle } from 'lucide-react';
 import { SurfaceCard } from '@/components/ui/Surface';
-import { StatusTag } from '@/components/ui/status-tag';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -24,8 +23,12 @@ export const MemoryManagement: React.FC = () => {
   const [purchasedSpaces, setPurchasedSpaces] = useState<number>(0);
 
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
-  // 新实例默认记忆版本：三选一（关闭 | Free | Pro）
-  const [defaultMemoryVersion, setDefaultMemoryVersion] = useState<DefaultMemoryVersionType>('none');
+  // 新实例默认记忆版本：支持「预设策略 + 分组例外」
+  // - 第 1 条 groupIds 为空数组 = 预设策略（fallback），唯一且不可删除
+  // - 其余为分组例外，分组之间互斥
+  const [memoryVersionRules, setMemoryVersionRules] = useState<MemoryVersionRule[]>([
+    { id: 'mem-default-fallback', groupIds: [], value: 'none' },
+  ]);
 
   // ========== 弹窗状态 ==========
   const [activationDialogOpen, setActivationDialogOpen] = useState(false);
@@ -33,7 +36,7 @@ export const MemoryManagement: React.FC = () => {
   // 一键升级弹窗：触发后由弹窗内部异步检测可升级实例并展示对应态
   const [oneClickUpgradeDialogOpen, setOneClickUpgradeDialogOpen] = useState(false);
   // 版本对比折叠状态，默认收起
-  const [versionCompareExpanded, setVersionCompareExpanded] = useState(true);
+  const [versionCompareExpanded, setVersionCompareExpanded] = useState(false);
   
   // 实例列表 ref，用于滚动定位
   const instanceTableRef = useRef<HTMLDivElement>(null);
@@ -116,9 +119,12 @@ export const MemoryManagement: React.FC = () => {
       if (Math.random() > 0.1) {
         setProServiceStatus('active');
         setShowSuccessBanner(true);
-        // 联动逻辑：如果勾选了「默认开通」，自动切换为 Pro
+        // 联动逻辑：如果勾选了「默认开通」，将「预设策略」切换为 Pro
+        // 不影响已有的分组例外（用户既有的分组级覆盖应保留）
         if (config?.autoEnableForNewInstances) {
-          setDefaultMemoryVersion('pro');
+          setMemoryVersionRules(prev => prev.map(r =>
+            r.groupIds.length === 0 ? { ...r, value: 'pro' as const } : r
+          ));
           toast.success('Memory Pro 服务开通成功，新实例将默认开启 Pro 版');
         } else {
           toast.success('Memory Pro 服务开通成功！');
@@ -134,10 +140,19 @@ export const MemoryManagement: React.FC = () => {
   const handleClosePro = () => {
     setProServiceStatus('inactive');
     setPurchasedSpaces(0);
-    // 联动逻辑：如果当前默认是 Pro，自动切换为关闭
-    if (defaultMemoryVersion === 'pro') {
-      setDefaultMemoryVersion('none');
-      toast.success('Memory Pro 服务已关闭，新实例将不再默认开启记忆');
+    // 联动逻辑：将所有 value === 'pro' 的策略清理为 'none'
+    // - 预设策略：若为 Pro 则降级为关闭
+    // - 分组例外：若为 Pro 则降级为关闭（保留分组规则的存在，仅修改 value）
+    let hasProRule = false;
+    setMemoryVersionRules(prev => prev.map(r => {
+      if (r.value === 'pro') {
+        hasProRule = true;
+        return { ...r, value: 'none' as const };
+      }
+      return r;
+    }));
+    if (hasProRule) {
+      toast.success('Memory Pro 服务已关闭，已将默认为 Pro 的策略调整为关闭');
     } else {
       toast.success('Memory Pro 服务已关闭');
     }
@@ -199,11 +214,11 @@ export const MemoryManagement: React.FC = () => {
             className={`w-4 h-4 text-[#737373] transition-transform duration-200 ${versionCompareExpanded ? 'rotate-180' : ''}`}
           />
         </button>
-
+        
         {/* 可折叠内容 */}
         {versionCompareExpanded && (
           <div className="px-6 pt-4 pb-5">
-            <ComparisonTable
+            <ComparisonTable 
               isProActive={isProActive}
             />
           </div>
@@ -382,20 +397,11 @@ export const MemoryManagement: React.FC = () => {
                  · 已开通 Pro 且有 OpenClaw 类型 Pro 版 Agent：可点击，打开一键升级弹窗，将记忆服务
                    升级至最新版本，OpenClaw 类型 Pro 版 Agent 升级后即可使用 Pro 版最新能力；
                  · 未开通 Pro / 无候选 Agent / 有 Agent 升级中：按钮置灰，hover 文案按场景区分 */}
-          <div className="mt-5 pt-5 border-t border-[#e5e5e5] flex items-center gap-3 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl px-4 py-3 mb-4">
+          <div className="mt-4 flex items-center gap-4 rounded-[4px] border border-[#E5E5E5] px-5 py-4">
             <div className="flex-1 min-w-0">
-              {/* 能力说明区：chip 作为通用标题 + 本期能力「短期记忆压缩」价值描述 + 使用前提
-                  合成为一段，避免多行左对齐问题；后续新增 Pro 能力按同格式在下方追加新段 */}
-              <div className="text-sm text-[#334155] leading-relaxed">
-                <span className="inline-flex items-center px-2 py-0.5 mr-2 rounded-xl border border-blue-200 bg-white/70 text-xs font-semibold text-[#355EF1] align-middle">
-                  Memory Pro 新能力
-                </span>
-                <span className="font-semibold text-[#0A0A0A]">短期记忆压缩</span>
-                <span className="text-[#334155]">：基于 WideSearch 等数据集测试，长任务可节省 </span>
-                <span className="font-semibold text-[#355EF1]">45%</span>
-                <span className="text-[#334155]"> 的 Token 消耗、提高 </span>
-                <span className="font-semibold text-[#355EF1]">20%</span>
-                <span className="text-[#737373]"> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）</span>
+              <div className="text-sm font-semibold text-[#0A0A0A] mb-1">Memory Pro 新能力：短期记忆压缩</div>
+              <div className="text-xs text-[#737373] leading-relaxed">
+                基于 WideSearch 等数据集测试，长任务可节省 <span className="font-semibold text-[#0A0A0A]">45%</span> 的 Token 消耗、提高 <span className="font-semibold text-[#0A0A0A]">20%</span> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）
               </div>
             </div>
             {(() => {
@@ -417,10 +423,10 @@ export const MemoryManagement: React.FC = () => {
                   }}
                   disabled={disabled}
                   title={title}
-                  className={`shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-xl border transition-colors whitespace-nowrap ${
+                  className={`shrink-0 self-center inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap ${
                     disabled
-                      ? 'text-[#A3A3A3] bg-gray-50 border-gray-200 cursor-not-allowed'
-                      : 'text-[#355EF1] bg-white border-blue-200 hover:bg-blue-50 hover:border-blue-300'
+                      ? 'text-[#A3A3A3] bg-gray-100 border-gray-200 cursor-not-allowed'
+                      : 'text-white bg-[#0A0A0A] border-[#0A0A0A] hover:bg-[#333] hover:border-[#333]'
                   }`}
                 >
                   <ArrowUpCircle className="w-3.5 h-3.5" />
@@ -430,11 +436,11 @@ export const MemoryManagement: React.FC = () => {
             })()}
           </div>
 
-          {/* 新实例默认记忆版本 - 三选一控件 */}
-          <div className="pt-5 border-t border-[#e5e5e5] mt-5">
+          {/* 新实例默认记忆版本 - 支持「预设策略 + 分组例外」 */}
+          <div className="mt-4">
             <DefaultMemoryVersion
-              value={defaultMemoryVersion}
-              onChange={setDefaultMemoryVersion}
+              rules={memoryVersionRules}
+              onRulesChange={setMemoryVersionRules}
               isProActive={isProActive}
               isProQuotaAvailable={purchasedSpaces - stats.proCount > 0}
             />

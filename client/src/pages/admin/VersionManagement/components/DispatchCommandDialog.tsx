@@ -505,12 +505,12 @@ export default function DispatchCommandDialog({
                     />
                   </div>
                   <div className="rounded-xl border border-[#E5E5E5] bg-white max-h-[260px] overflow-y-auto divide-y divide-[#F5F5F5]">
-                    {commandCandidates.length === 0 ? (
+                    {pagedCommands.length === 0 ? (
                       <div className="py-10 text-center text-sm text-[#A3A3A3]">
                         没有匹配的命令；请前往「命令下发」页面创建新命令。
                       </div>
                     ) : (
-                      commandCandidates.map((t) => (
+                      pagedCommands.map((t) => (
                         <button
                           key={t.id}
                           type="button"
@@ -533,6 +533,29 @@ export default function DispatchCommandDialog({
                       ))
                     )}
                   </div>
+                  {totalCommandPages > 1 && (
+                    <div className="flex items-center justify-center gap-2 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setCommandPage(Math.max(1, commandPage - 1))}
+                        disabled={commandPage <= 1}
+                        className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
+                      >
+                        ‹
+                      </button>
+                      <span className="text-[#737373] tabular-nums">
+                        {commandPage} / {totalCommandPages}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setCommandPage(Math.min(totalCommandPages, commandPage + 1))}
+                        disabled={commandPage >= totalCommandPages}
+                        className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-xl border border-[#E5E5E5] bg-white p-4 space-y-3">
@@ -586,8 +609,8 @@ export default function DispatchCommandDialog({
                   </SelectContent>
                 </Select>
                 <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={instanceSearch}
+                  onChange={(e) => setInstanceSearch(e.target.value)}
                   placeholder="搜索实例名 / ID / 创建人"
                   className="h-9 flex-1"
                 />
@@ -599,8 +622,8 @@ export default function DispatchCommandDialog({
                     <TableRow>
                       <TableHead className="w-[1%]">
                         <Checkbox
-                          checked={allChecked ? true : partialChecked ? "indeterminate" : false}
-                          onCheckedChange={(v) => toggleAll(!!v)}
+                          checked={allInstancesChecked ? true : partialInstancesChecked ? "indeterminate" : false}
+                          onCheckedChange={(v) => toggleAllInstances(!!v)}
                           className="size-4"
                         />
                       </TableHead>
@@ -611,25 +634,25 @@ export default function DispatchCommandDialog({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {candidateInstances.length === 0 ? (
+                    {pagedInstances.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-10 text-sm text-[#A3A3A3]">
                           没有符合条件的实例
                         </TableCell>
                       </TableRow>
                     ) : (
-                      candidateInstances.map((i) => {
+                      pagedInstances.map((i) => {
                         const checked = selected.has(i.instanceId);
                         return (
                           <TableRow
                             key={i.instanceId}
-                            onClick={() => toggle(i.instanceId)}
+                            onClick={() => toggleInstance(i.instanceId)}
                             className={`cursor-pointer ${checked ? "bg-[#E8ECFE]/40" : "hover:bg-[#FAFAFA]"}`}
                           >
                             <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={checked}
-                                onCheckedChange={() => toggle(i.instanceId)}
+                                onCheckedChange={() => toggleInstance(i.instanceId)}
                                 className="size-4"
                               />
                             </TableCell>
@@ -653,14 +676,42 @@ export default function DispatchCommandDialog({
                   </TableBody>
                 </Table>
               </div>
+              {totalInstancePages > 1 && (
+                <div className="flex items-center justify-between text-xs text-[#737373]">
+                  <span>
+                    共 <span className="text-[#0A0A0A] font-medium tabular-nums">{filteredInstances.length}</span> 条 · 已选 <span className="text-[#1447E6] font-medium tabular-nums">{selected.size}</span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setInstancePage(Math.max(1, instancePage - 1))}
+                      disabled={instancePage <= 1}
+                      className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
+                    >
+                      ‹
+                    </button>
+                    <span className="tabular-nums">
+                      {instancePage} / {totalInstancePages}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setInstancePage(Math.min(totalInstancePages, instancePage + 1))}
+                      disabled={instancePage >= totalInstancePages}
+                      className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* 测试机优先 */}
             <section className="rounded-xl border border-[#E5E5E5] bg-white p-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <Checkbox
-                  checked={useTestRun}
-                  onCheckedChange={(v) => setUseTestRun(v === true)}
+                  checked={useCanary}
+                  onCheckedChange={(v) => setUseCanary(v === true)}
                   className="mt-0.5"
                 />
                 <div className="flex-1 space-y-2">
@@ -674,12 +725,12 @@ export default function DispatchCommandDialog({
                 </div>
               </label>
 
-              {useTestRun && (
+              {useCanary && (
                 <div className="mt-3 ml-7 space-y-2">
                   <Label className="text-xs font-medium text-[#525252] block">从已选实例中选择测试机</Label>
                   <Select
-                    value={testInstanceId ?? ""}
-                    onValueChange={(v) => setTestInstanceId(v)}
+                    value={canaryInstanceId ?? ""}
+                    onValueChange={(v) => setCanaryInstanceId(v)}
                   >
                     <SelectTrigger className="h-9 w-full max-w-[360px] text-sm">
                       <SelectValue placeholder={selected.size === 0 ? "请先选择执行对象" : "选择 1 台作为测试机"} />
@@ -710,7 +761,7 @@ export default function DispatchCommandDialog({
             </div>
             <div className="space-y-2">
               <div className="text-sm font-medium text-[#0A0A0A]">
-                正在 <span className="text-[#B45309]">{testInstanceName}</span> 上执行
+                正在 <span className="text-[#B45309]">{canaryInstanceName}</span> 上执行
               </div>
               <div className="text-sm text-[#525252]">
                 超时 {pickedCommand?.timeoutSec ?? 60} 秒，请勿关闭弹窗
@@ -736,7 +787,7 @@ export default function DispatchCommandDialog({
             <Alert variant={testResult.status === "success" ? "operation-info" : "destructive"}>
               {testResult.status === "success" ? <CheckCircle2 /> : <XCircle />}
               <AlertTitle>
-                测试机 <span className="font-mono">{testInstanceName}</span> {testResult.status === "success" ? "执行成功" : "执行失败"}
+                测试机 <span className="font-mono">{canaryInstanceName}</span> {testResult.status === "success" ? "执行成功" : "执行失败"}
               </AlertTitle>
               <AlertDescription>
                 <span>退出码：<span className="font-mono tabular-nums">{testResult.exitCode}</span></span>
@@ -770,13 +821,13 @@ export default function DispatchCommandDialog({
         {phase === "prepare" && (
           <DialogFooter>
             <div className="flex-1 text-xs text-[#525252] self-center">
-              {useTestRun && testInstanceId && selected.size > 1 && (
-                <>先在 <span className="font-medium text-[#0A0A0A]">{testInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
+              {useCanary && canaryInstanceId && selected.size > 1 && (
+                <>先在 <span className="font-medium text-[#0A0A0A]">{canaryInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
               )}
-              {useTestRun && testInstanceId && selected.size === 1 && (
+              {useCanary && canaryInstanceId && selected.size === 1 && (
                 <>仅 1 台实例，将作为测试机执行</>
               )}
-              {!useTestRun && selected.size > 0 && (
+              {!useCanary && selected.size > 0 && (
                 <>将立即下发到 <span className="font-medium text-[#0A0A0A] tabular-nums">{selected.size}</span> 台实例</>
               )}
             </div>
@@ -785,24 +836,24 @@ export default function DispatchCommandDialog({
             </Button>
             <Button
               variant="dialog-confirm"
-              onClick={handleStart}
-              disabled={!canStart}
+              onClick={handleSubmit}
+              disabled={!canSubmit}
             >
-              {useTestRun ? "在测试机上执行" : "立即下发"}
+              {useCanary ? "在测试机上执行" : "立即下发"}
             </Button>
           </DialogFooter>
         )}
 
         {phase === "review" && testResult && (
           <DialogFooter>
-            <Button variant="outline" onClick={abortAfterTest}>
+            <Button variant="outline" onClick={abortAfterCanary}>
               <XIcon className="w-3.5 h-3.5 mr-1" />
               终止下发
             </Button>
             {testResult.status === "success" && selected.size > 1 && (
               <Button
                 variant="dialog-confirm"
-                onClick={proceedAfterTest}
+                onClick={proceedAfterCanary}
               >
                 继续下发剩余 {selected.size - 1} 台
                 <ArrowRight className="w-3.5 h-3.5 ml-1" />
@@ -811,7 +862,7 @@ export default function DispatchCommandDialog({
             {testResult.status === "success" && selected.size === 1 && (
               <Button
                 variant="dialog-confirm"
-                onClick={proceedAfterTest}
+                onClick={proceedAfterCanary}
               >
                 完成
               </Button>

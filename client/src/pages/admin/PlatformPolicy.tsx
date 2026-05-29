@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableHead, TableBody, TableRow, TableCell, TableActionCell } from "@/components/ui/table";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -405,16 +406,11 @@ function GroupTagSelector({
           ) : (
             <span className="w-4 h-4 shrink-0" />
           )}
-          <span
-            className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-              checkState === "checked" || checkState === "indeterminate"
-                ? "bg-blue-500 border-blue-500"
-                : "border-gray-300 bg-white"
-            }`}
-          >
-            {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
-            {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
-          </span>
+          <Checkbox
+            checked={checkState === "checked" ? true : checkState === "indeterminate" ? "indeterminate" : false}
+            className="size-3.5"
+            tabIndex={-1}
+          />
           {isDisabled ? (
             <Tooltip>
               <TooltipTrigger asChild>{nameSpan}</TooltipTrigger>
@@ -998,7 +994,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
           {/* 预设策略 */}
           {editFallback && (
             <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-              <Table density="compact">
+              <Table density="compact" autoFixedColumns={false}>
                 <colgroup>
                   <col style={{ width: 120 }} />
                   <col />
@@ -1036,7 +1032,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
           {/* 分组策略 + 添加按钮 */}
           <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
             {editGroupRules.length > 0 && (
-              <Table density="compact">
+              <Table density="compact" autoFixedColumns={false}>
                 <colgroup>
                   <col style={{ width: 120 }} />
                   <col />
@@ -1084,7 +1080,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
         <div className="px-5 pb-4 space-y-2">
           {/* 预设策略 */}
           <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup>
                 <col style={{ width: 120 }} />
                 <col />
@@ -1105,7 +1101,7 @@ function QuotaPolicyCard({ icon, iconBg, title, description, type, rules, onRule
           {/* 分组策略 */}
           {groupRules.length > 0 && (
             <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-              <Table density="compact">
+              <Table density="compact" autoFixedColumns={false}>
                 <colgroup>
                   <col style={{ width: 120 }} />
                   <col />
@@ -1281,7 +1277,7 @@ function PolicyEditCard({ icon, iconBg, title, description, rules, onRulesChange
         /* 禁用态：显示提示信息 */
         <div className="px-5 pb-4 space-y-2">
           <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup>
                 <col style={{ width: 120 }} />
                 <col />
@@ -1309,7 +1305,7 @@ function PolicyEditCard({ icon, iconBg, title, description, rules, onRulesChange
         <div className="px-5 pb-4 space-y-2">
           {/* 预设策略 */}
           <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup>
                 <col style={{ width: 120 }} />
                 <col />
@@ -1359,7 +1355,7 @@ function PolicyEditCard({ icon, iconBg, title, description, rules, onRulesChange
 
           {/* 分组策略 + 添加按钮 */}
           <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup>
                 <col style={{ width: 120 }} />
                 <col />
@@ -1411,7 +1407,7 @@ function PolicyEditCard({ icon, iconBg, title, description, rules, onRulesChange
         <div className="px-5 pb-4 space-y-2">
           {/* 预设策略 */}
           <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup>
                 <col style={{ width: 120 }} />
                 <col />
@@ -1451,7 +1447,7 @@ function PolicyEditCard({ icon, iconBg, title, description, rules, onRulesChange
           {/* 分组策略 */}
           {groupRules.length > 0 && (
             <div className="rounded-[4px] bg-[#FAFAFA] overflow-hidden">
-              <Table density="compact">
+              <Table density="compact" autoFixedColumns={false}>
                 <colgroup>
                   <col style={{ width: 120 }} />
                   <col />
@@ -1665,7 +1661,7 @@ function SheetQuotaEditor({
     <div className="space-y-4">
       {/* 合并的策略表格 */}
       <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
-        <Table density="compact">
+        <Table density="compact" autoFixedColumns={false}>
           <colgroup>
             <col style={{ width: 80 }} />
             <col />
@@ -1813,7 +1809,7 @@ function SheetToggleEditor({
     <div className="space-y-4">
       {/* 合并的策略表格 */}
       <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
-        <Table density="compact">
+        <Table density="compact" autoFixedColumns={false}>
           <colgroup>
             <col style={{ width: 80 }} />
             <col />
@@ -1885,11 +1881,46 @@ function SheetToggleEditor({
 export default function PlatformPolicy() {
   const [, navigate] = useLocation();
 
-  // 挂载时禁止外层容器滚动，卸载时恢复
+  // 平台策略页：让 inset main 显式作为滚动容器，并解除 wrapper 的 overflow 限制
+  // 这样 sticky 锚点导航可相对 main 视口顶部吸顶
   useEffect(() => {
     const inset = document.querySelector('[data-slot="admin-sidebar-inset"]') as HTMLElement | null;
-    if (inset) inset.style.overflow = "hidden";
-    return () => { if (inset) inset.style.overflow = ""; };
+    if (!inset) return;
+    const wrapper = inset.querySelector(':scope > div') as HTMLElement | null;
+
+    // 保存原值
+    const prevInset = {
+      height: inset.style.height,
+      maxHeight: inset.style.maxHeight,
+      overflowY: inset.style.overflowY,
+    };
+    const prevWrapper = {
+      overflow: wrapper?.style.overflow ?? "",
+      overflowX: wrapper?.style.overflowX ?? "",
+      overflowY: wrapper?.style.overflowY ?? "",
+    };
+
+    // 1) inset 显式 100vh + overflow-y:auto，使其成为唯一稳定滚动容器
+    inset.style.height = "100vh";
+    inset.style.maxHeight = "100vh";
+    inset.style.overflowY = "auto";
+    // 2) wrapper 解除所有 overflow 限制
+    if (wrapper) {
+      wrapper.style.overflow = "visible";
+      wrapper.style.overflowX = "visible";
+      wrapper.style.overflowY = "visible";
+    }
+
+    return () => {
+      inset.style.height = prevInset.height;
+      inset.style.maxHeight = prevInset.maxHeight;
+      inset.style.overflowY = prevInset.overflowY;
+      if (wrapper) {
+        wrapper.style.overflow = prevWrapper.overflow;
+        wrapper.style.overflowX = prevWrapper.overflowX;
+        wrapper.style.overflowY = prevWrapper.overflowY;
+      }
+    };
   }, []);
 
   // ── 用户配额规则 ──
@@ -2213,6 +2244,76 @@ export default function PlatformPolicy() {
     { key: "modelQuota", icon: "/assets/admin-platform-policy/allow-model-quota.svg", title: "允许用户「查看模型额度」", navTitle: "查看模型额度", description: "开启后，用户可在顶部导航栏看到「模型额度」入口，查看个人的 Token 使用情况", rules: modelQuotaRules, onRulesChange: setModelQuotaRules },
   ];
 
+  // ── 方案4：滚动监听 — 内容区滚动时自动同步右侧锚点导航高亮 ──
+  // 程序化滚动锁：点击锚点触发 smooth scroll 期间，暂停 observer 自动更新（避免闪烁）
+  const programmaticScrollUntilRef = useRef<number>(0);
+  useEffect(() => {
+    if (activeTab !== "plan4") return;
+    const container = document.querySelector('[data-slot="admin-sidebar-inset"]') as HTMLElement | null;
+    if (!container) return;
+
+    const anchorKeys: string[] = [...quotaCards.map(c => c.key), ...toggleCards.map(c => c.key)];
+    const observed: HTMLElement[] = [];
+    anchorKeys.forEach(key => {
+      const el = document.getElementById(`plan4-${key}`);
+      if (el) observed.push(el);
+    });
+    if (observed.length === 0) return;
+
+    // 激活线：距 root 顶部 10vh，底部 60vh — 形成顶部细带，命中其中的卡片即为当前锚点
+    const topOffset = Math.round(window.innerHeight * 0.1);
+    const bottomOffset = Math.round(window.innerHeight * 0.6);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (Date.now() < programmaticScrollUntilRef.current) return;
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .map(e => ({ key: (e.target as HTMLElement).id.replace(/^plan4-/, ""), top: e.boundingClientRect.top }))
+          .sort((a, b) => a.top - b.top);
+        if (visible.length > 0) {
+          setActiveAnchor(visible[0].key);
+        }
+      },
+      {
+        root: container,
+        rootMargin: `-${topOffset}px 0px -${bottomOffset}px 0px`,
+        threshold: 0,
+      }
+    );
+    observed.forEach(el => observer.observe(el));
+
+    // 滚动到底部 / 接近底部时强制锚定最后一项
+    // 因为 observer 激活带在视口顶部 10vh 处，靠近底部时最后一张卡片可能永远进不到激活带
+    const lastKey = toggleCards.length > 0 ? toggleCards[toggleCards.length - 1].key : (quotaCards.length > 0 ? quotaCards[quotaCards.length - 1].key : null);
+    const onScroll = () => {
+      if (Date.now() < programmaticScrollUntilRef.current) return;
+      if (!lastKey) return;
+
+      // 判定"已抵达底部区域"：满足以下任一条件
+      // 1) 容器自身已滚到底（容忍 8px）
+      const containerReachedBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 8;
+      // 2) 最后一张卡片的底部已进入视口下半部分（兜底，应对容器没有真正滚到底的情况）
+      const lastEl = document.getElementById(`plan4-${lastKey}`);
+      let lastVisibleEnough = false;
+      if (lastEl) {
+        const rect = lastEl.getBoundingClientRect();
+        // 卡片底部在视口内（rect.bottom <= viewport height）即视为最后一项已完整可见
+        lastVisibleEnough = rect.bottom <= window.innerHeight + 8;
+      }
+      if (containerReachedBottom || lastVisibleEnough) {
+        setActiveAnchor(lastKey);
+      }
+    };
+    container.addEventListener("scroll", onScroll, { passive: true });
+    // 初始触发一次（页面打开时若已在底部）
+    onScroll();
+
+    return () => {
+      observer.disconnect();
+      container.removeEventListener("scroll", onScroll);
+    };
+  }, [activeTab, quotaCards.length, toggleCards.length]);
+
   // ── 方案2：固定高度摘要卡片 ──
   const FixedHeightQuotaCard = ({ card }: { card: typeof quotaCards[number] }) => {
     const fallback = card.rules.find((r) => r.groupIds.length === 0);
@@ -2229,7 +2330,7 @@ export default function PlatformPolicy() {
     };
     const popoverContent = (
       <div className="border border-[#E5E5E5] rounded">
-        <Table density="compact">
+        <Table density="compact" autoFixedColumns={false}>
           <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 80 }} /></colgroup>
           <TableBody>
             <TableRow className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">预设策略</TableCell><TableCell className="text-[12px]"><span className="inline-block bg-[#F5F5F5] text-[#262626] text-[11px] px-1.5 py-0.5 rounded">全部用户</span></TableCell><TableCell className="text-[12px] text-right">{fallback ? displayValue(fallback.value) : "-"}</TableCell></TableRow>
@@ -2278,7 +2379,7 @@ export default function PlatformPolicy() {
     };
     const popoverContent = (
       <div className="border border-[#E5E5E5] rounded">
-        <Table density="compact">
+        <Table density="compact" autoFixedColumns={false}>
           <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 70 }} /></colgroup>
           <TableBody>
             <TableRow className="border-0 [&_td]:!align-top"><TableCell className="text-[12px]">预设策略</TableCell><TableCell className="text-[12px]"><span className="inline-block bg-[#F5F5F5] text-[#262626] text-[11px] px-1.5 py-0.5 rounded">全部用户</span></TableCell><TableCell className="text-[12px] text-right"><StatusTag mode="fill" variant={fallback?.value ? "green" : "gray"}>{fallback?.value ? "开启" : "关闭"}</StatusTag></TableCell></TableRow>
@@ -2326,7 +2427,7 @@ export default function PlatformPolicy() {
       return card.type === "integer" ? `${Number(v).toLocaleString()} 个` : Number(v).toLocaleString();
     };
     const popoverContent = (
-      <Table density="compact">
+      <Table density="compact" autoFixedColumns={false}>
         <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 80 }} /></colgroup>
         <TableHeader>
           <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead className="text-right">配额值</TableHead></TableRow>
@@ -2368,7 +2469,7 @@ export default function PlatformPolicy() {
     const groupRules = card.rules.filter((r) => r.groupIds.length > 0);
     const groupRulesCount = groupRules.length;
     const popoverContent = (
-      <Table density="compact">
+      <Table density="compact" autoFixedColumns={false}>
         <colgroup><col style={{ width: 70 }} /><col /><col style={{ width: 70 }} /></colgroup>
         <TableHeader>
           <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead className="text-right">权限</TableHead></TableRow>
@@ -2424,7 +2525,7 @@ export default function PlatformPolicy() {
       };
       return (
         <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
-          <Table density="compact">
+          <Table density="compact" autoFixedColumns={false}>
             <colgroup>
               <col style={{ width: 80 }} />
               <col />
@@ -2467,7 +2568,7 @@ export default function PlatformPolicy() {
       const groupRules = toggleCard.rules.filter(r => r.groupIds.length > 0);
       return (
         <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
-          <Table density="compact">
+          <Table density="compact" autoFixedColumns={false}>
             <colgroup>
               <col style={{ width: 80 }} />
               <col />
@@ -2718,7 +2819,7 @@ export default function PlatformPolicy() {
             )}
           </div>
           <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup><col style={{ width: 80 }} /><col /><col style={{ width: 160 }} />{cardKey === "global" && <col style={{ width: 100 }} />}{isInlineEdit && <col style={{ width: 100 }} />}</colgroup>
               <TableHeader>
                 <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead>配额值</TableHead>{cardKey === "global" && (
@@ -2886,7 +2987,7 @@ export default function PlatformPolicy() {
             )}
           </div>
           <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
-            <Table density="compact">
+            <Table density="compact" autoFixedColumns={false}>
               <colgroup><col style={{ width: 80 }} /><col /><col style={{ width: 140 }} />{isInlineEdit && <col style={{ width: 100 }} />}</colgroup>
               <TableHeader>
                 <TableRow><TableHead>策略类型</TableHead><TableHead>适用范围</TableHead><TableHead>权限</TableHead>{isInlineEdit && <TableHead>操作</TableHead>}</TableRow>
@@ -2934,15 +3035,15 @@ export default function PlatformPolicy() {
   };
 
   return (
-    <div className="page-enter space-y-6 h-[calc(100vh-120px)] overflow-hidden flex flex-col">
+    <div className="page-enter space-y-6">
       {/* 页面标题 */}
-      <div className="shrink-0">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
         <p className="text-sm text-gray-500 mt-1">管理平台默认配额、全局限制和功能权限开关，支持按分组设置不同策略</p>
       </div>
 
       {/* 优先级说明信息条 */}
-      <Alert variant="operation-info" className="shrink-0">
+      <Alert variant="operation-info">
         <AlertOperationInfoIcon />
         <AlertDescription>
           <ul className="space-y-1 list-disc pl-4">
@@ -3231,9 +3332,9 @@ export default function PlatformPolicy() {
 
       {/* ════════════ 方案4：锚点导航 + 瀑布流单列卡片 ════════════ */}
       {activeTab === "plan4" && (
-        <div className="flex gap-[36px] flex-1 min-h-0">
-          {/* 左侧瀑布流卡片 - 可滚动 */}
-          <div id="plan4-scroll-container" className="flex-1 min-w-0 overflow-y-auto space-y-8 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-[36px]">
+          {/* 左侧瀑布流卡片（页面整体滚动，左侧不再独立滚动） */}
+          <div id="plan4-scroll-container" className="flex-1 min-w-0 space-y-8">
             <section id="plan4-section-quota">
               <h2 className="text-[16px] font-semibold text-[#020617] mb-4">配额设置</h2>
               <div className="space-y-4">
@@ -3316,34 +3417,83 @@ export default function PlatformPolicy() {
             <div className="h-[10vh] shrink-0" />
           </div>
 
-          {/* 右侧锚点导航 - 固定 */}
-          <div className="w-[16vw] shrink-0 self-start sticky top-0 overflow-hidden">
-            <div className="overflow-hidden">
+          {/* 右侧锚点导航 - 滚动到顶部后吸顶 */}
+          <div className="w-[16vw] shrink-0 self-start sticky top-[11vh] z-10">
+            <div className="max-h-[calc(100vh-11vh-32px)] overflow-y-auto py-2">
               {/* 导航列表 */}
-              <div className="overflow-y-auto max-h-full">
+              <div>
                 <p className="text-[11px] text-[#A3A3A3] pl-3 py-1.5 uppercase tracking-wide">配额设置</p>
                 <div className="ml-3 relative before:absolute before:left-0 before:top-[8px] before:bottom-[8px] before:w-px before:bg-[#E5E5E5]">
+                  {/* 滑动高亮指示条 */}
+                  {(() => {
+                    const idx = quotaCards.findIndex(c => c.key === activeAnchor);
+                    if (idx < 0) return null;
+                    const ITEM_H = 36; // py-2 (8+8) + text-[13px] line-height ~20 = 36
+                    return (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-0 w-[2px] h-4 bg-[#020617] rounded-full transition-transform duration-300 ease-out"
+                        style={{ transform: `translateY(${idx * ITEM_H + (ITEM_H - 16) / 2}px)` }}
+                      />
+                    );
+                  })()}
                   {quotaCards.map((card, idx) => (
                     <button
                       key={card.key}
                       type="button"
-                      onClick={() => { setActiveAnchor(card.key); triggerHighlight(card.key); const targetId = idx === 0 ? 'plan4-section-quota' : `plan4-${card.key}`; const el = document.getElementById(targetId); const container = document.getElementById('plan4-scroll-container'); if (el && container) { container.scrollTo({ top: el.offsetTop - container.offsetTop, behavior: 'smooth' }); }; }}
-                      className={`block w-full text-left pl-4 pr-4 py-2 text-[13px] whitespace-nowrap transition-colors relative ${activeAnchor === card.key ? "text-[#020617] font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-4 before:bg-[#020617] before:rounded-full" : "text-[#020617] hover:bg-[#f5f5f5]"}`}
+                      onClick={() => {
+                        setActiveAnchor(card.key);
+                        triggerHighlight(card.key);
+                        const targetId = idx === 0 ? 'plan4-section-quota' : `plan4-${card.key}`;
+                        const el = document.getElementById(targetId);
+                        const container = document.querySelector('[data-slot="admin-sidebar-inset"]') as HTMLElement | null;
+                        if (el && container) {
+                          const targetTop = container.scrollTop + el.getBoundingClientRect().top - container.getBoundingClientRect().top - window.innerHeight * 0.1;
+                          programmaticScrollUntilRef.current = Date.now() + 800;
+                          container.scrollTo({ top: targetTop, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`group block w-full text-left pl-4 pr-4 py-2 text-[13px] whitespace-nowrap transition-colors relative ${activeAnchor === card.key ? "text-[#020617] font-medium" : "text-[#020617]"}`}
                     >
-                      {card.title}
+                      <span aria-hidden className="pointer-events-none absolute left-[5px] right-[3px] top-0 bottom-0 rounded-[4px] bg-transparent group-hover:bg-white/50 transition-colors" />
+                      <span className="relative">{card.title}</span>
                     </button>
                   ))}
                 </div>
                 <p className="text-[11px] text-[#A3A3A3] pl-3 py-1.5 mt-3 uppercase tracking-wide">功能权限开关</p>
                 <div className="ml-3 relative before:absolute before:left-0 before:top-[8px] before:bottom-[8px] before:w-px before:bg-[#E5E5E5]">
+                  {/* 滑动高亮指示条 */}
+                  {(() => {
+                    const idx = toggleCards.findIndex(c => c.key === activeAnchor);
+                    if (idx < 0) return null;
+                    const ITEM_H = 36;
+                    return (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-0 w-[2px] h-4 bg-[#020617] rounded-full transition-transform duration-300 ease-out"
+                        style={{ transform: `translateY(${idx * ITEM_H + (ITEM_H - 16) / 2}px)` }}
+                      />
+                    );
+                  })()}
                   {toggleCards.map((card) => (
                     <button
                       key={card.key}
                       type="button"
-                      onClick={() => { setActiveAnchor(card.key); triggerHighlight(card.key); const el = document.getElementById(`plan4-${card.key}`); const container = document.getElementById('plan4-scroll-container'); if (el && container) { container.scrollTo({ top: el.offsetTop - container.offsetTop, behavior: 'smooth' }); }; }}
-                      className={`block w-full text-left pl-4 pr-4 py-2 text-[13px] whitespace-nowrap transition-colors relative ${activeAnchor === card.key ? "text-[#020617] font-medium before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:w-[2px] before:h-4 before:bg-[#020617] before:rounded-full" : "text-[#020617] hover:bg-[#f5f5f5]"}`}
+                      onClick={() => {
+                        setActiveAnchor(card.key);
+                        triggerHighlight(card.key);
+                        const el = document.getElementById(`plan4-${card.key}`);
+                        const container = document.querySelector('[data-slot="admin-sidebar-inset"]') as HTMLElement | null;
+                        if (el && container) {
+                          const targetTop = container.scrollTop + el.getBoundingClientRect().top - container.getBoundingClientRect().top - window.innerHeight * 0.1;
+                          programmaticScrollUntilRef.current = Date.now() + 800;
+                          container.scrollTo({ top: targetTop, behavior: 'smooth' });
+                        }
+                      }}
+                      className={`group block w-full text-left pl-4 pr-4 py-2 text-[13px] whitespace-nowrap transition-colors relative ${activeAnchor === card.key ? "text-[#020617] font-medium" : "text-[#020617]"}`}
                     >
-                      {card.navTitle}
+                      <span aria-hidden className="pointer-events-none absolute left-[5px] right-[3px] top-0 bottom-0 rounded-[4px] bg-transparent group-hover:bg-white/50 transition-colors" />
+                      <span className="relative">{card.navTitle}</span>
                     </button>
                   ))}
                 </div>

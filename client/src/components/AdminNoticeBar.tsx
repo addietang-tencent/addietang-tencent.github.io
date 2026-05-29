@@ -5,7 +5,7 @@
  * - 支持自动轮播（5s）+ 手动左右切换
  * - 只有 1 条通知时隐藏切换按钮
  * - 关闭按钮常驻，点击后隐藏当前通知
- * - sticky top-0 固定在内容区顶部，不随页面滚动
+ * - 不吸顶：随页面内容自然滚动（位于内容区顶部，滚动后会被滚走）
  * - 跳转链接紧跟在通知文字末尾
  * - 产品动态图标使用星星符号
  */
@@ -268,7 +268,7 @@ export default function AdminNoticeBar() {
 
   return (
     <div
-      className="sticky top-0 z-20 w-full min-w-[960px] max-w-[1600px] mx-auto px-10 pt-4 pb-2"
+      className="w-full min-w-[960px] max-w-[1600px] mx-auto px-10 pt-4 pb-2"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

@@ -36,15 +36,12 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import {
-  Edit3,
-  ChevronDown,
   Trash2,
   Search,
   Plus,
   Info,
   ExternalLink,
   RefreshCw,
-  X,
   ArrowLeft,
   Send,
   Check,
@@ -53,11 +50,46 @@ import {
   Star,
   Download,
   Copy,
-  Eye,
-  EyeOff,
   Loader2,
   Megaphone,
 } from "lucide-react";
+
+// ─── 自定义图标（设计稿：基础配置） ─────────────────────────────────────────
+
+const Edit3 = ({ className }: { className?: string }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M13.6816 5.69979L11.2376 3.25635C11.1563 3.17508 11.0599 3.11061 10.9537 3.06662C10.8475 3.02264 10.7337 3 10.6188 3C10.5039 3 10.3901 3.02264 10.2839 3.06662C10.1777 3.11061 10.0813 3.17508 10 3.25635L3.25649 9.99987C3.17488 10.0808 3.11019 10.1772 3.06615 10.2834C3.02212 10.3896 2.99964 10.5034 3 10.6184V13.0624C3 13.2944 3.09219 13.517 3.25629 13.6811C3.42038 13.8452 3.64294 13.9374 3.875 13.9374H13.0625C13.1785 13.9374 13.2898 13.8913 13.3719 13.8092C13.4539 13.7272 13.5 13.6159 13.5 13.4999C13.5 13.3838 13.4539 13.2726 13.3719 13.1905C13.2898 13.1085 13.1785 13.0624 13.0625 13.0624H7.55657L13.6816 6.93737C13.7628 6.85611 13.8273 6.75965 13.8713 6.65347C13.9153 6.5473 13.9379 6.4335 13.9379 6.31858C13.9379 6.20366 13.9153 6.08986 13.8713 5.98368C13.8273 5.87751 13.7628 5.78104 13.6816 5.69979ZM6.31899 13.0624H3.875V10.6184L8.6875 5.80588L11.1315 8.24987L6.31899 13.0624ZM11.75 7.63135L9.30657 5.18737L10.6191 3.87487L13.0625 6.31885L11.75 7.63135Z" fill="currentColor"/>
+  </svg>
+);
+
+const X = ({ className }: { className?: string }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const ChevronDown = ({ className }: { className?: string }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M4 6L8 10L12 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const Eye = ({ className }: { className?: string }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M14.5306 8.42161C14.0092 9.68679 13.0881 10.7466 11.9079 11.4391C10.7277 12.1316 9.35326 12.4189 7.99448 12.257C6.6357 12.095 5.37587 11.5203 4.38447 10.6147C3.39307 9.70909 2.72126 8.52099 2.45001 7.21411C2.39801 6.95779 2.39801 6.69222 2.45001 6.4359C2.72126 5.12902 3.39307 3.94092 4.38447 3.03529C5.37587 2.12967 6.6357 1.55497 7.99448 1.39304C9.35326 1.23111 10.7277 1.51835 11.9079 2.21089C13.0881 2.90342 14.0092 3.96319 14.5306 5.22837C14.5792 5.35934 14.5792 5.5034 14.5306 5.63437" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="8" cy="8" r="2" stroke="currentColor"/>
+  </svg>
+);
+
+const EyeOff = ({ className }: { className?: string }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M7.09448 4.58628C8.45326 4.42435 9.8277 4.71159 11.0079 5.40412C12.1881 6.09666 13.1092 7.15643 13.6306 8.42161C13.6792 8.55258 13.6792 8.69664 13.6306 8.8276C13.4162 9.34734 13.1329 9.83588 12.7883 10.2801" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M9.04893 9.88387C8.71889 10.2026 8.27684 10.379 7.81801 10.375C7.35917 10.3711 6.92026 10.187 6.5958 9.86255C6.27135 9.5381 6.08731 9.09918 6.08332 8.64035C6.07933 8.18151 6.25572 7.73947 6.57449 7.40942" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M11.0295 11.8328C10.2557 12.2912 9.39241 12.5777 8.49812 12.673C7.60383 12.7683 6.6995 12.6701 5.8465 12.3852C4.99349 12.1002 4.21178 11.635 3.55438 11.0213C2.89699 10.4075 2.37931 9.65957 2.03646 8.82813C1.98785 8.69716 1.98785 8.5531 2.03646 8.42214C2.55365 7.16791 3.46366 6.11525 4.62991 5.42212" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3.896 3.81274L12.2083 13" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 import { toast } from "sonner";
 import { AgentAvatar } from "@/components/agent/AgentAvatar";
 import { StatusBadge } from "@/components/agent/StatusBadge";

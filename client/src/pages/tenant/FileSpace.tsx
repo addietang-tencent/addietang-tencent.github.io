@@ -849,7 +849,7 @@ export default function FileSpace({
                 placeholder="搜索文件名..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 bg-white border-[#E5E5E5] text-xs h-8"
+                className="pl-8 bg-white border-gray-200 text-xs h-8"
               />
             </div>
 
@@ -1032,7 +1032,7 @@ export default function FileSpace({
 
           {/* Footer Stats */}
           {!loading && filteredFiles.length > 0 && (
-            <div className="px-5 py-2.5 border-t border-[#E5E5E5] flex items-center justify-between">
+            <div className="px-5 py-2.5 border-t border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-4 text-xs text-[#A3A3A3]">
                 <span className="flex items-center gap-1">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-3 h-3">
@@ -1187,7 +1187,7 @@ export default function FileSpace({
                 <button
                   type="button"
                   onClick={moveBrowseUp}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[#737373] hover:bg-[#F5F5F5] border-b border-[#E5E5E5] transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-[#737373] hover:bg-[#F5F5F5] border-b border-gray-200 transition-colors"
                 >
                   <ChevronRight className="w-3.5 h-3.5 rotate-180 text-[#A3A3A3]" />
                   <span>返回上级目录</span>

@@ -97,7 +97,7 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
   if (names.length === 0) {
     return (
       <div className="w-full overflow-hidden">
-        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-[4px] border border-[#E5E5E5] bg-white text-sm font-normal hover:border-[#1447E6] transition-colors">
+        <button type="button" className="w-full flex items-center justify-between min-h-9 px-3 rounded-[4px] border border-gray-200 bg-white text-sm font-normal hover:border-[#1447E6] transition-colors">
           <span className="text-muted-foreground truncate">请选择分组</span>
           <ChevronDown className="w-3.5 h-3.5 opacity-50 shrink-0 ml-1" />
         </button>
@@ -107,7 +107,7 @@ function GroupSelectTrigger({ names, onRemove, onClear, lockedNames = [] }: { na
 
   return (
     <div className="w-full overflow-hidden" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-[4px] border border-[#E5E5E5] bg-white text-sm font-normal hover:border-[#1447E6] transition-colors relative pr-7">
+      <button type="button" className="w-full flex items-center flex-wrap gap-1 min-h-9 px-2 py-1.5 rounded-[4px] border border-gray-200 bg-white text-sm font-normal hover:border-[#1447E6] transition-colors relative pr-7">
         {names.map((name) => (
           <span
             key={name}
@@ -693,7 +693,7 @@ function AddMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        <p className="text-sm font-medium text-[#0A0A0A] mb-3">用户信息</p>
+        
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -750,10 +750,10 @@ function AddMemberFormFields({
                 </div>
               </PopoverTrigger>
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
-                <div className="p-2 border-b border-[#e5e5e5]">
+                <div className="p-2 border-b border-gray-200">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-[#e5e5e5] rounded-[4px] outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
+                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-[4px] outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
                 <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
@@ -1026,7 +1026,7 @@ function EditMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        <p className="text-sm font-medium text-[#0A0A0A] mb-3">用户信息</p>
+        
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -1070,10 +1070,10 @@ function EditMemberFormFields({
                 </div>
               </PopoverTrigger>
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
-                <div className="p-2 border-b border-[#e5e5e5]">
+                <div className="p-2 border-b border-gray-200">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-[#e5e5e5] rounded-[4px] outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
+                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-[4px] outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
                 <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
@@ -1336,7 +1336,7 @@ function OneidEditMemberFormFields({
   return (
     <div className="py-2 space-y-6">
       <div>
-        <p className="text-sm font-medium text-[#0A0A0A] mb-3">用户信息</p>
+        
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-1.5">
@@ -1388,10 +1388,10 @@ function OneidEditMemberFormFields({
                 </div>
               </PopoverTrigger>
               <PopoverContent className="p-0" align="start" style={{ width: "var(--radix-popper-anchor-width)", minWidth: 280 }}>
-                <div className="p-2 border-b border-[#e5e5e5]">
+                <div className="p-2 border-b border-gray-200">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
-                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-[#e5e5e5] rounded-[4px] outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
+                    <input className="w-full h-7 pl-8 pr-2 text-xs border border-gray-200 rounded-[4px] outline-none focus:border-blue-300 bg-white placeholder:text-[#A3A3A3]" placeholder="搜索分组..." value={groupSearchStr} onChange={(e) => setGroupSearchStr(e.target.value)} />
                   </div>
                 </div>
                 <div ref={groupListRef} className="max-h-[280px] overflow-y-auto py-1 overscroll-contain" onWheel={(e) => e.stopPropagation()}>
@@ -1656,7 +1656,7 @@ function DepartmentFilter({
             />
           ))}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
               <span className="text-[#355EF1] font-medium truncate">全部部门</span>
@@ -1723,12 +1723,12 @@ function CredentialResultDialog({
         </DialogHeader>
         <div className="pt-1 pb-3 space-y-3">
           {/* 账号密码展示 */}
-          <div className="bg-[#fafafa] rounded-[4px] border border-[#e5e5e5] p-4 space-y-3">
+          <div className="bg-[#fafafa] rounded-[4px] border border-gray-200 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#A3A3A3] font-medium uppercase tracking-wide">用户 ID</span>
               <span className="text-sm font-mono text-gray-800 select-all">{memberId}</span>
             </div>
-            <div className="border-t border-[#e5e5e5]" />
+            <div className="border-t border-gray-200" />
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#A3A3A3] font-medium uppercase tracking-wide">初始密码</span>
               <span className="text-sm font-mono text-gray-800 tracking-widest select-none">{maskedPassword}</span>
@@ -2385,10 +2385,10 @@ export default function MemberManagement() {
               {configuredAuthSources.map((source) => (
                 <div
                   key={source.id}
-                  className="bg-white rounded-[4px] border border-[#e5e5e5] p-4 transition-all"
+                  className="bg-white rounded-xl border border-gray-200 p-4 transition-all"
                 >
                   <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-[4px] bg-white border border-[#e5e5e5] flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="w-10 h-10 rounded-[4px] bg-white border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                       <img
                         src={source.iconUrl}
                         alt={source.name}
@@ -2503,12 +2503,12 @@ export default function MemberManagement() {
             )}
             {/* 搜索框 */}
             <div className="relative w-[260px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3] pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
               <Input
                 placeholder="搜索用户 ID..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                className="pl-9 h-9"
+                className="pl-9 bg-white border-gray-200"
               />
             </div>
             {/* 清除筛选按钮 - 当有任何筛选条件时显示 */}
@@ -2536,7 +2536,7 @@ export default function MemberManagement() {
             {hasOneid && (
               <Button
                 variant="outline"
-                className="border-[#e5e5e5] bg-white text-[#525252] hover:bg-[#fafafa]"
+                className="border-gray-200 bg-white text-[#525252] hover:bg-[#fafafa]"
                 onClick={handleSync}
                 disabled={isSyncing}
               >
@@ -2554,7 +2554,7 @@ export default function MemberManagement() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="border-[#e5e5e5] bg-white text-[#525252] hover:bg-[#fafafa] h-9 w-9"
+                  className="border-gray-200 bg-white text-[#525252] hover:bg-[#fafafa] h-9 w-9"
                   title="导出用户列表"
                   onClick={() => {
                     const headers = ["用户ID", "姓名", "角色", "状态", "创建时间"];
@@ -2621,8 +2621,8 @@ export default function MemberManagement() {
 
         {/* Table - 全部视图 */}
         {viewMode === "all" && (
-        <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
-          <Table scrollX={hasOneid ? 1320 : 1180}>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <Table variant="elevated-white" scrollX={hasOneid ? 1320 : 1180}>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead fixed="left" style={{ width: "220px", minWidth: "220px", maxWidth: "220px" }}>
@@ -2919,7 +2919,7 @@ export default function MemberManagement() {
           </Table>
 
           {/* 底部翻页 */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-gray-200">
             <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
               共 {filtered.length} 名用户
             </span>
@@ -3103,7 +3103,7 @@ export default function MemberManagement() {
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-[#0A0A0A]">第二步：上传填写好的 CSV 文件</p>
                   {!batchImportFile ? (
-                    <label className="flex flex-col items-center justify-center w-full h-28 border border-dashed rounded-[4px] cursor-pointer border-[#E5E5E5] hover:border-[#1447E6] hover:bg-[#F5F8FF] transition-colors">
+                    <label className="flex flex-col items-center justify-center w-full h-28 border border-dashed rounded-[4px] cursor-pointer border-gray-200 hover:border-[#1447E6] hover:bg-[#F5F8FF] transition-colors">
                       <Upload className="w-5 h-5 text-[#737373] mb-1.5" />
                       <span className="text-sm text-[#0A0A0A]">点击选择 CSV 文件</span>
                       <span className="text-xs text-[#737373] mt-0.5">仅支持 .csv 格式</span>
@@ -3114,7 +3114,7 @@ export default function MemberManagement() {
                         }} />
                     </label>
                   ) : (
-                    <div className="flex items-center gap-3 p-3 rounded-[4px] border border-[#E5E5E5] bg-[#F5F5F5]">
+                    <div className="flex items-center gap-3 p-3 rounded-[4px] border border-gray-200 bg-[#F5F5F5]">
                       <FileText className="w-8 h-8 text-[#1447E6] flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[#0A0A0A] truncate">{batchImportFile.name}</p>
@@ -3335,7 +3335,7 @@ export default function MemberManagement() {
                 </div>
 
                 {/* 分组异常表格 */}
-                <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+                <div className="rounded-[4px] border border-gray-200 overflow-hidden"
                 >
                   <table className="w-full">
                     <thead>
@@ -3408,7 +3408,7 @@ export default function MemberManagement() {
                 </div>
 
                 {/* 无法删除的用户列表 */}
-                <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+                <div className="rounded-[4px] border border-gray-200 overflow-hidden"
                 >
                   <table className="w-full">
                     <thead>
@@ -3571,7 +3571,7 @@ export default function MemberManagement() {
             })()}
 
             {/* 信息卡片：合并三项内容到统一卡片，行间用细分割线 */}
-            <div className="rounded-[4px] border border-[#E5E5E5] bg-white divide-y divide-[#F5F5F5]">
+            <div className="rounded-[4px] border border-gray-200 bg-white divide-y divide-[#F5F5F5]">
               {/* 用户 ID */}
               <div className="px-4 py-3 flex items-center justify-between gap-4">
                 <Label className="text-xs font-medium text-[#525252]">用户 ID</Label>
@@ -3700,7 +3700,7 @@ export default function MemberManagement() {
                     </ul>
                   </AlertDescription>
                 </Alert>
-                <div className="rounded-[4px] border border-[#E5E5E5] bg-white divide-y divide-[#F5F5F5]">
+                <div className="rounded-[4px] border border-gray-200 bg-white divide-y divide-[#F5F5F5]">
                   <div className="px-4 py-3 flex items-center justify-between">
                     <span className="text-xs font-medium text-[#525252]">用户 ID</span>
                     <span className="text-sm font-medium text-[#0A0A0A]">{disableConfirmDialog?.memberId}</span>
@@ -3749,7 +3749,7 @@ export default function MemberManagement() {
             </Alert>
 
             {/* 用户 ID + 名下 Agent 数量 — 合并为一张卡片，内部用分隔线区分 */}
-            <div className="rounded-[4px] bg-white border border-[#e5e5e5] divide-y divide-[#e5e5e5]">
+            <div className="rounded-[4px] bg-white border border-gray-200 divide-y divide-gray-200">
               <div className="px-4 py-3 flex items-center justify-between">
                 <span className="text-sm text-[#737373]">用户 ID</span>
                 <span className="text-sm font-medium text-[#09090b]">{enableConfirmDialog?.memberId}</span>
@@ -3829,7 +3829,7 @@ export default function MemberManagement() {
             <p className="text-sm text-[#525252]">
               该用户在以下分组中创建了 Agent 实例，用户已从这些分组中移除，请选择如何处理存量实例：
             </p>
-            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+            <div className="rounded-[4px] border border-gray-200 overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-white">
@@ -3860,7 +3860,7 @@ export default function MemberManagement() {
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${agentInstanceChoice === opt.value ? "border-blue-300 bg-[#eff4ff]/50" : "border-[#e5e5e5] hover:border-gray-300"}`}
+                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${agentInstanceChoice === opt.value ? "border-blue-300 bg-[#eff4ff]/50" : "border-gray-200 hover:border-gray-300"}`}
                 onClick={() => setAgentInstanceChoice(opt.value as "keep" | "delete")}
               >
                 <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${agentInstanceChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
@@ -3902,7 +3902,7 @@ export default function MemberManagement() {
             <p className="text-sm text-[#525252]">
               本次同步导致部分用户被移除分组或上级分组发生变更，以下用户在原分组中创建了 Agent 实例，请选择如何处理存量实例：
             </p>
-            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
+            <div className="rounded-[4px] border border-gray-200 overflow-hidden max-h-[200px] overflow-y-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-[#fafafa] sticky top-0">
@@ -3931,7 +3931,7 @@ export default function MemberManagement() {
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${syncAgentInstanceChoice === opt.value ? "border-blue-300 bg-[#eff4ff]/50" : "border-[#e5e5e5] hover:border-gray-300"}`}
+                className={`flex items-start gap-2.5 p-3 rounded-[4px] border cursor-pointer transition-colors ${syncAgentInstanceChoice === opt.value ? "border-blue-300 bg-[#eff4ff]/50" : "border-gray-200 hover:border-gray-300"}`}
                 onClick={() => setSyncAgentInstanceChoice(opt.value as "keep" | "delete")}
               >
                 <span className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${syncAgentInstanceChoice === opt.value ? "border-blue-500" : "border-gray-300"}`}>
@@ -4036,17 +4036,17 @@ export default function MemberManagement() {
             const hasRelatedConfigs = configs.some((c) => c.items.length > 0);
             return (
               <div className="py-2 space-y-3">
-                <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
+                <div className="rounded-[4px] bg-[#fafafa] border border-gray-200 px-4 py-3 flex items-center justify-between">
                   <span className="text-sm text-[#737373]">分组名称</span>
                   <span className="text-sm font-medium text-[#09090b]">{deleteGroupDialog?.groupName}</span>
                 </div>
-                <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3 flex items-center justify-between">
+                <div className="rounded-[4px] bg-[#fafafa] border border-gray-200 px-4 py-3 flex items-center justify-between">
                   <span className="text-sm text-[#737373]">分组内用户数</span>
                   <span className="text-sm font-semibold text-gray-800">{deleteGroupDialog?.memberCount ?? 0} 人</span>
                 </div>
 
                 {/* 已应用配置 */}
-                <div className="rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3">
+                <div className="rounded-[4px] bg-[#fafafa] border border-gray-200 px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm text-[#737373]">已应用配置</span>
                     <button
@@ -4138,7 +4138,7 @@ export default function MemberManagement() {
           </Alert>
 
           {/* 信息卡 */}
-          <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3 space-y-2">
+          <div className="rounded-[4px] border border-gray-200 bg-white px-4 py-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-[#525252]">用户 ID</span>
               <span className="text-sm font-medium text-[#0A0A0A]">{removeFromGroupDialog?.memberId}</span>
@@ -4224,7 +4224,7 @@ export default function MemberManagement() {
                 }
 
                 return (
-                  <div className="border border-[#E5E5E5] rounded-[4px] overflow-hidden">
+                  <div className="border border-gray-200 rounded-[4px] overflow-hidden">
                     <Table>
                       <TableHeader>
                         <TableRow className="hover:bg-transparent">
@@ -4371,8 +4371,8 @@ export default function MemberManagement() {
           </DialogHeader>
           <div className="py-2 space-y-4">
             {deleteAuthSourceConfirm?.source && (
-              <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] border border-[#e5e5e5] px-4 py-3">
-                <div className="w-8 h-8 rounded-[4px] bg-white border border-[#e5e5e5] flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] border border-gray-200 px-4 py-3">
+                <div className="w-8 h-8 rounded-[4px] bg-white border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                   <img
                     src={deleteAuthSourceConfirm.source.iconUrl}
                     alt={deleteAuthSourceConfirm.source.name}
@@ -4385,13 +4385,10 @@ export default function MemberManagement() {
                 </div>
               </div>
             )}
-            <Alert variant="destructive" className="border-red-200 bg-red-50">
-              <AlertCircle className="size-4" />
-              <AlertTitle>确定要删除该数据源吗？</AlertTitle>
-              <AlertDescription>
-                删除后，通过该数据源同步的用户数据将不再自动更新，已同步的用户不受影响。
-              </AlertDescription>
-            </Alert>
+            <div className="rounded-[4px] bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600 space-y-1.5">
+              <p className="font-medium">确定要删除该数据源吗？</p>
+              <p className="text-xs text-red-500 leading-relaxed">删除后，通过该数据源同步的用户数据将不再自动更新，已同步的用户不受影响。</p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteAuthSourceConfirm(null)}>取消</Button>

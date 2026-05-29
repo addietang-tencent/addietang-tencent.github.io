@@ -380,7 +380,7 @@ export function MemoryPreview({
     ];
 
     return (
-      <div className="w-40 flex-shrink-0 border-r border-[#e5e5e5] pr-4">
+      <div className="w-40 flex-shrink-0 border-r border-gray-200 pr-4">
         <div className="flex flex-col">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -409,9 +409,9 @@ export function MemoryPreview({
   // Persona 面板 - 用户画像，样式与场景记忆卡片一致
   const PersonaPanel = () => (
     <div className="h-full flex flex-col">
-      <div className="bg-white border border-[#e5e5e5] rounded-[12px] overflow-hidden flex-1 overflow-y-auto">
+      <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden flex-1 overflow-y-auto">
         {/* 白色标题栏 */}
-        <div className="px-4 py-3 border-b border-[#e5e5e5]">
+        <div className="px-4 py-3 border-b border-gray-200">
           <span className="text-sm font-medium text-[#0A0A0A]">用户画像</span>
         </div>
         {/* 内容区 */}
@@ -446,7 +446,7 @@ export function MemoryPreview({
         {paginatedScenes.map(scene => {
           const isExpanded = expandedScene === scene.id;
           return (
-            <div key={scene.id} className="bg-white border border-[#e5e5e5] rounded-[12px] overflow-hidden">
+            <div key={scene.id} className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
               <button
                 onClick={() => toggleSceneExpand(scene.id)}
                 className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
@@ -462,7 +462,7 @@ export function MemoryPreview({
                 </div>
               </button>
               {isExpanded && (
-                <div className="border-t border-[#e5e5e5] px-4 py-3 max-h-[200px] overflow-auto bg-[#FAFAFA]">
+                <div className="border-t border-gray-200 px-4 py-3 max-h-[200px] overflow-auto bg-[#FAFAFA]">
                   <div className="space-y-2">
                     {(() => {
                       // 去掉内容区第一行的一级标题（与卡片头部的 scene.name 重复）
@@ -499,7 +499,7 @@ export function MemoryPreview({
           );
         })}
       </div>
-      <Pagination total={mockSceneBlocks.length} current={scenesPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-[#e5e5e5]" onChange={(p) => setScenesPage(p)} />
+      <Pagination total={mockSceneBlocks.length} current={scenesPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-gray-200" onChange={(p) => setScenesPage(p)} />
     </div>
   );
 
@@ -516,7 +516,7 @@ export function MemoryPreview({
               className={`px-3 py-1.5 text-xs rounded-[4px] border transition-colors ${
                 recordFilter === filter
                   ? 'bg-blue-50 text-[#1447E6] border-[#1447E6] font-medium'
-                  : 'bg-white text-[#737373] border-[#E5E5E5] hover:border-[#1447E6] hover:text-[#1447E6]'
+                  : 'bg-white text-[#737373] border-gray-200 hover:border-[#1447E6] hover:text-[#1447E6]'
               }`}
             >
               {filter === 'all' ? '全部' : filter === 'fact' ? '事实' : filter === 'preference' ? '偏好' : '事件'}
@@ -526,10 +526,10 @@ export function MemoryPreview({
       </div>
 
       {/* 记录表格（§8.4 表格规范） */}
-      <div className="bg-white border border-[#E5E5E5] rounded-[12px] overflow-hidden flex-1 flex flex-col">
+      <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden flex-1 flex flex-col">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+            <tr className="border-b border-gray-200 bg-gray-50/50">
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">类型</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">标签</th>
               <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">内容</th>
@@ -578,7 +578,7 @@ export function MemoryPreview({
           <div className="text-center py-12 text-sm text-gray-400">暂无匹配的记忆记录</div>
         )}
       </div>
-      <Pagination total={filteredRecords.length} current={recordsPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-[#e5e5e5]" onChange={(p) => setRecordsPage(p)} />
+      <Pagination total={filteredRecords.length} current={recordsPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-gray-200" onChange={(p) => setRecordsPage(p)} />
     </div>
   );
 
@@ -666,7 +666,7 @@ export function MemoryPreview({
               className={`w-8 h-8 flex items-center justify-center rounded-[4px] border transition-colors ${
                 convTimeFilter === 'custom' || showDatePicker
                   ? 'bg-[#EFF6FF] border-[#1447E6] text-[#1447E6]'
-                  : 'bg-white border-[#E5E5E5] text-[#737373] hover:text-[#0A0A0A] hover:border-[#1447E6]'
+                  : 'bg-white border-gray-200 text-[#737373] hover:text-[#0A0A0A] hover:border-[#1447E6]'
               }`}
               title="自定义日期范围"
             >
@@ -693,7 +693,7 @@ export function MemoryPreview({
             {/* 自定义日期选择器弹窗 */}
             {showDatePicker && (
               <div
-                className="absolute right-0 top-full mt-2 p-4 bg-white border border-[#E5E5E5] rounded-[4px] z-10"
+                className="absolute right-0 top-full mt-2 p-4 bg-white border border-gray-200 rounded-[4px] z-10"
                 style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
               >
                 <div className="flex flex-col gap-3">
@@ -702,14 +702,14 @@ export function MemoryPreview({
                       type="date"
                       value={convCustomStartDate}
                       onChange={(e) => setConvCustomStartDate(e.target.value)}
-                      className="h-8 text-xs px-2 py-1.5 border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
+                      className="h-8 text-xs px-2 py-1.5 border border-gray-200 rounded-[4px] focus:outline-none focus:border-[#1447E6]"
                     />
                     <span className="text-xs text-[#737373]">至</span>
                     <input
                       type="date"
                       value={convCustomEndDate}
                       onChange={(e) => setConvCustomEndDate(e.target.value)}
-                      className="h-8 text-xs px-2 py-1.5 border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6]"
+                      className="h-8 text-xs px-2 py-1.5 border border-gray-200 rounded-[4px] focus:outline-none focus:border-[#1447E6]"
                     />
                   </div>
                   {convCustomStartDate && convCustomEndDate && !isCustomDateValid() && (
@@ -718,7 +718,7 @@ export function MemoryPreview({
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => setShowDatePicker(false)}
-                      className="px-3 py-1.5 text-xs text-[#737373] hover:text-[#0A0A0A] rounded-[4px] border border-[#e5e5e5] hover:bg-[#F5F5F5] transition-colors"
+                      className="px-3 py-1.5 text-xs text-[#737373] hover:text-[#0A0A0A] rounded-[4px] border border-gray-200 hover:bg-[#F5F5F5] transition-colors"
                     >
                       取消
                     </button>
@@ -741,10 +741,10 @@ export function MemoryPreview({
         </div>
 
         {/* 消息表格（§8.4 表格规范） */}
-        <div className="bg-white border border-[#E5E5E5] rounded-[12px] overflow-hidden flex-1 flex flex-col">
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden flex-1 flex flex-col">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#E5E5E5] bg-gray-50/50">
+              <tr className="border-b border-gray-200 bg-gray-50/50">
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">会话 ID</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">角色</th>
                 <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">内容</th>
@@ -804,7 +804,7 @@ export function MemoryPreview({
             <div className="text-center py-12 text-sm text-gray-400">暂无匹配的对话记录</div>
           )}
         </div>
-        <Pagination total={filteredConversations.length} current={conversationsPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-[#e5e5e5]" onChange={(p) => setConversationsPage(p)} />
+        <Pagination total={filteredConversations.length} current={conversationsPage} pageSize={pageSize} showTotal={(total) => `共 ${total} 条记录`} simple className="w-full justify-between mt-4 pt-4 border-t border-gray-200" onChange={(p) => setConversationsPage(p)} />
       </div>
     );
   };
@@ -913,7 +913,7 @@ export function MemoryPreview({
 
           {/* 核心能力展示 - 四项特性 */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-gray-200 flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-blue-50 flex items-center justify-center flex-shrink-0">
                 <Target className="w-5 h-5 text-blue-500" />
               </div>
@@ -922,7 +922,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">自动提取偏好、约束与任务状态，无需手动触发</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-gray-200 flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-purple-50 flex items-center justify-center flex-shrink-0">
                 <Brain className="w-5 h-5 text-purple-500" />
               </div>
@@ -931,7 +931,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">四层记忆金字塔逐步提炼，从"记住你说过什么"到"理解你是谁"</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-gray-200 flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-green-50 flex items-center justify-center flex-shrink-0">
                 <Search className="w-5 h-5 text-green-500" />
               </div>
@@ -940,7 +940,7 @@ export function MemoryPreview({
                 <p className="text-xs text-gray-500 leading-relaxed">记忆分层组织、按场景归类，按需精准召回</p>
               </div>
             </div>
-            <div className="p-4 bg-white rounded-[12px] border border-[#e5e5e5] flex items-start gap-3">
+            <div className="p-4 bg-white rounded-[12px] border border-gray-200 flex items-start gap-3">
               <div className="w-10 h-10 rounded-[4px] bg-amber-50 flex items-center justify-center flex-shrink-0">
                 <Link2 className="w-5 h-5 text-amber-500" />
               </div>

@@ -125,7 +125,7 @@ function InfoPopover({
         style={{ maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth }}
       >
         {title && (
-          <div className="text-sm font-medium text-[#020617] pb-2 mb-2 border-b border-[#F0F0F0]">
+          <div className="text-sm font-medium text-[#020617] pb-2 mb-2 border-b border-gray-200">
             {title}
           </div>
         )}

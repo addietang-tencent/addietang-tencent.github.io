@@ -63,12 +63,12 @@ function Input({
       data-slot="input"
       data-tenant={tenant ? "true" : undefined}
       className={cn(
-        "h-9 w-full min-w-0 border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm text-[#0A0A0A] font-normal transition-colors outline-none",
+        "h-9 w-full min-w-0 border border-gray-200 bg-white px-3 py-[5px] text-sm text-[#0A0A0A] font-normal transition-colors outline-none",
         tenant ? "rounded-full" : "rounded-[4px]",
         "placeholder:text-[#A3A3A3]",
         "hover:border-[#1447E6]",
         "focus:border-[#1447E6]",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-[#E5E5E5] disabled:text-[#A3A3A3]",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",
         "aria-invalid:border-[#d42a1e]",
         "selection:bg-[#1447E6]/10 selection:text-[#0A0A0A]",
         "file:text-[#0A0A0A] file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",

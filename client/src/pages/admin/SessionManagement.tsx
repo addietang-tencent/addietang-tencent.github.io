@@ -534,7 +534,7 @@ export default function SessionManagement() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-white border border-[#e5e5e5] rounded-[4px] py-8 px-4 mb-8 mt-8">
+          <div className="bg-white border border-gray-200 rounded-[4px] py-8 px-4 mb-8 mt-8">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h3 className="text-[14px] font-semibold text-[#09090b]">会话管理需要开启 CLS 日志服务</h3>
@@ -553,7 +553,7 @@ export default function SessionManagement() {
           {/* 卡片功能展示 */}
           <div className="space-y-4 mb-8">
             {/* 第一块：会话数据 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5 bg-white">
+            <div className="border border-gray-200 rounded-[4px] px-6 py-5 bg-white">
               <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex items-center gap-[14px] py-5">
@@ -576,7 +576,7 @@ export default function SessionManagement() {
 
 
             {/* 第二块：运维观测和会话管理功能 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5 bg-white">
+            <div className="border border-gray-200 rounded-[4px] px-6 py-5 bg-white">
               <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在 Tokens 监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 <div className="flex items-center gap-[14px] py-5">
@@ -669,7 +669,7 @@ export default function SessionManagement() {
               <p className="text-xs text-[#A3A3A3] mt-1">按时间倒序 · 点击查看会话详情</p>
             </div>
             <SurfaceCard className="overflow-hidden">
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead>会话</TableHead>
@@ -719,7 +719,7 @@ export default function SessionManagement() {
               </Table>
 
               {/* 翻页控件 — 与表格同一容器，顶部分隔线对齐 AuditLog 规范 */}
-              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <div className="px-4 py-3 border-t border-gray-200">
                 <Pagination
                   total={filteredSessions.length}
                   current={currentPage}
@@ -735,7 +735,7 @@ export default function SessionManagement() {
           {/* 渠道与模型分布 */}
           <div className="grid grid-cols-2 gap-6">
             {/* 渠道分布 */}
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-sm font-bold text-[#09090b] mb-4">渠道分布</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={CHANNEL_DIST_DATA}>
@@ -749,7 +749,7 @@ export default function SessionManagement() {
             </div>
 
             {/* 模型分布 */}
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h3 className="text-sm font-bold text-[#09090b] mb-4">模型分布</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <PieChart>
@@ -952,7 +952,7 @@ export default function SessionManagement() {
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
           <DialogBody className="flex-1">
-            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+            <div className="rounded-[4px] border border-gray-200 overflow-hidden">
               <RadioGroup
                 value={selectedPluginVersion?.version ?? ""}
                 onValueChange={(val) => {

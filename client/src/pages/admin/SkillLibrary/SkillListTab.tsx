@@ -645,7 +645,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                 <button
                   type="button"
                   onClick={() => setScopeDropdownOpen(prev => !prev)}
-                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#1447E6] transition-colors"
+                  className="flex items-center justify-between gap-1 min-w-[10rem] max-w-[20rem] h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-gray-700 hover:border-[#1447E6] transition-colors"
                 >
                   <span className="truncate text-left">
                     {selectedScopes.size === 0
@@ -776,7 +776,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               )}
               {/* 底部：已选数量 + 清除筛选 */}
               {selectedScopes.size > 0 && (
-                <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
+                <div className="border-t border-gray-200 mt-1 px-3 py-2 flex items-center justify-between">
                   <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                   <Button
                     type="button"
@@ -855,7 +855,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               <div
                 key={skill.id}
                 onClick={() => handleViewDetail(skill.id)}
-                className="rounded-xl border border-[#E5E5E5] bg-white p-4 transition-colors cursor-pointer hover:border-[#D4D4D4] hover:bg-[#FAFAFA]"
+                className="rounded-xl border border-gray-200 bg-white p-4 transition-colors cursor-pointer hover:border-[#D4D4D4] hover:bg-[#FAFAFA]"
               >
                 {/* 头部：名称 + 安全检测图标 + 版本（右上） */}
                 <div className="flex items-start justify-between gap-2 mb-3">
@@ -1071,7 +1071,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
       {/* 表格视图 — 名称列固定左侧、操作列固定右侧，中间列可水平滚动 */}
       {viewMode === 'list' && sortedSkills.length > 0 && (
         <SurfaceCard className="overflow-hidden">
-          <Table containerRef={tableScrollRef} scrollX={1520}>
+          <Table variant="elevated-white" containerRef={tableScrollRef} scrollX={1520}>
             <TableHeader>
               <TableRow>
                 <TableHead fixed="left" className="w-[260px]" style={{ width: 260 }}>
@@ -1502,7 +1502,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
             <DialogTitle>申请免费试用（Skills 风险检测 API）</DialogTitle>
           </DialogHeader>
           <DialogBody className="flex-1">
-            <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3 space-y-2.5 text-sm">
+            <div className="rounded-[4px] border border-gray-200 bg-white px-4 py-3 space-y-2.5 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-[#525252]">试用有效期</span>
                 <span className="text-sm text-[#0A0A0A]">有效期至 2026 年 6 月 30 日</span>

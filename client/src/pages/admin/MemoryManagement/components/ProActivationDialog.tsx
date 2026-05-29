@@ -79,12 +79,12 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
           )}
 
           {/* 限免活动提示 */}
-          <div className="rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-5 py-4 space-y-3">
+          <div className="rounded-[4px] border border-gray-200 bg-[#FAFAFA] px-5 py-4 space-y-3">
             <p className="text-[13px] font-semibold text-[#0A0A0A]">限时免费体验（至 2026.8.15）</p>
             <p className="text-[12px] text-[#737373] leading-relaxed">
               免费体验期内可使用全部 Pro 能力，体验结束前我们会提前通知定价；体验期结束后<span className="font-medium text-[#0A0A0A]">不会自动扣费</span>，需在控制台主动确认转为付费后方可继续使用。
             </p>
-            <div className="pt-3 border-t border-[#E5E5E5] space-y-1.5">
+            <div className="pt-3 border-t border-gray-200 space-y-1.5">
               <p className="text-[12px] text-[#737373] leading-relaxed">
                 开通后将获得 <span className="font-semibold text-[#0A0A0A]">{FIXED_MEMORY_SPACES}</span> 个记忆空间，每个记忆空间可绑定一个 Agent。
               </p>
@@ -122,7 +122,7 @@ export const ProActivationDialog: React.FC<ProActivationDialogProps> = ({
           </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-[#E5E5E5] gap-3 sm:gap-3">
+        <DialogFooter className="px-6 py-4 border-t border-gray-200 gap-3 sm:gap-3">
           <Button 
             variant="outline" 
             onClick={handleClose}

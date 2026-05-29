@@ -291,7 +291,7 @@ export default function ChannelConfig() {
 
       {/* Tab 切换器（与 Agent 工具库同款 LineTabs：黑色下划线） */}
       <div className="mb-1">
-        <div className="flex items-center gap-2 border-b border-[#f0f0f0]">
+        <div className="flex items-center gap-2 border-b border-[#dbe6ff]">
           {CHANNEL_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -316,7 +316,7 @@ export default function ChannelConfig() {
       {/* ── 内置通道 Tab ── */}
       {activeTab === "builtin" && (
         <SurfaceCard className="overflow-hidden">
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead style={{ minWidth: 280 }}>产品</TableHead>
@@ -405,7 +405,7 @@ export default function ChannelConfig() {
             </SurfaceCard>
           ) : (
             <SurfaceCard className="overflow-hidden">
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead style={{ minWidth: 280 }}>通道名</TableHead>
@@ -472,7 +472,7 @@ export default function ChannelConfig() {
                           <TableCell colSpan={4} className="bg-[#fafafa]/50">
                             <div className="space-y-3 py-1">
                               {/* IM 服务器地址 */}
-                              <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3">
+                              <div className="rounded-[4px] bg-white border border-gray-200 px-4 py-3">
                                 <p className="text-xs font-medium text-[#737373] mb-2">IM 服务器地址</p>
                                 <div className="space-y-1.5">
                                   <div className="flex items-center gap-2 text-xs">
@@ -486,7 +486,7 @@ export default function ChannelConfig() {
                                 </div>
                               </div>
                               {/* 用户凭证字段 */}
-                              <div className="rounded-[4px] bg-white border border-[#e5e5e5] px-4 py-3">
+                              <div className="rounded-[4px] bg-white border border-gray-200 px-4 py-3">
                                 <p className="text-xs font-medium text-[#737373] mb-2">用户凭证字段</p>
                                 {ch.credentialFields.length === 0 ? (
                                   <p className="text-xs text-[#A3A3A3]">无凭证字段</p>
@@ -495,7 +495,7 @@ export default function ChannelConfig() {
                                     {ch.credentialFields.map((f, idx) => (
                                       <span
                                         key={f.id}
-                                        className="inline-flex items-center gap-1 text-xs bg-white border border-[#e5e5e5] text-[#334155] px-2.5 py-1 rounded-full"
+                                        className="inline-flex items-center gap-1 text-xs bg-white border border-gray-200 text-[#334155] px-2.5 py-1 rounded-full"
                                       >
                                         <span className="text-[#A3A3A3]">{idx + 1}.</span>
                                         <span className="font-mono text-[#737373]">{f.key}</span>
@@ -616,11 +616,11 @@ export default function ChannelConfig() {
 
               <div className="space-y-2">
                 {form.credentialFields.length === 0 ? (
-                  <div className="rounded-[4px] border border-dashed border-[#E5E5E5] px-4 py-3 text-center">
+                  <div className="rounded-[4px] border border-dashed border-gray-200 px-4 py-3 text-center">
                     <p className="text-xs text-[#737373]">暂未添加凭证字段</p>
                   </div>
                 ) : (
-                  <div className="rounded-[4px] border border-[#E5E5E5] bg-white p-3 space-y-2">
+                  <div className="rounded-[4px] border border-gray-200 bg-white p-3 space-y-2">
                     {/* 表头 */}
                     <div className="flex items-center gap-2">
                       <span className="w-5 shrink-0" />

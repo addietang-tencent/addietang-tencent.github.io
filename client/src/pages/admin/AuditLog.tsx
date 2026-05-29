@@ -270,7 +270,7 @@ export default function AuditLog() {
 
         {/* Table */}
         <SurfaceCard className="overflow-hidden">
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[26%]">操作人的用户 ID</TableHead>
@@ -306,7 +306,7 @@ export default function AuditLog() {
           </Table>
 
           {/* Footer: count + pagination */}
-          <div className="px-4 py-3 border-t border-[#f0f0f0]">
+          <div className="px-4 py-3 border-t border-gray-200">
             <Pagination
               total={filtered.length}
               current={safePage}

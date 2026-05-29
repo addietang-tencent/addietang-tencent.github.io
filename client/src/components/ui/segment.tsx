@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  *   ┌─────────────────────────────┬───────────────────────────────────────────────────┐
  *   │ Token                       │ Value                                              │
  *   ├─────────────────────────────┼───────────────────────────────────────────────────┤
- *   │ container / bg              │ #f3f3f4                                            │
+ *   │ container / bg              │ #d7d7e354                                            │
  *   │ container / radius          │ 6px                                                │
  *   │ container / padding         │ 3px                                                │
  *   │ container / height          │ 36px (h-9)                                         │
@@ -76,7 +76,7 @@ function SegmentList({
     <TabsPrimitive.List
       data-slot="segment-list"
       className={cn(
-        "bg-[#f3f3f4] text-[#7b818f] inline-flex h-9 w-fit items-center justify-center rounded-[6px] p-[3px]",
+        "bg-[#d7d7e354] text-[#7b818f] inline-flex h-9 w-fit items-center justify-center rounded-[6px] border border-border p-[2px]",
         className
       )}
       {...props}
@@ -130,7 +130,7 @@ function SegmentGroup({
       data-slot="segment-group"
       role="tablist"
       className={cn(
-        "bg-[#f3f3f4] text-[#7b818f] inline-flex h-9 w-fit items-center justify-center rounded-[6px] p-[3px]",
+        "bg-[#d7d7e354] text-[#7b818f] inline-flex h-9 w-fit items-center justify-center rounded-[6px] border border-border p-[2px]",
         className
       )}
       {...props}

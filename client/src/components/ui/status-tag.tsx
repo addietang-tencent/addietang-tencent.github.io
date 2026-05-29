@@ -43,7 +43,7 @@ const statusTagColorTokens = {
   gray: {
     text: "text-[#0A0A0A]",
     bg: "bg-[#F5F5F5]",
-    border: "border-[#E5E5E5]",
+    border: "border-gray-200",
     dot: "bg-[#0A0A0A]",
   },
 
@@ -146,7 +146,7 @@ const statusTagColorTokens = {
   },
 } as const;
 
-const roleTagClassName = "h-[22px] rounded-full border border-[#E5E5E5] bg-white px-2 text-[#020617]";
+const roleTagClassName = "h-[22px] rounded-full border border-gray-200 bg-white px-2 text-[#020617]";
 
 export type StatusTagColor = keyof typeof statusTagColorTokens;
 type StatusTagVariant = StatusTagColor | "role";

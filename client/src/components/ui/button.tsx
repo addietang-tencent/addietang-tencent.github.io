@@ -66,10 +66,10 @@ const buttonVariants = cva(
           "active:bg-[#991b1b] " +
           "disabled:bg-[#d42a1e]/40 disabled:text-white/60 disabled:opacity-100",
         outline:
-          "bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
+          "bg-white border border-gray-200 text-[#020617] font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
         secondary:
           "bg-[#f5f5f5] border border-[#e3e3e3] text-[#020617] font-normal " +
           "hover:bg-[#ebebeb] hover:border-[#d4d4d4] " +
@@ -130,10 +130,10 @@ const buttonVariants = cva(
          * - disabled: 白底 + #e5e5e5 边 + rgba(2,6,23,0.3) 字
          */
         "claw-outline":
-          "bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
+          "bg-white border border-gray-200 text-[#020617] font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
 
         /**
          * 深色填充（主按钮）
@@ -186,10 +186,10 @@ const buttonVariants = cva(
          * - 用途：用户端业务页次级按钮、弹窗取消、表单重置
          */
         "tenant-outline":
-          "!rounded-full bg-white border border-[#e5e5e5] text-[#020617] font-normal " +
+          "!rounded-full bg-white border border-gray-200 text-[#020617] font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] hover:[box-shadow:0_1px_3px_rgba(0,0,0,0.08)] " +
           "active:bg-white active:border-[#e3e3e3] active:[box-shadow:none] " +
-          "disabled:bg-white disabled:border-[#e5e5e5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
 
         /**
          * 用户端线性描边按钮（tenant-outline-r20） — [Figma 1077-33986] 卡片底部专用

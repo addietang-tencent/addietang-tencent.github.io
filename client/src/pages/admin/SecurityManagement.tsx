@@ -121,7 +121,7 @@ function StatIcon({ type }: { type: "agent" | "risk" | "threat" }) {
 function ThreatAlertPanel() {
   const [subTab, setSubTab] = useState("high-danger");
   return (
-    <div className="bg-white rounded-[4px] border border-[#E5E5E5] p-5 mt-5">
+    <div className="bg-white rounded-xl border border-gray-200 p-5 mt-5">
       {/* 子 Tab + 操作栏 */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -168,7 +168,7 @@ function ThreatAlertPanel() {
 
       {/* 表格 */}
       <SurfaceCard className="overflow-hidden">
-        <Table>
+        <Table autoFixedColumns={false}>
           <TableHeader>
             <TableRow>
               <TableHead className="w-10"><Checkbox /></TableHead>
@@ -272,17 +272,32 @@ export default function SecurityManagement() {
         ))}
       </div>
 
-      {/* Tab 标签页 */}
+      {/* Tab 标签页 — 黑色下划线 tabs */}
       <Segment value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between">
-          <SegmentList>
-            <SegmentItem value="agent-config">AI Agent配置</SegmentItem>
-            <SegmentItem value="control-config">管控配置</SegmentItem>
-            <SegmentItem value="audit-log">审计日志</SegmentItem>
-            <SegmentItem value="malicious-skills">恶意Skills</SegmentItem>
-            <SegmentItem value="threat-alert">威胁告警</SegmentItem>
-          </SegmentList>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between border-b border-gray-200">
+          <div className="flex gap-6">
+            {[
+              { value: "agent-config", label: "AI Agent配置" },
+              { value: "control-config", label: "管控配置" },
+              { value: "audit-log", label: "审计日志" },
+              { value: "malicious-skills", label: "恶意Skills" },
+              { value: "threat-alert", label: "威胁告警" },
+            ].map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setActiveTab(tab.value)}
+                className={`pb-2.5 text-sm font-medium transition-colors border-b-2 ${
+                  activeTab === tab.value
+                    ? "text-[#0A0A0A] border-[#0A0A0A]"
+                    : "text-[#A3A3A3] border-transparent hover:text-[#525252]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 pb-2.5">
             <Button variant="claw-primary" size="claw" onClick={() => setShowConfigDialog(true)}>
               防护版本配置
             </Button>
@@ -290,7 +305,7 @@ export default function SecurityManagement() {
         </div>
 
         <SegmentContent value="agent-config">
-          <div className="bg-white rounded-[4px] border border-[#E5E5E5] p-5 mt-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 mt-5">
           {/* 操作栏 */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -311,7 +326,7 @@ export default function SecurityManagement() {
 
           {/* 数据表格 */}
           <SurfaceCard className="overflow-hidden">
-            <Table>
+            <Table autoFixedColumns={false}>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10">
@@ -381,7 +396,7 @@ export default function SecurityManagement() {
         </SegmentContent>
 
         <SegmentContent value="control-config">
-          <div className="bg-white rounded-[4px] border border-[#E5E5E5] p-5 mt-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Button variant="claw-outline" size="claw">新增策略</Button>
@@ -392,7 +407,7 @@ export default function SecurityManagement() {
               </button>
             </div>
             <SurfaceCard className="overflow-hidden">
-              <Table>
+              <Table autoFixedColumns={false}>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10"><Checkbox /></TableHead>
@@ -421,7 +436,7 @@ export default function SecurityManagement() {
         </SegmentContent>
 
         <SegmentContent value="audit-log">
-          <div className="bg-white rounded-[4px] border border-[#E5E5E5] p-5 mt-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Button variant="claw-outline" size="claw">导出日志</Button>
@@ -454,7 +469,7 @@ export default function SecurityManagement() {
               </div>
             </div>
             <SurfaceCard className="overflow-hidden">
-              <Table>
+              <Table autoFixedColumns={false}>
                 <TableHeader>
                   <TableRow>
                     <TableHead>操作时间</TableHead>
@@ -482,7 +497,7 @@ export default function SecurityManagement() {
         </SegmentContent>
 
         <SegmentContent value="malicious-skills">
-          <div className="bg-white rounded-[4px] border border-[#E5E5E5] p-5 mt-5">
+          <div className="bg-white rounded-xl border border-gray-200 p-5 mt-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <Button variant="claw-outline" size="claw">立即扫描</Button>
@@ -517,7 +532,7 @@ export default function SecurityManagement() {
               </div>
             </div>
             <SurfaceCard className="overflow-hidden">
-              <Table>
+              <Table autoFixedColumns={false}>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-10"><Checkbox /></TableHead>
@@ -554,7 +569,7 @@ export default function SecurityManagement() {
       {showConfigDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowConfigDialog(false)}>
           <div className="bg-white rounded-[4px] w-[720px] max-h-[80vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-[#E5E5E5]">
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-[#737373]" />
                 <h2 className="text-base font-bold text-[#0A0A0A]">防护版本配置</h2>
@@ -570,7 +585,7 @@ export default function SecurityManagement() {
                   { label: "自动绑定", enabled: true },
                   { label: "自动缩容", enabled: true },
                 ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between px-4 py-3 border border-[#E5E5E5] rounded">
+                  <div key={item.label} className="flex items-center justify-between px-4 py-3 border border-gray-200 rounded">
                     <span className="text-sm text-[#0A0A0A]">{item.label}</span>
                     <div className="flex items-center gap-2 text-xs">
                       <span className={item.enabled ? "text-[#355EF1] font-medium" : "text-[#737373]"}>● {item.enabled ? "已开启" : "已开启"}</span>
@@ -579,12 +594,12 @@ export default function SecurityManagement() {
                   </div>
                 ))}
               </div>
-              <div className="border-t border-[#E5E5E5] pt-5">
+              <div className="border-t border-gray-200 pt-5">
                 <div className="flex items-center gap-2 mb-4">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm.5 10.5h-1v-4h1v4zm0-5.25h-1V5h1v1.25z" fill="#F97316"/></svg>
                   <span className="text-sm font-bold text-[#0A0A0A]">配额信息</span>
                 </div>
-                <div className="flex items-center justify-between px-4 py-3 border border-[#E5E5E5] rounded mb-3">
+                <div className="flex items-center justify-between px-4 py-3 border border-gray-200 rounded mb-3">
                   <div className="flex items-center gap-3">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1a7 7 0 100 14A7 7 0 008 1z" fill="#355EF1"/></svg>
                     <span className="text-sm font-medium text-[#0A0A0A]">AI防护版配额 #1</span>
@@ -612,7 +627,7 @@ export default function SecurityManagement() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-6 pt-4 border-t border-[#E5E5E5]">
+            <div className="flex items-center justify-end gap-3 p-6 pt-4 border-t border-gray-200">
               <Button variant="claw-outline" onClick={() => setShowConfigDialog(false)}>取消</Button>
               <Button variant="claw-primary" onClick={() => setShowConfigDialog(false)}>保存配置</Button>
             </div>

@@ -150,7 +150,7 @@ export default function CategoryManagementDialog({
             </Button>
           </div>
 
-          <div className="bg-white rounded-xl border border-[#f0f0f0] overflow-hidden flex-1 overflow-y-auto">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex-1 overflow-y-auto">
             <Table>
               <TableHeader className="sticky top-0 z-10">
                 <TableRow>

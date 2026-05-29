@@ -113,7 +113,7 @@ export default function UpdateRecordSidebar({
 
     // 有更新或有活跃推送：合并成一个卡片
     return (
-      <div className="rounded-[4px] border border-[#E5E5E5] bg-white overflow-hidden relative">
+      <div className="rounded-[4px] border border-gray-200 bg-white overflow-hidden relative">
         {/* 关闭按钮 */}
         {onMinimize && (
         <Tooltip>
@@ -134,8 +134,8 @@ export default function UpdateRecordSidebar({
           {pushable.filter(p => !p.allUpToDate).map(p => {
             const isPushing = activePushes.some(ap => ap.agentType === p.agentType);
             return (
-              <div key={p.agentType} className="px-2.5 py-2 rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA]">
-                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-[#E5E5E5]">
+              <div key={p.agentType} className="px-2.5 py-2 rounded-[4px] border border-gray-200 bg-[#FAFAFA]">
+                <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-gray-200">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-[12px] font-medium text-[#0A0A0A] truncate">{p.agentTypeLabel}</span>
                     <span className="text-[10px] text-[#A3A3A3] font-mono tabular-nums">v{p.enabledVersion}</span>
@@ -151,7 +151,7 @@ export default function UpdateRecordSidebar({
                         clearActivePush(p.agentType);
                         toast.success(`已撤回「${p.agentTypeLabel}」的推送提醒`);
                       }}
-                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[10px] text-[#737373] border border-[#E5E5E5] hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
+                      className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-[4px] text-[10px] text-[#737373] border border-gray-200 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-colors shrink-0"
                     >
                       <RotateCcw className="w-2.5 h-2.5" />
                       撤回

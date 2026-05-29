@@ -134,7 +134,7 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 transition-all overflow-hidden"
+      className="bg-white rounded-xl border border-gray-200 p-5 transition-all overflow-hidden"
     >
       <div className="flex items-start gap-3.5">
         <StepBadge step={step} done={done} />
@@ -233,7 +233,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full max-w-[360px] flex items-center bg-white border border-[#E5E5E5] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
+          className="w-full max-w-[360px] flex items-center bg-white border border-gray-200 rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-[#A3A3A3] font-normal ml-1">{unitText}</span>}
@@ -398,7 +398,7 @@ export default function StandardBasicInfo() {
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
                   placeholder="例如：A公司企业版Agent"
-                  className="w-full max-w-[360px] h-9 border-[#E5E5E5] rounded-[4px] text-sm text-[#020617]"
+                  className="w-full max-w-[360px] h-9 border-gray-200 rounded-[4px] text-sm text-[#020617]"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -446,7 +446,7 @@ export default function StandardBasicInfo() {
                 <button
                   onClick={handleSyncEnterprise}
                   disabled={syncing}
-                  className="h-8 px-3 inline-flex items-center gap-1.5 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors disabled:opacity-60"
+                  className="h-8 px-3 inline-flex items-center gap-1.5 border border-gray-200 rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors disabled:opacity-60"
                 >
                   {syncing ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -457,7 +457,7 @@ export default function StandardBasicInfo() {
                 </button>
                 <button
                   onClick={() => toast.success("平台名称与品牌已保存")}
-                  className="w-14 h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
+                  className="w-14 h-8 border border-gray-200 rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
                 >
                   保存
                 </button>
@@ -525,7 +525,7 @@ export default function StandardBasicInfo() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="w-full max-w-[360px] flex items-center justify-between gap-2 rounded-[4px] border border-[#E4E4E4] bg-white px-3 text-sm text-left hover:border-[#355EF1] focus:border-[#355EF1] transition-colors h-9 outline-none data-[state=open]:border-[#355EF1]"
+                    className="w-full max-w-[360px] flex items-center justify-between gap-2 rounded-[4px] border border-gray-200 bg-white px-3 text-sm text-left hover:border-[#355EF1] focus:border-[#355EF1] transition-colors h-9 outline-none data-[state=open]:border-[#355EF1]"
                   >
                     <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-hidden">
                       {ssoImTypes.length === 0 ? (
@@ -595,7 +595,7 @@ export default function StandardBasicInfo() {
                   originalSsoImTypesRef.current = [...ssoImTypes];
                   toast.success("用户登录方式已保存");
                 }}
-                className="w-14 h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
+                className="w-14 h-8 border border-gray-200 rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
               >
                 保存
               </button>
@@ -619,7 +619,7 @@ export default function StandardBasicInfo() {
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-200"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -640,7 +640,7 @@ export default function StandardBasicInfo() {
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-200"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -661,7 +661,7 @@ export default function StandardBasicInfo() {
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-200"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -682,7 +682,7 @@ export default function StandardBasicInfo() {
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-2.5 mt-3 border-t border-dashed border-[#e5e5e5]"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-2.5 mt-3 border-t border-dashed border-gray-200"><p className="text-xs text-[#A3A3A3]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -710,7 +710,7 @@ export default function StandardBasicInfo() {
 
           {/* 平台基础信息 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+            className="bg-white rounded-xl border border-gray-200 p-5"
           >
             <p className="text-sm font-medium text-[#0A0A0A] tracking-[0.07px] mb-4">平台基础信息</p>
             <div className="flex flex-col gap-4">
@@ -740,7 +740,7 @@ export default function StandardBasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5 cursor-pointer group transition-colors"
+            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer group transition-colors"
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
@@ -757,7 +757,7 @@ export default function StandardBasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+            className="bg-white rounded-xl border border-gray-200 p-5"
           >
             <p className="text-sm font-medium text-[#0A0A0A] tracking-[0.07px] mb-6">产品动态</p>
             <div className="flex flex-col gap-3">

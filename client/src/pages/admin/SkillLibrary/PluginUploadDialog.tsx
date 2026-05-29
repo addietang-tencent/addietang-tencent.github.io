@@ -5,7 +5,7 @@
  * 视觉与交互对齐 SkillUploadDialog（发布 Skill 弹窗）：
  *  - DialogBody 管理滚动 + DialogFooter 主按钮
  *  - 上传区 p-4 + 「上传要求」独立卡片 + 下载样例
- *  - 文件行：圆形浅灰底图标、border-[#E5E5E5] rounded-[4px]、font-normal
+ *  - 文件行：圆形浅灰底图标、border-gray-200 rounded-[4px]、font-normal
  *  - 空态使用 AlertTriangle 提示
  *  - 表单字段：text-sm font-medium text-[#0A0A0A]
  *  - DialogFooter 主按钮使用 variant="dialog-confirm"
@@ -306,9 +306,9 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                         <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
                           <li className="leading-relaxed">
                             插件 ZIP 包<strong>根目录</strong>必须包含
-                            <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
+                            <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-gray-200 rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
                             与
-                            <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">package.json</code>
+                            <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-gray-200 rounded text-[11px] font-mono text-[#334155]">package.json</code>
                             文件，系统据此识别插件
                           </li>
                           <li className="leading-relaxed">
@@ -326,7 +326,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                 <div
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="border border-dashed rounded-[4px] p-4 text-center transition-colors border-[#E5E5E5] hover:border-[#1447E6]"
+                  className="border border-dashed rounded-[4px] p-4 text-center transition-colors border-gray-200 hover:border-[#1447E6]"
                 >
                   <p className="text-sm mb-3 text-[#737373]">点击或拖拽 ZIP 文件上传</p>
 
@@ -352,7 +352,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
 
               {/* 上传要求卡片（仅未上传时显示，含下载样例） */}
               {uploadedFiles.length === 0 && (
-                <div className="border border-[#E5E5E5] rounded-[4px] p-4 text-left bg-white">
+                <div className="border border-gray-200 rounded-[4px] p-4 text-left bg-white">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium text-[#0A0A0A]">上传要求</p>
                     <Button
@@ -377,9 +377,9 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                   <ol className="text-xs text-[#737373] space-y-2 list-decimal pl-5">
                     <li className="leading-relaxed">
                       插件 ZIP 包<strong>根目录</strong>必须包含
-                      <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
+                      <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-gray-200 rounded text-[11px] font-mono text-[#334155]">agent.plugin.json</code>
                       与
-                      <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded text-[11px] font-mono text-[#334155]">package.json</code>
+                      <code className="mx-1 px-1 py-0.5 bg-[#FAFAFA] border border-gray-200 rounded text-[11px] font-mono text-[#334155]">package.json</code>
                       文件，系统据此识别插件
                     </li>
                     <li className="leading-relaxed">
@@ -394,7 +394,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
             {uploadedFiles.length > 0 && (
               <div className="space-y-2">
                 {uploadedFiles.map((file) => (
-                  <div key={file.name} className="border border-[#E5E5E5] rounded-[4px] bg-white overflow-hidden">
+                  <div key={file.name} className="border border-gray-200 rounded-[4px] bg-white overflow-hidden">
                     {/* 文件项头部 */}
                     <div
                       className="flex items-center justify-between px-3 py-3 cursor-pointer hover:bg-[#FAFAFA] transition-colors"
@@ -439,7 +439,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
 
                     {/* 文件详情展开 */}
                     {expandedFile === file.name && file.files && file.status !== 'parsing' && (
-                      <div className="border-t border-[#E5E5E5] bg-white p-3 space-y-2">
+                      <div className="border-t border-gray-200 bg-white p-3 space-y-2">
                         <p className="text-xs font-medium text-[#0A0A0A]">文件列表</p>
                         <div className="space-y-1 max-h-48 overflow-y-auto">
                           {file.files.map((f) => (
@@ -451,7 +451,7 @@ export default function PluginUploadDialog({ open, onOpenChange, onConfirm, exis
                         </div>
 
                         {(file.pluginJsonFound || file.packageJsonFound) && (
-                          <div className="mt-3 pt-3 border-t border-[#E5E5E5] space-y-1.5">
+                          <div className="mt-3 pt-3 border-t border-gray-200 space-y-1.5">
                             {file.pluginJsonFound && (
                               <p className="text-xs font-medium text-[#0A0A0A]">agent.plugin.json 校验通过</p>
                             )}

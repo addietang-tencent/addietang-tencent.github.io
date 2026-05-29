@@ -1980,7 +1980,7 @@ export default function ChatView({
       className={`flex bg-white overflow-hidden transition-all duration-300 ease-in-out ${
         isWorkspaceFullscreen
           ? `fixed inset-0 ${workspaceTopClass} z-40 rounded-none border-none`
-          : "rounded-[12px] border border-[#e5e5e5]"
+          : "rounded-[12px] border border-gray-200"
       }`}
       style={
         workspaceMode !== "chat" || (workspaceMode === "chat" && isFullscreen)
@@ -1990,7 +1990,7 @@ export default function ChatView({
     >
 
       {showFullListSidebar && (
-        <div className="w-64 flex-shrink-0 border-r border-[#e5e5e5] flex flex-col bg-white">
+        <div className="w-64 flex-shrink-0 border-r border-gray-200 flex flex-col bg-white">
           <div className="px-3 h-10 flex items-center justify-between">
             <span className="text-xs font-medium text-gray-700">选择 Agent</span>
             {shouldShowCloudBrowserEntry && (
@@ -2044,7 +2044,7 @@ export default function ChatView({
                       } ${
                         isSelected
                           ? "bg-[#EFF6FF] border border-[#1447E6]/25"
-                          : "bg-white border border-[#e5e5e5] hover:bg-gray-50"
+                          : "bg-white border border-gray-200 hover:bg-gray-50"
                       }`}
                       onClick={() => { if (!isDisabledForChat) handleSelectClaw(claw.id); }}
                     >
@@ -2260,7 +2260,7 @@ export default function ChatView({
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between px-4 h-12 border-b border-[#e5e5e5] flex-shrink-0 bg-white/90 backdrop-blur-sm">
+              <div className="flex items-center justify-between px-4 h-12 border-b border-gray-200 flex-shrink-0 bg-white/90 backdrop-blur-sm">
                 <div className="min-w-0 flex items-center gap-2">
                   <div className="min-w-0 flex-1">
                     <h3 className="text-sm font-semibold text-gray-900 truncate" title={selectedClaw.name}>{selectedClaw.name}</h3>
@@ -2465,7 +2465,7 @@ export default function ChatView({
           style={workspaceMode === "chat_with_browser" ? { minWidth: `${BROWSER_PANE_MIN_WIDTH}px` } : undefined}
         >
           {/* 产品规则：浏览器相关按钮全部归浏览器工具条 */}
-          <div className="h-12 border-b border-[#e5e5e5] flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
+          <div className="h-12 border-b border-gray-200 flex items-center justify-between px-4 bg-white/90 backdrop-blur-sm flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-[4px] bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
                 <Monitor className="w-4 h-4" />

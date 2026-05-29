@@ -234,18 +234,18 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                   {groupMode === "multi-group" ? (
                     <>
                       <span
-                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
+                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-gray-200"
                       >A公司 / 技术部 / 前端组</span>
                       <span
-                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
+                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-gray-200"
                       >A公司 / 技术部 / AI 组</span>
                       <span
-                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
+                        className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-gray-200"
                       >前端研发同学</span>
                     </>
                   ) : (
                     <span
-                      className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-[#E5E5E5]"
+                      className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-gray-200"
                     >默认</span>
                   )}
                 </div>

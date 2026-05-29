@@ -498,7 +498,7 @@ function ImageScopePopover({
                   </div>
                 ) : (
                   <>
-                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-[#E5E5E5] rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
+                    <div className="group relative flex flex-wrap items-center gap-1 px-2 py-1.5 border border-gray-200 rounded-[4px] bg-gray-50 focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-100 transition-colors max-h-[80px] overflow-y-auto">
                       {selectedTags.map((tag) => (
                         <span
                           key={tag.id}
@@ -569,7 +569,7 @@ function ImageScopePopover({
               </div>
             )}
           </div>
-          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-[#E5E5E5] shrink-0">
+          <div className="flex items-center justify-end gap-2 px-3.5 py-2.5 border-t border-gray-200 shrink-0">
             <Button variant="claw-outline" size="claw-sm" onClick={() => setOpen(false)}>
               取消
             </Button>
@@ -597,7 +597,7 @@ function OverviewStats({
   enabledTypeCount: number;
 }) {
   return (
-    <div className="h-9 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-[#E5E5E5]">
+    <div className="h-9 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-gray-200">
       <div className="flex items-center gap-2">
         <span className="text-[13px] text-[#737373]">Agent 类型</span>
         <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
@@ -1590,7 +1590,7 @@ export default function ImageManagement() {
                     {NATIVE_KERNEL_NOTICE_LINES.map((l, i) => (<p key={i}>{l}</p>))}
                   </AlertDescription>
                 </Alert>
-                <label className="flex items-start gap-2 px-3 py-2 rounded-[4px] border border-[#E5E5E5] cursor-pointer hover:bg-[#FAFAFA]">
+                <label className="flex items-start gap-2 px-3 py-2 rounded-[4px] border border-gray-200 cursor-pointer hover:bg-[#FAFAFA]">
                   <Checkbox
                     id="native-ack"
                     checked={nativeAck}

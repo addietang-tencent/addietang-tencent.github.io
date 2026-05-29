@@ -43,12 +43,12 @@ function SelectTrigger({
       data-size={size}
       data-tenant={tenant ? "true" : undefined}
       className={cn(
-        "flex w-fit items-center justify-between gap-2 border border-[#E5E5E5] bg-white px-3 py-[5px] text-sm font-normal whitespace-nowrap transition-colors outline-none",
+        "flex w-fit items-center justify-between gap-2 border border-gray-200 bg-white px-3 py-[5px] text-sm font-normal whitespace-nowrap transition-colors outline-none",
         tenant ? "rounded-full" : "rounded-[4px]",
         "hover:border-[#1447E6]",
         "data-[state=open]:border-[#1447E6]",
         "data-[placeholder]:text-[#A3A3A3]",
-        "disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-[#E5E5E5] disabled:text-[#A3A3A3]",
+        "disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",
         "aria-invalid:border-[#d42a1e]",
         "data-[size=default]:h-9 data-[size=sm]:h-8",
         "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",

@@ -101,14 +101,14 @@ function DatePicker({
           disabled={disabled}
           data-tenant={tenant ? "true" : undefined}
           className={cn(
-            "inline-flex items-center justify-between gap-2 h-9 px-3 text-sm border border-[#E5E5E5] bg-white transition-colors cursor-pointer select-none whitespace-nowrap",
+            "inline-flex items-center justify-between gap-2 h-9 px-3 text-sm border border-gray-200 bg-white transition-colors cursor-pointer select-none whitespace-nowrap",
             tenant ? "rounded-full" : "rounded-[4px]",
             "hover:border-[#1447E6]",
             "focus:outline-none focus:border-[#1447E6]",
             "focus-visible:outline-none focus-visible:border-[#1447E6]",
             open && "border-[#1447E6]",
             disabled &&
-              "bg-[#FAFAFA] border-[#E5E5E5] text-[#b0b6c3] cursor-not-allowed hover:border-[#E5E5E5]",
+              "bg-[#FAFAFA] border-gray-200 text-[#b0b6c3] cursor-not-allowed hover:border-gray-200",
             className
           )}
         >

@@ -495,7 +495,7 @@ export const ProDashboard: React.FC<ProDashboardProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#e5e5e5] bg-gray-50/50">
+              <tr className="border-b border-gray-200 bg-gray-50/50">
                 <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] tracking-wide">实例名称/ID</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">Memory 状态</th>
                 <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">记忆空间 ID</th>

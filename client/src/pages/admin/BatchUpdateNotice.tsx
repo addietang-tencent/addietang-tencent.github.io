@@ -244,7 +244,7 @@ export default function BatchUpdateNotice({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent align="end" sideOffset={8} className="w-[360px] p-0">
-        <div className="px-5 py-4 border-b border-[#f0f0f0]">
+        <div className="px-5 py-4 border-b border-gray-200">
           <div className="flex items-center gap-2 text-[14px] font-semibold text-[#020617]">
             <Megaphone className="w-4 h-4 text-[#1447E6]" />
             镜像有新版本
@@ -259,7 +259,7 @@ export default function BatchUpdateNotice({
             所有 Agent 都已运行最新启用版本
           </div>
         ) : (
-          <ul className="max-h-[420px] overflow-y-auto divide-y divide-[#f0f0f0]">
+          <ul className="max-h-[420px] overflow-y-auto divide-y divide-gray-200">
             {outdated.map((item) => {
               const push = findPush(item.agentType, item.enabledVersion);
               return (
@@ -307,7 +307,7 @@ export default function BatchUpdateNotice({
           </ul>
         )}
 
-        <div className="px-5 py-3 border-t border-[#f0f0f0] flex items-start gap-2">
+        <div className="px-5 py-3 border-t border-gray-200 flex items-start gap-2">
           <Info className="w-3.5 h-3.5 text-[#a3a3a3] mt-0.5 shrink-0" />
           <p className="text-[12px] text-[#737373] leading-relaxed">
             "推送提醒"是软通知，员工在用户端会看到更新建议，自行决定更新时机

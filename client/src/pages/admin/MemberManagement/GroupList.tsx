@@ -534,7 +534,7 @@ export default function GroupList({
             <input
               type="text"
               placeholder="搜索分组..."
-              className="w-full h-8 pl-9 pr-3 text-xs bg-white border border-[#E4E4E4] rounded-[4px] outline-none transition-colors focus:border-[#020617] placeholder:text-[#a3a3a3]"
+              className="w-full h-8 pl-9 pr-3 text-xs bg-white border border-gray-200 rounded-[4px] outline-none transition-colors focus:border-[#020617] placeholder:text-[#a3a3a3]"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
@@ -547,7 +547,7 @@ export default function GroupList({
                 className={`w-8 h-8 flex items-center justify-center rounded-[4px] border bg-white transition-colors shrink-0 ${
                   filter !== "all"
                     ? "border-[#020617] text-[#020617] bg-[#f5f5f5]"
-                    : "border-[#E4E4E4] text-[#737373] hover:bg-[#fafafa] hover:text-[#525252]"
+                    : "border-gray-200 text-[#737373] hover:bg-[#fafafa] hover:text-[#525252]"
                 }`}
                 title="筛选"
               >
@@ -801,7 +801,7 @@ export default function GroupList({
       </div>
 
       {/* 底部固定：未分组 */}
-      <div className="border-t border-[#e5e5e5] shrink-0">
+      <div className="border-t border-gray-200 shrink-0">
         <div
           className={`group flex items-center gap-1.5 h-8 pr-3 text-sm cursor-pointer rounded-[4px] mx-3 mt-1 transition-colors ${
             isUnassignedActive

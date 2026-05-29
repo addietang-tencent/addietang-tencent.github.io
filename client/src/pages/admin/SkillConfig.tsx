@@ -267,7 +267,7 @@ export default function SkillConfig() {
 
       {/* Tab 切换器（与 Agent 工具库同款 LineTabs：黑色下划线） */}
       <div className="mb-1">
-        <div className="flex items-center gap-2 border-b border-[#f0f0f0]">
+        <div className="flex items-center gap-2 border-b border-[#dbe6ff]">
           {TABS.map((tab) => (
             <button
               key={tab.id}

@@ -232,7 +232,7 @@ function OverviewTable({
               return (
                 <TableRow
                   key={idx}
-                  className="border-t border-[#e5e5e5] hover:bg-gray-50/50 transition-colors"
+                  className="border-t border-gray-200 hover:bg-gray-50/50 transition-colors"
                 >
                   <TableCell>
                     <button
@@ -285,12 +285,12 @@ function EndpointDetailView({
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow className="border-t border-[#e5e5e5]">
+              <TableRow className="border-t border-gray-200">
                 <TableCell className="text-[#0A0A0A] font-medium">认证</TableCell>
                 <TableCell className="text-[#737373]">{endpoint.auth}</TableCell>
               </TableRow>
               {endpoint.contentType && (
-                <TableRow className="border-t border-[#e5e5e5]">
+                <TableRow className="border-t border-gray-200">
                   <TableCell className="text-[#0A0A0A] font-medium">Content-Type</TableCell>
                   <TableCell>
                     <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded font-mono text-[#334155]">
@@ -320,7 +320,7 @@ function EndpointDetailView({
               </TableHeader>
               <TableBody>
                 {endpoint.inputParams.map((p, i) => (
-                  <TableRow key={i} className="border-t border-[#e5e5e5]">
+                  <TableRow key={i} className="border-t border-gray-200">
                     <TableCell className="font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</TableCell>
                     <TableCell className="font-mono text-[13px] text-[#737373]">{p.type}</TableCell>
                     <TableCell className="text-[13px] text-[#737373]">{p.required}</TableCell>
@@ -350,7 +350,7 @@ function EndpointDetailView({
               </TableHeader>
               <TableBody>
                 {endpoint.outputParams.map((p, i) => (
-                  <TableRow key={i} className="border-t border-[#e5e5e5]">
+                  <TableRow key={i} className="border-t border-gray-200">
                     <TableCell className="font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</TableCell>
                     <TableCell className="font-mono text-[13px] text-[#737373]">{p.type}</TableCell>
                     <TableCell className="text-[13px] text-[#737373] break-words">{p.description}</TableCell>
@@ -391,7 +391,7 @@ function EndpointDetailView({
               </TableHeader>
               <TableBody>
                 {endpoint.errorCodes.map((ec, i) => (
-                  <TableRow key={i} className="border-t border-[#e5e5e5]">
+                  <TableRow key={i} className="border-t border-gray-200">
                     <TableCell className="font-mono text-[13px] text-[#0A0A0A]">{ec.code}</TableCell>
                     <TableCell className="text-[13px] text-[#737373] break-words">{ec.error}</TableCell>
                   </TableRow>
@@ -447,7 +447,7 @@ function SectionDetailPage({
               return (
                 <TableRow
                   key={idx}
-                  className="border-t border-[#e5e5e5] hover:bg-gray-50/50 transition-colors"
+                  className="border-t border-gray-200 hover:bg-gray-50/50 transition-colors"
                 >
                   <TableCell>
                     <button
@@ -602,17 +602,17 @@ export default function ApiDocs() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow className="border-t border-[#e5e5e5]">
+                    <TableRow className="border-t border-gray-200">
                       <TableCell className="text-[#0A0A0A] font-medium">Base URL</TableCell>
                       <TableCell className="break-words">
                         <code className="text-[13px] bg-gray-50 px-2 py-0.5 rounded text-[#334155] font-mono">{baseInfo.baseUrl}</code>
                       </TableCell>
                     </TableRow>
-                    <TableRow className="border-t border-[#e5e5e5]">
+                    <TableRow className="border-t border-gray-200">
                       <TableCell className="text-[#0A0A0A] font-medium">协议</TableCell>
                       <TableCell className="text-[#737373]">{baseInfo.protocol}</TableCell>
                     </TableRow>
-                    <TableRow className="border-t border-[#e5e5e5]">
+                    <TableRow className="border-t border-gray-200">
                       <TableCell className="text-[#0A0A0A] font-medium">数据格式</TableCell>
                       <TableCell className="text-[#737373]">{baseInfo.dataFormat}</TableCell>
                     </TableRow>
@@ -887,7 +887,7 @@ export default function ApiDocs() {
     >
       {/* ─── 顶部导航栏 ───────────────────────── */}
       <header
-        className="shrink-0 bg-white border-b border-[#e5e5e5] px-6"
+        className="shrink-0 bg-white border-b border-gray-200 px-6"
       >
         <div className="h-16 flex items-center gap-4 max-w-[1400px] mx-auto">
           <button
@@ -919,9 +919,9 @@ export default function ApiDocs() {
       <div className="flex-1 flex overflow-hidden">
         {/* 左侧导航 */}
         <aside
-          className="w-[300px] shrink-0 bg-white border-r border-[#e5e5e5] flex flex-col"
+          className="w-[300px] shrink-0 bg-white border-r border-gray-200 flex flex-col"
         >
-          <div className="p-4 border-b border-[#e5e5e5]">
+          <div className="p-4 border-b border-gray-200">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
               <input

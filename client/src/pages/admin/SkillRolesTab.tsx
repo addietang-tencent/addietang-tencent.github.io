@@ -1727,7 +1727,7 @@ export default function SkillRolesTab() {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10 px-3" />

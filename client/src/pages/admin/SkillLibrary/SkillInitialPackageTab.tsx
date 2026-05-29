@@ -1230,7 +1230,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       {/* 技能列表 */}
       <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
         {localSkills.length > 0 ? (
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead>技能名称</TableHead>
@@ -1713,7 +1713,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
       {/* 技能包列表 */}
       {filteredPackages.length > 0 ? (
         <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead style={{ width: 360, minWidth: 280 }}>技能包名称</TableHead>

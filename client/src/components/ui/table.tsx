@@ -123,7 +123,7 @@ import { cn } from "@/lib/utils";
  *   推荐结构：
  *     <SurfaceCard>
  *       <Table>...</Table>
- *       <div className="px-4 py-3 border-t border-[#f0f0f0]">
+ *       <div className="px-4 py-3 border-t border-gray-200">
  *         <Pagination total={...} showTotal={(t) => `共 ${t} 条记录`} ... />
  *       </div>
  *     </SurfaceCard>
@@ -133,6 +133,8 @@ import { cn } from "@/lib/utils";
  * ════════════════════════════════════════════════════════════════════ */
 
 type TableDensity = "default" | "compact";
+
+type TableVariant = "default" | "gray-header" | "elevated-white";
 
 type FixedSide = "left" | "right";
 
@@ -149,9 +151,14 @@ type FixedShadowMetrics = {
 };
 
 const TableDensityContext = React.createContext<TableDensity>("default");
+const TableVariantContext = React.createContext<TableVariant>("default");
 
 function useTableDensity() {
   return React.useContext(TableDensityContext);
+}
+
+function useTableVariant() {
+  return React.useContext(TableVariantContext);
 }
 
 function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
@@ -168,6 +175,16 @@ type TableProps = React.ComponentProps<"table"> & {
   containerRef?: React.Ref<HTMLDivElement>;
   containerStyle?: React.CSSProperties;
   density?: TableDensity;
+  /**
+   * 视觉风格变体：
+   *   - "default"：灰底表头 #FAFAFA（默认，适用于白色背景容器内）
+   *   - "gray-header"：与 default 相同，显式别名
+   *   - "elevated-white"：白色表头 + 白色边框 + 投影浮起效果（适用于蓝色渐变等非白色页面背景）
+   *
+   * ⚠️ variant="elevated-white" 禁止在 Dialog / AlertDialog / Sheet 等弹窗内使用，
+   *    也禁止在白色背景容器上使用。
+   */
+  variant?: TableVariant;
   /**
    * 与 Ant Design Table 的 scroll.x 一致：
    *   - 数字：表格最小宽度（px）；超出容器宽度即出现横向滚动条
@@ -194,6 +211,7 @@ function Table({
   containerRef,
   containerStyle,
   density = "default",
+  variant = "default",
   scrollX,
   autoFixedColumns = true,
   ...props
@@ -292,10 +310,18 @@ function Table({
 
   return (
     <TableDensityContext.Provider value={density}>
-      <div ref={outerContainerRef} className="relative isolate w-full">
+    <TableVariantContext.Provider value={variant}>
+      <div
+        ref={outerContainerRef}
+        className={cn(
+          "relative isolate w-full",
+          variant === "elevated-white" && "rounded-xl border border-white shadow-[0_1px_3px_0_rgba(0,0,0,0.08)] overflow-hidden"
+        )}
+      >
         <div
           ref={setContainerNode}
           data-density={density}
+          data-variant={variant}
           data-slot="table-container"
           data-scrollable-x={scrollState.scrollableX ? "true" : "false"}
           data-scroll-left={scrollState.scrollLeft ? "true" : "false"}
@@ -337,15 +363,21 @@ function Table({
           />
         )}
       </div>
+    </TableVariantContext.Provider>
     </TableDensityContext.Provider>
   );
 }
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+  const variant = useTableVariant();
   return (
     <thead
       data-slot="table-header"
-      className={cn("bg-gray-50 [&_tr]:border-b [&_tr]:border-gray-200", className)}
+      className={cn(
+        variant === "elevated-white" ? "bg-white" : "bg-gray-50",
+        "[&_tr]:border-b [&_tr]:border-gray-200",
+        className
+      )}
       {...props}
     />
   );
@@ -384,7 +416,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "group border-b border-gray-200 transition-colors hover:bg-gray-50 data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)]",
+        "group border-b border-gray-200 transition-colors hover:bg-gray-50 data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)] [thead_&]:hover:bg-transparent",
         className
       )}
       {...props}
@@ -411,8 +443,8 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
  * ──────────────────────────────────────────────────────────────────── */
 const FIXED_BASE = "sticky";
 // 表头固定列：z-50 必须高于业务表头里常见的 `relative z-40`（如带筛选 Popover 的列）以及任何 body cell
-const FIXED_LEFT_CLS = "left-0 z-50 bg-gray-50";
-const FIXED_RIGHT_CLS = "right-0 z-50 bg-gray-50";
+const FIXED_LEFT_CLS = "left-0 z-50 bg-white";
+const FIXED_RIGHT_CLS = "right-0 z-50 bg-white";
 // 边界列的 1px 分隔线（仅 fixedShadow !== false 时附加）；投影由 Table 容器级 overlay 连续绘制
 const FIXED_LEFT_SHADOW_CLS =
   "after:content-[''] after:absolute after:top-0 after:bottom-0 after:right-0 after:w-px after:bg-[#f0f0f0] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100";

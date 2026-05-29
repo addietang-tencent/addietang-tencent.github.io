@@ -186,7 +186,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
         {/* Token 流量 */}
         <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-xl border border-gray-200 overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
             <span className="text-sm font-medium text-[#334155]">Token 流量</span>
@@ -211,7 +211,7 @@ export default function SessionDetail({ params }: SessionDetailProps) {
 
         {/* 成本趋势 */}
         <div
-          className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-xl border border-gray-200 overflow-hidden"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
             <span className="text-sm font-medium text-[#334155]">成本趋势</span>

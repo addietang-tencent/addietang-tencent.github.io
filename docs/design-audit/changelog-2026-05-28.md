@@ -200,3 +200,50 @@ https://github.com/tx-organization/openclaw-enterprise/pull/358
 | `f6baebf` | style(admin): SkillListTab 卡片下发按钮降级为次级 + ChannelConfig 外链 hover 加深 |
 | `b4ebf05` | docs(design-audit): 补齐 5/29 二次走查微调记录到 changelog |
 
+
+## 13. 5/29 三次走查微调（与 claude-internal 协作期间）
+
+### 13.1 Table 默认表头反转：灰底 → 白底
+
+`client/src/components/ui/table.tsx`
+
+| 项 | 改前 | 改后 |
+|---|---|---|
+| `variant="default"` 表头背景 | `bg-gray-50`（#F9FAFB 灰底） | `bg-white`（白底） |
+| `variant="elevated-white"` 表头 | 白底 | 白底（保持） |
+| 新增 `variant="gray-header"` | — | `bg-gray-50` 灰底，用于需要表头与内容明显区分的场景 |
+| 固定列背景（左/右） | `default`/`elevated-white` 各自处理 | `gray-header` 沿用 `FIXED_LEFT_CLS`/`FIXED_RIGHT_CLS`；其余 variant 统一白底固定列 |
+
+**原因**：设计走查决定主表格默认走"白底极简"风格，与卡片化容器（`bg-white rounded-[4px] border`）天然融合，减少灰阶层级。需要灰底分隔的场景（如长列表、深嵌套面板）显式指定 `variant="gray-header"`。
+
+**协作提示**：claude-internal 那边若原本写了灰底表头（默认 `variant`），现在会自动变白；如设计意图仍是灰底，需显式改为 `variant="gray-header"`。
+
+### 13.2 NodeContentPanel 节点用户表底部字号统一 12px
+
+`client/src/pages/admin/MemberManagement/NodeContentPanel.tsx` ≈ L790
+
+| 项 | 改前 | 改后 |
+|---|---|---|
+| 「共 N 名用户」font-size | `text-sm`（14px） | `text-xs`（12px） |
+| line-height | `leading-[1.5]`（21px） | `leading-[18px]` |
+| color | `text-[#737373]` | `text-[#737373]`（不变） |
+
+**原因**：与表格内字号 12px、分页器字号 12px 统一，遵守"表格生态全栈 12px"规范（见 § 1-3）。
+
+### 13.3 本次提交
+
+| Commit | 说明 |
+|---|---|
+| `1224f09` | style(ui/table+admin/member): 表头默认改白底 + 节点用户表底部字号 12px |
+
+### 13.4 给 claude-internal 的同步指令
+
+```bash
+git fetch origin feature/design-addietang
+git pull --rebase origin feature/design-addietang
+# 如本地有改动冲突：
+# git stash → git pull --rebase → git stash pop
+```
+
+重点核对：原本写 `<Table>` 期望灰底表头的场景，需显式补 `variant="gray-header"`。
+

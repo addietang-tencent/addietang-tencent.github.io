@@ -1295,6 +1295,31 @@ import {
 - **垂直对齐**：组件默认 `align-middle`（垂直居中），**禁止业务侧使用 `align-top` 覆盖**。多行内容（如名称 + slug 两行）可自然撑高行高，仍保持居中。
 - **禁止使用原生 `<table>`**：所有数据表格必须使用标准 Table 组件，禁止裸写 `<table>` + 自定义 class。
 
+**Variant 视觉变体：**
+
+| variant | 表头背景 | 外边框 | 阴影 | 适用场景 |
+|---------|---------|--------|------|----------|
+| `"default"`（默认） | `bg-gray-50`（#FAFAFA） | 继承外层容器 | 无 | 白色背景容器（SurfaceCard）内的表格 |
+| `"gray-header"` | 同 default | 同 default | 无 | 显式别名，等同 default |
+| `"elevated-white"` | `bg-white` | `border-white` | `shadow-[0_1px_3px_0_rgba(0,0,0,0.08)]`（占位，待设计确认） | 蓝色渐变等非白色页面背景上的表格 |
+
+```tsx
+// 白色背景容器内（默认灰色表头）
+<Table>...</Table>
+
+// 蓝色渐变背景页面（白色表头）
+<Table variant="elevated-white">...</Table>
+```
+
+⚠️ **`variant="elevated-white"` 使用限制：**
+- 禁止在 Dialog / AlertDialog / Sheet / Drawer 等弹窗/抽屉内使用
+- 禁止在白色背景（`bg-white`）容器上使用——白底上白边框无法形成视觉层次，必须使用默认 variant
+
+**表头样式规则（强制）：**
+- 表头行**禁止 hover 变色**（组件已内置 `[thead_&]:hover:bg-transparent`）
+- 固定列（`fixed="left"` / `fixed="right"`）表头背景色**必须与非固定列保持一致**（通过 `bg-inherit` 继承 `<thead>` 背景色，禁止单独覆盖）
+- 表头背景色统一由 `<TableHeader>` 组件根据 variant 自动控制，业务侧禁止手写 `bg-*` 覆盖
+
 **表格内状态/标签样式规则（强制）：**
 - **状态列**（运行状态、下发状态）：必须使用 `StatusTag mode="text"`（纯文字变色，无底色无圆点），禁止在表格内使用 `mode="dot"` 或 `mode="fill"`。
 - **版本号**：使用纯文字（如 `v2.1.0`），禁止使用 `StatusTag mode="fill" variant="gray"` 包裹。

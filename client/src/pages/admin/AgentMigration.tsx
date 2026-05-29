@@ -488,7 +488,7 @@ rm -f /tmp/openclaw-state.tgz`;
         </div>
 
         {/* Options row */}
-        <div className="flex items-center gap-6 mt-3 pt-3 border-t border-[#e5e5e5]">
+        <div className="flex items-center gap-6 mt-3 pt-3 border-t border-gray-200">
           <div className="flex items-center gap-2">
             <Switch checked={stopGateway} onCheckedChange={setStopGateway} className="scale-90" />
             <span className="text-xs text-[#737373]">迁移前停止 Gateway</span>
@@ -507,7 +507,7 @@ rm -f /tmp/openclaw-state.tgz`;
 
         {/* Manual scene: Upload Script */}
         {isManual && (
-          <Collapsible className="mt-3 pt-3 border-t border-[#e5e5e5]">
+          <Collapsible className="mt-3 pt-3 border-t border-gray-200">
             <CollapsibleTrigger className="flex items-center gap-1.5 text-xs font-medium text-[#355EF1] hover:text-[#355EF1]">
               <Terminal className="w-3.5 h-3.5" />
               查看上传脚本（请在源端执行）
@@ -533,7 +533,7 @@ rm -f /tmp/openclaw-state.tgz`;
 
         {/* Manual scene: COS detection */}
         {isManual && (
-          <div className="mt-3 pt-3 border-t border-[#e5e5e5] flex items-center gap-3">
+          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center gap-3">
             <Button variant="outline" size="sm" onClick={fetchCosFiles} className="h-7 text-xs">
               <RefreshCw className="w-3 h-3 mr-1" /> {cosLoaded ? "刷新 COS 文件" : "检测已上传文件"}
             </Button>
@@ -569,7 +569,7 @@ rm -f /tmp/openclaw-state.tgz`;
         {editMode === "csv" ? (
           /* ===== CSV Tab ===== */
           <div className="space-y-3">
-            <div className="bg-[#F5F5F5] border border-[#E4E4E4] rounded-[4px] p-3">
+            <div className="bg-[#F5F5F5] border border-gray-200 rounded-[4px] p-3">
               <p className="text-xs text-[#737373] leading-relaxed">
                 <FileSpreadsheet className="w-3.5 h-3.5 inline mr-1 -mt-0.5" />
                 <strong>批量迁移推荐使用 CSV：</strong>下载映射模板 → 在 Excel 中填写源端标识与目标用户/实例的对应关系 → 上传 CSV 自动导入。
@@ -600,7 +600,7 @@ rm -f /tmp/openclaw-state.tgz`;
               </Button>
               <label className="cursor-pointer">
                 <input type="file" accept=".csv" className="hidden" onChange={handleCsvUpload} />
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[4px] border border-[#E4E4E4] bg-white text-xs font-medium text-[#355EF1] hover:border-[#355EF1] cursor-pointer transition-colors">
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[4px] border border-gray-200 bg-white text-xs font-medium text-[#355EF1] hover:border-[#355EF1] cursor-pointer transition-colors">
                   <Upload className="w-3 h-3" /> 上传 CSV 文件
                 </span>
               </label>
@@ -631,7 +631,7 @@ rm -f /tmp/openclaw-state.tgz`;
                     <Input value={srcSearch} onChange={(e) => setSrcSearch(e.target.value)} placeholder="搜索源端标识..." className="h-7 text-xs w-48" />
                   )}
                 </div>
-                <div className="border border-[#f0f0f0] rounded-[4px] overflow-hidden max-h-[380px] overflow-y-auto">
+                <div className="border border-gray-200 rounded-[4px] overflow-hidden max-h-[380px] overflow-y-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="sticky top-0 z-10">
@@ -813,7 +813,7 @@ rm -f /tmp/openclaw-state.tgz`;
 
             {/* Done */}
             {isDone && (
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#e5e5e5]">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
                 <div className="text-xs text-[#737373]">
                   <Database className="w-3 h-3 inline mr-1" />
                   COS 临时数据 24h 后自动清理 | 请前往列表验证并删除临时操作台
@@ -839,7 +839,7 @@ rm -f /tmp/openclaw-state.tgz`;
           {showHistory ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="border border-[#f0f0f0] rounded-[4px] overflow-hidden">
+          <div className="border border-gray-200 rounded-[4px] overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>

@@ -1272,7 +1272,7 @@ export default function FileManagement() {
         <div
           className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
         >
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[35%]">空间名称</TableHead>
@@ -1371,7 +1371,7 @@ export default function FileManagement() {
         >
 
           {/* Flat Table */}
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead style={{ width: '56px', minWidth: '56px' }}>

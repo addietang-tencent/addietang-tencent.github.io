@@ -225,7 +225,7 @@ export default function PushUpgradeDialog({
                       htmlFor={id}
                       className={cn(
                         "flex items-start gap-2.5 rounded-[4px] border px-3 py-3 transition-colors",
-                        "border-[#E5E5E5] bg-white",
+                        "border-gray-200 bg-white",
                         !checked && !disabled && "hover:border-[#1447E6]/40 cursor-pointer",
                         checked && "border-[#1447E6] bg-[#1447E6]/5",
                         p.allUpToDate && "cursor-not-allowed opacity-60",
@@ -307,7 +307,7 @@ export default function PushUpgradeDialog({
 
           {/* 3. 全部已是最新版提示 */}
           {selectable.length === 0 && pushable.length > 0 && (
-            <div className="rounded-[4px] bg-[#FAFAFA] border border-[#E5E5E5] px-3 py-2.5 flex items-start gap-2">
+            <div className="rounded-[4px] bg-[#FAFAFA] border border-gray-200 px-3 py-2.5 flex items-start gap-2">
               <Info className="w-3.5 h-3.5 text-[#A3A3A3] mt-0.5 shrink-0" />
               <div className="text-xs text-[#737373] leading-relaxed">
                 所有 Agent 类型下的实例都已是最新版，无需推送

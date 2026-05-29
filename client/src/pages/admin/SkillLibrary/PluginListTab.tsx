@@ -362,7 +362,7 @@ export default function PluginListTab() {
       {/* 列表视图 */}
       {viewMode === 'list' && sortedPlugins.length > 0 && (
         <SurfaceCard className="overflow-hidden">
-          <Table scrollX={1200}>
+          <Table variant="elevated-white" scrollX={1200}>
             <TableHeader>
               <TableRow>
                 <TableHead style={{ width: 240, minWidth: 240 }}>名称/SLUG</TableHead>

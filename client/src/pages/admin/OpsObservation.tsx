@@ -489,7 +489,7 @@ export default function OpsObservation() {
       {!clsEnabled && (
         <>
           {/* CLS 提示弹框 */}
-          <div className="bg-white border border-[#E5E5E5] rounded-[4px] p-6 mb-6">
+          <div className="bg-white border border-gray-200 rounded-[4px] p-6 mb-6">
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-[#0A0A0A] mb-1">运维观测需要开启 CLS 日志服务</h3>
@@ -550,7 +550,7 @@ export default function OpsObservation() {
           {/* 卡片功能展示 - 现有观测功能 + CLS 新增功能 */}
           <div className="space-y-4 mb-8">
             {/* 第一块：CLS 新增功能 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+            <SurfaceCard className="px-6 py-5">
               <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {EXISTING_OBSERVATION_CARDS.map((card) => {
@@ -572,10 +572,8 @@ export default function OpsObservation() {
                   );
                 })}
               </div>
-            </div>
-
-            {/* 第二块：CLS 新增功能 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+            </SurfaceCard>
+            <SurfaceCard className="px-6 py-5">
               <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {CLS_NEW_CARDS.map((card) => {
@@ -597,7 +595,7 @@ export default function OpsObservation() {
                   );
                 })}
               </div>
-            </div>
+            </SurfaceCard>
           </div>
         </>
       )}
@@ -613,7 +611,7 @@ export default function OpsObservation() {
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
           <DialogBody className="flex-1">
-            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+            <div className="rounded-[4px] border border-gray-200 overflow-hidden">
               <RadioGroup
                 value={selectedPluginVersion?.version ?? ""}
                 onValueChange={(val) => {
@@ -716,7 +714,7 @@ export default function OpsObservation() {
           <div className="flex-1">
             <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
             <Select value={selectedAgent || "all"} onValueChange={(v) => setSelectedAgent(v === "all" ? "" : v)}>
-              <SelectTrigger className="max-w-xs bg-white border-[#e5e5e5] h-9">
+              <SelectTrigger className="max-w-xs bg-white border-gray-200 h-9">
                 <SelectValue placeholder="全部 Agent" />
               </SelectTrigger>
               <SelectContent>
@@ -771,7 +769,7 @@ export default function OpsObservation() {
         <h2 className="text-lg font-bold text-[#09090b] mb-4">应用日志大盘</h2>
         <div className="grid grid-cols-2 gap-6">
           {/* Log Level Distribution */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#09090b]">日志级别分布</h3>
             </div>
@@ -787,7 +785,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Log Module Distribution */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#09090b]">日志模块分布</h3>
             </div>
@@ -810,7 +808,7 @@ export default function OpsObservation() {
         <TooltipProvider delayDuration={150}>
         <div className="grid grid-cols-3 gap-6">
           {/* Message Processing */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <UITooltip>
                 <TooltipTrigger asChild>
@@ -854,7 +852,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Queue Status */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <UITooltip>
                 <TooltipTrigger asChild>
@@ -899,7 +897,7 @@ export default function OpsObservation() {
           </div>
 
           {/* Run Duration */}
-          <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
               <UITooltip>
                 <TooltipTrigger asChild>

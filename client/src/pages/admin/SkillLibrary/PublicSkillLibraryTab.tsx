@@ -134,7 +134,7 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
 
   return (
     <div
-      className="relative flex flex-col overflow-hidden rounded-[4px] border border-[#e5e5e5] bg-white cursor-pointer transition-all hover:border-[#355EF1] group"
+      className="relative flex flex-col overflow-hidden rounded-[4px] border border-gray-200 bg-white cursor-pointer transition-all hover:border-[#355EF1] group"
       onClick={onClick}
     >
       <div className="p-4 pl-4 flex flex-col flex-1">
@@ -303,7 +303,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       <BackButton onClick={onBack}>返回公共技能库</BackButton>
 
       {/* 技能信息头部 */}
-      <div className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+      <div className="bg-white rounded-xl border border-gray-200 p-5"
        >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
@@ -343,10 +343,10 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
       </div>
 
       {/* 三列内容区 */}
-      <div className="flex h-[47rem] border border-[#e5e5e5] rounded-[4px] overflow-hidden bg-white">
+      <div className="flex h-[47rem] border border-gray-200 rounded-[4px] overflow-hidden bg-white">
         {/* 左列：版本列表 */}
-        <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
-          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+        <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
+          <div className="h-12 px-3 border-b border-gray-200 flex items-center">
             <p className="text-sm font-medium text-[#09090b]">版本</p>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -373,8 +373,8 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         </div>
 
         {/* 中列：文件目录 */}
-        <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
-          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
+        <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
+          <div className="h-12 px-3 border-b border-gray-200 flex items-center">
             <p className="text-sm font-medium text-[#09090b]">{selectedVersion.version}</p>
           </div>
           <div className="flex-1 overflow-y-auto px-3 py-2">
@@ -397,7 +397,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex-1 flex flex-col bg-white">
           {selectedFile ? (
             <>
-              <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
+              <div className="h-12 px-3 border-b border-gray-200 flex items-center justify-between">
                 <p className="text-sm font-medium text-[#09090b]">{selectedFile.name}</p>
                 {/* 源码/预览 切换（所有文件都显示） */}
                 <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
@@ -684,7 +684,7 @@ export default function PublicSkillLibraryTab({
               );
             })}
           </div>
-          <div className="pt-3 border-t border-[#e5e5e5] mt-2">
+          <div className="pt-3 border-t border-gray-200 mt-2">
             <Pagination
               total={filteredSkills.length}
               current={currentPage}

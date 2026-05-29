@@ -855,12 +855,12 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
               <div
                 key={skill.id}
                 onClick={() => handleViewDetail(skill.id)}
-                className="rounded-xl border border-gray-200 bg-white p-4 transition-all cursor-pointer hover:bg-gray-50"
+                className="rounded-xl border border-[#E5E5E5] bg-white p-4 transition-colors cursor-pointer hover:border-[#D4D4D4] hover:bg-[#FAFAFA]"
               >
-                {/* 名称 + 安全检测图标 + 版本 */}
-                <div className="flex items-center gap-2 mb-2">
+                {/* 头部：名称 + 安全检测图标 + 版本（右上） */}
+                <div className="flex items-start justify-between gap-2 mb-3">
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">{skill.name}</h3>
+                    <h3 className="text-sm font-medium text-[#0A0A0A] truncate">{skill.name}</h3>
                     {/* 安全检测小图标 */}
                     {(() => {
                       const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
@@ -869,7 +869,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
                               <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                <ShieldCheck className="w-3.5 h-3.5 text-gray-300" />
+                                <ShieldCheck className="w-3.5 h-3.5 text-[#D4D4D4]" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">
@@ -883,7 +883,7 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
                               <span className="inline-flex flex-shrink-0 cursor-default" onClick={(e) => e.stopPropagation()}>
-                                <Loader className="w-3.5 h-3.5 text-blue-500 animate-spin" />
+                                <Loader className="w-3.5 h-3.5 text-[#1447E6] animate-spin" />
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top">
@@ -915,13 +915,13 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                       );
                     })()}
                   </div>
-                  <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full flex-shrink-0">
+                  <span className="text-xs font-mono text-[#737373] tabular-nums shrink-0 mt-0.5">
                     v{skill.version}
                   </span>
                 </div>
 
-                {/* 分类 — 灰色胶囊，最多两行 + +n，hover显示全部 */}
-                <div className="flex flex-wrap gap-1 mb-3 items-center" style={{ maxHeight: '52px', overflow: 'hidden' }}>
+                {/* 分类 — 标准 Badge variant="outline"，最多 3 个 + +N */}
+                <div className="flex flex-wrap gap-1 mb-3 items-center">
                   {(() => {
                     const maxVisible = 3;
                     const total = skill.categories.length;
@@ -930,59 +930,62 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                     return (
                       <>
                         {visible.map((catId: string) => (
-                          <span
-                            key={catId}
-                            className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full whitespace-nowrap"
-                          >
+                          <Badge key={catId} variant="outline">
                             {getCategoryName(catId)}
-                          </span>
+                          </Badge>
                         ))}
                         {overflow > 0 && (
                           <Tooltip delayDuration={300}>
                             <TooltipTrigger asChild>
-                              <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full cursor-default hover:bg-gray-200 transition-colors whitespace-nowrap">
-                                +{overflow}
+                              <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
+                                <Badge variant="outline" className="cursor-default">
+                                  +{overflow}
+                                </Badge>
                               </span>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-[320px]">
                               <div className="flex flex-wrap gap-1">
                                 {skill.categories.map((catId: string) => (
-                                  <span key={catId} className="inline-block px-2 py-0.5 bg-white/20 text-white text-xs rounded-full">
+                                  <span key={catId} className="text-xs">
                                     {getCategoryName(catId)}
                                   </span>
-                                ))}
+                                )).reduce<React.ReactNode[]>((acc, cur, idx) => {
+                                  if (idx > 0) acc.push(<span key={`sep-${idx}`} className="text-xs">,&nbsp;</span>);
+                                  acc.push(cur);
+                                  return acc;
+                                }, [])}
                               </div>
                             </TooltipContent>
                           </Tooltip>
                         )}
+                        <Tooltip delayDuration={1000}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                scrollPositionRef.current = { x: window.scrollX, y: window.scrollY };
+                                setEditingSkillId(skill.id);
+                                setEditingSkillCategories(skill.categories);
+                                setEditCategoryDialogOpen(true);
+                              }}
+                              className="p-0.5 text-[#A3A3A3] hover:text-[#0A0A0A] rounded transition-colors"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top">编辑分类</TooltipContent>
+                        </Tooltip>
                       </>
                     );
                   })()}
-                  <Tooltip delayDuration={1000}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            scrollPositionRef.current = { x: window.scrollX, y: window.scrollY };
-                            setEditingSkillId(skill.id);
-                            setEditingSkillCategories(skill.categories);
-                            setEditCategoryDialogOpen(true);
-                          }}
-                          className="p-0.5 text-gray-400 hover:text-gray-900 rounded transition-colors"
-                        >
-                          <Edit2 className="w-3 h-3" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        编辑分类
-                      </TooltipContent>
-                    </Tooltip>
                 </div>
 
-                {/* 描述 */}
+                {/* 描述 — 两行截断 */}
                 <Tooltip delayDuration={1000}>
                   <TooltipTrigger asChild>
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-2 cursor-default">{skill.description || '-'}</p>
+                    <p className="text-xs text-[#737373] line-clamp-2 mb-3 cursor-default leading-relaxed min-h-[34px]">
+                      {skill.description || '-'}
+                    </p>
                   </TooltipTrigger>
                   {skill.description && skill.description.length > 60 && (
                     <TooltipContent side="bottom" className="max-w-[320px]">
@@ -991,9 +994,9 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   )}
                 </Tooltip>
 
-                {/* 应用范围 — 使用 Popover 编辑 */}
+                {/* 应用范围 — 直接展示 outline badge（去掉冗余前缀文字） */}
                 <div className="flex items-center gap-1 mb-3 flex-wrap" onClick={(e) => e.stopPropagation()}>
-                  <span className="text-xs text-gray-400">应用范围：</span>
+                  <span className="text-xs text-[#A3A3A3] mr-1">应用范围</span>
                   <EditScopePopover
                     groups={MOCK_GROUPS}
                     currentScope={skill.scope || 'public'}
@@ -1009,54 +1012,55 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                   />
                 </div>
 
-                {/* 操作 */}
-                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                {/* 操作 — 下发 / 更新 / 更多 全部使用次级按钮（claw-outline），保持卡片视觉克制 */}
+                <div className="flex items-center gap-2 pt-3 border-t border-[#F5F5F5]" onClick={(e) => e.stopPropagation()}>
                   <Button
-                    variant="outline"
+                    variant="claw-outline"
                     size="sm"
                     onClick={() => handleDistribute(skill.id)}
                     disabled={distributing}
-                    className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className="h-8"
                   >
-                    <Send className="w-3 h-3 mr-1" />
+                    <Send className="w-3.5 h-3.5 mr-1" />
                     {distributing ? (summary?.lastDistributionStatus === ('deleting' as any) ? '卸载中' : '下发中') : '下发'}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="claw-outline"
                     size="sm"
                     onClick={() => handleUpdate(skill.id)}
                     disabled={distributing}
-                    className={`h-7 text-xs ${distributing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className="h-8"
                   >
-                    <Pencil className="w-3 h-3 mr-1" />
+                    <Pencil className="w-3.5 h-3.5 mr-1" />
                     更新
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 w-7 p-0">
-                        <MoreHorizontal className="w-3.5 h-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleDownload(skill)}
-                        disabled={downloadingSkillId === skill.id}
-                      >
-                        {downloadingSkillId === skill.id
-                          ? <Loader className="w-4 h-4 mr-2 animate-spin" />
-                          : <Download className="w-4 h-4 mr-2" />}
-                        下载
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleDelete(skill.id)}
-                        disabled={distributing}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2 text-red-500" />
-                        删除
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="ml-auto">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="claw-outline" size="sm" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="w-3.5 h-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleDownload(skill)}
+                          disabled={downloadingSkillId === skill.id}
+                        >
+                          {downloadingSkillId === skill.id
+                            ? <Loader className="w-4 h-4 mr-2 animate-spin" />
+                            : <Download className="w-4 h-4 mr-2" />}
+                          下载
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(skill.id)}
+                          disabled={distributing}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          删除
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
             );

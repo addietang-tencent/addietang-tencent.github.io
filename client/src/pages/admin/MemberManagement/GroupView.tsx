@@ -20,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import GroupList, { UNASSIGNED_GROUP_ID } from "./GroupList";
 import NodeContentPanel from "./NodeContentPanel";
 import { GroupFormDialog, DeleteGroupDialog } from "./GroupDialog";
@@ -819,26 +820,26 @@ export default function GroupView({
               该分组的上级分组发生变更，以下用户在该分组中创建了 Agent 实例，请选择如何处理：
             </p>
             <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-gray-50 sticky top-0">
-                    <th className="text-left px-3 py-2 font-medium text-[#737373]">用户 ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-[#737373]">Agent 实例名称 / ID</th>
-                    <th className="text-left px-3 py-2 font-medium text-[#737373]">分组</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              <Table className="w-full text-xs" density="compact">
+                <TableHeader className="sticky top-0">
+                  <TableRow>
+                    <TableHead className="text-left">用户 ID</TableHead>
+                    <TableHead className="text-left">Agent 实例名称 / ID</TableHead>
+                    <TableHead className="text-left">分组</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody className="divide-y divide-gray-50">
                   {editGroupAgentDialog?.agents.flatMap((a) =>
                     a.instances.map((inst) => (
-                      <tr key={inst.id}>
-                        <td className="px-3 py-2 text-[#334155]">{a.userId}</td>
-                        <td className="px-3 py-2 text-[#334155]">{inst.name}<span className="text-[#A3A3A3] ml-1">({inst.id})</span></td>
-                        <td className="px-3 py-2 text-[#334155]">{a.groupName}</td>
-                      </tr>
+                      <TableRow key={inst.id}>
+                        <TableCell className="text-[#334155]">{a.userId}</TableCell>
+                        <TableCell className="text-[#334155]">{inst.name}<span className="text-[#A3A3A3] ml-1">({inst.id})</span></TableCell>
+                        <TableCell className="text-[#334155]">{a.groupName}</TableCell>
+                      </TableRow>
                     ))
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
           <div className="py-2 space-y-2">

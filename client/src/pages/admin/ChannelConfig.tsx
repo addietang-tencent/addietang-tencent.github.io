@@ -365,7 +365,7 @@ export default function ChannelConfig() {
           <div className="flex items-center justify-between">
             <a
               href="#"
-              className="inline-flex items-center gap-1 text-xs text-[#355EF1] hover:text-[#355EF1] underline underline-offset-2 transition-colors"
+              className="inline-flex items-center gap-1 text-xs text-[#355EF1] hover:text-[#0a226f] underline underline-offset-2 transition-colors"
               onClick={(e) => e.preventDefault()}
             >
               自定义通道配置指引

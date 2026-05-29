@@ -173,7 +173,8 @@ function Pagination({
 
   const isSmall = size === "small";
   const itemSize = isSmall ? "h-6 min-w-[24px]" : "h-8 min-w-[32px]";
-  const textSize = isSmall ? "text-xs" : "text-sm";
+  // 字号统一 12px：default / small 一致；与表格组件 12px 规范保持一致
+  const textSize = "text-xs";
 
   const handleChange = (page: number) => {
     if (disabled) return;
@@ -220,9 +221,10 @@ function Pagination({
   if (simple) {
     return (
       <nav
+        data-slot="pagination"
         role="navigation"
         aria-label="pagination"
-        className={cn("flex items-center gap-1", className)}
+        className={cn("flex items-center gap-1 text-xs", className)}
       >
         {/* Prev */}
         <button
@@ -278,9 +280,10 @@ function Pagination({
   /* ─── Default mode ─────────────────────────────────────────── */
   return (
     <nav
+      data-slot="pagination"
       role="navigation"
       aria-label="pagination"
-      className={cn("flex items-center gap-[8px] flex-wrap", textSize, className)}
+      className={cn("flex items-center gap-[8px] flex-wrap text-xs", className)}
     >
       {/* Show Total */}
       {showTotal && (

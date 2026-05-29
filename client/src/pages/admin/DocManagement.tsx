@@ -8,6 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { SurfaceCard } from "@/components/ui/Surface";
+import { StatusTag } from "@/components/ui/status-tag";
+import {
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell,
+} from "@/components/ui/table";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -57,20 +61,20 @@ export default function DocManagement() {
         </div>
 
         <SurfaceCard className="overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-50 bg-gray-50/50">
-                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">文档标题</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">添加时间</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">添加人</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">展示状态</th>
-                <th className="text-left px-6 py-4 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>文档标题</TableHead>
+                <TableHead>添加时间</TableHead>
+                <TableHead>添加人</TableHead>
+                <TableHead>展示状态</TableHead>
+                <TableHead>操作</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {docs.map((doc) => (
-                <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4">
+                <TableRow key={doc.id}>
+                  <TableCell>
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-[#355EF1] flex-shrink-0" />
                       <button
@@ -84,49 +88,37 @@ export default function DocManagement() {
                         <Badge variant="outline" className="text-xs border-blue-200 text-[#355EF1] bg-blue-50">默认</Badge>
                       )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-[#737373]">{doc.addTime}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-[#737373]">{doc.addBy}</span>
-                  </td>
-                  <td className="px-6 py-4">
+                  </TableCell>
+                  <TableCell className="text-[#737373]">{doc.addTime}</TableCell>
+                  <TableCell className="text-[#737373]">{doc.addBy}</TableCell>
+                  <TableCell>
                     {doc.visible ? (
-                      <span className="badge-running text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                        展示中
-                      </span>
+                      <StatusTag mode="fill" variant="green">展示中</StatusTag>
                     ) : (
-                      <span className="badge-stopped text-xs">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block" />
-                        已隐藏
-                      </span>
+                      <StatusTag mode="fill" variant="gray">已隐藏</StatusTag>
                     )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#A3A3A3]">用户可见</span>
-                        <Switch
-                          checked={doc.visible}
-                          onCheckedChange={(v) => {
-                            setDocs(docs.map((d) => d.id === doc.id ? { ...d, visible: v } : d));
-                            toast.success(v ? "文档已展示" : "文档已隐藏");
-                          }}
-                        />
-                      </div>
-                      <button
-                        onClick={() => { setDocs(docs.filter((d) => d.id !== doc.id)); toast.success("文档已删除"); }}
-                        className="text-[#A3A3A3] hover:text-red-500 transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  </TableCell>
+                  <TableActionCell>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-[#A3A3A3]">用户可见</span>
+                      <Switch
+                        checked={doc.visible}
+                        onCheckedChange={(v) => {
+                          setDocs(docs.map((d) => d.id === doc.id ? { ...d, visible: v } : d));
+                          toast.success(v ? "文档已展示" : "文档已隐藏");
+                        }}
+                      />
                     </div>
-                  </td>
-                </tr>
+                    <button
+                      onClick={() => { setDocs(docs.filter((d) => d.id !== doc.id)); toast.success("文档已删除"); }}
+                      className="text-[#A3A3A3] hover:text-red-500 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </TableActionCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
           <div className="px-6 py-3 border-t border-gray-50 text-xs text-[#A3A3A3]">
             共 {docs.length} 篇文档
           </div>

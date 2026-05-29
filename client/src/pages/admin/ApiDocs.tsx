@@ -28,6 +28,7 @@ import {
 } from "./apiDocsData";
 import { endpointsBySection } from "./apiDocsEndpoints";
 import { adminEndpointsBySection } from "./apiDocsEndpointsAdmin";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
 // ─── 合并所有端点数据 ────────────────────────
 const allEndpoints: Record<string, EndpointDetailType[]> = {
@@ -212,43 +213,43 @@ function OverviewTable({
         {section.title}
       </h3>
       <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50/80">
-              <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider ${COL_W_API}`}>
+        <Table className="w-full text-sm">
+          <TableHeader>
+            <TableRow className="bg-gray-50/80">
+              <TableHead className={`text-left uppercase tracking-wider ${COL_W_API}`}>
                 接口名称
-              </th>
-              <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="text-left uppercase tracking-wider">
                 接口功能
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {section.entries.map((entry, idx) => {
               const parts = entry.name.split(" ");
               const method = parts[0];
               const path = parts.slice(1).join(" ");
               return (
-                <tr
+                <TableRow
                   key={idx}
                   className="border-t border-[#e5e5e5] hover:bg-gray-50/50 transition-colors"
                 >
-                  <td className="px-4 py-2.5">
+                  <TableCell>
                     <button
                       onClick={() => onNavigate(section.sectionId, entry.name)}
                       className="text-[#355EF1] hover:underline cursor-pointer font-medium"
                     >
                       <MethodPath method={method} path={path} />
                     </button>
-                  </td>
-                  <td className="px-4 py-2.5 text-[#737373] text-[13px] break-words">
+                  </TableCell>
+                  <TableCell className="text-[#737373] text-[13px] break-words">
                     {entry.description}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -276,30 +277,30 @@ function EndpointDetailView({
           {endpoint.description}
         </p>
         <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-          <table className="w-full text-sm table-fixed">
-            <thead>
-              <tr className="bg-gray-50/80">
-                <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>属性</th>
-                <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">值</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t border-[#e5e5e5]">
-                <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">认证</td>
-                <td className="px-4 py-2.5 text-[#737373]">{endpoint.auth}</td>
-              </tr>
+          <Table className="w-full text-sm table-fixed">
+            <TableHeader>
+              <TableRow className="bg-gray-50/80">
+                <TableHead className={`text-left ${COL_W1}`}>属性</TableHead>
+                <TableHead className="text-left">值</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow className="border-t border-[#e5e5e5]">
+                <TableCell className="text-[#0A0A0A] font-medium">认证</TableCell>
+                <TableCell className="text-[#737373]">{endpoint.auth}</TableCell>
+              </TableRow>
               {endpoint.contentType && (
-                <tr className="border-t border-[#e5e5e5]">
-                  <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">Content-Type</td>
-                  <td className="px-4 py-2.5">
+                <TableRow className="border-t border-[#e5e5e5]">
+                  <TableCell className="text-[#0A0A0A] font-medium">Content-Type</TableCell>
+                  <TableCell>
                     <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded font-mono text-[#334155]">
                       {endpoint.contentType}
                     </code>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -308,26 +309,26 @@ function EndpointDetailView({
         <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">2. 输入参数</h4>
         {endpoint.inputParams.length > 0 ? (
           <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-            <table className="w-full text-sm table-fixed">
-              <thead>
-                <tr className="bg-gray-50/80">
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>参数</th>
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>类型</th>
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W3}`}>必填</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="w-full text-sm table-fixed">
+              <TableHeader>
+                <TableRow className="bg-gray-50/80">
+                  <TableHead className={`text-left ${COL_W1}`}>参数</TableHead>
+                  <TableHead className={`text-left ${COL_W2}`}>类型</TableHead>
+                  <TableHead className={`text-left ${COL_W3}`}>必填</TableHead>
+                  <TableHead className="text-left">说明</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {endpoint.inputParams.map((p, i) => (
-                  <tr key={i} className="border-t border-[#e5e5e5]">
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</td>
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#737373]">{p.type}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-[#737373]">{p.required}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-[#737373] break-words">{p.description}</td>
-                  </tr>
+                  <TableRow key={i} className="border-t border-[#e5e5e5]">
+                    <TableCell className="font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</TableCell>
+                    <TableCell className="font-mono text-[13px] text-[#737373]">{p.type}</TableCell>
+                    <TableCell className="text-[13px] text-[#737373]">{p.required}</TableCell>
+                    <TableCell className="text-[13px] text-[#737373] break-words">{p.description}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         ) : (
           <p className="text-sm text-[#A3A3A3]">无</p>
@@ -339,24 +340,24 @@ function EndpointDetailView({
         <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">3. 输出参数</h4>
         {endpoint.outputParams.length > 0 ? (
           <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-            <table className="w-full text-sm table-fixed">
-              <thead>
-                <tr className="bg-gray-50/80">
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>字段</th>
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>类型</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="w-full text-sm table-fixed">
+              <TableHeader>
+                <TableRow className="bg-gray-50/80">
+                  <TableHead className={`text-left ${COL_W1}`}>字段</TableHead>
+                  <TableHead className={`text-left ${COL_W2}`}>类型</TableHead>
+                  <TableHead className="text-left">说明</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {endpoint.outputParams.map((p, i) => (
-                  <tr key={i} className="border-t border-[#e5e5e5]">
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</td>
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#737373]">{p.type}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-[#737373] break-words">{p.description}</td>
-                  </tr>
+                  <TableRow key={i} className="border-t border-[#e5e5e5]">
+                    <TableCell className="font-mono text-[13px] text-[#0A0A0A] break-all">{p.name}</TableCell>
+                    <TableCell className="font-mono text-[13px] text-[#737373]">{p.type}</TableCell>
+                    <TableCell className="text-[13px] text-[#737373] break-words">{p.description}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         ) : (
           <p className="text-sm text-[#A3A3A3]">无</p>
@@ -381,22 +382,22 @@ function EndpointDetailView({
         <div>
           <h4 className="text-base font-semibold text-[#0A0A0A] mb-3">5. 错误码</h4>
           <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-            <table className="w-full text-sm table-fixed">
-              <thead>
-                <tr className="bg-gray-50/80">
-                  <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>状态码</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">错误信息</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="w-full text-sm table-fixed">
+              <TableHeader>
+                <TableRow className="bg-gray-50/80">
+                  <TableHead className={`text-left ${COL_W1}`}>状态码</TableHead>
+                  <TableHead className="text-left">错误信息</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {endpoint.errorCodes.map((ec, i) => (
-                  <tr key={i} className="border-t border-[#e5e5e5]">
-                    <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">{ec.code}</td>
-                    <td className="px-4 py-2.5 text-[13px] text-[#737373] break-words">{ec.error}</td>
-                  </tr>
+                  <TableRow key={i} className="border-t border-[#e5e5e5]">
+                    <TableCell className="font-mono text-[13px] text-[#0A0A0A]">{ec.code}</TableCell>
+                    <TableCell className="text-[13px] text-[#737373] break-words">{ec.error}</TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}
@@ -427,43 +428,43 @@ function SectionDetailPage({
 
       {/* 概览表格 */}
       <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-gray-50/80">
-              <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider ${COL_W_API}`}>
+        <Table className="w-full text-sm">
+          <TableHeader>
+            <TableRow className="bg-gray-50/80">
+              <TableHead className={`text-left uppercase tracking-wider ${COL_W_API}`}>
                 接口名称
-              </th>
-              <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373] uppercase tracking-wider">
+              </TableHead>
+              <TableHead className="text-left uppercase tracking-wider">
                 接口功能
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {section.entries.map((entry, idx) => {
               const parts = entry.name.split(" ");
               const method = parts[0];
               const path = parts.slice(1).join(" ");
               return (
-                <tr
+                <TableRow
                   key={idx}
                   className="border-t border-[#e5e5e5] hover:bg-gray-50/50 transition-colors"
                 >
-                  <td className="px-4 py-2.5">
+                  <TableCell>
                     <button
                       onClick={() => onNavigateToEndpoint(section.sectionId, entry.name)}
                       className="text-[#355EF1] hover:underline cursor-pointer font-medium"
                     >
                       <MethodPath method={method} path={path} />
                     </button>
-                  </td>
-                  <td className="px-4 py-2.5 text-[#737373] text-[13px] break-words">
+                  </TableCell>
+                  <TableCell className="text-[#737373] text-[13px] break-words">
                     {entry.description}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -593,30 +594,30 @@ export default function ApiDocs() {
             <div>
               <h2 className="text-base font-semibold text-[#0A0A0A] mb-3">基础信息</h2>
               <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-                <table className="w-full text-sm table-fixed">
-                  <thead>
-                    <tr className="bg-gray-50/80">
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>项目</th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">Base URL</td>
-                      <td className="px-4 py-2.5 break-words">
+                <Table className="w-full text-sm table-fixed">
+                  <TableHeader>
+                    <TableRow className="bg-gray-50/80">
+                      <TableHead className={`text-left ${COL_W1}`}>项目</TableHead>
+                      <TableHead className="text-left">说明</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow className="border-t border-[#e5e5e5]">
+                      <TableCell className="text-[#0A0A0A] font-medium">Base URL</TableCell>
+                      <TableCell className="break-words">
                         <code className="text-[13px] bg-gray-50 px-2 py-0.5 rounded text-[#334155] font-mono">{baseInfo.baseUrl}</code>
-                      </td>
-                    </tr>
-                    <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">协议</td>
-                      <td className="px-4 py-2.5 text-[#737373]">{baseInfo.protocol}</td>
-                    </tr>
-                    <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">数据格式</td>
-                      <td className="px-4 py-2.5 text-[#737373]">{baseInfo.dataFormat}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow className="border-t border-[#e5e5e5]">
+                      <TableCell className="text-[#0A0A0A] font-medium">协议</TableCell>
+                      <TableCell className="text-[#737373]">{baseInfo.protocol}</TableCell>
+                    </TableRow>
+                    <TableRow className="border-t border-[#e5e5e5]">
+                      <TableCell className="text-[#0A0A0A] font-medium">数据格式</TableCell>
+                      <TableCell className="text-[#737373]">{baseInfo.dataFormat}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </div>
@@ -704,29 +705,29 @@ export default function ApiDocs() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold text-[#0A0A0A]">请求头</h2>
               <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-                <table className="w-full text-sm table-fixed">
-                  <thead>
-                    <tr className="bg-gray-50/80">
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>Header</th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">说明</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">Authorization</td>
-                      <td className="px-4 py-2.5 text-[#737373] break-words">Bearer Token 认证（大部分接口必须）</td>
-                    </tr>
-                    <tr className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">Content-Type</td>
-                      <td className="px-4 py-2.5 text-[#737373] break-words">
+                <Table className="w-full text-sm table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className={COL_W1}>Header</TableHead>
+                      <TableHead>说明</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-mono text-[13px] text-[#0A0A0A]">Authorization</TableCell>
+                      <TableCell className="text-[#737373] break-words whitespace-normal">Bearer Token 认证（大部分接口必须）</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-mono text-[13px] text-[#0A0A0A]">Content-Type</TableCell>
+                      <TableCell className="text-[#737373] break-words whitespace-normal">
                         <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded">application/json</code>{" "}
                         或{" "}
                         <code className="text-[13px] bg-gray-50 px-1.5 py-0.5 rounded">application/x-www-form-urlencoded</code>
                         （依据接口要求）
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </div>
@@ -743,24 +744,24 @@ export default function ApiDocs() {
             <div>
               <h2 className="text-base font-semibold text-[#0A0A0A] mb-3">Token 类型</h2>
               <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-                <table className="w-full text-sm table-fixed">
-                  <thead>
-                    <tr className="bg-gray-50/80">
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>类型</th>
-                      <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>前缀</th>
-                      <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">权限范围</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table className="w-full text-sm table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className={COL_W1}>类型</TableHead>
+                      <TableHead className={COL_W2}>前缀</TableHead>
+                      <TableHead>权限范围</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {authInfo.tokenTypes.map((t, i) => (
-                      <tr key={i} className="border-t border-[#e5e5e5]">
-                        <td className="px-4 py-2.5 text-[#0A0A0A] font-medium">{t.type}</td>
-                        <td className="px-4 py-2.5 font-mono text-[#737373]">{t.prefix}</td>
-                        <td className="px-4 py-2.5 text-[#737373] break-words">{t.scope}</td>
-                      </tr>
+                      <TableRow key={i}>
+                        <TableCell className="text-[#0A0A0A] font-medium">{t.type}</TableCell>
+                        <TableCell className="font-mono text-[#737373]">{t.prefix}</TableCell>
+                        <TableCell className="text-[#737373] break-words whitespace-normal">{t.scope}</TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
               <div className="mt-3 flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200/80 rounded-xl px-4 py-3">
                 <span className="shrink-0 mt-0.5">⚠️</span>
@@ -797,24 +798,24 @@ export default function ApiDocs() {
               以下为接口文档中使用的常见参数类型说明。
             </p>
             <div className="border border-gray-200/80 rounded-xl overflow-hidden">
-              <table className="w-full text-sm table-fixed">
-                <thead>
-                  <tr className="bg-gray-50/80">
-                    <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W1}`}>类型</th>
-                    <th className={`text-left px-4 py-2.5 text-xs font-medium text-[#737373] ${COL_W2}`}>说明</th>
-                    <th className="text-left px-4 py-2.5 text-xs font-medium text-[#737373]">示例</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <Table className="w-full text-sm table-fixed">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className={COL_W1}>类型</TableHead>
+                    <TableHead className={COL_W2}>说明</TableHead>
+                    <TableHead>示例</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {parameterTypes.map((pt, i) => (
-                    <tr key={i} className="border-t border-[#e5e5e5]">
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#0A0A0A]">{pt.type}</td>
-                      <td className="px-4 py-2.5 text-[#737373]">{pt.desc}</td>
-                      <td className="px-4 py-2.5 font-mono text-[13px] text-[#737373] break-words">{pt.example}</td>
-                    </tr>
+                    <TableRow key={i}>
+                      <TableCell className="font-mono text-[13px] text-[#0A0A0A]">{pt.type}</TableCell>
+                      <TableCell className="text-[#737373]">{pt.desc}</TableCell>
+                      <TableCell className="font-mono text-[13px] text-[#737373] break-words whitespace-normal">{pt.example}</TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           </div>
         );

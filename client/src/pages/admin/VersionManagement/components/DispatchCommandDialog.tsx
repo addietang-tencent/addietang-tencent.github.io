@@ -42,6 +42,7 @@ import { StatusTag } from "@/components/ui/status-tag";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import {
   MOCK_INSTANCES, AGENT_TYPE_LABEL, MOCK_HISTORY, MOCK_COMMAND_TEMPLATES, detectDangerousCommand,
   type CommandTemplate, type AgentTypeKey, type HistoryRecord,
@@ -593,64 +594,64 @@ export default function DispatchCommandDialog({
               </div>
 
               <div className="rounded-xl border border-[#E5E5E5] overflow-hidden max-h-[280px] overflow-y-auto scrollbar-on-hover">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-[#FAFAFA] z-10">
-                    <tr className="border-b border-[#E5E5E5]">
-                      <th className="px-3 py-2.5 w-[1%]">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-[#FAFAFA] z-10">
+                    <TableRow>
+                      <TableHead className="w-[1%]">
                         <Checkbox
                           checked={allChecked ? true : partialChecked ? "indeterminate" : false}
                           onCheckedChange={(v) => toggleAll(!!v)}
                           className="size-4"
                         />
-                      </th>
-                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium">实例</th>
-                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium w-[16%]">类型</th>
-                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium w-[16%]">版本</th>
-                      <th className="text-left px-3 py-2.5 text-xs text-[#525252] font-medium w-[20%]">创建人</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#F5F5F5]">
+                      </TableHead>
+                      <TableHead>实例</TableHead>
+                      <TableHead className="w-[16%]">类型</TableHead>
+                      <TableHead className="w-[16%]">版本</TableHead>
+                      <TableHead className="w-[20%]">创建人</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {candidateInstances.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="text-center py-10 text-sm text-[#A3A3A3]">
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-10 text-sm text-[#A3A3A3]">
                           没有符合条件的实例
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       candidateInstances.map((i) => {
                         const checked = selected.has(i.instanceId);
                         return (
-                          <tr
+                          <TableRow
                             key={i.instanceId}
                             onClick={() => toggle(i.instanceId)}
                             className={`cursor-pointer ${checked ? "bg-[#E8ECFE]/40" : "hover:bg-[#FAFAFA]"}`}
                           >
-                            <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
+                            <TableCell onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={checked}
                                 onCheckedChange={() => toggle(i.instanceId)}
                                 className="size-4"
                               />
-                            </td>
-                            <td className="px-3 py-2.5">
+                            </TableCell>
+                            <TableCell>
                               <div className="text-sm text-[#0A0A0A]">{i.name}</div>
                               <div className="text-[11px] text-[#A3A3A3] font-mono">{i.instanceId}</div>
-                            </td>
-                            <td className="px-3 py-2.5 text-xs text-[#525252]">
+                            </TableCell>
+                            <TableCell className="text-xs text-[#525252]">
                               {AGENT_TYPE_LABEL[i.agentType]}
-                            </td>
-                            <td className="px-3 py-2.5 text-xs text-[#525252] font-mono tabular-nums">
+                            </TableCell>
+                            <TableCell className="text-xs text-[#525252] font-mono tabular-nums">
                               {i.agentVersion}
-                            </td>
-                            <td className="px-3 py-2.5 text-xs text-[#737373] truncate max-w-[140px]">
+                            </TableCell>
+                            <TableCell className="text-xs text-[#737373] truncate max-w-[140px]">
                               {i.owner}
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         );
                       })
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </section>
 
@@ -1057,39 +1058,39 @@ function Step1PickCommand(props: {
           </div>
 
           <div className="rounded-lg border border-gray-100 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr className="border-b border-gray-100">
-                  <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[36%]">参数名</th>
-                  <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium">参数值</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[36%]">参数名</TableHead>
+                  <TableHead>参数值</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {pickedCommand.params.map((p) => {
                   const missing = !(paramValues[p.key] ?? "").trim();
                   return (
-                    <tr key={p.key} className={missing ? "bg-red-50/30" : ""}>
-                      <td className="px-3 py-2 align-top">
+                    <TableRow key={p.key} className={missing ? "bg-red-50/30" : ""}>
+                      <TableCell className="align-top">
                         <div className="font-mono text-xs text-gray-900 break-all">{p.key}</div>
                         {p.description && (
                           <div className="text-[11px] text-gray-400 mt-0.5 leading-relaxed">
                             {p.description}
                           </div>
                         )}
-                      </td>
-                      <td className="px-3 py-2">
+                      </TableCell>
+                      <TableCell>
                         <Input
                           value={paramValues[p.key] ?? ""}
                           onChange={(e) => onParamChange(p.key, e.target.value)}
                           placeholder={p.defaultValue ? `默认：${p.defaultValue}` : "请输入参数值"}
                           className={`h-8 text-sm ${missing ? "border-red-300" : ""}`}
                         />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
           {missingParamKeys.length > 0 && (
@@ -1187,67 +1188,72 @@ function Step2PickInstances(props: {
       </div>
 
       <div className="rounded-lg border border-gray-100 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr className="border-b border-gray-100">
-              <th className="px-3 py-2 w-[1%]">
+        <Table density="compact">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[1%]">
                 <Checkbox
                   checked={allChecked ? true : partialChecked ? "indeterminate" : false}
                   onCheckedChange={(v) => onToggleAll(!!v)}
                   className="size-4"
                 />
-              </th>
-              <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium">
+              </TableHead>
+              <TableHead>
                 实例
                 {(allChecked || partialChecked) && (
                   <span className="ml-1 text-[10px] text-gray-400 font-normal">
                     （表头勾选 = 全选所有匹配筛选的实例）
                   </span>
                 )}
-              </th>
-              <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[16%]">类型</th>
-              <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[16%]">版本</th>
-              <th className="text-left px-3 py-2 text-xs text-gray-500 font-medium w-[20%]">创建人</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
+              </TableHead>
+              <TableHead className="w-[16%]">类型</TableHead>
+              <TableHead className="w-[16%]">版本</TableHead>
+              <TableHead className="w-[20%]">创建人</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {pagedInstances.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-10 text-xs text-gray-400">
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-10 text-xs text-gray-400">
                   没有符合条件的实例
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               pagedInstances.map((i) => {
                 const checked = selected.has(i.instanceId);
                 return (
-                  <tr key={i.instanceId} className={checked ? "bg-blue-50/40" : "hover:bg-gray-50/50"}>
-                    <td className="px-3 py-2">
+                  <TableRow
+                    key={i.instanceId}
+                    data-state={checked ? "selected" : undefined}
+                    onClick={() => onToggle(i.instanceId)}
+                    className="cursor-pointer"
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <Checkbox
                         checked={checked}
                         onCheckedChange={() => onToggle(i.instanceId)}
                         className="size-4"
                       />
-                    </td>
-                    <td className="px-3 py-2">
+                    </TableCell>
+                    <TableCell>
                       <div className="text-sm text-gray-900">{i.name}</div>
                       <div className="text-[11px] text-gray-400 font-mono">{i.instanceId}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-600">
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">
                       {AGENT_TYPE_LABEL[i.agentType]}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-600 font-mono tabular-nums">
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600 font-mono tabular-nums">
                       {i.agentVersion}
-                    </td>
-                    <td className="px-3 py-2 text-xs text-gray-500 truncate max-w-[140px]">
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-500 truncate max-w-[140px]">
                       {i.owner}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* 分页器（仅 >1 页时显示） */}

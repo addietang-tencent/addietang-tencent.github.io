@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
 import { type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
@@ -713,42 +714,42 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                 </Select>
               </div>
               <div className="border border-gray-200 rounded-xl overflow-y-auto max-h-64">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
-                    <tr>
-                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">实例名称</th>
-                      <th className="px-4 py-2 text-left font-semibold text-[#334155] min-w-[140px]">实例ID</th>
-                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">状态</th>
-                      <th className="px-4 py-2 text-left font-semibold text-[#334155]">失败原因</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <Table>
+                  <TableHeader className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                    <TableRow>
+                      <TableHead className="text-left">实例名称</TableHead>
+                      <TableHead className="text-left min-w-[140px]">实例ID</TableHead>
+                      <TableHead className="text-left">状态</TableHead>
+                      <TableHead className="text-left">失败原因</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {filteredInstances.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="px-4 py-4 text-center text-[#737373]">
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-[#737373]">
                           没有符合条件的记录
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       filteredInstances.map((instance) => (
-                        <tr key={instance.id} className="border-b border-[#e5e5e5] hover:bg-gray-50">
-                          <td className="px-4 py-2 text-[#0A0A0A]">{instance.name}</td>
-                          <td className="px-4 py-2 text-[#737373] font-mono whitespace-nowrap">{instance.id}</td>
-                          <td className="px-4 py-2">
+                        <TableRow key={instance.id}>
+                          <TableCell className="text-[#0A0A0A]">{instance.name}</TableCell>
+                          <TableCell className="text-[#737373] font-mono whitespace-nowrap">{instance.id}</TableCell>
+                          <TableCell>
                             <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                               DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-[#737373]'
                             }`}>
                               {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
-                          </td>
-                          <td className="px-4 py-2 text-sm text-[#737373]">
+                          </TableCell>
+                          <TableCell className="text-sm text-[#737373]">
                             {(instance as any).failReason || '-'}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
             </div>
           )}

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Trash2, Search, Eye, Code, FileText, Loader } from 'lucide-react';
+import { Trash2, Search, Eye, Code, FileText, Loader, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import MDXRenderer from '@/components/MDXRenderer';
 import { Input } from '@/components/ui/input';
@@ -361,7 +361,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* 返回按钮 */}
       <BackButton onClick={onBack}>返回列表</BackButton>
 
@@ -404,6 +404,15 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                 <TooltipContent>有下发任务进行中</TooltipContent>
               )}
             </Tooltip>
+            <Button
+              variant="claw-primary"
+              size="claw"
+              onClick={() => setDistributeDialogOpen(true)}
+              disabled={hasInProgress}
+            >
+              {hasInProgress ? '下发中...' : '批量下发'}
+              <Send className="w-4 h-4" />
+            </Button>
           </div>
         </div>
         {mcp.description && (
@@ -411,26 +420,50 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
         )}
       </div>
 
+      {/* ======== 横向 Segmented Tab（灰底 Tag 样式，与技能详情页一致）======== */}
+      <div>
+        <div
+          className="inline-flex items-center gap-1 p-1 rounded-[4px]"
+          style={{ background: "#F5F5F5" }}
+          role="tablist"
+          aria-label="MCP 详情 Tab 切换"
+        >
+          {[
+            { id: "files", label: "文件列表" },
+            { id: "distribution", label: "下发记录" },
+          ].map((t) => {
+            const active = t.id === activeTab;
+            return (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setActiveTab(t.id)}
+                className={`px-3 py-1.5 text-sm rounded-[3px] transition-all duration-150 ${
+                  active
+                    ? "bg-white text-[#0A0A0A] font-medium"
+                    : "text-[#737373] hover:text-[#0A0A0A] font-normal"
+                }`}
+                style={active ? { boxShadow: "var(--shadow-segment)" } : undefined}
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Tab 区域 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-0 border-b border-[#e5e5e5] rounded-none">
-            <TabsTrigger
-              value="files"
-              className="rounded-none border-0 border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-b-[#09090b] data-[state=active]:shadow-none transition-colors"
-            >
-              文件列表
-            </TabsTrigger>
-            <TabsTrigger
-              value="distribution"
-              className="rounded-none border-0 border-b-2 border-transparent px-4 py-2.5 text-[14px] font-medium text-[#737373] bg-transparent hover:text-[#09090b] data-[state=active]:bg-transparent data-[state=active]:text-[#09090b] data-[state=active]:border-b-[#09090b] data-[state=active]:shadow-none transition-colors"
-            >
-              下发记录
-            </TabsTrigger>
+          {/* 隐藏原始 TabsList，使用上方自定义 Segmented */}
+          <TabsList className="hidden">
+            <TabsTrigger value="files">文件列表</TabsTrigger>
+            <TabsTrigger value="distribution">下发记录</TabsTrigger>
           </TabsList>
 
           {/* 文件列表 Tab — 三栏布局 */}
-          <TabsContent value="files" className="mt-4 p-0">
+          <TabsContent value="files" className="mt-0 p-0">
             <div className="flex h-[47rem] border border-[#e5e5e5] rounded-xl overflow-hidden bg-white">
               {/* 左列：版本列表 */}
               <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
@@ -508,7 +541,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
           </TabsContent>
 
           {/* 下发记录 Tab */}
-          <TabsContent value="distribution" className="mt-4 p-0">
+          <TabsContent value="distribution" className="mt-0 p-0">
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">

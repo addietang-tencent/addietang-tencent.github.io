@@ -132,7 +132,7 @@ function ScopePopover({
         selectedGroupIds={model.visibilityGroupIds}
         groups={groups}
         showBadges={false}
-        align="start"
+        align="end"
         trigger={
           <button
             type="button"
@@ -603,7 +603,7 @@ export default function ModelConfig() {
           <div className="space-y-4">
             {/* 模型厂商选择（含自定义模型） */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium text-[#525252]">模型厂商</Label>
+              <Label className="text-xs font-medium text-[#525252]">模型厂商<span className="text-[#DC2626]">*</span></Label>
               <Select
                 value={newModel.provider}
                 onValueChange={(v) => setNewModel({ ...newModel, provider: v, version: "" })}
@@ -623,7 +623,7 @@ export default function ModelConfig() {
             {newModel.provider && !isCustomProvider && (
               <>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-[#525252]">模型名称</Label>
+                  <Label className="text-xs font-medium text-[#525252]">模型名称<span className="text-[#DC2626]">*</span></Label>
                   {selectedProviderData && selectedProviderData.versions.length > 0 ? (
                     <Select value={newModel.version} onValueChange={(v) => setNewModel({ ...newModel, version: v })}>
                       <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
@@ -642,7 +642,7 @@ export default function ModelConfig() {
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-[#525252]">模型 URL</Label>
+                  <Label className="text-xs font-medium text-[#525252]">模型 URL<span className="text-[#DC2626]">*</span></Label>
                   <Input
                     type="text"
                     placeholder="请输入模型 URL地址"
@@ -652,7 +652,7 @@ export default function ModelConfig() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限</Label>
+                  <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限<span className="text-[#DC2626]">*</span></Label>
                   <Input
                     type="number"
                     value={newModel.dailyLimit}
@@ -698,7 +698,7 @@ export default function ModelConfig() {
                   </TabsContent>
                 </Tabs>
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限</Label>
+                  <Label className="text-xs font-medium text-[#525252]">每日 Tokens 数量上限<span className="text-[#DC2626]">*</span></Label>
                   <Input
                     type="number"
                     value={customForm.dailyLimit}
@@ -721,7 +721,26 @@ export default function ModelConfig() {
           </div>
           <DialogFooter>
             <Button variant="claw-outline" size="claw-sm" onClick={() => setShowAddDialog(false)}>取消</Button>
-            <Button variant="claw-primary" size="claw-sm" onClick={handleAddModel}>
+            <Button
+              variant="dialog-confirm"
+              size="claw-sm"
+              onClick={handleAddModel}
+              disabled={(() => {
+                if (!newModel.provider) return true;
+                if (isCustomProvider) {
+                  if (customInputMode === "form") {
+                    if (!customForm.provider || !customForm.base_url || !customForm.api || !customForm.api_key || !customForm.model_id || !customForm.model_name) return true;
+                  } else {
+                    if (!customJson.trim()) return true;
+                  }
+                  if (!customForm.dailyLimit || customForm.dailyLimit <= 0) return true;
+                } else {
+                  if (!newModel.version || !newModel.modelUrl.trim()) return true;
+                  if (!newModel.dailyLimit || newModel.dailyLimit <= 0) return true;
+                }
+                return false;
+              })()}
+            >
               确认添加
             </Button>
           </DialogFooter>

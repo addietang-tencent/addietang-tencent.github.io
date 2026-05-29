@@ -39,7 +39,10 @@ import {
   Popover, PopoverContent, PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -159,7 +162,7 @@ function FMGroupFilter({
           <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 text-[#737373] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[280px] p-0" align="start">
+      <PopoverContent className="w-[280px] p-0" align="end">
         <div className="p-2 border-b border-[#e5e5e5]">
           <Input
             placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
@@ -176,9 +179,9 @@ function FMGroupFilter({
         <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs overflow-hidden">
             {tempValue === "" ? (
-              <span className="text-[#355EF1] font-medium truncate">全部分组</span>
+              <span className="text-[#A3A3A3] truncate">全部分组</span>
             ) : selectedNode ? (
-              <span className="text-[#355EF1] font-medium truncate">{selectedNode.name}</span>
+              <span className="text-[#A3A3A3] truncate">已选 {selectedNode.name}</span>
             ) : (
               <span className="text-[#A3A3A3] truncate">未选择</span>
             )}
@@ -291,63 +294,65 @@ function FMGroupTagSelector({
 
 // ─── 分组名称展示 ────────────────────────────────────────────────────────────
 function FMGroupBadges({ groupIds }: { groupIds: string[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const tagRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const moreRef = useRef<HTMLSpanElement>(null);
-  const [visibleCount, setVisibleCount] = useState(groupIds.length);
-
   const allGroups: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
   const paths = groupIds.map((id) => allGroups.find((g) => g.id === id)?.name ?? id);
 
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const computeVisible = () => {
-      const available = container.offsetWidth;
-      const gap = 4;
-      let w = 0; let fitCount = 0;
-      for (let i = 0; i < paths.length; i++) {
-        const el = tagRefs.current[i];
-        if (!el) continue;
-        const add = el.offsetWidth + (i === 0 ? 0 : gap);
-        if (w + add > available) break;
-        w += add; fitCount++;
-      }
-      if (fitCount === paths.length) { setVisibleCount(paths.length); return; }
-      const moreEl = moreRef.current;
-      if (!moreEl) { setVisibleCount(Math.max(1, fitCount)); return; }
-      for (let n = fitCount; n >= 1; n--) {
-        let tw = 0;
-        for (let i = 0; i < n; i++) { const el = tagRefs.current[i]; if (!el) continue; tw += el.offsetWidth + (i === 0 ? 0 : gap); }
-        moreEl.textContent = `…共 ${paths.length} 个分组`;
-        if (tw + gap + moreEl.offsetWidth <= available) { setVisibleCount(n); return; }
-      }
-      setVisibleCount(1);
-    };
-    computeVisible();
-    const observer = new ResizeObserver(computeVisible);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [paths, groupIds.length]);
-
   if (groupIds.length === 0) return <span className="text-xs text-[#737373] font-medium">预设策略</span>;
-  const omitted = paths.length - visibleCount;
+
+  const firstName = paths[0];
+  const rest = paths.length - 1;
+  const tooltipText = paths.join("\n");
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div ref={containerRef} className="flex items-center gap-1 w-full overflow-hidden cursor-default">
-          {paths.slice(0, visibleCount).map((p, i) => (
-            <span key={i} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px] whitespace-nowrap shrink-0">{p}</span>
-          ))}
-          {omitted > 0 && <span className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap shrink-0">…共 {paths.length} 个分组</span>}
-          <div aria-hidden="true" className="absolute invisible pointer-events-none whitespace-nowrap" style={{ left: -99999, top: -99999 }}>
-            {paths.map((p, i) => <span key={`m-${i}`} ref={(el) => { tagRefs.current[i] = el; }} className="inline-flex items-center px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px] whitespace-nowrap">{p}</span>)}
-            <span ref={moreRef} className="inline-flex items-center px-1.5 py-0.5 text-[11px] text-[#737373] whitespace-nowrap" />
+        <Badge variant="secondary" className="max-w-full cursor-default">
+          <span className="truncate">{firstName}</span>
+          {rest > 0 && <span className="shrink-0 ml-0.5">+{rest}</span>}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[320px] text-xs leading-relaxed whitespace-pre-line">
+        {tooltipText}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// ─── 策略概览卡片 ─────────────────────────────────────────────────────────────
+interface PolicyOverviewCardProps {
+  icon: React.ReactNode;
+  iconBg?: string;
+  title: string;
+  description: string;
+  fallbackValue: boolean;
+  groupCount: number;
+  onClick?: () => void;
+}
+
+function PolicyOverviewCard({ icon, iconBg, title, description, fallbackValue, groupCount, onClick }: PolicyOverviewCardProps) {
+  return (
+    <Card className="overflow-hidden py-0 gap-0 flex flex-col cursor-pointer hover:border-[#1447E6] transition-colors" onClick={onClick}>
+      <div className="px-5 pt-5 pb-4 flex-1 min-h-0 flex flex-col">
+        <div className="flex items-start gap-3">
+          <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-[4px] flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[14px] font-semibold text-[#020617] truncate">{title}</h3>
+            <p className="text-[12px] text-[#737373] leading-relaxed mt-1 line-clamp-2">{description}</p>
           </div>
         </div>
-      </TooltipTrigger>
-      <TooltipContent><p className="text-xs">{paths.join("、")}</p></TooltipContent>
-    </Tooltip>
+
+        {/* 底部灰色摘要条 */}
+        <div className="mt-4 rounded-[4px] bg-[#FAFAFA] px-3 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-4 text-[12px]">
+            <span className="text-[#737373] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackValue ? "green" : "gray"}>{fallbackValue ? "开启" : "关闭"}</StatusTag></span>
+            <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupCount} 条</span></span>
+          </div>
+          <span className="text-[12px] text-[#1447E6] inline-flex items-center gap-0.5">
+            编辑策略<ChevronRight className="w-3.5 h-3.5" />
+          </span>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -367,6 +372,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
   const [draftValue, setDraftValue] = useState<boolean>(true);
   const [addingNew, setAddingNew] = useState(false);
   const [confirmFallbackDraft, setConfirmFallbackDraft] = useState<boolean | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const getDisabledIds = (excludeRuleId?: string) =>
     rules.filter((r) => r.groupIds.length > 0 && r.id !== excludeRuleId).flatMap((r) => r.groupIds);
@@ -416,106 +422,146 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
     toast.success("策略已删除");
   };
 
-  const renderFallbackValueEditor = () => (
-    <>
-      <button onClick={() => setDraftValue(true)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${draftValue ? "border-green-400 bg-green-50 text-green-700 font-medium" : "border-[#e5e5e5] text-[#737373]"}`}>开启</button>
-      <button onClick={() => setDraftValue(false)} className={`text-xs h-7 px-2 rounded-md border transition-colors ${!draftValue ? "border-red-300 bg-red-50 text-red-600 font-medium" : "border-[#e5e5e5] text-[#737373]"}`}>关闭</button>
-    </>
-  );
-
   return (
-    <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
-      <div className="px-5 pt-5 pb-3">
-        <div className="flex items-center gap-3 mb-1.5">
-          <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-[4px] flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
-          <h3 className="text-sm font-semibold text-[#0A0A0A] flex-1">{title}</h3>
-        </div>
-        <p className="text-xs text-[#A3A3A3] leading-relaxed">{description}</p>
-      </div>
+    <>
+      {/* ── 卡片 ── */}
+      <PolicyOverviewCard
+        icon={icon}
+        iconBg={iconBg}
+        title={title}
+        description={description}
+        fallbackValue={fallbackRule.value}
+        groupCount={groupRules.length}
+        onClick={() => setDialogOpen(true)}
+      />
 
-      <div className="px-5 pb-4">
-        {(groupRules.length > 0 || addingNew) && (
-          <div className={`${FM_ROW_CLASS} border-b border-[#e5e5e5]`}>
-            <span className="flex-1 text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">分组</span>
-            <span className="w-24 text-right text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">权限</span>
-            <span className="w-14 text-right text-[11px] font-medium text-[#A3A3A3] uppercase tracking-wide">操作</span>
-          </div>
-        )}
+      {/* ── 弹窗：表格行内编辑 ── */}
+      <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) cancelEdit(); }}>
+        <DialogContent className="sm:max-w-[960px]">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <div className="space-y-3">
+              {/* 汇总行 */}
+              <div className="flex items-center gap-4 text-[13px]">
+                <span className="text-[#737373] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag></span>
+                <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupRules.length} 个</span></span>
+              </div>
 
-        {groupRules.map((rule) => (
-          <div key={rule.id}>
-            {editingId === rule.id ? (
-              <div className={FM_EDIT_ROW_CLASS}>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds(rule.id)} onChange={setDraftGroupIds} />
-                </div>
-                <div className="w-24 flex items-center justify-end gap-1 h-7 pt-0.5">
-                  <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
-                </div>
-                <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
-                  <button onClick={cancelEdit} className="text-[#A3A3A3] hover:text-[#737373] transition-colors p-1"><X className="w-3 h-3" /></button>
-                  <button onClick={() => saveEdit(rule.id)} className="text-[#355EF1] hover:text-[#355EF1] transition-colors p-1"><Check className="w-3 h-3" /></button>
-                </div>
-              </div>
-            ) : (
-              <div className={`${FM_ROW_CLASS} border-b border-gray-50 hover:bg-[#fafafa]/50 transition-colors`}>
-                <div className="flex-1 min-w-0"><FMGroupBadges groupIds={rule.groupIds} /></div>
-                <div className="w-24 text-right">
-                  <span className={`text-xs font-medium ${rule.value ? "text-green-600" : "text-red-500"}`}>{rule.value ? "开启" : "关闭"}</span>
-                </div>
-                <div className="w-14 flex items-center justify-end gap-1">
-                  <button onClick={() => startEdit(rule)} className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-                  <button onClick={() => deleteRule(rule.id)} className="text-[#A3A3A3] hover:text-red-500 transition-colors p-1"><Trash2 className="w-3 h-3" /></button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+              {/* 表格 */}
+              <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+                <Table density="compact">
+                  <colgroup><col style={{ width: 90 }} /><col /><col style={{ width: 100 }} /><col style={{ width: 100 }} /></colgroup>
+                  <TableHeader>
+                    <TableRow><TableHead className="align-middle">策略类型</TableHead><TableHead className="align-middle">应用范围</TableHead><TableHead className="align-middle">权限</TableHead><TableHead className="align-middle">操作</TableHead></TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {/* 预设策略行 */}
+                    <TableRow className="hover:bg-transparent border-0">
+                      <TableCell className="text-[13px] text-[#737373] align-middle">预设策略</TableCell>
+                      <TableCell className="text-[13px] text-[#020617] align-middle">
+                        {groupRules.length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}
+                      </TableCell>
+                      <TableCell className="align-middle">
+                        {editingId === fallbackRule.id ? (
+                          <Select value={draftValue ? "on" : "off"} onValueChange={(v) => setDraftValue(v === "on")}>
+                            <SelectTrigger className="h-7 w-[80px] text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="on">开启</SelectItem>
+                              <SelectItem value="off">关闭</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag>
+                        )}
+                      </TableCell>
+                      <TableCell className="align-middle">
+                        {editingId === fallbackRule.id ? (
+                          <div className="flex items-center gap-2">
+                            <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={cancelEdit}>取消</Button>
+                            <Button variant="link" size="sm" className="h-auto px-0 text-[12px] text-[#1447E6]" onClick={() => saveEdit(fallbackRule.id)}>保存</Button>
+                          </div>
+                        ) : (
+                          <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={() => startEdit(fallbackRule)}>编辑</Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
 
-        {addingNew ? (
-          <div className={FM_EDIT_ROW_CLASS}>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds()} onChange={setDraftGroupIds} />
-            </div>
-            <div className="w-24 flex items-center justify-end gap-1 h-7 pt-0.5">
-              <span className={`text-xs font-medium ${groupRuleValue ? "text-green-600" : "text-red-500"}`}>{groupRuleValue ? "开启" : "关闭"}</span>
-            </div>
-            <div className="w-14 flex items-center justify-end gap-1 h-7 pt-0.5">
-              <button onClick={cancelEdit} className="text-[#A3A3A3] hover:text-[#737373] transition-colors p-1"><X className="w-3 h-3" /></button>
-              <button onClick={() => saveEdit()} className="text-[#355EF1] hover:text-[#355EF1] transition-colors p-1"><Check className="w-3 h-3" /></button>
-            </div>
-          </div>
-        ) : (
-          groupRules.length === 0 && (
-            <button onClick={startAdd} className="flex items-center gap-1.5 px-3 h-10 text-xs text-[#355EF1] hover:text-[#355EF1] hover:bg-[#eff4ff]/50 rounded-lg transition-colors">
-              <Plus className="w-3.5 h-3.5" />添加分组策略
-            </button>
-          )
-        )}
+                    {/* 分割线 */}
+                    {(groupRules.length > 0 || addingNew) && (
+                      <tr className="h-0 border-0">
+                        <td colSpan={4} className="p-0 border-0"><div className="h-px bg-[#E5E5E5]" /></td>
+                      </tr>
+                    )}
 
-        <div className="border-t border-dashed border-[#e5e5e5] mt-2 pt-2">
-          {editingId === fallbackRule.id ? (
-            <div className={FM_ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-[#737373] font-medium">预设策略</span></div>
-              <div className="w-24 flex items-center justify-end gap-1">{renderFallbackValueEditor()}</div>
-              <div className="w-14 flex items-center justify-end gap-1">
-                <button onClick={cancelEdit} className="text-[#A3A3A3] hover:text-[#737373] transition-colors p-1"><X className="w-3 h-3" /></button>
-                <button onClick={() => saveEdit(fallbackRule.id)} className="text-[#355EF1] hover:text-[#355EF1] transition-colors p-1"><Check className="w-3 h-3" /></button>
+                    {/* 分组策略行 */}
+                    {groupRules.map((rule, idx) => (
+                      <TableRow key={rule.id} className="hover:bg-transparent border-0">
+                        <TableCell className="text-[13px] text-[#737373] align-middle">分组策略{idx + 1}</TableCell>
+                        <TableCell className="align-middle">
+                          {editingId === rule.id ? (
+                            <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds(rule.id)} onChange={setDraftGroupIds} />
+                          ) : (
+                            <FMGroupBadges groupIds={rule.groupIds} />
+                          )}
+                        </TableCell>
+                        <TableCell className="align-middle">
+                          <StatusTag mode="fill" variant={groupRuleValue ? "green" : "gray"}>{groupRuleValue ? "开启" : "关闭"}</StatusTag>
+                        </TableCell>
+                        <TableCell className="align-middle">
+                          {editingId === rule.id ? (
+                            <div className="flex items-center gap-2">
+                              <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={cancelEdit}>取消</Button>
+                              <Button variant="link" size="sm" className="h-auto px-0 text-[12px] text-[#1447E6]" onClick={() => saveEdit(rule.id)}>保存</Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={() => startEdit(rule)}>编辑</Button>
+                              <Button variant="link" size="sm" className="h-auto px-0 text-[12px] text-red-500" onClick={() => deleteRule(rule.id)}>删除</Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+
+                    {/* 新增行 */}
+                    {addingNew && (
+                      <TableRow className="hover:bg-transparent border-0">
+                        <TableCell className="text-[13px] text-[#737373] align-middle">分组策略{groupRules.length + 1}</TableCell>
+                        <TableCell className="align-middle">
+                          <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds()} onChange={setDraftGroupIds} />
+                        </TableCell>
+                        <TableCell className="align-middle">
+                          <StatusTag mode="fill" variant={groupRuleValue ? "green" : "gray"}>{groupRuleValue ? "开启" : "关闭"}</StatusTag>
+                        </TableCell>
+                        <TableCell className="align-middle">
+                          <div className="flex items-center gap-2">
+                            <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={cancelEdit}>取消</Button>
+                            <Button variant="link" size="sm" className={`h-auto px-0 text-[12px] ${draftGroupIds.length === 0 ? "text-[#A3A3A3] pointer-events-none" : "text-[#1447E6]"}`} disabled={draftGroupIds.length === 0} onClick={() => saveEdit()}>保存</Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+
+                {/* 添加分组策略按钮 */}
+                <button
+                  type="button"
+                  onClick={startAdd}
+                  disabled={editingId !== null || addingNew}
+                  className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#E5E5E5] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Plus className="w-3.5 h-3.5" />添加分组策略
+                </button>
               </div>
             </div>
-          ) : (
-            <div className={FM_ROW_CLASS}>
-              <div className="flex-1 min-w-0"><span className="text-xs text-[#737373] font-medium">预设策略</span></div>
-              <div className="w-24 text-right">
-                <span className={`text-xs font-medium ${fallbackRule.value ? "text-green-600" : "text-red-500"}`}>{fallbackRule.value ? "开启" : "关闭"}</span>
-              </div>
-              <div className="w-14 flex items-center justify-end">
-                <button onClick={() => startEdit(fallbackRule)} className="text-[#A3A3A3] hover:text-[#355EF1] transition-colors p-1"><Pencil className="w-3 h-3" /></button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={confirmFallbackDraft !== null} onOpenChange={(o) => { if (!o) setConfirmFallbackDraft(null); }}>
         <AlertDialogContent>
@@ -529,7 +575,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
 
@@ -1218,17 +1264,10 @@ export default function FileManagement() {
 
       {/* Enterprise Public Space Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
+        <div>
           <h2 className="font-semibold text-[#0A0A0A]">企业公共空间</h2>
+          <p className="text-sm text-[#737373] mt-1">默认开启,为您赠送 50GB + 50GB 永久免费空间,用于存放 Agent 工具库和初始技能包</p>
         </div>
-
-        {/* 信息提示横幅 */}
-        <Alert variant="info">
-          <Info />
-          <AlertDescription>
-            默认开启,为您赠送 <span className="font-semibold">50GB + 50GB</span> 永久免费空间,用于存放 Agent 工具库和初始技能包
-          </AlertDescription>
-        </Alert>
 
         <div
           className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
@@ -1263,17 +1302,10 @@ export default function FileManagement() {
 
       {/* AI Agent Private Space Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
+        <div>
           <h2 className="font-semibold text-[#0A0A0A]">智能体网盘</h2>
+          <p className="text-sm text-[#737373] mt-1">开启后,为您赠送每个 OpenClaw 实例 3个月50GB 免费额度,到期后可以通过购买资源包进行续租</p>
         </div>
-
-        {/* 信息提示横幅 */}
-        <Alert variant="info">
-          <Info />
-          <AlertDescription>
-            开启后,为您赠送每个 OpenClaw 实例 <span className="font-semibold">3个月50GB</span> 免费额度,到期后可以通过购买资源包进行续租
-          </AlertDescription>
-        </Alert>
 
         {/* 网盘配置卡片 */}
         <div className="grid grid-cols-2 gap-4">
@@ -1296,7 +1328,7 @@ export default function FileManagement() {
         </div>
 
         {/* 工具栏（独立于表格） */}
-        <div className="flex items-center justify-between mb-4 mt-16">
+        <div className="flex items-center justify-between mb-4 mt-4">
             <div className="flex items-center gap-3">
               <Button
                 variant="dialog-confirm"
@@ -1305,20 +1337,6 @@ export default function FileManagement() {
               >
                 批量启用网盘服务{selectedInstances.size > 0 && `(${selectedInstances.size})`}
               </Button>
-              <FMGroupFilter
-                groups={MOCK_GROUP_TREE_MANUAL}
-                value={groupFilter}
-                onChange={(v) => setGroupFilter(v)}
-              />
-              <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
-                <Input
-                  placeholder="搜索名称、ID或创建人"
-                  className="pl-9 h-9"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
               <Button
                 variant="claw-outline"
                 size="claw"
@@ -1328,9 +1346,23 @@ export default function FileManagement() {
                 <Trash2 className="w-4 h-4" />
                 回收站{getRecyclebinInstances().length > 0 && `(${getRecyclebinInstances().length})`}
               </Button>
+              <span className="text-[14px] text-[#737373]">共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例启用了该服务</span>
             </div>
-            <div className="flex items-center gap-2 text-[14px] text-[#737373]">
-              <span>共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例</span>
+            <div className="flex items-center gap-3">
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+                <Input
+                  placeholder="搜索名称、ID或创建人"
+                  className="pl-9 h-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <FMGroupFilter
+                groups={MOCK_GROUP_TREE_MANUAL}
+                value={groupFilter}
+                onChange={(v) => setGroupFilter(v)}
+              />
             </div>
         </div>
 
@@ -1354,7 +1386,7 @@ export default function FileManagement() {
                   </div>
                 </TableHead>
                 <TableHead style={{ width: '220px', minWidth: '220px' }}>OpenClaw 实例</TableHead>
-                <TableHead style={{ width: '160px', minWidth: '160px' }}>创建人</TableHead>
+                <TableHead style={{ width: '220px', minWidth: '220px' }}>创建人</TableHead>
                 <TableHead style={{ minWidth: '80px' }}>类型</TableHead>
                 <TableHead style={{ minWidth: '200px' }}>已用/存储容量</TableHead>
                 <TableHead style={{ minWidth: '120px' }}>有效期</TableHead>
@@ -1381,9 +1413,14 @@ export default function FileManagement() {
                   return (
                     <tr 
                       key={item.id} 
-                      className="hover:bg-[#fafafa]/50 transition-colors"
+                      className={`hover:bg-[#fafafa]/50 transition-colors ${!(isEnabled || isDeleted) ? 'cursor-pointer' : ''}`}
+                      onClick={() => {
+                        if (!(isEnabled || isDeleted)) {
+                          handleSelectInstance(item.id, !isSelected);
+                        }
+                      }}
                     >
-                      <td className="px-4 py-3 align-middle" style={{ width: '56px', minWidth: '56px' }} onClick={(e) => e.stopPropagation()}>
+                      <td className="px-4 py-3 align-middle" style={{ width: '56px', minWidth: '56px' }}>
                         <div className="flex items-center">
                           <Checkbox
                             checked={isSelected}
@@ -1405,10 +1442,10 @@ export default function FileManagement() {
                             <span className="text-xs font-mono text-[#355EF1]">{item.instanceId}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3" style={{ width: '160px', minWidth: '160px' }}>
+                      <td className="px-4 py-3" style={{ width: '220px', minWidth: '220px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-sm text-[#0A0A0A] truncate block max-w-[140px]">{item.creator}</span>
+                            <span className="text-sm text-[#0A0A0A] truncate block max-w-[200px]">{item.creator}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.creator}</TooltipContent>
                         </Tooltip>
@@ -1450,7 +1487,7 @@ export default function FileManagement() {
                       <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">
                         {isEnabled ? item.expiry : <span className="text-[#A3A3A3]">-</span>}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <Switch 
                           checked={isEnabled}
                           onCheckedChange={() => handleToggleInstance(item.id, item.instanceName, isEnabled, wasEverEnabled)}

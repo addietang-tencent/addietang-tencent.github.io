@@ -28,7 +28,7 @@ import { toast } from "sonner";
 import {
   FlaskConical, Server, Code2, Search, ChevronRight,
   Loader2, CheckCircle2, XCircle, ArrowRight, X as XIcon,
-  CircleAlert, Info,
+  Info, Check, AlertTriangle, AlertCircle, Eye,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
@@ -38,7 +38,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { StatusTag } from "@/components/ui/status-tag";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -440,6 +439,13 @@ export default function DispatchCommandDialog({
     ? MOCK_INSTANCES.find((x) => x.instanceId === canaryInstanceId)?.name ?? canaryInstanceId
     : "";
 
+  // 灰度阶段（testing/review）展示用名称
+  const stepDoneMap: Record<StepId, boolean> = {
+    1: step1Done,
+    2: step2Done,
+    3: step3Done,
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
@@ -448,8 +454,8 @@ export default function DispatchCommandDialog({
       >
         <DialogHeader>
           <DialogTitle>
-            {phase === "testing" && "测试机执行中"}
-            {phase === "review" && "测试机执行结果"}
+            {phase === "testing" && "灰度执行中"}
+            {phase === "review" && "灰度执行结果"}
             {(phase === "prepare" || phase === "submitting") && (
               pickedCommand ? `下发命令：${pickedCommand.name}` : "命令下发"
             )}
@@ -457,299 +463,67 @@ export default function DispatchCommandDialog({
           <DialogDescription>
             {phase === "testing" && "正在 1 台实例上跑命令，预计 1~2 秒返回结果。"}
             {phase === "review" && "请确认输出无异常后，再下发到剩余实例。"}
-            {phase === "prepare" && (
-              <>
-                {STEP_DEFS[currentStep - 1].desc}
-              </>
-            )}
+            {phase === "prepare" && STEP_DEFS[currentStep - 1].desc}
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody className="flex-1">
 
-        {/* ── prepare 阶段：完整表单 ───────────────────────── */}
+        {/* ── prepare 阶段：Stepper + 当前步骤内容 ───────────── */}
         {phase === "prepare" && (
           <div className="space-y-4">
-            {/* 危险命令告警（Alert 必须放在内容区最上方） */}
-            {danger.dangerous && (
-              <Alert variant="destructive">
-                <CircleAlert />
-                <AlertTitle>检测到高危命令</AlertTitle>
-                <AlertDescription>
-                  <ul className="list-disc pl-4 space-y-1">
-                    {danger.reasons.map((r, i) => (
-                      <li key={i}>{r}</li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 font-medium">强烈建议先开启「测试机优先」验证后再下发。</p>
-                </AlertDescription>
-              </Alert>
+            <Stepper current={currentStep} done={stepDoneMap} onJump={goToStep} />
+
+            {currentStep === 1 && (
+              <Step1PickCommand
+                pickedCommand={pickedCommand}
+                onPick={setPickedCommand}
+                commandSearch={commandSearch}
+                onSearchChange={setCommandSearch}
+                pagedCommands={pagedCommands}
+                totalCommands={filteredCommands.length}
+                page={commandPage}
+                totalPages={totalCommandPages}
+                onPageChange={setCommandPage}
+                paramValues={paramValues}
+                onParamChange={(k, v) => setParamValues((prev) => ({ ...prev, [k]: v }))}
+                missingParamKeys={missingParamKeys}
+                renderedContent={renderedContent}
+                danger={danger}
+                allowSwitchCommand={!command}
+              />
             )}
 
-            {/* 命令选择/预览 */}
-            <section className="space-y-3">
-              <h3 className="text-sm font-medium text-[#0A0A0A] flex items-center gap-1.5">
-                <Code2 className="w-4 h-4 text-[#737373]" />
-                选择命令
-                <span className="text-[#DC2626]">*</span>
-              </h3>
-              {!pickedCommand ? (
-                <div className="space-y-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#737373]" />
-                    <Input
-                      value={commandSearch}
-                      onChange={(e) => setCommandSearch(e.target.value)}
-                      placeholder="搜索命令名称、ID、内容"
-                      className="h-9 pl-9"
-                    />
-                  </div>
-                  <div className="rounded-xl border border-[#E5E5E5] bg-white max-h-[260px] overflow-y-auto divide-y divide-[#F5F5F5]">
-                    {pagedCommands.length === 0 ? (
-                      <div className="py-10 text-center text-sm text-[#A3A3A3]">
-                        没有匹配的命令；请前往「命令下发」页面创建新命令。
-                      </div>
-                    ) : (
-                      pagedCommands.map((t) => (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => setPickedCommand(t)}
-                          className="w-full text-left px-3 py-2.5 hover:bg-[#FAFAFA] transition-colors flex items-start gap-3 group"
-                        >
-                          <Code2 className="w-3.5 h-3.5 text-[#737373] mt-1 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-[#0A0A0A] truncate">{t.name}</span>
-                              <span className="text-[10px] font-mono text-[#A3A3A3]">{t.id}</span>
-                            </div>
-                            <code className="text-xs font-mono text-[#737373] truncate block mt-0.5">
-                              {t.content.split("\n")[0]}
-                              {t.content.includes("\n") && <span className="text-[#A3A3A3] ml-1">…</span>}
-                            </code>
-                          </div>
-                          <ChevronRight className="w-4 h-4 text-[#A3A3A3] group-hover:text-[#0A0A0A] mt-1 shrink-0" />
-                        </button>
-                      ))
-                    )}
-                  </div>
-                  {totalCommandPages > 1 && (
-                    <div className="flex items-center justify-center gap-2 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => setCommandPage(Math.max(1, commandPage - 1))}
-                        disabled={commandPage <= 1}
-                        className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
-                      >
-                        ‹
-                      </button>
-                      <span className="text-[#737373] tabular-nums">
-                        {commandPage} / {totalCommandPages}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setCommandPage(Math.min(totalCommandPages, commandPage + 1))}
-                        disabled={commandPage >= totalCommandPages}
-                        className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
-                      >
-                        ›
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="rounded-xl border border-[#E5E5E5] bg-white p-4 space-y-3">
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[#525252]">
-                    <span>类型：<span className="font-medium text-[#0A0A0A]">SHELL</span></span>
-                    <span>执行用户：<span className="font-mono text-[#0A0A0A]">{pickedCommand.runAsUser}</span></span>
-                    <span>路径：<span className="font-mono text-[#0A0A0A]">{pickedCommand.workingDir}</span></span>
-                    <span>超时：<span className="tabular-nums text-[#0A0A0A]">{pickedCommand.timeoutSec}</span> 秒</span>
-                    {!command && (
-                      <button
-                        type="button"
-                        onClick={() => setPickedCommand(null)}
-                        className="ml-auto text-[#1447E6] hover:text-[#0A0A0A] text-xs"
-                      >
-                        切换命令
-                      </button>
-                    )}
-                  </div>
-                  <pre className="text-xs font-mono text-[#0A0A0A] bg-[#FAFAFA] rounded-lg p-3 max-h-[120px] overflow-auto whitespace-pre-wrap break-all border border-[#E5E5E5]">
-                    {pickedCommand.content}
-                  </pre>
-                </div>
-              )}
-            </section>
+            {currentStep === 2 && (
+              <Step2PickInstances
+                agentTypeFilter={agentTypeFilter}
+                onAgentTypeChange={setAgentTypeFilter}
+                instanceSearch={instanceSearch}
+                onInstanceSearchChange={setInstanceSearch}
+                pagedInstances={pagedInstances}
+                totalFiltered={filteredInstances.length}
+                page={instancePage}
+                totalPages={totalInstancePages}
+                onPageChange={setInstancePage}
+                selected={selected}
+                onToggle={toggleInstance}
+                onToggleAll={toggleAllInstances}
+                allChecked={allInstancesChecked}
+                partialChecked={partialInstancesChecked}
+              />
+            )}
 
-            {/* 执行对象选择 */}
-            <section className="space-y-3">
-              <h3 className="text-sm font-medium text-[#0A0A0A] flex items-center gap-1.5">
-                <Server className="w-4 h-4 text-[#737373]" />
-                选择执行对象
-                <span className="text-[#DC2626]">*</span>
-                {selected.size > 0 && (
-                  <StatusTag mode="fill" variant="blue" className="ml-1 text-[10px] h-4 px-1.5">
-                    已选 {selected.size} 台
-                  </StatusTag>
-                )}
-              </h3>
-
-              <div className="flex items-center gap-2">
-                <Select value={agentTypeFilter} onValueChange={(v) => setAgentTypeFilter(v as AgentTypeKey | "all")}>
-                  <SelectTrigger className="h-9 w-[160px] text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">全部 Agent 类型</SelectItem>
-                    {AGENT_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {AGENT_TYPE_LABEL[t]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  value={instanceSearch}
-                  onChange={(e) => setInstanceSearch(e.target.value)}
-                  placeholder="搜索实例名 / ID / 创建人"
-                  className="h-9 flex-1"
-                />
-              </div>
-
-              <div className="rounded-xl border border-[#E5E5E5] overflow-hidden max-h-[280px] overflow-y-auto scrollbar-on-hover">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-[#FAFAFA] z-10">
-                    <TableRow>
-                      <TableHead className="w-[1%]">
-                        <Checkbox
-                          checked={allInstancesChecked ? true : partialInstancesChecked ? "indeterminate" : false}
-                          onCheckedChange={(v) => toggleAllInstances(!!v)}
-                          className="size-4"
-                        />
-                      </TableHead>
-                      <TableHead>实例</TableHead>
-                      <TableHead className="w-[16%]">类型</TableHead>
-                      <TableHead className="w-[16%]">版本</TableHead>
-                      <TableHead className="w-[20%]">创建人</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pagedInstances.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-10 text-sm text-[#A3A3A3]">
-                          没有符合条件的实例
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      pagedInstances.map((i) => {
-                        const checked = selected.has(i.instanceId);
-                        return (
-                          <TableRow
-                            key={i.instanceId}
-                            onClick={() => toggleInstance(i.instanceId)}
-                            className={`cursor-pointer ${checked ? "bg-[#E8ECFE]/40" : "hover:bg-[#FAFAFA]"}`}
-                          >
-                            <TableCell onClick={(e) => e.stopPropagation()}>
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={() => toggleInstance(i.instanceId)}
-                                className="size-4"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm text-[#0A0A0A]">{i.name}</div>
-                              <div className="text-[11px] text-[#A3A3A3] font-mono">{i.instanceId}</div>
-                            </TableCell>
-                            <TableCell className="text-xs text-[#525252]">
-                              {AGENT_TYPE_LABEL[i.agentType]}
-                            </TableCell>
-                            <TableCell className="text-xs text-[#525252] font-mono tabular-nums">
-                              {i.agentVersion}
-                            </TableCell>
-                            <TableCell className="text-xs text-[#737373] truncate max-w-[140px]">
-                              {i.owner}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-              {totalInstancePages > 1 && (
-                <div className="flex items-center justify-between text-xs text-[#737373]">
-                  <span>
-                    共 <span className="text-[#0A0A0A] font-medium tabular-nums">{filteredInstances.length}</span> 条 · 已选 <span className="text-[#1447E6] font-medium tabular-nums">{selected.size}</span>
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setInstancePage(Math.max(1, instancePage - 1))}
-                      disabled={instancePage <= 1}
-                      className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
-                    >
-                      ‹
-                    </button>
-                    <span className="tabular-nums">
-                      {instancePage} / {totalInstancePages}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setInstancePage(Math.min(totalInstancePages, instancePage + 1))}
-                      disabled={instancePage >= totalInstancePages}
-                      className="px-2 h-7 rounded border border-[#E5E5E5] bg-white text-[#525252] disabled:text-[#A3A3A3] disabled:cursor-not-allowed hover:border-[#1447E6] hover:text-[#1447E6]"
-                    >
-                      ›
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* 测试机优先 */}
-            <section className="rounded-xl border border-[#E5E5E5] bg-white p-4">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <Checkbox
-                  checked={useCanary}
-                  onCheckedChange={(v) => setUseCanary(v === true)}
-                  className="mt-0.5"
-                />
-                <div className="flex-1 space-y-2">
-                  <div className="text-sm font-medium text-[#0A0A0A] inline-flex items-center gap-1.5">
-                    <FlaskConical className="w-4 h-4 text-[#F59E0B]" />
-                    测试机优先（推荐）
-                  </div>
-                  <p className="text-sm text-[#525252]">
-                    先在 1 台测试机上执行，确认输出正常后再下发到剩余实例；过程中你可随时终止。
-                  </p>
-                </div>
-              </label>
-
-              {useCanary && (
-                <div className="mt-3 ml-7 space-y-2">
-                  <Label className="text-xs font-medium text-[#525252] block">从已选实例中选择测试机</Label>
-                  <Select
-                    value={canaryInstanceId ?? ""}
-                    onValueChange={(v) => setCanaryInstanceId(v)}
-                  >
-                    <SelectTrigger className="h-9 w-full max-w-[360px] text-sm">
-                      <SelectValue placeholder={selected.size === 0 ? "请先选择执行对象" : "选择 1 台作为测试机"} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from(selected).map((iid) => {
-                        const inst = MOCK_INSTANCES.find((x) => x.instanceId === iid);
-                        return (
-                          <SelectItem key={iid} value={iid}>
-                            {inst?.name ?? iid}
-                            <span className="text-[#A3A3A3] ml-2 font-mono text-[11px]">{iid}</span>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </section>
+            {currentStep === 3 && pickedCommand && (
+              <Step3Policy
+                pickedCommand={pickedCommand}
+                selectedCount={selected.size}
+                useCanary={useCanary}
+                onUseCanaryChange={setUseCanary}
+                canaryInstanceId={canaryInstanceId}
+                onCanaryInstanceChange={setCanaryInstanceId}
+                selectedInstanceIds={Array.from(selected)}
+              />
+            )}
           </div>
         )}
 
@@ -773,21 +547,19 @@ export default function DispatchCommandDialog({
         {/* ── review 阶段 ─────────────────────────────────── */}
         {phase === "review" && testResult && (
           <div className="space-y-4">
-            {/* 决策提示放在最上方（Alert 规范） */}
             <Alert variant="info">
               <Info />
               <AlertDescription>
                 {testResult.status === "success"
                   ? `请确认输出无异常。点击「继续下发」会向剩余 ${selected.size - 1} 台实例发送同样的命令。`
-                  : "测试机执行失败，建议检查命令后重新提交；剩余实例不会被执行。"}
+                  : "灰度执行失败，建议检查命令后重新提交；剩余实例不会被执行。"}
               </AlertDescription>
             </Alert>
 
-            {/* 测试机结果横幅 */}
             <Alert variant={testResult.status === "success" ? "operation-info" : "destructive"}>
               {testResult.status === "success" ? <CheckCircle2 /> : <XCircle />}
               <AlertTitle>
-                测试机 <span className="font-mono">{canaryInstanceName}</span> {testResult.status === "success" ? "执行成功" : "执行失败"}
+                灰度机 <span className="font-mono">{canaryInstanceName}</span> {testResult.status === "success" ? "执行成功" : "执行失败"}
               </AlertTitle>
               <AlertDescription>
                 <span>退出码：<span className="font-mono tabular-nums">{testResult.exitCode}</span></span>
@@ -817,30 +589,50 @@ export default function DispatchCommandDialog({
         )}
         </DialogBody>
 
-        {/* ── Footer：根据阶段渲染不同按钮（testing 阶段无 footer） ── */}
+        {/* ── Footer：根据阶段渲染不同按钮（testing/submitting 阶段无 footer） ── */}
         {phase === "prepare" && (
           <DialogFooter>
             <div className="flex-1 text-xs text-[#525252] self-center">
-              {useCanary && canaryInstanceId && selected.size > 1 && (
-                <>先在 <span className="font-medium text-[#0A0A0A]">{canaryInstanceName}</span> 验证，确认后再下发到剩余 {selected.size - 1} 台</>
+              {currentStep === 3 && useCanary && canaryInstanceId && selected.size > 1 && (
+                <>先在 <span className="font-medium text-[#0A0A0A]">{canaryInstanceName}</span> 灰度，确认后再下发到剩余 {selected.size - 1} 台</>
               )}
-              {useCanary && canaryInstanceId && selected.size === 1 && (
-                <>仅 1 台实例，将作为测试机执行</>
+              {currentStep === 3 && useCanary && canaryInstanceId && selected.size === 1 && (
+                <>仅 1 台实例，将作为灰度机执行</>
               )}
-              {!useCanary && selected.size > 0 && (
-                <>将立即下发到 <span className="font-medium text-[#0A0A0A] tabular-nums">{selected.size}</span> 台实例</>
+              {currentStep === 3 && !useCanary && selected.size > 0 && (
+                <>将一次性下发到 <span className="font-medium text-[#0A0A0A] tabular-nums">{selected.size}</span> 台实例</>
               )}
             </div>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              取消
-            </Button>
-            <Button
-              variant="dialog-confirm"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-            >
-              {useCanary ? "在测试机上执行" : "立即下发"}
-            </Button>
+            {currentStep > 1 ? (
+              <Button variant="outline" onClick={prevStep}>
+                上一步
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                取消
+              </Button>
+            )}
+            {currentStep < 3 ? (
+              <Button
+                variant="dialog-confirm"
+                onClick={nextStep}
+                disabled={
+                  (currentStep === 1 && !step1Done) ||
+                  (currentStep === 2 && !step2Done)
+                }
+              >
+                下一步
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                variant="dialog-confirm"
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+              >
+                {useCanary ? "在灰度机上执行" : "立即下发"}
+              </Button>
+            )}
           </DialogFooter>
         )}
 

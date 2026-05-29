@@ -595,7 +595,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
 
         {/* 基础信息卡片 — bg + 圆角 + 边框 + p-6 */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex flex-col gap-2">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-2 min-w-0 flex-1">
             <div className="flex items-center gap-3">
               <h1
                 className="text-[26px] font-semibold leading-8"
@@ -654,7 +655,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
             </div>
             {/* 元信息行 */}
             <div className="flex items-center flex-wrap gap-2 text-sm text-[#525252]">
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-[2px] border border-[#E5E5E5] bg-white text-[#334155] text-sm">
+              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
                 v{skill.version}
               </span>
               <span className="text-[#E2E8F0]">｜</span>
@@ -672,19 +673,10 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 {skill.description}
               </p>
             )}
+            </div>
 
-            {/* 操作按钮组 — 描述下方独占一行（对齐 Agent 详情页风格） */}
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Button
-                variant="claw-primary"
-                size="claw"
-                onClick={() => setDistributeDialogOpen(true)}
-                disabled={hasInProgress}
-              >
-                {hasInProgress ? '下发中...' : '批量下发'}
-                <Send className="w-4 h-4" />
-              </Button>
-
+            {/* 操作按钮组 — 卡片右上角（与标题水平对齐） */}
+            <div className="flex flex-wrap items-center justify-end gap-2 shrink-0">
               <TooltipProvider>
                 <Tooltip delayDuration={1000}>
                   <TooltipTrigger asChild>
@@ -736,13 +728,23 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                   )}
                 </Tooltip>
               </TooltipProvider>
+
+              <Button
+                variant="claw-primary"
+                size="claw"
+                onClick={() => setDistributeDialogOpen(true)}
+                disabled={hasInProgress}
+              >
+                {hasInProgress ? '下发中...' : '批量下发'}
+                <Send className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
       {/* ======== 横向 Segmented Tab（§8.6 规范，参照 Agent 详情页）======== */}
-      <div className="py-4">
+      <div>
         <div
           className="inline-flex items-center gap-1 p-1 rounded-[4px]"
           style={{ background: "#F5F5F5" }}

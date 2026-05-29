@@ -1011,8 +1011,8 @@ function RoleAddEnterpriseSkillDialog({
               onClick={() => setActiveCategory('all')}
               className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                 activeCategory === 'all'
-                  ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
-                  : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#1447E6]'
+                  ? 'bg-[#020617] border-[#020617] text-white'
+                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
               }`}
             >
               全部
@@ -1023,8 +1023,8 @@ function RoleAddEnterpriseSkillDialog({
                 onClick={() => setActiveCategory(cat.id)}
                 className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   activeCategory === cat.id
-                    ? 'bg-[#F6F8FE] border-[#1447E6] text-[#1447E6]'
-                    : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#1447E6]'
+                    ? 'bg-[#020617] border-[#020617] text-white'
+                    : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
                 }`}
               >
                 {cat.name}
@@ -1319,11 +1319,7 @@ function RoleEditModal({
                           批量刷新
                           {(() => {
                             const count = getUpdatableSkills().length;
-                            return count > 0 ? (
-                              <span className="ml-0.5 px-1.5 py-0 rounded-full text-[10px] bg-green-100 text-green-600 font-medium">
-                                {count}
-                              </span>
-                            ) : null;
+                            return count > 0 ? <span>（{count}）</span> : null;
                           })()}
                         </Button>
                       </TooltipTrigger>

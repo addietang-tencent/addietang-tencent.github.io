@@ -1628,11 +1628,7 @@ export default function AgentMonitor() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
           <div className="shrink-0 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-[#0A0A0A] whitespace-nowrap">Agent 列表</h1>
-              {/* 新版本推送提醒（点击打开版本更新记录侧边栏） */}
-              <ImageUpdateBellEntry onClick={() => setShowUpdateRecordsDrawer(true)} />
-            </div>
+            <h1 className="text-2xl font-bold text-[#0A0A0A] whitespace-nowrap">Agent 列表</h1>
             <p className="text-sm text-[#737373] mt-1 whitespace-nowrap">查看和管理所有企业用户创建的 Agent 云服务器。</p>
           </div>
           <div className="flex items-center gap-2">
@@ -1771,6 +1767,8 @@ export default function AgentMonitor() {
                 />
               </div>
             </div>
+            {/* 新版本推送提醒（点击打开版本更新记录侧边栏，紧贴二级按钮） */}
+            <ImageUpdateBellEntry onClick={() => setShowUpdateRecordsDrawer(true)} />
             {/* 批量更新按钮（次级样式，避免抢主操作） */}
             <Tooltip>
               <TooltipTrigger asChild>

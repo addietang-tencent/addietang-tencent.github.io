@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Pagination } from "@/components/ui/pagination";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // CLS 采集插件版本历史
 interface CLSPluginVersion {
@@ -486,8 +487,7 @@ export default function SessionManagement() {
       {/* 页头 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#09090b]">会话管理</h1>
-          <p className="text-sm text-[#737373] mt-1">让每一轮对话，都可追溪、可分析、可优化</p>
+          <AdminPageHeader title="会话管理" description="让每一轮对话，都可追溪、可分析、可优化" />
         </div>
         <div className="flex items-center gap-2">
           <DatePicker

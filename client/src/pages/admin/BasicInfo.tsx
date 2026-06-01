@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
@@ -373,13 +374,10 @@ export default function BasicInfo() {
 
   return (
     <div className="page-enter">
-      {/* 页面标题 */}
-      <div className="mb-8">
-        <h1 className="text-[20px] font-semibold text-[#0A0A0A] leading-7">基础信息配置</h1>
-        <p className="text-[14px] text-[#334155] mt-2 leading-6">
-          以下为必要的初始化配置，全部完成后用户端方可正常使用，更多高级配置可随时前往对应功能页调整
-        </p>
-      </div>
+      <AdminPageHeader
+        title="基础信息配置"
+        description="以下为必要的初始化配置，全部完成后用户端方可正常使用，更多高级配置可随时前往对应功能页调整"
+      />
 
 
 

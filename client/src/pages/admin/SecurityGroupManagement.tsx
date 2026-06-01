@@ -46,6 +46,7 @@ import {
   MOCK_GROUPS as MOCK_ONEID_GROUPS_SHARED,
   MOCK_MANUAL_GROUPS as MOCK_MANUAL_GROUPS_SHARED,
 } from "./MemberManagement/mock";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // types / interfaces
@@ -3299,10 +3300,7 @@ export default function SecurityGroupManagement() {
     <>
       <div className="page-enter">
 
-        {/* 页头 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#09090b]">网络管理</h1>
-        </div>
+        <AdminPageHeader title="网络管理" />
 
         {/* Tab 切换器 */}
         <div className="flex items-center gap-1 mb-1 border-b border-[#dbe6ff]">

@@ -54,6 +54,7 @@ import {
   saveBuiltinChannelVisibility,
   onBuiltinChannelVisibilityChange,
 } from "@/lib/customChannelStore";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // 合并所有分组（与模型配置页保持一致）
 const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
@@ -285,9 +286,7 @@ export default function ChannelConfig() {
 
   return (
     <div className="page-enter">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">通道配置</h1>
-      </div>
+      <AdminPageHeader title="通道配置" />
 
       {/* Tab 切换器（与 Agent 工具库同款 LineTabs：黑色下划线） */}
       <div className="mb-1">

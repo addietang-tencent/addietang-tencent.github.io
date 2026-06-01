@@ -21,6 +21,7 @@ import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger }
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // Mock data for charts
 const logLevelData = [
@@ -451,12 +452,10 @@ export default function OpsObservation() {
 
   return (
     <div className="page-enter">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-[#09090b]">运维观测</h1>
-          </div>
+      <AdminPageHeader
+        title="运维观测"
+        description="全方位守护系统稳定运行，从被动救火到主动防御"
+        actions={
           <div className="flex items-center gap-2">
             <DatePicker
               value={dateFrom}
@@ -478,12 +477,9 @@ export default function OpsObservation() {
               <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
             </Button>
           </div>
-        </div>
-        <p className="text-sm text-[#737373] mt-1 leading-relaxed">
-          全方位守护系统稳定运行，从被动救火到主动防御
-        </p>
-        
-      </div>
+        }
+        className="mb-8"
+      />
 
       {/* CLS 日志服务未开启提示 */}
       {!clsEnabled && (

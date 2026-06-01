@@ -1,9 +1,5 @@
 import type { ReactNode } from "react";
 
-import {
-  AdminPageDescription,
-  AdminPageTitle,
-} from "@/components/ui/Typography";
 import { cn } from "@/lib/utils";
 
 type AdminPageHeaderProps = {
@@ -33,19 +29,31 @@ export function AdminPageHeader({
     <div
       data-slot="admin-page-header"
       className={cn(
-        "flex items-start justify-between gap-4 flex-wrap",
+        "flex items-start justify-between gap-4 flex-wrap mb-6",
         className
       )}
     >
       <div className={cn("min-w-0", actions && "flex-1", contentClassName)}>
         <div className="flex items-center gap-3 flex-wrap">
-          <AdminPageTitle className={titleClassName}>{title}</AdminPageTitle>
+          <h1
+            className={cn(
+              "font-sans text-[28px] font-medium leading-[36px] text-[#020617]",
+              titleClassName
+            )}
+          >
+            {title}
+          </h1>
           {titleAccessory}
         </div>
         {description ? (
-          <AdminPageDescription className={cn("mt-2", descriptionClassName)}>
+          <p
+            className={cn(
+              "font-sans text-xs font-normal leading-[14px] text-[#596980] mt-2",
+              descriptionClassName
+            )}
+          >
             {description}
-          </AdminPageDescription>
+          </p>
         ) : null}
       </div>
       {actions ? (

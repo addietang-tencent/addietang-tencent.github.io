@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import SkillInitialPackageTab from "./SkillLibrary/SkillInitialPackageTab";
 import SkillRolesTab from "./SkillRolesTab";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ── Tab 定义 ──────────────────────────────────────────────
 const TABS = [
@@ -260,10 +261,7 @@ export default function SkillConfig() {
 
   return (
     <div className="page-enter">
-      {/* 页面标题 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">技能配置</h1>
-      </div>
+      <AdminPageHeader title="技能配置" />
 
       {/* Tab 切换器（与 Agent 工具库同款 LineTabs：黑色下划线） */}
       <div className="mb-1">

@@ -20,6 +20,7 @@ import {
 import { StatusTag } from "@/components/ui/status-tag";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, Download, Server, Shield } from "lucide-react";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // Mock data
 const MOCK_IMAGES = [
@@ -94,8 +95,7 @@ export default function ServerManagement() {
     <>
       <div className="page-enter">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#0A0A0A]">云服务器管理</h1>
-          <p className="text-sm text-[#737373] mt-1">管理企业版 Agent 所使用的云服务器镜像和安全组策略。</p>
+          <AdminPageHeader title="云服务器管理" description="管理企业版 Agent 所使用的云服务器镜像和安全组策略。" />
         </div>
 
         <Tabs defaultValue="images">

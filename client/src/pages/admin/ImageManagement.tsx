@@ -112,6 +112,7 @@ import {
 import type { UserGroup } from "./MemberManagement/types";
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS, MOCK_USERS, MOCK_USERS_MANUAL } from "./MemberManagement/mock";
 import { ScopeEditPopover } from "@/components/ScopeEditPopover";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─── 系统预设 Agent 类型 ────────────────────────────────────────────────
 interface AgentTypeConfig {
@@ -1154,13 +1155,10 @@ export default function ImageManagement() {
     <>
       <div className="page-enter">
         <div className="min-w-0">
-          {/* 页面标题 */}
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 类型</h1>
-            <p className="text-sm text-[#737373] mt-1">
-              通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。
-            </p>
-          </div>
+          <AdminPageHeader
+            title="Agent 类型"
+            description="通过启用镜像决定用户端可以使用的 Agent 类型，支持自定义 Agent 类型。"
+          />
 
           {/* 主体内容 */}
           <div className="min-w-0">

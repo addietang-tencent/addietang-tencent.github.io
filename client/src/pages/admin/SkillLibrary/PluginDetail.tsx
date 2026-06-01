@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
+import { FileTree } from '@/components/ui/tree';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Trash2, Info, Loader, Send } from 'lucide-react';
@@ -134,7 +135,6 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
   const [activeTab, setActiveTab] = useState('files');
   const [selectedVersion, setSelectedVersion] = useState<string>(plugin.versions?.[0] || plugin.version);
   const [expandedFile, setExpandedFile] = useState<string | null>(null);
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('source');
 
   // 下发记录
@@ -200,111 +200,6 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
     }
   }, [processedFiles]);
 
-  // 初始化展开顶层文件夹
-  useEffect(() => {
-    if (processedFiles.length) {
-      const dirs = new Set<string>();
-      for (const file of processedFiles) {
-        const parts = file.name.split('/');
-        if (parts.length > 1) {
-          dirs.add(parts[0]);
-        }
-      }
-      setExpandedDirs(dirs);
-    }
-  }, [processedFiles]);
-
-  const toggleDir = (dirName: string) => {
-    setExpandedDirs(prev => {
-      const next = new Set(prev);
-      if (next.has(dirName)) next.delete(dirName);
-      else next.add(dirName);
-      return next;
-    });
-  };
-
-  const renderFileTree = (files: Array<{ name: string; size: number; content?: string }>) => {
-    const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name));
-    const renderedDirs = new Set<string>();
-    const result: React.ReactNode[] = [];
-
-    for (const file of sorted) {
-      const parts = file.name.split('/');
-      const isDir = file.name.endsWith('/');
-      const isNested = parts.length > 1 && !isDir;
-      const canView = !isDir && isViewableFile(file.name);
-
-      if (isNested) {
-        for (let i = 1; i < parts.length; i++) {
-          const dirPath = parts.slice(0, i).join('/');
-          if (!renderedDirs.has(dirPath)) {
-            renderedDirs.add(dirPath);
-            const depth = i - 1;
-            const isExpanded = expandedDirs.has(dirPath);
-            let ancestorsExpanded = true;
-            for (let j = 1; j < i; j++) {
-              if (!expandedDirs.has(parts.slice(0, j).join('/'))) {
-                ancestorsExpanded = false;
-                break;
-              }
-            }
-            if (!ancestorsExpanded) continue;
-            result.push(
-              <button
-                key={`dir-${dirPath}`}
-                onClick={() => toggleDir(dirPath)}
-                className="w-full flex items-center gap-1.5 px-2 py-1 text-xs text-[#737373] hover:bg-gray-50 rounded transition-colors cursor-pointer"
-                style={{ paddingLeft: `${8 + depth * 16}px` }}
-              >
-                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />}
-                <span className="truncate font-medium">{parts[i - 1]}</span>
-                {isExpanded
-                  ? <ChevronDown className="w-3 h-3 ml-auto text-[#A3A3A3] flex-shrink-0" />
-                  : <ChevronRight className="w-3 h-3 ml-auto text-[#A3A3A3] flex-shrink-0" />
-                }
-              </button>
-            );
-          }
-        }
-        let allParentsExpanded = true;
-        for (let i = 1; i < parts.length; i++) {
-          if (!expandedDirs.has(parts.slice(0, i).join('/'))) {
-            allParentsExpanded = false;
-            break;
-          }
-        }
-        if (!allParentsExpanded) continue;
-      }
-
-      if (isDir) continue;
-
-      const depth = parts.length - 1;
-      result.push(
-        <button
-          key={file.name}
-          onClick={() => {
-            if (canView) {
-              setExpandedFile(expandedFile === file.name ? null : file.name);
-              setFileViewMode(isMarkdownFile(file.name) ? 'preview' : 'source');
-            }
-          }}
-          disabled={!canView}
-          className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
-            expandedFile === file.name
-              ? 'bg-blue-50 text-[#355EF1]'
-              : canView
-              ? 'hover:bg-gray-50 text-[#737373] cursor-pointer'
-              : 'text-[#737373] cursor-not-allowed opacity-60'
-          }`}
-          style={{ paddingLeft: `${8 + depth * 16}px` }}
-        >
-          <FileText className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
-          <span className="truncate">{parts[parts.length - 1]}</span>
-        </button>
-      );
-    }
-    return result;
-  };
 
   const getFileContent = (fileName: string): string => {
     const originalName = strippedPrefix ? strippedPrefix + fileName : fileName;
@@ -528,7 +423,20 @@ export default function PluginDetail({ plugin, onBack, onPluginDelete }: PluginD
                   <p className="text-sm font-medium text-[#09090b]">{selectedVersion || plugin.version}</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
-                  {renderFileTree(processedFiles)}
+                  <FileTree
+                    files={processedFiles}
+                    selectedFile={expandedFile}
+                    onSelectFile={(name) => {
+                      if (name === expandedFile) {
+                        setExpandedFile(null);
+                      } else if (name) {
+                        setExpandedFile(name);
+                        setFileViewMode(isMarkdownFile(name) ? 'preview' : 'source');
+                      }
+                    }}
+                    isViewable={(name) => isViewableFile(name)}
+                    defaultExpandAll={true}
+                  />
                 </div>
               </div>
 

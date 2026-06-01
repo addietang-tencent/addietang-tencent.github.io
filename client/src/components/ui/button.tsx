@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
  *   ├─────────────────────────┼──────────────────────────────────────────────────────────────┤
  *   │ claw-outline / bg       │ #FFFFFF                                                       │
  *   │ claw-outline / hover bg │ linear-gradient(90deg, #FFFFFF 0%, #F2F5FF 100%)              │
- *   │ claw-outline / border   │ 1px solid #E5E5E5                                             │
+ *   │ claw-outline / border   │ 1px solid #EAEEF5                                             │
  *   │ claw-outline / hover    │ 1px solid #D8E1FF                                             │
  *   │ claw-outline / text     │ #020617                                                       │
  *   │ claw-primary / bg       │ linear-gradient(90deg, #020617 70%, #355EF1 100%)             │
@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
  *   │ tenant-* / 圆角           │ rounded-full（全圆角胶囊，覆盖基类 4px）                     │
  *   │ tenant-primary / bg      │ linear-gradient(90deg, #020617 70%, #1447E6 100%)            │
  *   │ tenant-primary / hover   │ linear-gradient(90deg, #020617 70%, #0A226F 100%)            │
- *   │ tenant-outline / bg      │ #FFFFFF + 1px #E5E5E5                                        │
+ *   │ tenant-outline / bg      │ #FFFFFF + 1px #EAEEF5                                        │
  *   │ tenant-outline / hover   │ #F5F5F5 + 1px #E3E3E3 + shadow 0 1px 3px rgba(0,0,0,0.08)    │
  *   │ tenant-destructive / bg  │ #D42A1E → hover #B91C1C                                      │
  *   │ tenant-ghost / bg        │ transparent → hover #F5F5F5                                  │
@@ -92,11 +92,11 @@ const buttonVariants = cva(
          * - 用户端胶囊版本请用 `tenant-plain`
          */
         plain:
-          "bg-white border border-[#E5E5E5] text-[#020617] font-normal " +
+          "bg-white border border-[#EAEEF5] text-[#020617] font-normal " +
           "hover:border-[#020617] " +
           "active:bg-[#020617] active:border-[#020617] active:text-white " +
           "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
-          "disabled:bg-white disabled:border-[#E5E5E5] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+          "disabled:bg-white disabled:border-[#EAEEF5] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
         link:
           // link 形态：无 padding 无高度，直接作为内联文字渲染（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
           "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-[#355EF1] font-normal underline-offset-4 " +
@@ -124,10 +124,10 @@ const buttonVariants = cva(
 
         /**
          * 线性描边（次级按钮）
-         * - normal: 白底 + #E5E5E5 边 + #020617 字
+         * - normal: 白底 + #EAEEF5 边 + #020617 字
          * - hover : #f5f5f5 底 + #e3e3e3 边
          * - active: 白底 + #e3e3e3 边
-         * - disabled: 白底 + #e5e5e5 边 + rgba(2,6,23,0.3) 字
+         * - disabled: 白底 + #EAEEF5 边 + rgba(2,6,23,0.3) 字
          */
         "claw-outline":
           "bg-white border border-gray-200 text-[#020617] font-normal " +
@@ -180,7 +180,7 @@ const buttonVariants = cva(
 
         /**
          * 用户端线性描边按钮（tenant-outline）
-         * - 与 claw-outline 同色（白底 / #E5E5E5 边 / #020617 字）
+         * - 与 claw-outline 同色（白底 / #EAEEF5 边 / #020617 字）
          * - 圆角：rounded-full
          * - hover：#F5F5F5 + 描边 + 轻阴影 0 1px 3px rgba(0,0,0,0.08)
          * - 用途：用户端业务页次级按钮、弹窗取消、表单重置
@@ -193,7 +193,7 @@ const buttonVariants = cva(
 
         /**
          * 用户端线性描边按钮（tenant-outline-r20） — [Figma 1077-33986] 卡片底部专用
-         * - 颜色规格与 tenant-outline 一致（白底 / #E5E5E5 边 / #020617 字）
+         * - 颜色规格与 tenant-outline 一致（白底 / #EAEEF5 边 / #020617 字）
          * - 唯一差异：圆角 = 20px（rounded-[20px]），覆盖基类 4px
          * - 用途：AgentCard 底部「设置」/「对话」按钮，对齐 Figma 1077:33986 节点
          *   规范的 20px 圆角，介于 4px（claw）和 full（tenant）之间
@@ -240,11 +240,11 @@ const buttonVariants = cva(
          *   tenant-primary / tenant-outline 等同手法）。
          */
         "tenant-plain":
-          "!rounded-full bg-white border border-[#E5E5E5] text-[#020617] font-normal " +
+          "!rounded-full bg-white border border-[#EAEEF5] text-[#020617] font-normal " +
           "hover:border-[#020617] " +
           "active:bg-[#020617] active:border-[#020617] active:text-white " +
           "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
-          "disabled:bg-[#f5f5f5] disabled:border-[#E5E5E5] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+          "disabled:bg-[#f5f5f5] disabled:border-[#EAEEF5] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
 
         /**
          * 用户端纯黑实心按钮（tenant-dialog-confirm）

@@ -117,7 +117,7 @@ function InfoPopover({
         onOpenAutoFocus={(e) => e.preventDefault()}
         onCloseAutoFocus={(e) => e.preventDefault()}
         className={cn(
-          // 复用 shadcn 默认（白底 #020617 文字 / #e5e5e5 边框 / 8px 圆角 / p-4 / 阴影）
+          // 复用 shadcn 默认（白底 #020617 文字 / #EAEEF5 边框 / 8px 圆角 / p-4 / 阴影）
           // 仅微调：放开默认 w-72 让宽度由 maxWidth 控制；缩小 padding 以贴合短提示语
           "w-auto p-3 text-sm",
           contentClassName

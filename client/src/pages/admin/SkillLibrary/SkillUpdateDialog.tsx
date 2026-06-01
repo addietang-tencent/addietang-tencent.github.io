@@ -641,7 +641,7 @@ description: this is a skill creator.
                     className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors whitespace-nowrap inline-flex items-center gap-1 ${
                       isSelected
                         ? 'bg-[#0A0A0A] border-[#0A0A0A] text-white'
-                        : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                        : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
                     }`}
                   >
                     {isSelected && <Check className="w-3.5 h-3.5" strokeWidth={2.5} />}
@@ -663,7 +663,7 @@ description: this is a skill creator.
                   className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                     formData.scope === 'public'
                       ? 'bg-[#020617] border-[#020617] text-white'
-                      : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                      : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
                   }`}
                 >
                   全部用户
@@ -673,7 +673,7 @@ description: this is a skill creator.
                   className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                     formData.scope === 'private'
                       ? 'bg-[#020617] border-[#020617] text-white'
-                      : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                      : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
                   }`}
                 >
                   按分组

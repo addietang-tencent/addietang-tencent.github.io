@@ -1012,7 +1012,7 @@ function RoleAddEnterpriseSkillDialog({
               className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                 activeCategory === 'all'
                   ? 'bg-[#020617] border-[#020617] text-white'
-                  : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                  : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
               }`}
             >
               全部
@@ -1024,7 +1024,7 @@ function RoleAddEnterpriseSkillDialog({
                 className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   activeCategory === cat.id
                     ? 'bg-[#020617] border-[#020617] text-white'
-                    : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+                    : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
                 }`}
               >
                 {cat.name}

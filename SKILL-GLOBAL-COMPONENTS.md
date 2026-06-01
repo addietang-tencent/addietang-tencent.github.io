@@ -378,10 +378,10 @@ import { TableActionCell } from "@/components/ui/table";
 
 | 状态 | 背景 | 边框 | 文字 |
 |------|------|------|------|
-| **Normal** | `#ffffff` | `#e4e4e4` | `#020617` |
+| **Normal** | `#ffffff` | `#EAEEF4` | `#020617` |
 | **Hover** | `#ffffff` | `#020617` | `#020617` |
 | **Active（选中）** | `#020617` | `#020617` | 白色 |
-| **Disabled** | `#ffffff` | `#e4e4e4` | `rgba(0,0,0,0.3)` |
+| **Disabled** | `#ffffff` | `#EAEEF4` | `rgba(0,0,0,0.3)` |
 
 **使用方式**：通过 `data-state="active"` 标记选中态。
 
@@ -669,8 +669,8 @@ import { SmallIconStateButton } from "@/components/ui/button";
 |------|------|------|------|------|
 | **Active（选中）** | `#020617` | `#020617` | 白色 | 黑底+黑边+白字 |
 | **Hover（悬停）** | `#ffffff` | `#020617` | `#020617` | 白底+黑边+黑字 |
-| **Normal（默认）** | `#ffffff` | `#e4e4e4` | `#020617` | 白底+灰边+黑字 |
-| **Disabled（禁用）** | `#ffffff` | `#e4e4e4` | `rgba(0,0,0,0.3)` | 白底+灰边+淡字 |
+| **Normal（默认）** | `#ffffff` | `#EAEEF4` | `#020617` | 白底+灰边+黑字 |
+| **Disabled（禁用）** | `#ffffff` | `#EAEEF4` | `rgba(0,0,0,0.3)` | 白底+灰边+淡字 |
 
 ### 视觉参数
 
@@ -692,7 +692,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
     className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
       isActive
         ? 'bg-[#020617] border-[#020617] text-white'
-        : 'bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]'
+        : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
     }`}
   >
     {cat.name}

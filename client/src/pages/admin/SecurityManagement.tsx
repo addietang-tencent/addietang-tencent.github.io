@@ -274,8 +274,8 @@ export default function SecurityManagement() {
 
       {/* Tab 标签页 — 黑色下划线 tabs */}
       <Segment value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between border-b border-gray-200">
-          <div className="flex gap-6">
+        <div className="flex items-center justify-between">
+          <div className="flex gap-6 border-b border-[#dbe6ff] flex-1">
             {[
               { value: "agent-config", label: "AI Agent配置" },
               { value: "control-config", label: "管控配置" },
@@ -287,7 +287,7 @@ export default function SecurityManagement() {
                 key={tab.value}
                 type="button"
                 onClick={() => setActiveTab(tab.value)}
-                className={`pb-2.5 text-sm font-medium transition-colors border-b-2 ${
+                className={`pb-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   activeTab === tab.value
                     ? "text-[#0A0A0A] border-[#0A0A0A]"
                     : "text-[#A3A3A3] border-transparent hover:text-[#525252]"
@@ -297,7 +297,7 @@ export default function SecurityManagement() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3 pb-2.5">
+          <div className="flex items-center gap-3 pl-16">
             <Button variant="claw-primary" size="claw" onClick={() => setShowConfigDialog(true)}>
               防护版本配置
             </Button>

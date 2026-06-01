@@ -20,8 +20,8 @@ import { cn } from "@/lib/utils";
  *   │ claw-outline / border   │ 1px solid #EAEEF4                                             │
  *   │ claw-outline / hover    │ 1px solid #D8E1FF                                             │
  *   │ claw-outline / text     │ #020617                                                       │
- *   │ claw-primary / bg       │ linear-gradient(90deg, #020617 70%, #355EF1 100%)             │
- *   │ claw-primary / hover bg │ linear-gradient(90deg, #020617 70%, #0A226F 100%)             │
+ *   │ claw-primary / bg       │ #0A0A0A (纯黑)                                                │
+ *   │ claw-primary / hover bg │ #1a1a1a                                                       │
  *   │ claw-primary / text     │ #FFFFFF                                                       │
  *   │ 圆角                     │ 4px（已由基类提供）                                            │
  *   │ icon size               │ 16×16（已由基类 [&_svg:not([size-])]:size-4 提供）              │
@@ -32,8 +32,8 @@ import { cn } from "@/lib/utils";
  *   │ Token                    │ Value                                                        │
  *   ├──────────────────────────┼─────────────────────────────────────────────────────────────┤
  *   │ tenant-* / 圆角           │ rounded-full（全圆角胶囊，覆盖基类 4px）                     │
- *   │ tenant-primary / bg      │ linear-gradient(90deg, #020617 70%, #1447E6 100%)            │
- *   │ tenant-primary / hover   │ linear-gradient(90deg, #020617 70%, #0A226F 100%)            │
+ *   │ tenant-primary / bg      │ #0A0A0A                                                      │
+ *   │ tenant-primary / hover   │ #333333                                                      │
  *   │ tenant-outline / bg      │ #FFFFFF + 1px #EAEEF4                                        │
  *   │ tenant-outline / hover   │ #F5F5F5 + 1px #E3E3E3 + shadow 0 1px 3px rgba(0,0,0,0.08)    │
  *   │ tenant-destructive / bg  │ #D42A1E → hover #B91C1C                                      │
@@ -56,10 +56,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "[background:linear-gradient(90deg,#020617_70%,#355EF1_110%)] text-white font-normal border-0 " +
-          "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
-          "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
-          "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",
+          "bg-[#0A0A0A] text-white font-normal border-0 " +
+          "hover:bg-[#1a1a1a] " +
+          "active:bg-[#000000] " +
+          "disabled:bg-[#0A0A0A]/40 disabled:text-white/50 disabled:opacity-100",
         destructive:
           "bg-[#d42a1e] text-white font-normal border-0 " +
           "hover:bg-[#b91c1c] " +
@@ -143,10 +143,10 @@ const buttonVariants = cva(
          * - disabled: 叠加 rgba(255,255,255,0.3) + 半透明白字
          */
         "claw-primary":
-          "[background:linear-gradient(90deg,#020617_70%,#355EF1_110%)] text-white font-normal border-0 " +
-          "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
-          "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] " +
-          "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_110%)] disabled:text-white/50 disabled:opacity-100",
+          "bg-[#0A0A0A] text-white font-normal border-0 " +
+          "hover:bg-[#1a1a1a] " +
+          "active:bg-[#000000] " +
+          "disabled:bg-[#0A0A0A]/40 disabled:text-white/50 disabled:opacity-100",
 
         /**
          * 普通弹窗主按钮
@@ -173,10 +173,10 @@ const buttonVariants = cva(
          * - 用途：用户端业务页 CTA、弹窗确认、表单提交
          */
         "tenant-primary":
-          "!rounded-full [background:linear-gradient(90deg,#020617_70%,#1447E6_100%)] text-white font-normal border-0 " +
-          "hover:[background:linear-gradient(90deg,#020617_70%,#0A226F_100%)] " +
-          "active:[background:linear-gradient(90deg,rgba(255,255,255,0.2),rgba(255,255,255,0.2)),linear-gradient(90deg,#020617_70%,#0A226F_100%)] " +
-          "disabled:[background:linear-gradient(90deg,rgba(255,255,255,0.3),rgba(255,255,255,0.3)),linear-gradient(90deg,#020617_70%,#0A226F_100%)] disabled:text-white/50 disabled:opacity-100",
+          "!rounded-full bg-[#0A0A0A] text-white font-normal border-0 " +
+          "hover:bg-[#333333] " +
+          "active:bg-[#1a1a1a] " +
+          "disabled:bg-[#0A0A0A]/50 disabled:text-white/50 disabled:opacity-100",
 
         /**
          * 用户端线性描边按钮（tenant-outline）

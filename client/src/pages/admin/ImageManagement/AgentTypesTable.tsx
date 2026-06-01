@@ -15,7 +15,7 @@
  *
  * 样式规范：使用 @/components/ui/table 标准 Table 组件（禁止裸 <table>）
  *  - TableHeader bg-[#fafafa]、TableHead h-[54px] 14px/semibold/#09090b
- *  - TableRow 内置 hover:bg-[#fafafa] 和 border-b border-[#f0f0f0]
+ *  - TableRow 内置 hover:bg-[#fafafa] 和 border-b border-gray-200
  *  - 主信息 14px / #0A0A0A / font-medium；副信息 12px / #A3A3A3 / mt-1
  *  - 操作列使用 Button variant="link"（统一品牌蓝文字按钮）
  */
@@ -112,8 +112,8 @@ export default function AgentTypesTable({
   );
 
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-      <Table className="table-auto" scrollX={1460}>
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <Table variant="elevated-white" className="table-auto" scrollX={1460}>
         <TableHeader>
           <TableRow>
             <TableHead fixed="left" style={{ width: 240, minWidth: 240, maxWidth: 240 }}>

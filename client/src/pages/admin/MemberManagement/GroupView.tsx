@@ -653,7 +653,7 @@ export default function GroupView({
 
       {/* 主体：合并为一个卡片，左右面板 + 可拖拽分割线 */}
       <div
-        className="flex bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+        className="flex bg-white rounded-xl border border-gray-200 overflow-hidden"
         style={{
           height: "calc(100vh - 220px)",
         }}
@@ -819,7 +819,7 @@ export default function GroupView({
             <p className="text-sm text-[#334155]">
               该分组的上级分组发生变更，以下用户在该分组中创建了 Agent 实例，请选择如何处理：
             </p>
-            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden max-h-[200px] overflow-y-auto">
+            <div className="rounded-[4px] border border-gray-200 overflow-hidden max-h-[200px] overflow-y-auto">
               <Table className="w-full text-xs" density="compact">
                 <TableHeader className="sticky top-0">
                   <TableRow>

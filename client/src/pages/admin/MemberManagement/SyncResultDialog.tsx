@@ -66,10 +66,10 @@ export default function SyncResultDialog({
               </div>
 
               {/* 分组异常表格 */}
-              <div className="border border-[#e5e5e5] rounded-xl overflow-hidden">
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
                 <Table className="w-full text-sm">
                   <TableHeader>
-                    <TableRow className="bg-gray-50 border-b border-[#e5e5e5]">
+                    <TableRow className="bg-gray-50 border-b border-gray-200">
                       <TableHead className="text-left uppercase tracking-wide">
                         分组名称
                       </TableHead>
@@ -133,10 +133,10 @@ export default function SyncResultDialog({
               </div>
 
               {/* 用户异常表格 */}
-              <div className="border border-[#e5e5e5] rounded-xl overflow-hidden">
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
                 <Table className="w-full text-sm">
                   <TableHeader>
-                    <TableRow className="bg-gray-50 border-b border-[#e5e5e5]">
+                    <TableRow className="bg-gray-50 border-b border-gray-200">
                       <TableHead className="text-left uppercase tracking-wide">
                         用户
                       </TableHead>

@@ -521,7 +521,7 @@ export default function MCPAddDialog({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g., weather-mcp"
-                    className="mt-1 font-mono text-sm rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="mt-1 font-mono text-sm rounded-[4px] border-gray-200 bg-white"
                   />
                   {errors.name ? (
                     <p className="text-xs text-red-500 mt-1">{errors.name}</p>
@@ -543,7 +543,7 @@ export default function MCPAddDialog({
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="e.g., 天气 MCP 服务"
-                    className="mt-1 rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="mt-1 rounded-[4px] border-gray-200 bg-white"
                   />
                 </div>
 
@@ -555,7 +555,7 @@ export default function MCPAddDialog({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="MCP 服务的简要说明"
-                    className="mt-1 resize-none rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="mt-1 resize-none rounded-[4px] border-gray-200 bg-white"
                     rows={2}
                   />
                 </div>
@@ -644,7 +644,7 @@ export default function MCPAddDialog({
                           onClick={() => handleCategoryChange(cat)}
                           className={cn(
                             "flex-1 flex items-start gap-2.5 rounded-[4px] border px-3 py-3 transition-colors text-left",
-                            "border-[#E5E5E5] bg-white",
+                            "border-gray-200 bg-white",
                             !isSelected && "hover:border-[#1447E6]/40 cursor-pointer",
                             isSelected && "border-[#1447E6] bg-[#1447E6]/5",
                           )}
@@ -762,7 +762,7 @@ export default function MCPAddDialog({
                 {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
                 <div className="border border-gray-200 rounded-xl overflow-hidden font-mono text-xs">
                   {/* 固定前缀行（不可编辑）— 4 层深度，2 空格缩进 */}
-                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
+                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-200 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'{'}</div>
                     <div>{'  "mcp": {'}</div>
                     <div>{'    "servers": {'}</div>
@@ -798,7 +798,7 @@ export default function MCPAddDialog({
                     />
                   </div>
                   {/* 固定后缀行（不可编辑） */}
-                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-[#e5e5e5] select-none leading-relaxed text-xs whitespace-pre">
+                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-gray-200 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'      }'}</div>
                     <div>{'    }'}</div>
                     <div>{'  }'}</div>
@@ -903,7 +903,7 @@ export default function MCPAddDialog({
                     value={usageDoc}
                     onChange={(e) => setUsageDoc(e.target.value)}
                     placeholder="# 使用说明&#10;&#10;在此编写 Markdown 格式的使用说明..."
-                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto rounded-[4px] border-gray-200 bg-white"
                     rows={10}
                   />
                 ) : (
@@ -954,7 +954,7 @@ export default function MCPAddDialog({
                     value={toolDoc}
                     onChange={(e) => setToolDoc(e.target.value)}
                     placeholder="# 工具列表&#10;&#10;在此编写 Markdown 格式的工具说明..."
-                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto rounded-[4px] border-gray-200 bg-white"
                     rows={10}
                   />
                 ) : (

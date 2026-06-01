@@ -290,7 +290,7 @@ function TokenDepartmentFilter({
               selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} />
           ))}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
               <span className="text-[#355EF1] font-medium truncate">全部部门</span>
@@ -426,7 +426,7 @@ function TokenGroupFilter({
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         {/* 搜索框 */}
-        <div className="p-2 border-b border-[#e5e5e5]">
+        <div className="p-2 border-b border-gray-200">
           <Input
             placeholder="搜索分组"
             value={search}
@@ -445,7 +445,7 @@ function TokenGroupFilter({
               selected={tempValue} expanded={expanded} onToggle={toggleExpand} onSelect={setTempValue} search={search} />
           ))}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-gray-200 px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 flex items-center gap-1 text-xs overflow-hidden">
             {tempValue === "" ? (
               <span className="text-[#355EF1] font-medium truncate">全部分组</span>
@@ -1165,7 +1165,7 @@ export default function TokensMonitor() {
         </div>
 
         {/* Line Chart */}
-        <div className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 mb-6"
+        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6"
          >
           <p className="text-sm font-medium text-[#525252] mb-4">
             {isSingleDay ? "最近 7 天 Tokens 趋势" : "所选时间段 Tokens 趋势"}
@@ -1221,9 +1221,9 @@ export default function TokensMonitor() {
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
             </div>
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
              >
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead style={{ width: '220px', minWidth: '220px', maxWidth: '220px' }}>名称 / ID</TableHead>
@@ -1261,7 +1261,7 @@ export default function TokensMonitor() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <div className="px-4 py-3 border-t border-gray-200">
                 <Pagination total={instanceStats.length} current={instancePage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setInstancePage(p)} />
               </div>
             </div>
@@ -1285,9 +1285,9 @@ export default function TokensMonitor() {
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
             </div>
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
              >
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead>用户 ID</TableHead>
@@ -1318,7 +1318,7 @@ export default function TokensMonitor() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <div className="px-4 py-3 border-t border-gray-200">
                 <Pagination total={memberStats.length} current={memberPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setMemberPage(p)} />
               </div>
             </div>
@@ -1342,9 +1342,9 @@ export default function TokensMonitor() {
                 <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
               </UITooltip>
             </div>
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
              >
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead>模型名称</TableHead>
@@ -1368,7 +1368,7 @@ export default function TokensMonitor() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <div className="px-4 py-3 border-t border-gray-200">
                 <Pagination total={modelStats.length} current={modelPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setModelPage(p)} />
               </div>
             </div>
@@ -1400,9 +1400,9 @@ export default function TokensMonitor() {
                   </UITooltip>
                 </div>
               </div>
-              <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                >
-                <Table>
+                <Table variant="elevated-white">
                   <TableHeader>
                     <TableRow>
                       <TableHead>部门名称</TableHead>
@@ -1428,7 +1428,7 @@ export default function TokensMonitor() {
                     ))}
                   </TableBody>
                 </Table>
-                <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <div className="px-4 py-3 border-t border-gray-200">
                   <Pagination total={deptStats.length} current={deptPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setDeptPage(p)} />
                 </div>
               </div>
@@ -1460,9 +1460,9 @@ export default function TokensMonitor() {
                 </UITooltip>
               </div>
             </div>
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
              >
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead>分组名称</TableHead>
@@ -1510,7 +1510,7 @@ export default function TokensMonitor() {
                   })}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-[#f0f0f0]">
+              <div className="px-4 py-3 border-t border-gray-200">
                 <Pagination total={groupStats.length} current={groupPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setGroupPage(p)} />
               </div>
             </div>
@@ -1521,7 +1521,7 @@ export default function TokensMonitor() {
             {!clsEnabled && (
               <>
                 {/* CLS 提示弹框 */}
-                <div className="bg-white border border-[#E5E5E5] rounded-[4px] p-6 mb-6">
+                <div className="bg-white border border-gray-200 rounded-[4px] p-6 mb-6">
                   <div className="flex items-start justify-between gap-6">
                     <div className="flex-1">
                       <h3 className="text-sm font-semibold text-[#0A0A0A] mb-1">Tokens 监控（按会话）需要开启 CLS 日志服务</h3>
@@ -1580,7 +1580,7 @@ export default function TokensMonitor() {
                 {/* 卡片功能展示 */}
                 <div className="space-y-4 mb-8">
                   {/* 第一块：当前页可获得的会话数据 */}
-                  <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+                  <div className="border border-gray-200 rounded-[4px] px-6 py-5">
                     <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                       {[
@@ -1616,7 +1616,7 @@ export default function TokensMonitor() {
                   </div>
 
                   {/* 第二块：运维观测和会话管理中可获得的数据 */}
-                  <div className="border border-[#E5E5E5] rounded-[4px] px-6 py-5">
+                  <div className="border border-gray-200 rounded-[4px] px-6 py-5">
                     <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在运维观测和会话管理页面中获得以下观测数据：</h4>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                       {[
@@ -1724,9 +1724,9 @@ export default function TokensMonitor() {
                   <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
                 </UITooltip>
               </div>
-              <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                >
-                <Table scrollX={1400}>
+                <Table variant="elevated-white" scrollX={1400}>
                   <TableHeader>
                     <TableRow>
                       <TableHead fixed="left">会话</TableHead>
@@ -1774,7 +1774,7 @@ export default function TokensMonitor() {
                     })}
                   </TableBody>
                 </Table>
-                <div className="px-4 py-3 border-t border-[#f0f0f0]">
+                <div className="px-4 py-3 border-t border-gray-200">
                   <Pagination total={sessionStats.length} current={sessionPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setSessionPage(p)} />
                 </div>
               </div>
@@ -1963,7 +1963,7 @@ export default function TokensMonitor() {
             <DialogDescription>选择要升级的版本并查看更新内容</DialogDescription>
           </DialogHeader>
           <DialogBody className="flex-1">
-            <div className="rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+            <div className="rounded-[4px] border border-gray-200 overflow-hidden">
               <RadioGroup
                 value={selectedPluginVersion?.version ?? ""}
                 onValueChange={(val) => {

@@ -146,7 +146,7 @@ function StepCard({
 }) {
   return (
     <div
-      className="bg-white rounded-[4px] border border-[#e5e5e5] p-6 transition-all overflow-hidden"
+      className="bg-white rounded-xl border border-gray-200 p-6 transition-all overflow-hidden"
     >
       <div className="flex items-start gap-3.5">
         <StepBadge step={step} done={done} />
@@ -245,7 +245,7 @@ function InlineQuotaField({
             setInputStr(value === "unlimited" ? "" : String(value));
             setEditing(true);
           }}
-          className="w-full max-w-[360px] flex items-center bg-white border border-[#E5E5E5] rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
+          className="w-full max-w-[360px] flex items-center bg-white border border-gray-200 rounded-[4px] px-3 h-9 text-sm text-[#020617] font-medium hover:border-[#1447E6] transition-colors text-left group"
         >
           <span>{displayValue}</span>
           {unitText && <span className="text-[#A3A3A3] font-normal ml-1">{unitText}</span>}
@@ -263,7 +263,7 @@ function InlineQuotaField({
                 className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
                     ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium"
-                    : "border-[#E5E5E5] text-[#020617] hover:border-[#1447E6]"
+                    : "border-gray-200 text-[#020617] hover:border-[#1447E6]"
                 }`}
               >
                 无限制
@@ -276,7 +276,7 @@ function InlineQuotaField({
                 className={`text-xs py-1 px-2.5 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
                     ? "border-[#1447E6] bg-blue-50 text-[#355EF1] font-medium"
-                    : "border-[#E5E5E5] text-[#020617] hover:border-[#1447E6]"
+                    : "border-gray-200 text-[#020617] hover:border-[#1447E6]"
                 }`}
               >
                 自定义
@@ -406,7 +406,7 @@ export default function BasicInfo() {
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
                   placeholder="例如：A公司企业版Agent"
-                  className="w-full max-w-[360px] h-9 border-[#E5E5E5] rounded-[4px] text-sm text-[#020617]"
+                  className="w-full max-w-[360px] h-9 border-gray-200 rounded-[4px] text-sm text-[#020617]"
                 />
               </div>
               <div className="flex flex-col gap-2">
@@ -451,7 +451,7 @@ export default function BasicInfo() {
               </div>
               <button
                 onClick={() => toast.success("平台名称与品牌已保存")}
-                className="w-14 h-8 border border-[#e5e5e5] rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
+                className="w-14 h-8 border border-gray-200 rounded-[4px] bg-white text-sm text-[#020617] leading-[22px] tracking-[0.21px] hover:bg-[#f5f5f5] transition-colors"
               >
                 保存
               </button>
@@ -538,7 +538,7 @@ export default function BasicInfo() {
                 前往模型配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-gray-200"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -559,7 +559,7 @@ export default function BasicInfo() {
                 前往通道配置
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-gray-200"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -580,7 +580,7 @@ export default function BasicInfo() {
                 前往镜像管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-gray-200"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -601,7 +601,7 @@ export default function BasicInfo() {
                 前往私有网络管理
                 <ChevronRight className="w-3.5 h-3.5" />
               </Button>
-              <div className="pt-3 mt-4 border-t border-dashed border-[#e5e5e5]"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
+              <div className="pt-3 mt-4 border-t border-dashed border-gray-200"><p className="text-[13px] text-[#a1a1aa]">如企业按分组配置，请前往<button onClick={() => navigate("/admin/members?view=group")} className="text-[#355EF1] hover:underline">用户管理 - 分组视图</button>查看各分组配置情况，未完成初始化的分组会有黄点标记</p></div>
             </div>
           </StepCard>
 
@@ -629,7 +629,7 @@ export default function BasicInfo() {
 
           {/* 平台基础信息 */}
           <div
-            className="bg-white rounded-[4px] border border-[#e5e5e5] p-5"
+            className="bg-white rounded-xl border border-gray-200 p-5"
           >
             <p className="text-[16px] font-semibold text-[#0A0A0A] tracking-[0.07px] mb-5">平台基础信息</p>
             <div className="flex flex-col gap-5">
@@ -659,7 +659,7 @@ export default function BasicInfo() {
 
           {/* API 文档 */}
           <div
-            className="bg-white rounded-[4px] border border-[#e5e5e5] p-5 cursor-pointer group transition-colors"
+            className="bg-white rounded-xl border border-gray-200 p-5 cursor-pointer group transition-colors"
             onClick={() => window.open("/admin/api-docs", "_blank")}
           >
             <div className="flex items-center justify-between">
@@ -676,7 +676,7 @@ export default function BasicInfo() {
 
           {/* 产品动态 */}
           <div
-            className="bg-white rounded-[4px] border border-[#e5e5e5] p-5"
+            className="bg-white rounded-xl border border-gray-200 p-5"
           >
             <p className="text-[16px] font-semibold text-[#0A0A0A] tracking-[0.07px] mb-6">产品动态</p>
             <div className="flex flex-col gap-3">
@@ -710,7 +710,7 @@ export default function BasicInfo() {
               ))}
             </div>
             {/* 查看全部更新按钮 */}
-            <button className="mt-6 border border-[#e5e5e5] rounded-[4px] px-3 py-2 flex items-center gap-1 text-[12px] text-[#0A0A0A] leading-5 hover:bg-[#f5f5f5] transition-colors">
+            <button className="mt-6 border border-gray-200 rounded-[4px] px-3 py-2 flex items-center gap-1 text-[12px] text-[#0A0A0A] leading-5 hover:bg-[#f5f5f5] transition-colors">
               查看全部更新
               <img src="/icon/arrow-left-stroke.svg" alt="" className="w-3 h-3" />
             </button>

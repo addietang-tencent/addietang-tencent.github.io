@@ -153,7 +153,7 @@ export const MetaMedium = createTypography(
 export const SmallBodyText = createTypography(
   "SmallBodyText",
   "span",
-  "font-sans text-xs font-medium leading-3 tracking-[0.18px]",
+  "font-sans text-xs font-normal leading-3 tracking-[0.18px]",
   "emphasis",
 );
 

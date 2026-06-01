@@ -53,11 +53,11 @@ function Textarea({
     <textarea
       data-slot="textarea"
       className={cn(
-        "flex field-sizing-content min-h-16 w-full rounded-[4px] border border-[#E5E5E5] bg-white px-3 py-2 text-sm text-[#0A0A0A] transition-colors outline-none",
+        "flex field-sizing-content min-h-16 w-full rounded-[4px] border border-gray-200 bg-white px-3 py-2 text-sm text-[#0A0A0A] transition-colors outline-none",
         "placeholder:text-[#A3A3A3]",
         "hover:border-[#1447E6]",
         "focus:border-[#1447E6]",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-[#E5E5E5] disabled:text-[#A3A3A3]",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",
         "aria-invalid:border-[#d42a1e]",
         className
       )}

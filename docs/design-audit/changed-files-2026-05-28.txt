@@ -28,3 +28,9 @@ client/src/pages/admin/VersionManagement/components/RecentHistorySection.tsx
 client/src/pages/admin/SkillLibrary/SkillListTab.tsx
 client/src/pages/admin/ChannelConfig.tsx
 docs/design-audit/changelog-2026-05-28.md
+
+# 5/29 三次走查（与 claude-internal 协作期间）
+client/src/components/ui/table.tsx
+client/src/pages/admin/MemberManagement/NodeContentPanel.tsx
+docs/design-audit/changelog-2026-05-28.md
+docs/design-audit/changed-files-2026-05-28.txt

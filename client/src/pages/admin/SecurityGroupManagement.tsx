@@ -2962,7 +2962,7 @@ export default function SecurityGroupManagement() {
               {!readonly && <th className="text-left px-6 py-3 text-xs font-medium text-[#737373] uppercase tracking-wide">操作</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E5E5E5]">
+          <tbody className="divide-y divide-gray-200">
             {displayRules.length > 0 ? (
               displayRules.map((rule) => (
                 <tr key={rule.id} className="hover:bg-[#f5f5f5]/50 transition-colors">
@@ -3305,7 +3305,7 @@ export default function SecurityGroupManagement() {
         </div>
 
         {/* Tab 切换器 */}
-        <div className="flex items-center gap-1 mb-1 border-b border-[#f0f0f0]">
+        <div className="flex items-center gap-1 mb-1 border-b border-[#dbe6ff]">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -3598,7 +3598,7 @@ export default function SecurityGroupManagement() {
           </div>
           <SurfaceCard className="overflow-hidden">
             {/* 表格 */}
-            <Table>
+            <Table variant="elevated-white">
               <TableHeader>
                 <TableRow>
                   <TableHead style={{ minWidth: 280 }}>私有网络（VPC）</TableHead>

@@ -183,7 +183,7 @@ export default function DistributeDialog({
           {filteredInstances.map(instance => (
             <div
               key={instance.id}
-              className="flex items-center gap-3 p-2 border-b border-[#e5e5e5] last:border-b-0 hover:bg-gray-50"
+              className="flex items-center gap-3 p-2 border-b border-gray-200 last:border-b-0 hover:bg-gray-50"
             >
               <Checkbox
                 checked={selectedInstances.includes(instance.id)}

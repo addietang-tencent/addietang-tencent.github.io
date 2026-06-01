@@ -422,7 +422,7 @@ export default function MCPListTab() {
       {/* 列表视图 */}
       {viewMode === 'list' && sortedMCPs.length > 0 && (
         <SurfaceCard className="overflow-hidden">
-          <Table scrollX={1300}>
+          <Table variant="elevated-white" scrollX={1300}>
             <TableHeader>
               <TableRow>
                 <TableHead style={{ width: 240, minWidth: 240 }}>名称/标识</TableHead>

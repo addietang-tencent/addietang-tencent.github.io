@@ -682,7 +682,7 @@ function SkillInstallModal({
                     <Badge
                       key={skillId}
                       variant="outline"
-                      className="h-6 justify-start gap-0 overflow-hidden rounded-full border-[#E5E5E5] bg-white px-0 py-0 text-[#0A0A0A]"
+                      className="h-6 justify-start gap-0 overflow-hidden rounded-full border-gray-200 bg-white px-0 py-0 text-[#0A0A0A]"
                     >
                       <span className="ml-2 max-w-[160px] truncate text-[12px] font-normal leading-5 tracking-[0.18px] text-[#0A0A0A]">
                         {skill.name}
@@ -759,7 +759,7 @@ function SkillInstallModal({
         </div>
 
         {/* 技能列表 */}
-        <div className="mx-6 mb-4 max-h-[340px] overflow-y-auto rounded-[12px] border border-[#E5E5E5] bg-white">
+        <div className="mx-6 mb-4 max-h-[340px] overflow-y-auto rounded-[12px] border border-gray-200 bg-white">
           {filteredSkills.length === 0 ? (
             <div className="px-4 py-10 text-center text-xs text-[#A3A3A3]">
               暂无符合条件的技能
@@ -1399,7 +1399,7 @@ export default function OpenClawDetailGuide() {
                     {/* 标题区 */}
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
-                      style={{ borderBottom: "1px solid #E5E5E5" }}
+                      style={{ borderBottom: "1px solid #EAEEF4" }}
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-end gap-2">
@@ -1435,7 +1435,7 @@ export default function OpenClawDetailGuide() {
                             <div key={model.id} className="flex flex-col gap-2 mb-2 last:mb-0">
                               <div
                                 className="rounded-[12px] p-3 flex items-center justify-between gap-2"
-                                style={{ border: "1px solid #E5E5E5" }}
+                                style={{ border: "1px solid #EAEEF4" }}
                               >
                                 <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                                   <div className="flex items-center gap-2">
@@ -1445,7 +1445,7 @@ export default function OpenClawDetailGuide() {
                                     {model.adminPreset && (
                                       <span
                                         className="inline-flex shrink-0 items-center px-2 py-0.5 text-xs rounded-[3px]"
-                                        style={{ border: "1px solid #E5E5E5", color: "#737373" }}
+                                        style={{ border: "1px solid #EAEEF4", color: "#737373" }}
                                       >
                                         管理员预置
                                       </span>
@@ -1465,7 +1465,7 @@ export default function OpenClawDetailGuide() {
 
                               {/* 主模型「修改为」编辑卡 —— 与添加备用模型卡片样式一致 */}
                               {editingPrimaryId === model.id && (
-                                <div className="relative rounded-[12px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-2">
+                                <div className="relative rounded-[12px] bg-[#FAFAFA] border border-gray-200 p-3 flex flex-col gap-2">
                                   <button
                                     type="button"
                                     onClick={() => setEditingPrimaryId(null)}
@@ -1490,7 +1490,7 @@ export default function OpenClawDetailGuide() {
                                           <button
                                             type="button"
                                             onClick={() => setEditCascadeOpen(!editCascadeOpen)}
-                                            className="w-full flex items-center justify-between h-10 px-3 text-sm rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] transition-colors text-left"
+                                            className="w-full flex items-center justify-between h-10 px-3 text-sm rounded-[4px] border border-gray-200 bg-white hover:border-[#1447E6] transition-colors text-left"
                                           >
                                             <span className="truncate" style={{ color: editDisplayLabel === "选择模型" ? "#A3A3A3" : "#0A0A0A" }}>
                                               {editDisplayLabel}
@@ -1501,7 +1501,7 @@ export default function OpenClawDetailGuide() {
                                             <>
                                               <div className="fixed inset-0 z-40" onClick={() => { setEditCascadeOpen(false); setEditHoveredProvider(null); }} />
                                               <div
-                                                className="absolute left-0 top-full mt-1 z-50 bg-white border border-[#E5E5E5] rounded-[4px] py-1 w-full"
+                                                className="absolute left-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-[4px] py-1 w-full"
                                                 style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                                               >
                                                 {MODEL_PROVIDERS.filter(p => p.value !== "custom").map((p) => (
@@ -1521,7 +1521,7 @@ export default function OpenClawDetailGuide() {
                                                     </div>
                                                     {editHoveredProvider === p.value && (
                                                       <div
-                                                        className="absolute left-full top-0 ml-1 bg-white border border-[#E5E5E5] rounded-[4px] py-1 min-w-[180px]"
+                                                        className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-[4px] py-1 min-w-[180px]"
                                                         style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                                                       >
                                                         {p.versions.map((v) => (
@@ -1588,7 +1588,7 @@ export default function OpenClawDetailGuide() {
                         </div>
                         {/* 添加模型操作区（仅由 showAddBackupModel 控制；点击取消即收起） */}
                         {showAddBackupModel && (
-                        <div className="relative rounded-[12px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 flex flex-col gap-3 mb-3">
+                        <div className="relative rounded-[12px] bg-[#FAFAFA] border border-gray-200 p-3 flex flex-col gap-3 mb-3">
                     <button
                       type="button"
                       onClick={() => {
@@ -1610,7 +1610,7 @@ export default function OpenClawDetailGuide() {
                       <button
                         type="button"
                         onClick={() => setBackupCascadeOpen(!backupCascadeOpen)}
-                        className="w-full flex items-center justify-between h-10 px-3 text-sm rounded-[4px] border border-[#E5E5E5] bg-white hover:border-[#1447E6] transition-colors text-left"
+                        className="w-full flex items-center justify-between h-10 px-3 text-sm rounded-[4px] border border-gray-200 bg-white hover:border-[#1447E6] transition-colors text-left"
                       >
                         <span className="truncate" style={{ color: (() => { const p = MODEL_PROVIDERS.find(p => p.value === selectedProvider); const v = p?.versions.find(v => v.value === selectedModel); return p && v ? "#0A0A0A" : "#A3A3A3"; })() }}>
                           {(() => { const p = MODEL_PROVIDERS.find(p => p.value === selectedProvider); const v = p?.versions.find(v => v.value === selectedModel); return p && v ? `${p.label} / ${v.label}` : "选择模型"; })()}
@@ -1621,7 +1621,7 @@ export default function OpenClawDetailGuide() {
                         <>
                           <div className="fixed inset-0 z-40" onClick={() => { setBackupCascadeOpen(false); setBackupHoveredProvider(null); }} />
                           <div
-                            className="absolute left-0 top-full mt-1 z-50 bg-white border border-[#E5E5E5] rounded-[4px] py-1 w-full"
+                            className="absolute left-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-[4px] py-1 w-full"
                             style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                           >
                             {MODEL_PROVIDERS.filter(p => p.value !== "custom").map((p) => (
@@ -1641,7 +1641,7 @@ export default function OpenClawDetailGuide() {
                                 </div>
                                 {backupHoveredProvider === p.value && (
                                   <div
-                                    className="absolute left-full top-0 ml-1 bg-white border border-[#E5E5E5] rounded-[4px] py-1 min-w-[180px]"
+                                    className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-[4px] py-1 min-w-[180px]"
                                     style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}
                                   >
                                     {p.versions.map((v) => (
@@ -1690,7 +1690,7 @@ export default function OpenClawDetailGuide() {
                               <div
                                 key={model.id}
                                 className="rounded-[12px] p-3 flex items-center justify-between"
-                                style={{ border: "1px solid #E5E5E5" }}
+                                style={{ border: "1px solid #EAEEF4" }}
                               >
                                 <div className="flex flex-col gap-0.5">
                                   <span className="text-sm font-medium" style={{ color: "#0A0A0A" }}>
@@ -1717,7 +1717,7 @@ export default function OpenClawDetailGuide() {
                     {/* 标题区 */}
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
-                      style={{ borderBottom: "1px solid #E5E5E5" }}
+                      style={{ borderBottom: "1px solid #EAEEF4" }}
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-end gap-2">
@@ -1758,7 +1758,7 @@ export default function OpenClawDetailGuide() {
                           <Button
                             variant="outline"
                             size="lg"
-                            className="w-full mb-3 bg-white border border-[#E5E5E5] text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
+                            className="w-full mb-3 bg-white border border-gray-200 text-[#0A0A0A] hover:bg-[#FAFAFA] hover:text-[#0A0A0A] hover:border-[#D4D4D4]"
                             onClick={() => setShowChannelConfig(true)}
                           >
                             <Plus className="w-3.5 h-3.5 text-[#0A0A0A]" />
@@ -1767,7 +1767,7 @@ export default function OpenClawDetailGuide() {
                         )}
                         {/* 添加接入通道配置卡（展开态） */}
                         {showChannelConfig && (
-                          <div className="relative rounded-[12px] bg-[#FAFAFA] border border-[#E5E5E5] p-3 space-y-3 mb-3">
+                          <div className="relative rounded-[12px] bg-[#FAFAFA] border border-gray-200 p-3 space-y-3 mb-3">
                             {appliedChannels.length > 0 && (
                             <button
                               type="button"
@@ -1787,7 +1787,7 @@ export default function OpenClawDetailGuide() {
                             </div>
                             {/* 通道选择下拉 */}
                             <Select value={selectedChannel} onValueChange={(v) => { setSelectedChannel(v); setChannelFields({}); }}>
-                              <SelectTrigger tenant className="w-full border-[#E5E5E5] bg-white">
+                              <SelectTrigger tenant className="w-full border-gray-200 bg-white">
                                 <SelectValue placeholder="选择通道类型" />
                               </SelectTrigger>
                               <SelectContent>
@@ -1812,7 +1812,7 @@ export default function OpenClawDetailGuide() {
                                         placeholder={`请输入${field.label}`}
                                         value={channelFields[field.key] || ""}
                                         onChange={(e) => setChannelFields({ ...channelFields, [field.key]: e.target.value })}
-                                        className="h-9 text-sm pr-9 bg-white border-[#E5E5E5]"
+                                        className="h-9 text-sm pr-9 bg-white border-gray-200"
                                       />
                                       {field.secret && (
                                         <button
@@ -1856,7 +1856,7 @@ export default function OpenClawDetailGuide() {
                           {appliedChannels.map((ch, idx) => (
                             <div
                               key={`${ch.channelValue}-${idx}`}
-                              className="rounded-[12px] border border-[#E5E5E5] overflow-hidden"
+                              className="rounded-[12px] border border-gray-200 overflow-hidden"
                             >
                               {/* 通道头部 */}
                               <div
@@ -1884,7 +1884,7 @@ export default function OpenClawDetailGuide() {
                               </div>
                               {/* 展开的配置详情 */}
                               {expandedChannelIdx === idx && ch.fields.length > 0 && (
-                                <div className="border-t border-[#E5E5E5] px-4 py-3 bg-[#FAFAFA] space-y-2">
+                                <div className="border-t border-gray-200 px-4 py-3 bg-[#FAFAFA] space-y-2">
                                   {ch.fields.map((field) => {
                                     const val = ch.fieldValues[field.key] || "";
                                     const uniqueKey = `${idx}-${field.key}`;
@@ -1918,7 +1918,7 @@ export default function OpenClawDetailGuide() {
                   <TenantCard padding="none" className="flex flex-col p-6 gap-3">
                     <div
                       className="flex items-start justify-between pb-5 min-h-[76px]"
-                      style={{ borderBottom: "1px solid #E5E5E5" }}
+                      style={{ borderBottom: "1px solid #EAEEF4" }}
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-end gap-2">
@@ -2156,7 +2156,7 @@ export default function OpenClawDetailGuide() {
                         恢复前会将配置文件备份
                       </li>
                     </ul>
-                    <div className="pt-4" style={{ borderTop: "1px solid #E5E5E5" }}>
+                    <div className="pt-4" style={{ borderTop: "1px solid #EAEEF4" }}>
                       {quickFixState === "idle" && (
                         <Button variant="tenant-ghost" size="claw-sm" onClick={runQuickFixMock}>
                           一键修复
@@ -2164,7 +2164,7 @@ export default function OpenClawDetailGuide() {
                       )}
                       {quickFixState === "loading" && (
                         <div className="inline-flex items-center gap-2 px-3 h-8 rounded-[4px] text-xs" style={{ backgroundColor: "#F5F5F5", color: "#737373" }}>
-                          <span className="w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: "#E5E5E5", borderTopColor: "#737373" }} />
+                          <span className="w-3 h-3 border-2 rounded-full animate-spin" style={{ borderColor: "#EAEEF4", borderTopColor: "#737373" }} />
                           正在执行修复
                         </div>
                       )}
@@ -2231,7 +2231,7 @@ export default function OpenClawDetailGuide() {
                 访问链接已生成，该链接含有您的 API Key 和加密配置，请勿分享给第三方，以防隐私泄露或资产损失。
               </AlertDescription>
             </Alert>
-            <div className="rounded-[12px] border border-[#E5E5E5] overflow-hidden">
+            <div className="rounded-[12px] border border-gray-200 overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3">
                 <span className="text-sm text-muted-foreground w-24 shrink-0">WebSocket URL</span>
                 <a

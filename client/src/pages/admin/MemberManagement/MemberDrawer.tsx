@@ -45,7 +45,7 @@ function Section({
         {title}
       </div>
       <div
-        className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+        className="bg-white rounded-xl border border-gray-200 overflow-hidden"
       >
         {children}
       </div>
@@ -127,7 +127,7 @@ export default function MemberDrawer({
         side="right"
         className="!w-[600px] !max-w-none p-0 flex flex-col"
       >
-        <SheetHeader className="px-6 py-5 border-b border-[#e5e5e5]">
+        <SheetHeader className="px-6 py-5 border-b border-gray-200">
           <SheetTitle className="text-lg">
             {user.displayName}
             <span className="ml-2 text-sm font-normal text-[#737373]">
@@ -227,7 +227,7 @@ export default function MemberDrawer({
                     {(cfg.models ?? []).map((m) => (
                       <span
                         key={m}
-                        className="text-xs bg-gray-50 text-[#334155] rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
+                        className="text-xs bg-gray-50 text-[#334155] rounded-xl px-2 py-0.5 border border-gray-200"
                       >
                         {m}
                       </span>
@@ -247,7 +247,7 @@ export default function MemberDrawer({
                     {(cfg.channels ?? []).map((c) => (
                       <span
                         key={c}
-                        className="text-xs bg-gray-50 text-[#334155] rounded-xl px-2 py-0.5 border border-[#e5e5e5]"
+                        className="text-xs bg-gray-50 text-[#334155] rounded-xl px-2 py-0.5 border border-gray-200"
                       >
                         {c}
                       </span>

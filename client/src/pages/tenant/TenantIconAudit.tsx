@@ -161,7 +161,7 @@ function SectionTitle({ eyebrow, title, desc }: { eyebrow: string; title: string
 function IconChip({ children, label }: { children: ReactNode; label: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="w-9 h-9 rounded-[4px] bg-[#F5F5F5] border border-[#E5E5E5] flex items-center justify-center text-[#334155]">
+      <div className="w-9 h-9 rounded-[4px] bg-[#F5F5F5] border border-gray-200 flex items-center justify-center text-[#334155]">
         {children}
       </div>
       <span className="text-[11px] text-[#737373] leading-none">{label}</span>
@@ -217,7 +217,7 @@ function UsageCategoryCard({ category }: { category: UsageCategory }) {
 function TopNavSlice() {
   return (
     <SurfaceCard className="rounded-[4px] p-4">
-      <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3 mb-4">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-white" style={{ background: "linear-gradient(135deg, #1447E6, #2563EB)" }}>
             <Bot className="w-4 h-4" />
@@ -257,8 +257,8 @@ function AgentCardSlice() {
           ID: ins-g83c6wvc <Copy className="w-3 h-3" />
         </div>
         <div className="flex items-center gap-2">
-          <button className="h-8 px-3 rounded-[4px] border border-[#E5E5E5] text-xs text-[#334155] flex items-center gap-1.5"><Settings className="w-3.5 h-3.5" />详细配置</button>
-          <button className="h-8 px-3 rounded-[4px] border border-[#E5E5E5] text-xs text-[#334155] flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" />对话</button>
+          <button className="h-8 px-3 rounded-[4px] border border-gray-200 text-xs text-[#334155] flex items-center gap-1.5"><Settings className="w-3.5 h-3.5" />详细配置</button>
+          <button className="h-8 px-3 rounded-[4px] border border-gray-200 text-xs text-[#334155] flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" />对话</button>
         </div>
       </div>
       <p className="mt-4 text-xs text-[#737373]">来源：AgentAvatar 图片资产 + StatusBadge 内联状态 SVG + lucide 操作图标。</p>
@@ -325,10 +325,10 @@ function SkillSlice() {
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
-          <div className="h-9 rounded-[4px] border border-[#E5E5E5] bg-white pl-9 pr-3 flex items-center text-xs text-[#A3A3A3]">搜索技能、插件或 MCP</div>
+          <div className="h-9 rounded-[4px] border border-gray-200 bg-white pl-9 pr-3 flex items-center text-xs text-[#A3A3A3]">搜索技能、插件或 MCP</div>
         </div>
-        <button className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#1447E6]"><LayoutGrid className="w-4 h-4" /></button>
-        <button className="w-9 h-9 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#737373]"><List className="w-4 h-4" /></button>
+        <button className="w-9 h-9 rounded-[4px] border border-gray-200 flex items-center justify-center text-[#1447E6]"><LayoutGrid className="w-4 h-4" /></button>
+        <button className="w-9 h-9 rounded-[4px] border border-gray-200 flex items-center justify-center text-[#737373]"><List className="w-4 h-4" /></button>
       </div>
       <SurfaceInner className="rounded-[4px] p-4">
         <div className="flex items-start gap-3">
@@ -340,7 +340,7 @@ function SkillSlice() {
             </div>
             <p className="text-xs text-[#737373] mt-1">字母头像 + 12/14px 小操作 icon。</p>
           </div>
-          <button className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center text-[#1447E6]"><Plus className="w-3.5 h-3.5" /></button>
+          <button className="w-7 h-7 rounded-[4px] border border-gray-200 flex items-center justify-center text-[#1447E6]"><Plus className="w-3.5 h-3.5" /></button>
         </div>
       </SurfaceInner>
       <p className="mt-4 text-xs text-[#737373]">来源：SkillSquare。当前混合字母头像、lucide、状态图标，需重点看统一性。</p>
@@ -358,7 +358,7 @@ function ChatSlice() {
           <p className="text-xs text-[#737373]">ChatView 专用操作区</p>
         </div>
       </div>
-      <div className="rounded-[4px] border border-[#E5E5E5] px-3 py-2 flex items-center gap-2">
+      <div className="rounded-[4px] border border-gray-200 px-3 py-2 flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-[#1447E6]" />
         <span className="flex-1 text-xs text-[#737373]">输入消息或让 Agent 操作浏览器...</span>
         <Mic className="w-4 h-4 text-[#A3A3A3]" />

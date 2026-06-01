@@ -70,7 +70,7 @@ export default function AgentToolLibrary() {
 
       {/* Tab 切换器 - LineTabs */}
       <div className="mb-1">
-        <div className="flex items-center gap-2 border-b border-[#f0f0f0]">
+        <div className="flex items-center gap-2 border-b border-[#dbe6ff]">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -161,7 +161,7 @@ export default function AgentToolLibrary() {
                   localStorage.setItem('skill_security_service_active', String(next));
                   toast.success(next ? '已模拟开通安全检测服务' : '已模拟取消安全检测服务');
                 }}
-                className="inline-flex w-5 h-5 rounded-[4px] border border-[#E5E5E5] text-[#737373] hover:text-[#0A0A0A] hover:border-[#0A0A0A] items-center justify-center ml-1.5 align-middle transition-colors"
+                className="inline-flex w-5 h-5 rounded-[4px] border border-gray-200 text-[#737373] hover:text-[#0A0A0A] hover:border-[#0A0A0A] items-center justify-center ml-1.5 align-middle transition-colors"
                 title="切换开通状态（调试）"
               >
                 <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

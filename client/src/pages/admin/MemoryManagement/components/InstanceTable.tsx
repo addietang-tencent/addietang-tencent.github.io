@@ -853,21 +853,21 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
                 <button
                   onClick={handleBatchEnableFree}
                   disabled={!hasSelection || !canEnableFree}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#E5E5E5] text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
                 >
                   批量开通 Free 版{canEnableFree ? `（${noneCount}）` : ''}
                 </button>
                 <button
                   onClick={handleBatchEnablePro}
                   disabled={!hasSelection || !canEnablePro || !isProActive}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#E5E5E5] text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
                 >
                   批量开通 Pro 版{canEnablePro ? `（${noneCount + freeCount}）` : ''}
                 </button>
                 <button
                   onClick={handleBatchDisable}
                   disabled={!hasSelection || !canDisable}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#E5E5E5] text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-gray-200 text-[#0A0A0A] bg-white hover:bg-gray-50 transition-colors disabled:text-[#A3A3A3] disabled:bg-white disabled:cursor-not-allowed"
                 >
                   批量关闭{canDisable ? `（${freeCount + proCount}）` : ''}
                 </button>
@@ -894,7 +894,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
           <button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E5E5E5] bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-[#A3A3A3] hover:text-[#355EF1] hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="刷新列表"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -903,7 +903,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
       </div>
 
     <div
-      className="bg-white rounded-xl border border-[#e5e5e5] relative overflow-hidden"
+      className="bg-white rounded-xl border border-gray-200 relative overflow-hidden"
     >
       {/* 加载遮罩 */}
       {loading && (
@@ -919,7 +919,7 @@ export const InstanceTable: React.FC<InstanceTableProps> = ({
       <div className="overflow-x-auto overflow-y-visible">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-50 bg-gray-50/50 relative">
+            <tr className="border-b border-gray-200 bg-white relative">
               {/* 全选复选框 */}
               <th className="w-12 px-4 py-3">
                 <Checkbox

@@ -426,7 +426,7 @@ export default function ModelConfig() {
         </div>
 
         <SurfaceCard className="overflow-hidden">
-          <Table scrollX={1406}>
+          <Table variant="elevated-white" scrollX={1406}>
             <TableHeader>
               <TableRow>
                 <TableHead fixed="left" style={{ width: 220, minWidth: 220, maxWidth: 220 }}>模型信息</TableHead>
@@ -608,7 +608,7 @@ export default function ModelConfig() {
                 value={newModel.provider}
                 onValueChange={(v) => setNewModel({ ...newModel, provider: v, version: "" })}
               >
-                <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
+                <SelectTrigger className="w-full rounded-[4px] border-gray-200 bg-white">
                   <SelectValue placeholder="选择模型厂商或自定义模型" />
                 </SelectTrigger>
                 <SelectContent>
@@ -626,7 +626,7 @@ export default function ModelConfig() {
                   <Label className="text-xs font-medium text-[#525252]">模型名称<span className="text-[#DC2626]">*</span></Label>
                   {selectedProviderData && selectedProviderData.versions.length > 0 ? (
                     <Select value={newModel.version} onValueChange={(v) => setNewModel({ ...newModel, version: v })}>
-                      <SelectTrigger className="w-full rounded-[4px] border-[#E5E5E5] bg-white">
+                      <SelectTrigger className="w-full rounded-[4px] border-gray-200 bg-white">
                         <SelectValue placeholder="选择模型版本" />
                       </SelectTrigger>
                       <SelectContent>
@@ -636,7 +636,7 @@ export default function ModelConfig() {
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="w-full px-3 py-2 rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] text-[#A3A3A3] text-sm">
+                    <div className="w-full px-3 py-2 rounded-[4px] border border-gray-200 bg-[#FAFAFA] text-[#A3A3A3] text-sm">
                       暂无可用的模型版本
                     </div>
                   )}
@@ -648,7 +648,7 @@ export default function ModelConfig() {
                     placeholder="请输入模型 URL地址"
                     value={newModel.modelUrl}
                     onChange={(e) => setNewModel({ ...newModel, modelUrl: e.target.value })}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="rounded-[4px] border-gray-200 bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -657,7 +657,7 @@ export default function ModelConfig() {
                     type="number"
                     value={newModel.dailyLimit}
                     onChange={(e) => setNewModel({ ...newModel, dailyLimit: Number(e.target.value) })}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="rounded-[4px] border-gray-200 bg-white"
                   />
                 </div>
               </>
@@ -675,7 +675,7 @@ export default function ModelConfig() {
                     <Textarea
                       value={customJson}
                       onChange={(e) => setCustomJson(e.target.value)}
-                      className="font-mono text-xs rounded-[4px] border-[#E5E5E5] bg-white min-h-48"
+                      className="font-mono text-xs rounded-[4px] border-gray-200 bg-white min-h-48"
                     />
                   </TabsContent>
                   <TabsContent value="form" className="mt-3 space-y-3">
@@ -692,7 +692,7 @@ export default function ModelConfig() {
                         placeholder={field.label}
                         value={(customForm as any)[field.key]}
                         onChange={(e) => setCustomForm({ ...customForm, [field.key]: e.target.value })}
-                        className="rounded-[4px] border-[#E5E5E5] bg-white"
+                        className="rounded-[4px] border-gray-200 bg-white"
                       />
                     ))}
                   </TabsContent>
@@ -703,10 +703,10 @@ export default function ModelConfig() {
                     type="number"
                     value={customForm.dailyLimit}
                     onChange={(e) => setCustomForm({ ...customForm, dailyLimit: Number(e.target.value) })}
-                    className="rounded-[4px] border-[#E5E5E5] bg-white"
+                    className="rounded-[4px] border-gray-200 bg-white"
                   />
                 </div>
-                <div className="rounded-[4px] border border-[#E5E5E5] bg-[#FAFAFA] px-4 py-3 flex items-center justify-between">
+                <div className="rounded-[4px] border border-gray-200 bg-[#FAFAFA] px-4 py-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-[#0A0A0A]">多模态模型</p>
                     <p className="text-xs text-[#737373] mt-0.5">支持图片、文字多模态输入</p>

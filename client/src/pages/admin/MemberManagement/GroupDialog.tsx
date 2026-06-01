@@ -196,7 +196,7 @@ function ParentDropdownSelector({
           data-state={dropdownOpen ? "open" : "closed"}
           className={
             "flex w-full items-center justify-between gap-2 h-9 px-3 text-sm font-normal whitespace-nowrap " +
-            "bg-white border border-[#E5E5E5] rounded-[4px] transition-colors outline-none " +
+            "bg-white border border-gray-200 rounded-[4px] transition-colors outline-none " +
             "hover:border-[#1447E6] data-[state=open]:border-[#1447E6] " +
             "disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:text-[#A3A3A3]"
           }
@@ -219,14 +219,14 @@ function ParentDropdownSelector({
         className={
           "w-[var(--radix-popover-trigger-width)] " +
           // 与 SelectContent 同款：4px 圆角 + 双层阴影；override popover 默认的 rounded-[8px]/p-4
-          "rounded-[4px] p-0 border border-[#E5E5E5] " +
+          "rounded-[4px] p-0 border border-gray-200 " +
           "shadow-[0px_0px_2px_0px_rgba(0,0,0,0.1),0px_4px_16px_0px_rgba(0,0,0,0.12)] " +
           // 让面板被可视区高度约束 + 内部 flex 列布局，列表区可滚动
           "max-h-[var(--radix-popover-content-available-height)] flex flex-col overflow-hidden"
         }
       >
         {/* 搜索框 */}
-        <div className="shrink-0 px-2 pt-2 pb-1.5 border-b border-[#E5E5E5]">
+        <div className="shrink-0 px-2 pt-2 pb-1.5 border-b border-gray-200">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#A3A3A3] pointer-events-none" />
             <Input
@@ -585,7 +585,7 @@ export function DeleteGroupDialog({
             </Alert>
 
             {/* 分组信息卡片（合并为单一卡片，所有内容右对齐统一正文样式） */}
-            <div className="rounded-[4px] border border-[#E5E5E5] bg-white divide-y divide-[#F0F0F0]">
+            <div className="rounded-[4px] border border-gray-200 bg-white divide-y divide-gray-200">
               {/* 分组名称 */}
               <div className="px-4 py-3 flex items-center justify-between gap-4">
                 <Label className="text-xs font-medium text-[#525252]">分组名称</Label>

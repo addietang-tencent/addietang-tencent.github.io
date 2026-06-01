@@ -390,7 +390,7 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
 
   return (
     <TooltipProvider>
-      <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="px-5 pt-5 pb-4">
           <div className="flex items-center gap-3 mb-1.5">
             <img src="/assets/admin-memory-management/version-compare/pro-icon.svg" alt="" className="w-8 h-8 rounded-lg p-1.5 bg-[#355EF1] shrink-0" />
@@ -465,7 +465,7 @@ export const DefaultMemoryVersion: React.FC<DefaultMemoryVersionProps> = ({
             );
           })()}
 
-          <div className="border-t border-dashed border-[#E5E5E5] mt-2 pt-2">
+          <div className="border-t border-dashed border-gray-200 mt-2 pt-2">
             {editingId === fallbackRule.id ? (
               <div className="flex items-center gap-3 rounded-[4px] bg-[#fafafa] px-4 min-h-[44px]">
                 <div className="flex-1 min-w-0"><span className="text-xs text-[#737373] font-medium">预设策略</span></div>

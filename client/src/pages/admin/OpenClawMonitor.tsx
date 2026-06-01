@@ -1926,6 +1926,7 @@ export default function AgentMonitor() {
         {/* 表格卡片 */}
         <SurfaceCard className="overflow-hidden">
           <Table
+            variant="elevated-white"
             containerRef={tableScrollRef}
             className="text-sm"
             scrollX="max-content"
@@ -3152,7 +3153,7 @@ export default function AgentMonitor() {
                           <div className="border-b border-[#f0f0f0] px-3 py-2">
                             <MetaMedium>模型配置</MetaMedium>
                           </div>
-                          <div className="divide-y divide-[#f0f0f0]">
+                          <div className="divide-y divide-gray-200">
                             <div className="px-3 py-2 space-y-1.5">
                               <MetaMedium as="label">模型厂商</MetaMedium>
                               <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
@@ -3412,7 +3413,7 @@ export default function AgentMonitor() {
                                     )}
                                   </div>
 
-                                  <div className="divide-y divide-[#f0f0f0]">
+                                  <div className="divide-y divide-gray-200">
                                     {fields.map((field) => {
                                       const visible = isSecretVisible(channel.name, field.key);
                                       if (isEditingThis) {
@@ -3504,7 +3505,7 @@ export default function AgentMonitor() {
                               <div className="border-b border-[#f0f0f0] px-3 py-2">
                                 <MetaMedium>通道配置</MetaMedium>
                               </div>
-                              <div className="divide-y divide-[#f0f0f0]">
+                              <div className="divide-y divide-gray-200">
                                 {/* 通道选择 */}
                                 <div className="px-3 py-2 space-y-1.5">
                                   <MetaMedium as="label">通道类型</MetaMedium>

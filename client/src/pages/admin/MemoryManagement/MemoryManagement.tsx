@@ -227,7 +227,7 @@ export const MemoryManagement: React.FC = () => {
 
       {/* 服务概览 - 统计卡片 */}
       <div 
-        className="mb-6 bg-white rounded-xl border border-[#e5e5e5]"
+        className="mb-6 bg-white rounded-xl border border-gray-200"
       >
         <div className="px-6 py-5 border-b border-gray-50">
           <h2 className="font-semibold text-[#0A0A0A]">服务概览</h2>
@@ -236,7 +236,7 @@ export const MemoryManagement: React.FC = () => {
           <div className="grid grid-cols-5 gap-4">
             {/* 实例总数 */}
             <div
-              className="bg-white rounded-[4px] border border-[#E5E5E5] px-6 py-5 flex flex-col gap-4"
+              className="bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1">
                 <img src="/assets/admin-memory-management/instance-total.svg" className="shrink-0" />
@@ -247,7 +247,7 @@ export const MemoryManagement: React.FC = () => {
 
             {/* 未开启 */}
             <div
-              className="bg-white rounded-[4px] border border-[#E5E5E5] px-6 py-5 flex flex-col gap-4"
+              className="bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1">
                 <img src="/assets/admin-memory-management/instance-disabled.svg" className="shrink-0" />
@@ -258,7 +258,7 @@ export const MemoryManagement: React.FC = () => {
 
             {/* Free 版 */}
             <div
-              className="bg-white rounded-[4px] border border-[#E5E5E5] px-6 py-5 flex flex-col gap-4"
+              className="bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4"
             >
               <div className="flex items-center gap-1">
                 <img src="/assets/admin-memory-management/instance-free.svg" className="shrink-0" />
@@ -274,7 +274,7 @@ export const MemoryManagement: React.FC = () => {
                   ? 'bg-white border-red-200'
                   : isProActive && memoryAllocationPercent >= 80 
                     ? 'bg-white border-yellow-200'
-                    : 'bg-white border-[#E5E5E5]'
+                    : 'bg-white border-gray-200'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -397,7 +397,7 @@ export const MemoryManagement: React.FC = () => {
                  · 已开通 Pro 且有 OpenClaw 类型 Pro 版 Agent：可点击，打开一键升级弹窗，将记忆服务
                    升级至最新版本，OpenClaw 类型 Pro 版 Agent 升级后即可使用 Pro 版最新能力；
                  · 未开通 Pro / 无候选 Agent / 有 Agent 升级中：按钮置灰，hover 文案按场景区分 */}
-          <div className="mt-4 flex items-center gap-4 rounded-[4px] border border-[#E5E5E5] px-5 py-4">
+          <div className="mt-4 flex items-center gap-4 rounded-[4px] border border-gray-200 px-5 py-4">
             <div className="flex-1 min-w-0">
               <div className="text-sm font-semibold text-[#0A0A0A] mb-1">Memory Pro 新能力：短期记忆压缩</div>
               <div className="text-xs text-[#737373] leading-relaxed">

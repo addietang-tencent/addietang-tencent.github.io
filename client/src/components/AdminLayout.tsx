@@ -181,7 +181,7 @@ function SubGroupBlock({ subGroup, location, collapsed }: { subGroup: AdminNavSu
             side="right"
             sideOffset={12}
             align="start"
-            className="w-auto min-w-[140px] p-1.5 rounded-[8px] border border-[#E5E5E5] shadow-lg"
+            className="w-auto min-w-[140px] p-1.5 rounded-[8px] border border-gray-200 shadow-lg"
           >
             <p className="px-2 py-1 text-[11px] font-medium text-[#A3A3A3] tracking-wide">
               {subGroup.label}
@@ -335,7 +335,7 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
               {ADMIN_NAV_GROUPS.map((group, idx) => (
                 <div key={group.label}>
                   {idx > 0 && (
-                    <div className="mx-2 my-2 border-t border-[#E5E5E5]" />
+                    <div className="mx-2 my-2 border-t border-gray-200" />
                   )}
                   <AdminSidebarMenu>
                     {group.items?.map((item) => renderNavItem(item, location, false, true))}
@@ -377,18 +377,18 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
                 side="right"
                 sideOffset={12}
                 align="end"
-                className="w-[240px] p-2 rounded-[8px] border border-[#E5E5E5] shadow-lg"
+                className="w-[240px] p-2 rounded-[8px] border border-gray-200 shadow-lg"
               >
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium text-[#0A0A0A]">{CURRENT_ADMIN.name}</p>
                   <p className="text-xs text-[#737373]">{CURRENT_ADMIN.role}</p>
                 </div>
-                <div className="my-1.5 border-t border-[#E5E5E5]" />
+                <div className="my-1.5 border-t border-gray-200" />
                 <div className="px-2 py-1.5">
                   <p className="text-xs text-[#737373] mb-1.5">成员管理模式</p>
                   <AdminModeToggle collapsed={false} />
                 </div>
-                <div className="my-1.5 border-t border-[#E5E5E5]" />
+                <div className="my-1.5 border-t border-gray-200" />
                 <button
                   onClick={() => toast.info("已退出登录")}
                   className="flex items-center gap-2 w-full px-2 py-1.5 rounded-[4px] text-[13px] text-red-600 hover:bg-red-50 transition-colors"

@@ -32,7 +32,7 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-red-100/60 text-red-600 [a&]:hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300",
         outline:
-          "border-[#E5E5E5] bg-white text-[#0A0A0A] [a&]:hover:bg-[#F5F5F5]",
+          "border-gray-200 bg-white text-[#0A0A0A] [a&]:hover:bg-[#F5F5F5]",
       },
     },
     defaultVariants: {

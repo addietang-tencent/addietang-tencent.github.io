@@ -540,7 +540,7 @@ export const MemoryManagementRedesign: React.FC = () => {
         )}
 
         {isProActive && (
-          <div className="bg-white border border-[#E5E5E5] rounded-xl px-5 py-3.5 flex items-center gap-4">
+          <div className="bg-white border border-gray-200 rounded-xl px-5 py-3.5 flex items-center gap-4">
             <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
             <div className="flex-1 flex items-center gap-3 text-sm">
               <span className="font-semibold text-[#0A0A0A]">Memory Pro 服务已开通</span>
@@ -557,7 +557,7 @@ export const MemoryManagementRedesign: React.FC = () => {
 
         {/* 版本对比抽屉式说明（点击展开） */}
         {versionDiffOpen && (
-          <div className="mt-3 bg-white border border-[#E5E5E5] rounded-xl p-5 animate-in fade-in slide-in-from-top-1 duration-200">
+          <div className="mt-3 bg-white border border-gray-200 rounded-xl p-5 animate-in fade-in slide-in-from-top-1 duration-200">
             <div className="flex items-start justify-between mb-3">
               <h3 className="text-sm font-semibold text-[#0A0A0A]">Free 版 vs Pro 版</h3>
               <button onClick={() => setVersionDiffOpen(false)} className="text-[#A3A3A3] hover:text-[#0A0A0A]">
@@ -588,7 +588,7 @@ export const MemoryManagementRedesign: React.FC = () => {
 
       {/* ========== ② 配额使用情况（仅 Pro 已开通显示） ========== */}
       {isProActive && (
-        <div className="mb-6 bg-white border border-[#E5E5E5] rounded-xl px-6 py-5">
+        <div className="mb-6 bg-white border border-gray-200 rounded-xl px-6 py-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-[#0A0A0A]">记忆配额</h2>
             <button className="text-xs text-[#1447E6] hover:underline">申请扩容 →</button>
@@ -658,7 +658,7 @@ export const MemoryManagementRedesign: React.FC = () => {
       )}
 
       {/* ========== ③ 默认策略（折叠卡） ========== */}
-      <div className="mb-6 bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
+      <div className="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
         <button
           onClick={() => setDefaultPolicyExpanded(!defaultPolicyExpanded)}
           className="w-full px-6 py-3.5 flex items-center justify-between hover:bg-[#FAFAFA] transition-colors"
@@ -700,8 +700,8 @@ export const MemoryManagementRedesign: React.FC = () => {
                           active
                             ? 'bg-[#0A0A0A] border-[#0A0A0A] text-white'
                             : proUnavailable
-                              ? 'bg-[#FAFAFA] border-[#E5E5E5] text-[#A3A3A3] cursor-not-allowed'
-                              : 'bg-white border-[#E5E5E5] text-[#0A0A0A] hover:border-[#0A0A0A]'
+                              ? 'bg-[#FAFAFA] border-gray-200 text-[#A3A3A3] cursor-not-allowed'
+                              : 'bg-white border-gray-200 text-[#0A0A0A] hover:border-[#0A0A0A]'
                         }`}
                       >
                         {opt.label}
@@ -721,7 +721,7 @@ export const MemoryManagementRedesign: React.FC = () => {
       </div>
 
       {/* ========== ④ 实例列表（主操作区） ========== */}
-      <div className="bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         {/* 工具栏 */}
         <div className="px-6 py-4 border-b border-[#F5F5F5] flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
@@ -766,7 +766,7 @@ export const MemoryManagementRedesign: React.FC = () => {
               <select
                 value={agentTypeFilter}
                 onChange={(e) => setAgentTypeFilter(e.target.value as any)}
-                className="h-9 px-3 text-sm border border-[#E5E5E5] rounded-lg bg-white text-[#0A0A0A] outline-none hover:border-[#A3A3A3] focus:border-[#1447E6]"
+                className="h-9 px-3 text-sm border border-gray-200 rounded-lg bg-white text-[#0A0A0A] outline-none hover:border-[#A3A3A3] focus:border-[#1447E6]"
               >
                 <option value="all">全部类型</option>
                 <option value="OpenClaw">OpenClaw</option>
@@ -785,7 +785,7 @@ export const MemoryManagementRedesign: React.FC = () => {
               </div>
 
               <button
-                className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#E5E5E5] bg-white text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-[#737373] hover:text-[#1447E6] hover:border-[#1447E6] transition-colors"
                 title="刷新"
                 onClick={() => toast.success('已刷新')}
               >
@@ -906,7 +906,7 @@ export const MemoryManagementRedesign: React.FC = () => {
       </div>
 
       {/* ========== ⑤ 能力更新（折叠时间线） ========== */}
-      <div className="mt-6 bg-white border border-[#E5E5E5] rounded-xl overflow-hidden">
+      <div className="mt-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
         <button
           onClick={() => setUpdatesExpanded(!updatesExpanded)}
           className="w-full px-6 py-3.5 flex items-center justify-between hover:bg-[#FAFAFA] transition-colors"
@@ -951,7 +951,7 @@ export const MemoryManagementRedesign: React.FC = () => {
                 </div>
               </div>
 
-              <div className="relative pl-6 border-l-2 border-[#E5E5E5]">
+              <div className="relative pl-6 border-l-2 border-gray-200">
                 <span className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-[#A3A3A3] ring-4 ring-[#FAFAFA]" />
                 <div>
                   <div className="flex items-center gap-2 mb-1">

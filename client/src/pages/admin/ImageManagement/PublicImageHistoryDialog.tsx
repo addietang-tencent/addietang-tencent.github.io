@@ -66,7 +66,7 @@ export default function PublicImageHistoryDialog({
               暂无版本更新记录
             </div>
           ) : (
-            <ol className="relative ml-2 border-l border-[#E5E5E5] pl-5 space-y-5">
+            <ol className="relative ml-2 border-l border-gray-200 pl-5 space-y-5">
               {records.map((r) => {
                 const isCurrent = r.isLatest;
                 return (

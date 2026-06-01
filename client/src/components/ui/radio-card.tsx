@@ -47,7 +47,7 @@ function RadioCard({
       htmlFor={id}
       className={cn(
         "flex items-start gap-2.5 rounded-[4px] border px-3 py-3 transition-colors",
-        "border-[#E5E5E5] bg-white",
+        "border-gray-200 bg-white",
         !checked && !disabled && "hover:border-[#1447E6]/40 cursor-pointer",
         checked && (checkedClassName ?? "border-[#1447E6] bg-[#1447E6]/5"),
         disabled && "cursor-not-allowed opacity-60",

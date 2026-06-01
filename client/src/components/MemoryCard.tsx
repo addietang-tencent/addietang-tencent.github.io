@@ -113,7 +113,7 @@ export default function MemoryCard({
       indicator: "bg-gray-400",
       text: "text-gray-600",
       bg: "bg-gray-50",
-      border: "border-[#e5e5e5]",
+      border: "border-gray-200",
     };
   };
 

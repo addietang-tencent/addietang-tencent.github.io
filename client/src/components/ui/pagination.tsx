@@ -303,7 +303,7 @@ function Pagination({
             disabled={disabled || currentPage === 1}
             aria-label="上一页"
             className={cn(
-              "inline-flex items-center justify-center rounded-lg border border-[#e5e5e5] text-[#000000a6] bg-white transition-colors",
+              "inline-flex items-center justify-center rounded-lg border border-gray-200 text-[#000000a6] bg-white transition-colors",
               itemSize,
               !disabled && currentPage !== 1 && "hover:bg-[#f5f5f5]",
               "disabled:text-[#00000040] disabled:cursor-not-allowed"
@@ -369,7 +369,7 @@ function Pagination({
                   textSize,
                   isActive
                     ? "border-[#1447E6] text-[#355EF1] bg-white"
-                    : "border-[#e5e5e5] text-[#000000e0] bg-white",
+                    : "border-gray-200 text-[#000000e0] bg-white",
                   !disabled && !isActive && "hover:bg-[#f5f5f5]",
                   disabled && "cursor-not-allowed opacity-60"
                 )}
@@ -387,7 +387,7 @@ function Pagination({
             disabled={disabled || currentPage === totalPages}
             aria-label="下一页"
             className={cn(
-              "inline-flex items-center justify-center rounded-lg border border-[#e5e5e5] text-[#000000a6] bg-white transition-colors",
+              "inline-flex items-center justify-center rounded-lg border border-gray-200 text-[#000000a6] bg-white transition-colors",
               itemSize,
               !disabled && currentPage !== totalPages && "hover:bg-[#f5f5f5]",
               "disabled:text-[#00000040] disabled:cursor-not-allowed"
@@ -409,7 +409,7 @@ function Pagination({
             size="sm"
             className={cn(
               "bg-white text-[#09090b]",
-              "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-[#E4E4E4]",
+              "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-gray-200",
               textSize,
               // 与分页主控件高度对齐：default → 32px, small → 24px
               isSmall ? "!h-6 px-2 [&_svg]:size-3" : "!h-8",
@@ -438,7 +438,7 @@ function Pagination({
             onKeyDown={(e) => e.key === "Enter" && handleJump()}
             disabled={disabled}
             className={cn(
-              "w-12 text-center border border-[#E4E4E4] rounded-[4px] outline-none transition-colors",
+              "w-12 text-center border border-gray-200 rounded-[4px] outline-none transition-colors",
               "hover:border-[#355EF1]",
               "focus:border-[#355EF1]",
               itemSize,

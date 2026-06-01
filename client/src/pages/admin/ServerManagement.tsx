@@ -112,7 +112,7 @@ export default function ServerManagement() {
 
           {/* 镜像管理 */}
           <TabsContent value="images">
-            <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
              >
               <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
                 <h2 className="font-semibold text-[#0A0A0A]">镜像列表</h2>
@@ -122,7 +122,7 @@ export default function ServerManagement() {
                   导入镜像
                 </Button>
               </div>
-              <Table>
+              <Table variant="elevated-white">
                 <TableHeader>
                   <TableRow>
                     <TableHead>镜像 ID / 名称</TableHead>
@@ -183,7 +183,7 @@ export default function ServerManagement() {
               </TabsList>
 
               <TabsContent value="inbound">
-                <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                  >
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
                     <span className="text-sm font-medium text-[#334155]">入站规则</span>
@@ -229,7 +229,7 @@ export default function ServerManagement() {
               </TabsContent>
 
               <TabsContent value="outbound">
-                <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden"
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                  >
                   <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
                     <span className="text-sm font-medium text-[#334155]">出站规则</span>

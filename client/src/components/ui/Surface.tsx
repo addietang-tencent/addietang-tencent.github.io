@@ -1,8 +1,13 @@
 /**
  * Surface（语义化卡片容器）
  * ─────────────────────────────────────────────────────────────────
- * v2 / 0522 设计系统 §5「阴影系统 + 卡片三态」唯一卡片 API。
+ * v3 / 0529 设计系统 §5「卡片三态」唯一卡片 API。
  * 业务层一律用本组件，禁止再写 inline boxShadow / Tailwind shadow-md/lg/xl。
+ *
+ * 卡片三态规范（对齐 Figma EN6XTROqVtXZEDfZ2rLkjr node 1:118）：
+ *   - normal：白底 + 1.5px 白色描边 + backdrop-blur(5px) + 4px 圆角
+ *   - hover：白底 + 1px #C9D5FC 蓝灰描边 + shadow(0 1px 3px rgba(0,0,0,0.05)) + 微抬
+ *   - selected：白底 + 1px #1447E6 品牌蓝描边 + shadow(0 1px 3px rgba(0,0,0,0.05))
  *
  * 6 档语义：
  *   L1 SurfaceCard    管理端 + 全局表层卡片（4px 圆角，对应 --radius-xl）
@@ -38,12 +43,11 @@ interface SurfaceBaseProps extends HTMLAttributes<HTMLDivElement> {
 
 /* ───────────── L1 SurfaceCard ─────────────
  * 用于：管理端 + 全局表层卡片（页面主区块、列表卡、统计卡）。
- * 视觉规范（保持 0523 之前的原貌）：白底 + 4px 圆角（rounded-xl → --radius-xl=4px）+ 浅描边，
- * **默认不携带 box-shadow**——靠浅描边 #e5e5e5 勾出卡片边缘，与管理端 4px 控件几何感统一。
  *
- * ⚠️ 之前一版误把 `shadow-[var(--shadow-card)]` 默认加上，污染了管理端所有 SurfaceCard 视觉，
- *    已于 0523 修正：阴影只通过显式调用方在 className 里加（如某些 admin 弹窗里的强调卡），
- *    或通过 `<TenantCard>` 走用户端阴影规范。
+ * 视觉规范（对齐 Figma EN6XTROqVtXZEDfZ2rLkjr node 1:118）：
+ *   - normal：白底 + 1.5px 白色描边 + 4px 圆角（rounded-xl → --radius-xl=4px）
+ *   - hover（需启用 hover prop）：1px #C9D5FC 蓝灰描边 + 微阴影
+ *   - active/selected：1px #1447E6 品牌蓝描边 + 微阴影（业务侧通过 className 或 data-state 控制）
  *
  * ⚠️ 用户端业务列表卡（Agent 卡片、技能卡片等）请改用 <TenantCard>（12px 圆角，对齐 Figma）。
  */
@@ -54,9 +58,10 @@ export const SurfaceCard = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="card"
         className={cn(
-          "rounded-xl border border-[#e5e5e5]",
+          "rounded-xl border border-gray-200",
           !bare && "bg-white",
-          hover && "transition-all duration-200 hover:-translate-y-0.5",
+          hover && "transition-all duration-200 hover:border-[#C9D5FC] hover:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] hover:-translate-y-0.5",
+          "data-[state=selected]:border-[#1447E6] data-[state=selected]:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)]",
           className,
         )}
         style={style}
@@ -78,7 +83,7 @@ export const SurfaceInner = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="inner"
         className={cn(
-          "rounded-xl border border-[#e5e5e5]",
+          "rounded-xl border border-gray-200",
           !bare && "bg-white",
           className,
         )}
@@ -102,7 +107,7 @@ export const SurfaceOverlay = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="overlay"
         className={cn(
-          "rounded-xl border border-[#E5E5E5]",
+          "rounded-xl border border-gray-200",
           !bare && "bg-white",
           className,
         )}
@@ -128,7 +133,7 @@ export const SurfaceConfig = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="config"
         className={cn(
-          "rounded-xl border border-[#e5e5e5]",
+          "rounded-xl border border-gray-200",
           !bare && "bg-white",
           hover && "transition-all duration-200 hover:-translate-y-0.5",
           className,
@@ -185,7 +190,7 @@ export const TenantCard = forwardRef<HTMLDivElement, TenantCardProps>(
     const variants = {
       normal: "border border-[#E2E8F0]",
       hover: "border border-transparent",
-      static: "border border-[#E5E5E5]",
+      static: "border border-gray-200",
     };
     const hoverEffect =
       interactive && state === "normal"

@@ -180,7 +180,7 @@ export default function SwitchImageDialog({
               {effectiveImage && (
                 <div className="space-y-2">
                   <div className="text-xs font-medium text-[#737373]">当前用户可见镜像</div>
-                  <Table density="compact" containerClassName="rounded-[3px] border border-[#E5E5E5]">
+                  <Table density="compact" containerClassName="rounded-[3px] border border-gray-200">
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[40px]" />
@@ -433,7 +433,7 @@ function ImageList({
 }) {
   return (
     <RadioGroup value={pendingId} onValueChange={onSelect}>
-      <Table density="compact" containerClassName="rounded-[3px] border border-[#E5E5E5]">
+      <Table density="compact" containerClassName="rounded-[3px] border border-gray-200">
         <TableHeader>
           <TableRow>
             <TableHead className="w-[40px]" />
@@ -568,7 +568,7 @@ function ImageList({
 // ─── 空提示 ─────────────────────────────────────────────────────────
 function EmptyHint({ text }: { text: string }) {
   return (
-    <div className="rounded-[3px] border border-dashed border-[#E5E5E5] px-3 py-6 text-center">
+    <div className="rounded-[3px] border border-dashed border-gray-200 px-3 py-6 text-center">
       <span className="text-xs text-[#A3A3A3]">{text}</span>
     </div>
   );

@@ -59,7 +59,7 @@ export default function CloudDevManagement() {
         {CLOUD_DEV_FEATURES.map((feature, index) => (
           <div
             key={index}
-            className="bg-white rounded-xl border border-[#e5e5e5] p-5"
+            className="bg-white rounded-xl border border-gray-200 p-5"
           >
             <div className="flex items-start gap-4">
               <img src={feature.iconSrc} alt="" className="shrink-0" />

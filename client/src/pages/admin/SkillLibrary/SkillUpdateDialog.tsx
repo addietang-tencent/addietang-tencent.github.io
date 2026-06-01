@@ -415,7 +415,7 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
                       <li>ZIP 包/文件夹 <strong>根目录</strong> 必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
                       <li className="leading-relaxed">
                         SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
-                        <pre className="mt-1.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded-[4px] px-3 py-2 text-xs text-[#334155] font-mono whitespace-pre leading-relaxed">
+                        <pre className="mt-1.5 bg-[#FAFAFA] border border-gray-200 rounded-[4px] px-3 py-2 text-xs text-[#334155] font-mono whitespace-pre leading-relaxed">
 {`---
 name: skill-creator
 description: this is a skill creator.
@@ -443,8 +443,8 @@ description: this is a skill creator.
               }}
               className={`border border-dashed rounded-[4px] p-4 text-center transition-colors ${
                 hasNewUpload
-                  ? 'border-[#E5E5E5] bg-[#FAFAFA] cursor-not-allowed'
-                  : 'border-[#E5E5E5] hover:border-[#1447E6]'
+                  ? 'border-gray-200 bg-[#FAFAFA] cursor-not-allowed'
+                  : 'border-gray-200 hover:border-[#1447E6]'
               }`}
             >
               <p className={`text-sm mb-3 ${hasNewUpload ? 'text-[#A3A3A3]' : 'text-[#737373]'}`}>
@@ -464,7 +464,7 @@ description: this is a skill creator.
             </div>
 
             {/* 上传要求卡片（含 下载样例 链接按钮）—— 放在虚线框外 */}
-            <div className="border border-[#E5E5E5] rounded-[4px] p-4 text-left bg-white">
+            <div className="border border-gray-200 rounded-[4px] p-4 text-left bg-white">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-sm font-medium text-[#0A0A0A]">
                   上传要求
@@ -487,7 +487,7 @@ description: this is a skill creator.
                 <li>ZIP 包/文件夹 <strong>根目录</strong> 必须包含 SKILL.md 文件（建议 SKILL 大写）</li>
                 <li className="leading-relaxed">
                   SKILL.md 文件需包含 YAML 格式的技能名称和描述，name 和 description 后必须有空格
-                  <pre className="mt-1.5 bg-[#FAFAFA] border border-[#E5E5E5] rounded-[4px] px-3 py-2 text-xs text-[#334155] font-mono whitespace-pre leading-relaxed">
+                  <pre className="mt-1.5 bg-[#FAFAFA] border border-gray-200 rounded-[4px] px-3 py-2 text-xs text-[#334155] font-mono whitespace-pre leading-relaxed">
 {`---
 name: skill-creator
 description: this is a skill creator.
@@ -505,7 +505,7 @@ description: this is a skill creator.
           {uploadedFiles.length > 0 && (
             <div className="space-y-2">
               {uploadedFiles.map((file) => (
-                <div key={file.name} className="border border-[#E5E5E5] rounded-[4px] bg-white overflow-hidden">
+                <div key={file.name} className="border border-gray-200 rounded-[4px] bg-white overflow-hidden">
                   <div
                     className="flex items-center justify-between px-3 py-3 cursor-pointer hover:bg-[#FAFAFA] transition-colors"
                     onClick={() => file.status !== 'parsing' && setExpandedFile(expandedFile === file.name ? null : file.name)}
@@ -542,7 +542,7 @@ description: this is a skill creator.
                   </div>
 
                   {expandedFile === file.name && file.files && file.status !== 'parsing' && (
-                    <div className="border-t border-[#E5E5E5] bg-white p-3 space-y-2">
+                    <div className="border-t border-gray-200 bg-white p-3 space-y-2">
                       <p className="text-xs font-medium text-[#0A0A0A]">文件列表</p>
                       <div className="space-y-1 max-h-48 overflow-y-auto">
                         {file.files.map((f) => (
@@ -685,7 +685,7 @@ description: this is a skill creator.
                     <Tooltip delayDuration={1000}>
                       <TooltipTrigger asChild>
                         <PopoverTrigger asChild>
-                          <button className="flex items-center justify-between gap-2 h-8 px-4 flex-1 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border border-[#E5E5E5] bg-white text-[#0A0A0A] hover:border-[#1447E6] hover:bg-[#FAFAFA] data-[state=open]:border-[#1447E6] data-[state=open]:bg-[#FAFAFA] transition-colors">
+                          <button className="flex items-center justify-between gap-2 h-8 px-4 flex-1 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border border-gray-200 bg-white text-[#0A0A0A] hover:border-[#1447E6] hover:bg-[#FAFAFA] data-[state=open]:border-[#1447E6] data-[state=open]:bg-[#FAFAFA] transition-colors">
                             <span className="truncate">
                               {formData.groupIds.length > 0
                                 ? `已选 ${formData.groupIds.length} 个分组`
@@ -704,14 +704,14 @@ description: this is a skill creator.
                       )}
                     </Tooltip>
                     <PopoverContent className="w-64 p-0" align="start" sideOffset={6}>
-                      <div className="p-2 border-b border-[#e5e5e5]">
+                      <div className="p-2 border-b border-gray-200">
                         <div className="relative">
                           <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
                           <input
                             placeholder="搜索分组…"
                             value={groupSearchQuery}
                             onChange={(e) => setGroupSearchQuery(e.target.value)}
-                            className="w-full pl-8 pr-3 py-1.5 text-xs border border-[#E5E5E5] rounded-[4px] bg-[#FAFAFA] outline-none focus:border-[#1447E6] transition-colors"
+                            className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-[4px] bg-[#FAFAFA] outline-none focus:border-[#1447E6] transition-colors"
                           />
                         </div>
                       </div>
@@ -734,7 +734,7 @@ description: this is a skill creator.
                                 className="w-full flex items-center gap-2 px-2 py-1.5 rounded-[4px] hover:bg-[#FAFAFA] transition-colors text-left"
                               >
                                 <span className={`w-3.5 h-3.5 rounded border shrink-0 flex items-center justify-center transition-colors ${
-                                  checked ? 'bg-[#1447E6] border-[#1447E6]' : 'border-[#E5E5E5] bg-white'
+                                  checked ? 'bg-[#1447E6] border-[#1447E6]' : 'border-gray-200 bg-white'
                                 }`}>
                                   {checked && <Check className="w-2.5 h-2.5 text-white" />}
                                 </span>
@@ -746,7 +746,7 @@ description: this is a skill creator.
                           <p className="text-[11px] text-[#A3A3A3] py-3 text-center">无匹配分组</p>
                         )}
                       </div>
-                      <div className="flex items-center justify-between px-3 py-2 border-t border-[#E5E5E5]">
+                      <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200">
                         <p className="text-[11px] text-[#A3A3A3]">
                           已选 {formData.groupIds.length} 个分组
                         </p>
@@ -792,7 +792,7 @@ description: this is a skill creator.
           </div>
 
           {/* 安全检测 */}
-          <div className="border border-[#E5E5E5] rounded-[4px] p-4">
+          <div className="border border-gray-200 rounded-[4px] p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-[#0A0A0A]">提交后进行安全检测</span>

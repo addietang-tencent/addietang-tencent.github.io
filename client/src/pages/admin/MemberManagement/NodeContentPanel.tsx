@@ -280,7 +280,7 @@ function GroupTagSelect({
         align="start"
         sideOffset={4}
       >
-        <div className="p-2.5 border-b border-[#e5e5e5]">
+        <div className="p-2.5 border-b border-gray-200">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
@@ -501,7 +501,7 @@ export default function NodeContentPanel({
   return (
     <div className="flex flex-col h-full">
       {/* 节点头：名称 + 人数 + 分组名称路径 + 添加按钮 */}
-      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-[#e5e5e5]">
+      <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-gray-200">
         <div>
           <div className="flex items-center gap-3 mb-1 flex-wrap">
             <h2 className="text-lg font-semibold text-gray-900">{nodeName}</h2>
@@ -570,11 +570,11 @@ export default function NodeContentPanel({
           <>
             {/* 卡片 */}
             <div
-              className="bg-white rounded-[4px] border border-[#f0f0f0] overflow-hidden"
+              className="bg-white rounded-xl border border-gray-200 overflow-hidden"
             >
               {/* 表格 */}
               <div className="overflow-x-auto" style={{ width: 0, minWidth: "100%" }} ref={ncpTableScrollRef}>
-                <Table style={{ width: "max-content", minWidth: "100%" }}>
+                <Table style={{ width: "max-content", minWidth: "100%" }} autoFixedColumns={false}>
                   <TableHeader>
                     <TableRow>
                       <TableHead style={{ minWidth: "160px" }}>
@@ -786,8 +786,8 @@ export default function NodeContentPanel({
               </div>
 
               {/* 底部：共 N 名用户 + 分页 */}
-              <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
-                <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-gray-200">
+                <span className="justify-self-start text-xs leading-[18px] text-[#737373]">
                   共 {total} 名用户
                 </span>
                 <Pagination
@@ -854,8 +854,8 @@ export default function NodeContentPanel({
                 autoFocus
               />
             </div>
-            <div className="max-h-[420px] overflow-y-auto border border-[#E5E5E5] rounded-[4px] bg-white">
-              <Table density="compact">
+            <div className="max-h-[420px] overflow-y-auto border border-gray-200 rounded-[4px] bg-white">
+              <Table density="compact" autoFixedColumns={false}>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="w-10"></TableHead>
@@ -1044,7 +1044,7 @@ export default function NodeContentPanel({
             </Alert>
 
             {/* 信息卡 - 规范样式：白底 #E5E5E5 边 4px 圆角，label #525252 / value #0A0A0A */}
-            <div className="rounded-[4px] border border-[#E5E5E5] bg-white px-4 py-3 space-y-2">
+            <div className="rounded-[4px] border border-gray-200 bg-white px-4 py-3 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-[#525252]">用户 ID</span>
                 <span className="text-sm font-medium text-[#0A0A0A]">
@@ -1083,7 +1083,7 @@ export default function NodeContentPanel({
             <p className="text-sm text-gray-700">
               用户在该分组下创建了 Agent 实例，用户已从该分组中移除，请选择如何处理存量实例：
             </p>
-            <div className="rounded-xl border border-[#e5e5e5] overflow-hidden">
+            <div className="rounded-xl border border-gray-200 overflow-hidden">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-gray-50">
@@ -1164,7 +1164,7 @@ export default function NodeContentPanel({
             <DialogTitle>编辑用户分组</DialogTitle>
           </DialogHeader>
           <div className="py-2 space-y-4">
-            <div className="rounded-xl bg-gray-50 border border-[#e5e5e5] px-4 py-3">
+            <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-500">用户 ID</span>
                 <span className="text-sm font-medium text-gray-900">
@@ -1426,7 +1426,7 @@ function ConfigOverviewTab({
   return (
     <div className="relative">
       {/* 锚点导航条 — 时间轴风格 */}
-      <div ref={navRef} className="sticky top-0 z-10 bg-white -mx-6 px-6 pt-3 pb-3 border-b border-[#e5e5e5]">
+      <div ref={navRef} className="sticky top-0 z-10 bg-white -mx-6 px-6 pt-3 pb-3 border-b border-gray-200">
         <div className="flex items-center w-full">
           {CATEGORY_ORDER.map((cat, idx) => {
             const isActive = activeCat === cat;
@@ -1533,7 +1533,7 @@ function ConfigOverviewTab({
             <div
               key={cat}
               ref={(el) => setSectionRef(cat, el)}
-              className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden scroll-mt-[3.75rem]"
+              className="bg-white rounded-xl border border-gray-200 overflow-hidden scroll-mt-[3.75rem]"
             >
               {/* 配置项 header */}
               <div

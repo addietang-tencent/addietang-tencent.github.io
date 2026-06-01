@@ -369,13 +369,13 @@ export default function SkillSquare() {
               placeholder="搜索技能名称或描述..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 bg-white border-[#E5E5E5]"
+              className="pl-9 bg-white border-gray-200"
             />
           </div>
 
           {/* 排序 */}
           <Select value={sortType} onValueChange={(v) => setSortType(v as SortType)}>
-            <SelectTrigger tenant className="w-32 bg-white border-[#E5E5E5]">
+            <SelectTrigger tenant className="w-32 bg-white border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -622,7 +622,7 @@ function SkillCard({
             <Tooltip delayDuration={300}>
               <TooltipTrigger asChild>
                 <span
-                  className="inline-flex items-center justify-center size-8 rounded-[4px] border border-[#e5e5e5] text-[rgba(2,6,23,0.3)] cursor-not-allowed flex-shrink-0"
+                  className="inline-flex items-center justify-center size-8 rounded-[4px] border border-gray-200 text-[rgba(2,6,23,0.3)] cursor-not-allowed flex-shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Plus className="w-4 h-4" />
@@ -771,7 +771,7 @@ function SkillListRow({
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <span
-                className="w-7 h-7 rounded-[4px] border border-[#E5E5E5] flex items-center justify-center cursor-not-allowed flex-shrink-0 text-[#A3A3A3]"
+                className="w-7 h-7 rounded-[4px] border border-gray-200 flex items-center justify-center cursor-not-allowed flex-shrink-0 text-[#A3A3A3]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -1342,8 +1342,8 @@ function SkillSquareDetail({
           <TabsContent value="files" className="mt-0 p-0">
             <TenantCard padding="none" className="flex h-[47rem] overflow-hidden">
               {/* 左列：版本选择 */}
-              <div className="w-[14%] min-w-[120px] border-r border-[#E5E5E5] flex flex-col">
-                <div className="h-12 px-3 border-b border-[#E5E5E5] flex items-center">
+              <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
+                <div className="h-12 px-3 border-b border-gray-200 flex items-center">
                   <p className="text-sm font-medium text-[#09090b]">版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
@@ -1382,7 +1382,7 @@ function SkillSquareDetail({
                                 <Info className="w-3 h-3 text-[#a1a1aa] hover:text-[#09090b]" />
                               </span>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="max-w-[260px] p-3 bg-white border border-[#E5E5E5] text-xs text-[#0A0A0A]">
+                            <TooltipContent side="right" className="max-w-[260px] p-3 bg-white border border-gray-200 text-xs text-[#0A0A0A]">
                               <p className="font-medium mb-1.5 text-xs text-[#0A0A0A]">更新说明</p>
                               <p className="whitespace-pre-line leading-relaxed text-xs text-[#334155]">{versionRecord?.changeLog || '暂无更新说明'}</p>
                             </TooltipContent>
@@ -1395,8 +1395,8 @@ function SkillSquareDetail({
               </div>
 
               {/* 中列：文件列表 */}
-              <div className="w-[22%] min-w-[160px] border-r border-[#E5E5E5] flex flex-col">
-                <div className="h-12 px-3 border-b border-[#E5E5E5] flex items-center justify-between">
+              <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
+                <div className="h-12 px-3 border-b border-gray-200 flex items-center justify-between">
                   <p className="text-sm font-medium text-[#09090b]">{selectedVersion || skill.version}</p>
                   <Button
                     variant="ghost"
@@ -1418,7 +1418,7 @@ function SkillSquareDetail({
               <div className="flex-1 flex flex-col bg-white">
                 {expandedFile ? (
                   <>
-                    <div className="h-12 px-3 border-b border-[#E5E5E5] flex items-center justify-between">
+                    <div className="h-12 px-3 border-b border-gray-200 flex items-center justify-between">
                       <p className="text-sm font-medium text-[#09090b]">{expandedFile}</p>
                       {/* 内嵌 Segmented Control（预览/源码，统一 segment 样式） */}
                       <div
@@ -1662,10 +1662,10 @@ function SkillSquareDetail({
                 </Select>
               </div>
 
-              <div className="border border-[#E5E5E5] rounded-[12px] overflow-hidden">
+              <div className="border border-gray-200 rounded-[12px] overflow-hidden">
                 <div className="overflow-y-auto max-h-72">
                   <Table className="table-fixed">
-                    <TableHeader className="bg-gray-50/50 border-b border-[#E5E5E5] sticky top-0 z-10">
+                    <TableHeader className="bg-gray-50/50 border-b border-gray-200 sticky top-0 z-10">
                       <TableRow className="hover:bg-transparent">
                         <TableHead className="w-[25%] px-4 py-2.5 text-xs font-medium text-[#737373]">实例名称</TableHead>
                         <TableHead className="w-[30%] px-4 py-2.5 text-xs font-medium text-[#737373]">实例ID</TableHead>

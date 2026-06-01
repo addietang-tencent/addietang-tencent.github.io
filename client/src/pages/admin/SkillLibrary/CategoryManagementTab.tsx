@@ -77,7 +77,7 @@ export default function CategoryManagementTab() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-[4px] border border-[#E5E5E5] overflow-hidden">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>

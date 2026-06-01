@@ -61,7 +61,7 @@ export default function DocManagement() {
         </div>
 
         <SurfaceCard className="overflow-hidden">
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead>文档标题</TableHead>

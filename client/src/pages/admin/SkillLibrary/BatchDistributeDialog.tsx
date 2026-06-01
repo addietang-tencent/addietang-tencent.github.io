@@ -438,7 +438,7 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
+                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
                   >
                     <span className="truncate text-left">
                       {getScopeDisplayText()}
@@ -462,7 +462,7 @@ export default function BatchDistributeDialog({
               const showUngrouped = !scopeSearchQuery || '未分组'.includes(scopeSearchQuery);
 
               return (
-              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-[#E5E5E5] rounded-[4px] shadow-lg z-50 py-1">
+              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
                 {/* 搜索框 */}
                 <div className="px-2 pb-1.5 pt-1.5">
                   <div className="relative">
@@ -471,7 +471,7 @@ export default function BatchDistributeDialog({
                       placeholder="搜索分组..."
                       value={scopeSearchQuery}
                       onChange={(e) => setScopeSearchQuery(e.target.value)}
-                    className="w-full pl-7 pr-2 h-8 text-sm border border-[#E5E5E5] rounded-[4px] focus:outline-none focus:border-[#1447E6] bg-white"
+                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:border-[#1447E6] bg-white"
                       onClick={(e) => e.stopPropagation()}
                       autoFocus
                     />
@@ -491,7 +491,7 @@ export default function BatchDistributeDialog({
                       }
                       setCurrentPage(1);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors border-b border-[#e5e5e5]"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors border-b border-gray-200"
                   >
                     <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                       isAllGroupSelected ? 'bg-blue-600 border-blue-600' : isSomeGroupSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -585,7 +585,7 @@ export default function BatchDistributeDialog({
                 </div>
                 {/* 底部统计 + 清除筛选 */}
                 {selectedCount > 0 && !isAllGroupSelected && (
-                  <div className="flex items-center justify-between px-3 py-2 border-t border-[#e5e5e5] text-xs">
+                  <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 text-xs">
                     <span className="text-[#737373]">已选 {selectedCount} 个分组</span>
                     <button
                       type="button"
@@ -642,7 +642,7 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setFilterDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-[#E5E5E5] rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
+                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
                   >
                     <span className="truncate text-left">{getFilterDisplayText()}</span>
                     <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
@@ -653,7 +653,7 @@ export default function BatchDistributeDialog({
                 </TooltipContent>
               </Tooltip>
             {filterDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-[#E5E5E5] rounded-[4px] shadow-lg z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
                 {/* 全部状态选项 — toggle：点击全选，再次点击取消全部 */}
                 <button
                   type="button"
@@ -724,9 +724,9 @@ export default function BatchDistributeDialog({
         </div>
 
         {/* 实例列表 */}
-        <div className="border border-[#E5E5E5] rounded-[4px] max-h-[340px] overflow-y-auto">
+        <div className="border border-gray-200 rounded-[4px] max-h-[340px] overflow-y-auto">
           {/* 全选复选框 — 跨页全选 */}
-          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#E5E5E5] bg-[#FAFAFA] sticky top-0 z-10">
+          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-200 bg-[#FAFAFA] sticky top-0 z-10">
             <Checkbox
               checked={isAllSelected}
               // @ts-ignore – indeterminate prop
@@ -831,7 +831,7 @@ export default function BatchDistributeDialog({
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 !pt-4 !pb-4 border-t border-[#f0f0f0] mt-4">
+        <DialogFooter className="gap-2 sm:gap-2 !pt-4 !pb-4 border-t border-gray-200 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>

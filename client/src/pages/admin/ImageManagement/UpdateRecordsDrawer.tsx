@@ -304,7 +304,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
             </DrawerClose>
           </div>
 
-          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[4px] border border-[#E5E5E5] bg-background px-3 py-2.5 select-none">
+          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-[4px] border border-gray-200 bg-background px-3 py-2.5 select-none">
             <MetaText as="span" tone="muted">
               仅看可推送版本
             </MetaText>
@@ -371,7 +371,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                       className={`inline-flex h-7 items-center rounded-[4px] border px-2.5 transition-colors ${
                         filter.kind === "all"
                           ? "border-gray-900 bg-background text-gray-900"
-                          : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                          : "border-gray-200 bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
                       }`}
                     >
                       <MetaMedium as="span" className="text-inherit">全部</MetaMedium>
@@ -390,7 +390,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                           className={`inline-flex h-7 items-center rounded-[4px] border px-2.5 transition-colors ${
                             isActive
                               ? "border-gray-900 bg-background text-gray-900"
-                              : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                              : "border-gray-200 bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
                           }`}
                         >
                           <MetaMedium as="span" className="text-inherit">{t.label}</MetaMedium>
@@ -413,7 +413,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                         className={`inline-flex h-7 items-center rounded-[4px] border px-2.5 transition-colors ${
                           filter.kind === "type"
                             ? "border-gray-900 bg-background text-gray-900"
-                            : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                            : "border-gray-200 bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
                         }`}
                       >
                         <MetaMedium as="span" className="text-inherit">全部镜像</MetaMedium>
@@ -430,7 +430,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                             className={`inline-flex h-7 items-center gap-1.5 rounded-[4px] border px-2.5 transition-colors ${
                               isActive
                                 ? "border-gray-900 bg-background text-gray-900"
-                                : "border-[#E5E5E5] bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
+                                : "border-gray-200 bg-background text-gray-500 hover:border-gray-900 hover:text-gray-900"
                             }`}
                           >
                             <span className={`size-1.5 rounded-full ${c.dot}`} />
@@ -470,7 +470,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                         <li key={`${r.imageId}-${r.version}-${r.releaseDate}-${idx}`} className="relative pl-8">
                           <span
                             aria-hidden
-                            className="absolute left-[3px] top-5 flex size-4 items-center justify-center rounded-full border border-[#E5E5E5] bg-background"
+                            className="absolute left-[3px] top-5 flex size-4 items-center justify-center rounded-full border border-gray-200 bg-background"
                           >
                             <span
                               className={`size-1.5 rounded-full ${
@@ -487,7 +487,7 @@ export default function UpdateRecordsDrawer({ open, onOpenChange, onPush: _onPus
                             className={`rounded-[4px] border p-5 transition-colors ${
                               push
                                 ? "border-[#C7D7FE] bg-[#F5F8FF]"
-                                : "border-[#E5E5E5] bg-background"
+                                : "border-gray-200 bg-background"
                             }`}
                           >
                             <div className="flex items-start justify-between gap-3">

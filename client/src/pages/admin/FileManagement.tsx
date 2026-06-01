@@ -73,6 +73,7 @@ import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberMa
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
 import { MOCK_GROUP_TREE_MANUAL, type GroupNode } from "@/lib/mockData";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─── creator → 分组 ID 映射（普通模式下，与 MemberManagement mock 对齐） ──────
 const CREATOR_GROUP_MAP: Record<string, string> = {
@@ -1240,13 +1241,10 @@ export default function FileManagement() {
 
   return (
     <div className="page-enter space-y-8 w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0A0A0A]">网盘管理</h1>
-          <p className="text-sm text-[#737373] mt-1">为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持</p>
-        </div>
-      </div>
+      <AdminPageHeader
+        title="网盘管理"
+        description="为您提供专属、安全的云存储空间，由腾讯云存储 Agent Storage 服务提供支持"
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-5">

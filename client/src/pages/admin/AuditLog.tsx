@@ -14,6 +14,7 @@ import {
 import { Search, ClipboardList, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 const PAGE_SIZE = 10;
 
@@ -223,8 +224,7 @@ export default function AuditLog() {
     <>
       <div className="page-enter">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[#0A0A0A]">操作记录</h1>
-          <p className="text-sm text-[#737373] mt-1">记录管理员在管控端的所有操作，包括 API 调用详情。</p>
+          <AdminPageHeader title="操作记录" description="记录管理员在管控端的所有操作，包括 API 调用详情。" />
         </div>
 
         {/* Filters */}

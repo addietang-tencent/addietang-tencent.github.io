@@ -18,6 +18,7 @@ import EnterpriseSkillLibrary from "./EnterpriseSkillLibrary";
 import PublicSkillLibraryTab from "./SkillLibrary/PublicSkillLibraryTab";
 import PluginListTab from "./SkillLibrary/PluginListTab";
 import MCPListTab from "./SkillLibrary/MCPListTab";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 const TABS = [
   {
@@ -63,10 +64,7 @@ export default function AgentToolLibrary() {
 
   return (
     <div className="page-enter w-full min-w-0">
-      {/* 页面标题 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">Agent 工具库</h1>
-      </div>
+      <AdminPageHeader title="Agent 工具库" />
 
       {/* Tab 切换器 - LineTabs */}
       <div className="mb-1">

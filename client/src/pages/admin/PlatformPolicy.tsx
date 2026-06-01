@@ -46,6 +46,7 @@ import {
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from "./MemberManagement/mock";
 import { buildGroupTree, type GroupTreeNode } from "./MemberManagement/health";
 import type { UserGroup, GroupSource } from "./MemberManagement/types";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─── 类型 ────────────────────────────────────────────────────────────────────
 
@@ -3038,8 +3039,7 @@ export default function PlatformPolicy() {
     <div className="page-enter space-y-6">
       {/* 页面标题 */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">平台策略</h1>
-        <p className="text-sm text-gray-500 mt-1">管理平台默认配额、全局限制和功能权限开关，支持按分组设置不同策略</p>
+        <AdminPageHeader title="平台策略" description="管理平台默认配额、全局限制和功能权限开关，支持按分组设置不同策略" />
       </div>
 
       {/* 优先级说明信息条 */}

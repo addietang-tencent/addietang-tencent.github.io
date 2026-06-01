@@ -38,6 +38,7 @@ import {
   type ModelRow,
 } from "@/lib/modelConfigStore";
 import { ScopeEditPopover, type ScopeType } from "@/components/ScopeEditPopover";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // 模型配置页不区分 OneID/普通模式，合并展示所有分组
 const ALL_GROUPS: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
@@ -377,8 +378,7 @@ export default function ModelConfig() {
     <>
       <div className="page-enter space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#0A0A0A]">模型配置</h1>
-          <p className="mt-2 text-sm text-[#737373]">统一管理平台可用模型、接入地址、每日配额与应用范围。</p>
+          <AdminPageHeader title="模型配置" description="统一管理平台可用模型、接入地址、每日配额与应用范围。" />
         </div>
 
         <div className="grid grid-cols-4 gap-4">

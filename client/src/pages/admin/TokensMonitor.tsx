@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
 import { MOCK_DEPARTMENTS, MOCK_TOKEN_BY_DEPARTMENT, MOCK_OPENCLAW_LIST, MOCK_CLAWS_WITH_DEPT, type DepartmentNode, type GroupNode, MOCK_GROUP_TREE_MANUAL, MOCK_GROUP_TREE_ONEID, MOCK_TOKEN_BY_GROUP_MANUAL, MOCK_TOKEN_BY_GROUP_ONEID } from "@/lib/mockData";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // CLS 采集插件版本历史
 interface CLSPluginVersion {
@@ -1026,11 +1027,11 @@ export default function TokensMonitor() {
 
 
 
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-[#09090b]">Tokens 监控</h1>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-[#737373]">查看企业用户和模型的 Tokens 消耗情况。</p>
+        <AdminPageHeader
+          title="Tokens 监控"
+          description={
+            <span className="flex items-center gap-2">
+              查看企业用户和模型的 Tokens 消耗情况。
               <UITooltip>
                 <UITooltipTrigger asChild>
                   <button className="text-sm text-[#355EF1] hover:text-[#355EF1] hover:underline cursor-help transition-colors">
@@ -1046,31 +1047,32 @@ export default function TokensMonitor() {
                   </div>
                 </UITooltipContent>
               </UITooltip>
+            </span>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              <DatePicker
+                value={dateFrom}
+                onChange={handleFromChange}
+              />
+              <span className="text-[#A3A3A3] text-sm">—</span>
+              <DatePicker
+                value={dateTo}
+                onChange={handleToChange}
+              />
+              <Button
+                variant="claw-outline"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                title="刷新数据"
+                className="w-9 h-9"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              </Button>
             </div>
-          </div>
-          {/* 时间范围筛选 + 刷新 */}
-          <div className="flex items-center gap-2">
-            <DatePicker
-              value={dateFrom}
-              onChange={handleFromChange}
-            />
-            <span className="text-[#A3A3A3] text-sm">—</span>
-            <DatePicker
-              value={dateTo}
-              onChange={handleToChange}
-            />
-            <Button
-              variant="claw-outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              title="刷新数据"
-              className="w-9 h-9"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Overview Cards - 始终显示 */}
         <div className="grid grid-cols-5 gap-5 mb-6">

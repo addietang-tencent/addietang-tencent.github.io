@@ -22,6 +22,7 @@ import {
   TooltipContent as UITooltipContent,
   TooltipTrigger as UITooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─── 统计卡片数据 ────────────────────────────────────────────────────────────────
 
@@ -215,19 +216,16 @@ export default function SecurityManagement() {
 
   return (
     <div className="page-enter">
-      {/* 页面标题区 */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[#0A0A0A]">AI Agent安全</h1>
+      <AdminPageHeader
+        title="AI Agent安全"
+        description={<>帮助组织梳理企业AI Agent资产的风险态势，管控策略生效情况及审计记录，让你在"项目→一对一→可信赖"的环节下，安全引入并持续管理AI Agent。（已支持 OpenClaw，其他 Agent 去程管理操作）</>}
+        actions={
           <Button variant="link" onClick={() => setShowGuide((v) => !v)} className="gap-1.5 shrink-0">
             功能使用说明
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showGuide ? "rotate-180" : "rotate-0"}`} />
           </Button>
-        </div>
-        <p className="text-sm text-[#737373] mt-1">
-          帮助组织梳理企业AI Agent资产的风险态势，管控策略生效情况及审计记录，让你在"项目→一对一→可信赖"的环节下，安全引入并持续管理AI Agent。（已支持 OpenClaw，其他 Agent 去程管理操作）
-        </p>
-      </div>
+        }
+      />
 
       {/* 说明卡片 */}
       {showGuide && (

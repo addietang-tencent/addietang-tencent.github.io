@@ -72,6 +72,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 import {
   Search, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
@@ -1626,42 +1627,41 @@ export default function AgentMonitor() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="page-enter min-w-0">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-          <div className="shrink-0 min-w-0">
-            <h1 className="text-2xl font-bold text-[#0A0A0A] whitespace-nowrap">Agent 列表</h1>
-            <p className="text-sm text-[#737373] mt-1 whitespace-nowrap">查看和管理所有企业用户创建的 Agent 云服务器。</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <DatePicker
-              value={dateFrom}
-              onChange={(v) => { setDateFrom(v); setPage(1); }}
-            />
-            <span className="text-[#A3A3A3] text-sm">—</span>
-            <DatePicker
-              value={dateTo}
-              onChange={(v) => { setDateTo(v); setPage(1); }}
-            />
-            {(dateFrom || dateTo) && (
-              <button
-                onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-                className="h-9 px-3 text-sm rounded-[4px] border border-[#e5e5e5] bg-white text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors whitespace-nowrap"
+        <AdminPageHeader
+          title="Agent 列表"
+          description="查看和管理所有企业用户创建的 Agent 云服务器。"
+          actions={
+            <div className="flex items-center gap-2">
+              <DatePicker
+                value={dateFrom}
+                onChange={(v) => { setDateFrom(v); setPage(1); }}
+              />
+              <span className="text-[#A3A3A3] text-sm">—</span>
+              <DatePicker
+                value={dateTo}
+                onChange={(v) => { setDateTo(v); setPage(1); }}
+              />
+              {(dateFrom || dateTo) && (
+                <button
+                  onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
+                  className="h-9 px-3 text-sm rounded-[4px] border border-[#e5e5e5] bg-white text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors whitespace-nowrap"
+                >
+                  清除筛选
+                </button>
+              )}
+              <Button
+                variant="claw-outline"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                title="刷新列表"
+                className="w-9 h-9"
               >
-                清除筛选
-              </button>
-            )}
-            <Button
-              variant="claw-outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              title="刷新列表"
-              className="w-9 h-9"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </div>
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              </Button>
+            </div>
+          }
+        />
 
         {/* 状态统计卡片 */}
         <div className="grid grid-cols-4 gap-5 mb-6">

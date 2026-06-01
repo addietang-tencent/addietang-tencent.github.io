@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Trash2, FileText, Upload, ExternalLink } from "lucide-react";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 const DEFAULT_DOCS = [
   { id: "1", title: "Agent 概念介绍", addTime: "2025-01-01", addBy: "系统", visible: true, isDefault: true },
@@ -46,19 +47,17 @@ export default function DocManagement() {
   return (
     <>
       <div className="page-enter">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-[#0A0A0A]">帮助文档</h1>
-            <p className="text-sm text-[#737373] mt-1">
-              此处配置的文档将展示在企业用户看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加或删除文档。
-            </p>
-          </div>
-          <Button onClick={() => setShowAddDialog(true)}
-           >
-            <Plus className="w-4 h-4 mr-1.5" />
-            添加文档
-          </Button>
-        </div>
+        <AdminPageHeader
+          title="帮助文档"
+          description="此处配置的文档将展示在企业用户看到的「帮助文档」中。默认包含 4 篇通用文档，管理员可自行添加或删除文档。"
+          actions={
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="w-4 h-4 mr-1.5" />
+              添加文档
+            </Button>
+          }
+          className="mb-8"
+        />
 
         <SurfaceCard className="overflow-hidden">
           <Table variant="elevated-white">

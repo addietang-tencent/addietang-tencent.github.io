@@ -33,6 +33,7 @@ import {
   ChevronRight, ChevronDown, Box, Play, History, Info, Cloud, Database, Search,
   ArrowRightLeft, FileSpreadsheet, ArrowLeft,
 } from "lucide-react";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ==================== Types ====================
 
@@ -424,8 +425,11 @@ rm -f /tmp/openclaw-state.tgz`;
         <button onClick={() => setLocation("/admin/openclaw-monitor")} className="flex items-center gap-1 text-xs text-[#737373] hover:text-[#355EF1] mb-2 transition-colors">
           <ArrowLeft className="w-3.5 h-3.5" /> 返回 Agent 列表
         </button>
-        <h1 className="text-[20px] font-semibold text-[#0A0A0A]">智能体迁移</h1>
-        <p className="text-[14px] text-[#737373] mt-1">批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。</p>
+        <AdminPageHeader
+          title="智能体迁移"
+          description="批量迁移其他平台的 Agent 智能体到 ClawPro，数据通过 COS 安全中转。单台迁移可在用户端 Agent 详情页操作。"
+          className="mb-0"
+        />
       </div>
 
       {/* ==================== Section 1: 源端配置 ==================== */}

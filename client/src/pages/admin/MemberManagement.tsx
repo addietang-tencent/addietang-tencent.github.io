@@ -53,6 +53,7 @@ import type { UserOverrideInfo as MMUserOverrideInfo, UserOrg as MMUserOrg, User
 // ─── 列头筛选共享组件（与 Agent 列表页共用） ────────────────────────────────
 import { DepartmentColumnFilter, GroupColumnFilter } from "@/components/admin/ColumnFilters";
 import { buildGroupTree as mmBuildGroupTree } from "./MemberManagement/health";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 const PAGE_SIZE = 10;
 
@@ -2352,10 +2353,11 @@ export default function MemberManagement() {
   return (
     <>
       <div className="page-enter min-w-0 overflow-hidden">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-bold text-[#09090b]">用户管理</h1>
-            <p className="text-sm text-[#737373] mt-1">管理企业用户的访问权限和资源配额
+        <AdminPageHeader
+          title="用户管理"
+          description={
+            <>
+              管理企业用户的访问权限和资源配额
               {hasOneid && (
                 <>
                   <span className="mx-2">|</span>
@@ -2373,9 +2375,10 @@ export default function MemberManagement() {
                   </button>
                 </>
               )}
-            </p>
-          </div>
-        </div>
+            </>
+          }
+          className="mb-8"
+        />
 
         {/* 我的数据源（OneID 模式下不展示） */}
         {!hasOneid && configuredAuthSources.length > 0 && (

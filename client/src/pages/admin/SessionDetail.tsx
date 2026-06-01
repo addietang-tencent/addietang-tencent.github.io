@@ -18,6 +18,7 @@ import {
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 
 // ─── Mock 数据 ────────────────────────────────────────────────────────────────
 
@@ -148,11 +149,10 @@ export default function SessionDetail({ params }: SessionDetailProps) {
         <BackButton onClick={() => window.history.back()} />
       </div>
 
-      {/* 会话标题 */}
-      <div>
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">会话详情</h1>
-        <p className="text-sm text-[#737373] mt-1">会话 ID: {sessionInfo.id} • Agent名称: {sessionInfo.openClawName}</p>
-      </div>      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════════ */}
+      <AdminPageHeader
+        title="会话详情"
+        description={<>会话 ID: {sessionInfo.id} • Agent名称: {sessionInfo.openClawName}</>}
+      />      {/* ══ 顶部指标卡 ══════════════════════════════════════════════════════════════ */}
       <div className="grid grid-cols-3 gap-5">
         <SurfaceCard className="p-5">
           <div className="flex items-center gap-2 mb-3">

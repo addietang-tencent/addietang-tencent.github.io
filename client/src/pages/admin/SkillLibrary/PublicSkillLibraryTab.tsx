@@ -26,7 +26,7 @@ import {
 } from './publicSkillMockData';
 import MDXRenderer from '@/components/MDXRenderer';
 import AddToPackageDialog from './AddToPackageDialog';
-import { SelectableTagGroup } from '@/components/ui/selectable-tag';
+import { FilterChipGroup } from '@/components/ui/filter-chip';
 
 // 懒加载 react-syntax-highlighter 减少首屏包体积
 const SyntaxHighlighter = lazy(() =>
@@ -656,7 +656,7 @@ export default function PublicSkillLibraryTab({
       </div>
 
       {/* 分类 Tab */}
-      <SelectableTagGroup
+      <FilterChipGroup
         items={PUBLIC_SKILL_CATEGORIES.map(cat => ({ id: cat.id, label: cat.name }))}
         value={activeCategory}
         onChange={handleCategoryChange}

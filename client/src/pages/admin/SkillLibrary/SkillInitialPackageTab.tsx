@@ -56,7 +56,7 @@ import {
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
-import { SelectableTagGroup } from '@/components/ui/selectable-tag';
+import { FilterChipGroup } from '@/components/ui/filter-chip';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScopeEditPopover, type ScopeType } from '@/components/ScopeEditPopover';
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from '../MemberManagement/mock';
@@ -543,7 +543,7 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           </div>
 
           {/* 分类标签 */}
-          <SelectableTagGroup
+          <FilterChipGroup
             items={[{ id: 'all', label: '全部' }, ...DEFAULT_CATEGORIES.map(cat => ({ id: cat.id, label: cat.name }))]}
             value={activeCategory}
             onChange={setActiveCategory}

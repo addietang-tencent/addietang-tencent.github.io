@@ -44,7 +44,7 @@ export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) =
             className={[
               "inline-flex h-[31px] items-center gap-2 px-3 rounded-[40px] text-[14px] leading-[22px] tracking-[0.005em] font-normal whitespace-nowrap transition-all duration-150",
               active
-                ? "bg-white text-[#020617] outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+                ? "bg-white text-[#020617] outline outline-1 outline-[#DFE5ED] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
                 : "text-[#334155] hover:text-[#020617]",
             ].join(" ")}
           >

@@ -274,7 +274,7 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => toast.info("已退出登录")}
-                className="text-red-600"
+                className="text-[#0A0A0A]"
               >
                 <LogOut className="w-4 h-4 mr-2 text-[#0A0A0A]" />
                 退出登录

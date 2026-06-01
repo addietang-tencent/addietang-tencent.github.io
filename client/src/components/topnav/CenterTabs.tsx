@@ -87,13 +87,13 @@ export default function CenterTabs<V extends string = string>({
   return (
     <nav
       ref={navRef}
-      className={`relative inline-flex items-center h-9 rounded-[80px] ${className}`}
+      className={`relative inline-flex items-center h-8 gap-2 rounded-[80px] ${className}`}
       style={{ background: "rgba(219, 221, 228, 0.32)" }}
       role="tablist"
     >
       {/* 滑块：绝对定位，与容器等高，描边用 outline 不内缩 */}
       <div
-        className="absolute top-0 h-full rounded-[40px] bg-white outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+        className="absolute top-0 h-full rounded-[40px] bg-white outline outline-1 outline-[#DFE5ED] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
         style={{
           ...sliderStyle,
           transition: mounted ? "left 200ms ease, width 200ms ease" : "none",

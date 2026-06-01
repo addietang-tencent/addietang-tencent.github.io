@@ -462,7 +462,7 @@ export default function MyOpenClaw() {
           <div className="max-w-[1920px] mx-auto page-enter">
             <div
               className="relative min-h-[calc(100vh-64px)]"
-              style={{ paddingLeft: "120px", paddingRight: "120px", paddingBottom: "75px" }}
+              style={{ paddingLeft: "120px", paddingRight: "120px", paddingTop: "20px", paddingBottom: "75px" }}
             >
           {/* Hero Banner - Figma 358:2325 / 363:5079
               QuickStart 关闭后传入 onShowQuickStart 回调，副文右侧会出现「查看步骤指引」按钮 */}
@@ -482,7 +482,7 @@ export default function MyOpenClaw() {
               QuickStart 关闭时，QuickStartGuide 不渲染，需在此补 mt-5 让 hero 与 section 之间保持一致段间距 */}
           <div className={`flex items-center justify-between mb-4 ${!showQuickStart ? "mt-5" : ""}`}>
             <div className="flex items-center gap-3">
-              <h2 className="text-base font-medium text-foreground">
+              <h2 className="text-[18px] leading-[26px] font-medium text-foreground">
                 我的 Agent
                 <span className="text-muted-foreground font-normal">（{claws.length}）</span>
               </h2>

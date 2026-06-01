@@ -1,7 +1,20 @@
 /* ─── Webfont（v2）必须放在最顶部 ──────────────────────────────────
  * PingFang SC / Menlo / DIN Alternate：系统字体，无需引入
  * Open Sans：Google Fonts CDN（首版可用，后续可改 self-host）
+ * TCloud Number：用户端 QuickStart 步骤编号字体
  * ──────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "TCloud Number";
+  src: url("/fonts/TCloudNumber.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TCloud Number";
+  src: url("/fonts/TCloudNumber-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: swap;
+}
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -946,4 +959,174 @@ section[aria-label="Notifications alt+T"] > ol {
 .nav-btn-label {
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* ============================================================
+   STATUS BADGE ANIMATIONS - Agent 卡片状态图标动画（用户端）
+   引入自 brennali；StatusBadge.tsx 直接依赖
+   ============================================================ */
+
+/* 通用图标容器 */
+.status-creating-icon,
+.status-fail-icon,
+.status-running-icon,
+.status-loading-icon,
+.status-loadfail-icon,
+.status-maintain-icon,
+.status-pending-icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+/* 创建中：雷达圈扩散 */
+.status-creating-icon svg { overflow: visible; }
+.status-ring1 { animation: status-radar 2.8s ease-out infinite; }
+.status-ring2 { animation: status-radar 2.8s ease-out 0.9s infinite; }
+.status-ring3 { animation: status-radar 2.8s ease-out 1.8s infinite; }
+@keyframes status-radar {
+  0% { r: 0; opacity: 0.9; stroke-width: 2.5; }
+  50% { r: 5.5; opacity: 0.35; stroke-width: 1.2; }
+  100% { r: 7; opacity: 0; stroke-width: 0.5; }
+}
+
+/* 创建失败：感叹号摇摆 */
+.status-excl {
+  animation: status-shake 3s ease-in-out infinite;
+  transform-origin: 8px 8px;
+}
+@keyframes status-shake {
+  0%, 20%, 100% { transform: rotate(0); }
+  4% { transform: rotate(-12deg); }
+  8% { transform: rotate(10deg); }
+  12% { transform: rotate(-8deg); }
+  16% { transform: rotate(4deg); }
+}
+
+/* 运行中：水波动画 */
+.status-wave {
+  animation: status-wave-move 2.4s ease-in-out infinite;
+}
+@keyframes status-wave-move {
+  0% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(-3px); }
+}
+
+/* 加载中：箭头自旋 */
+.status-loading-icon svg {
+  animation: status-spin 1.2s linear infinite;
+}
+@keyframes status-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 加载失败：感叹号摇摆变叉号 */
+.status-lf-excl {
+  animation: status-lf-excl-anim 4s ease-in-out infinite;
+  transform-origin: 8px 8px;
+}
+.status-lf-cross {
+  animation: status-lf-cross-anim 4s ease-in-out infinite;
+  transform-origin: 8px 8px;
+}
+@keyframes status-lf-excl-anim {
+  0%, 5% { opacity: 1; transform: rotate(0); }
+  3% { transform: rotate(-12deg); }
+  6% { transform: rotate(10deg); }
+  9% { transform: rotate(-6deg); }
+  12% { transform: rotate(0); }
+  40% { opacity: 1; }
+  50% { opacity: 0; }
+  90% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes status-lf-cross-anim {
+  0%, 40% { opacity: 0; }
+  50% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 维护中：齿轮旋转 */
+.status-maintain-icon svg {
+  animation: status-spin 4s linear infinite;
+}
+
+/* 待处理：三点依次闪烁 */
+.status-dot1 { animation: status-blink 1.4s ease-in-out infinite; }
+.status-dot2 { animation: status-blink 1.4s ease-in-out 0.2s infinite; }
+.status-dot3 { animation: status-blink 1.4s ease-in-out 0.4s infinite; }
+@keyframes status-blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* ─── 铃铛摇摆动画（用户端 NotificationPanel）───────────────────── */
+.bell-shake {
+  transform-origin: top center;
+  animation: bellShake 3s ease-in-out infinite;
+}
+
+@keyframes bellShake {
+  0% { transform: rotate(0); }
+  3% { transform: rotate(12deg); }
+  6% { transform: rotate(-12deg); }
+  9% { transform: rotate(8deg); }
+  12% { transform: rotate(-8deg); }
+  15% { transform: rotate(0); }
+  100% { transform: rotate(0); }
+}
+
+/* ─── Agent 列表页表格样式覆盖（用户端 MyOpenClaw 等）──────────── */
+.agent-list-page [data-slot="table-header"] th {
+  background-color: white !important;
+  height: 44px !important;
+  font-size: 12px !important;
+}
+.agent-list-page [data-slot="surface-card"] {
+  border: none !important;
+  box-shadow: none !important;
+}
+.agent-list-page [data-slot="table-header"] tr {
+  border-color: #E6E9EF !important;
+}
+.agent-list-page [data-slot="table-body"] tr {
+  border-color: #E6E9EF !important;
+}
+.agent-list-page [data-slot="table-body"] td {
+  font-size: 12px !important;
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
+}
+.agent-list-page [data-slot="table-body"] td * {
+  font-size: 12px !important;
+}
+.agent-list-page [data-slot="pagination"] {
+  font-size: 12px !important;
+}
+.agent-list-page [data-slot="pagination"] button,
+.agent-list-page [data-slot="pagination"] a {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  font-size: 12px !important;
+}
+.agent-list-page .agent-date-toolbar button {
+  border-radius: 4px !important;
+  border-color: transparent !important;
+}
+.agent-list-page .agent-toolbar button {
+  height: 32px !important;
+  font-size: 12px !important;
+}
+.agent-list-page .agent-toolbar button svg {
+  width: 16px !important;
+  height: 16px !important;
 }

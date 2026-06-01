@@ -426,12 +426,15 @@
   }
 
   /* ─── 表格字号一致性规则 ───────────────────────────────────────
-   * 表格相关所有元素字号统一 12px：
+   * 表格相关所有元素字号统一 12px（最小字号保障）：
    *   - Table 单元格 / 表头 / 表尾
    *   - 表格内任意后代元素（按钮/Input/Select/Switch/Label/code/pre/div 等）
    *   - 分页器（[data-slot="pagination"]）及其内部所有元素
    *   - 数量统计 / 摘要文字（位于 SurfaceCard 内、与 table-container 同级的兄弟元素）
    * Badge 字号不变（始终保持自身尺寸），通过 [data-slot="badge"] 豁免。
+   *
+   * ⚠️ 最小字号规则：表格内字号有且只有 12px，不会随页面缩放或响应式断点缩小。
+   *    已通过 !important 固定为 0.75rem（= 12px），任何外部覆盖均无效。
    * ──────────────────────────────────────────────────────────── */
 
   /* 1) 表格单元格自身字号（强制覆盖业务侧 className 中的 text-sm 等） */
@@ -440,13 +443,18 @@
   [data-slot="table-cell"],
   [data-slot="table-action-cell"],
   [data-slot="table-footer"] {
-    font-size: 0.75rem !important; /* 12px */
+    font-size: 0.75rem !important; /* 12px — 最小字号，不随页面缩放 */
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
   }
 
-  /* 2) 表格内部所有后代元素：统一 12px（强制覆盖业务侧 text-sm/text-base 等） */
+  /* 2) 表格内部所有后代元素：统一 12px（强制覆盖业务侧 text-sm/text-base 等）
+   *    最小字号保障：不会因响应式/缩放/外部继承而缩小到 12px 以下 */
   table[data-density="default"] *:not([data-slot="badge"]):not([data-slot="badge"] *),
   table[data-density="compact"] *:not([data-slot="badge"]):not([data-slot="badge"] *) {
-    font-size: 0.75rem !important; /* 12px */
+    font-size: 0.75rem !important; /* 12px min */
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
   }
 
   /* 3) 分页器：所有内部元素强制 12px（无论 size="default" 还是 "small"） */

@@ -15,7 +15,7 @@
   font-weight: 700;
   font-display: swap;
 }
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -23,13 +23,15 @@
 
 /* ─── v2 字体 / 主题变量 ──────────────────────────────────────── */
 @theme {
-  --font-sans: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
-  --font-din: 'DIN Alternate', 'DIN', 'Helvetica Neue', sans-serif;
-  --font-en: 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-sans:
+    "PingFang SC", -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    sans-serif;
+  --font-mono: "Menlo", "Consolas", "Courier New", monospace;
+  --font-din: "DIN Alternate", "DIN", "Helvetica Neue", sans-serif;
+  --font-en: "Open Sans", "Helvetica Neue", sans-serif;
 
   /* v2 文字色阶（对齐 Figma 设计系统） */
-  --color-gray-950: #0A0A0A; /* 强调（数字、关键标题） */
+  --color-gray-950: #0a0a0a; /* 强调（数字、关键标题） */
   --color-gray-900: #171717; /* 主文字 / 正文 */
   --color-gray-700: #404040; /* 次级文字（描述正文、补充说明） */
   --color-gray-600: #475569; /* 中等文字 */
@@ -41,7 +43,7 @@
   --color-gray-50: #FAFAFA;  /* 极浅背景 */
 
   /* 品牌色覆盖 */
-  --color-blue-500: #355EF1;
+  --color-blue-500: #355ef1;
 }
 
 @theme inline {
@@ -52,10 +54,10 @@
    *   ⚠️ 不要把 rounded-xl 等同于 12px——本项目 --radius-xl 已被压到 4px。
    *      用户端要 12px 必须用 <TenantCard>（见 SKILL-TENANT.md §5）。
    */
-  --radius-sm: 2px;    /* 状态徽章、内嵌活跃元素小尺寸 */
-  --radius-md: 3px;    /* Tab 活跃滑块、Slider 把手 */
-  --radius-lg: 4px;    /* shadcn 默认（Button/Input/Dialog/Popover...） */
-  --radius-xl: 4px;    /* 控件层上限 / 管理端 SurfaceCard 圆角 */
+  --radius-sm: 2px; /* 状态徽章、内嵌活跃元素小尺寸 */
+  --radius-md: 3px; /* Tab 活跃滑块、Slider 把手 */
+  --radius-lg: 4px; /* shadcn 默认（Button/Input/Dialog/Popover...） */
+  --radius-xl: 4px; /* 控件层上限 / 管理端 SurfaceCard 圆角 */
   --radius-card: 12px; /* 用户端业务卡专用（仅 <TenantCard> 消费） */
 
   /* ───────────────────────────────────────────────────────────
@@ -65,9 +67,11 @@
    * 修改本组变量即可批量影响全站所有卡片，无需跨文件搜索替换。
    * ─────────────────────────────────────────────────────────── */
   /* L1 表层卡片：页面主区块、列表卡、统计卡（管理端 SurfaceCard 在用） */
-  --shadow-card: 0px 1px 4px rgba(0, 0, 0, 0.05), 0px 0px 2px rgba(0, 0, 0, 0.1);
+  --shadow-card:
+    0px 1px 4px rgba(0, 0, 0, 0.05), 0px 0px 2px rgba(0, 0, 0, 0.1);
   /* L1 hover 态：阴影升一档（接近 L4 配置卡），用于 SurfaceCard hover prop 启用时 */
-  --shadow-card-hover: 0px 4px 12px -2px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover:
+    0px 4px 12px -2px rgba(0, 0, 0, 0.08), 0px 2px 4px rgba(0, 0, 0, 0.06);
   /* L6 用户端业务卡（TenantCard）阴影：严格对齐 Figma 1077:33987 effect_KNJ2UO
    *   单层 0px 1px 4px rgba(0, 0, 0, 0.05)，比 --shadow-card 少一层 2px 环形描边阴影。
    *   2px 环描边在 12px 大圆角卡片上会形成"灰圈感"，与 Figma 不符（Figma 是干净底阴影）。
@@ -76,9 +80,11 @@
   /* L2 内嵌卡片：卡片内的子卡 / 表格容器（无阴影、靠浅描边） */
   --shadow-inner: none;
   /* L3 浮层：Dialog / Sheet / Drawer / Popover / DropdownMenu */
-  --shadow-overlay: 0px 4px 16px -2px rgba(0, 0, 0, 0.08), 0px 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-overlay:
+    0px 4px 16px -2px rgba(0, 0, 0, 0.08), 0px 2px 6px rgba(0, 0, 0, 0.06);
   /* L4 高亮配置卡：管理端"操作要点""引导卡"等需强调的卡 */
-  --shadow-config: 0px 2px 8px -1px rgba(0, 0, 0, 0.05), 0px 2px 4px 2px rgba(0, 0, 0, 0.05);
+  --shadow-config:
+    0px 2px 8px -1px rgba(0, 0, 0, 0.05), 0px 2px 4px 2px rgba(0, 0, 0, 0.05);
   /* L5 Tab 滑块 / Segmented 指示器：极轻 */
   --shadow-segment: 0px 1.11px 2.22px rgba(0, 0, 0, 0.05);
 
@@ -131,8 +137,8 @@
 
 :root {
   /* Brand Colors */
-  --brand-blue: #1447E6;
-  --brand-purple: #1447E6;
+  --brand-blue: #1447e6;
+  --brand-purple: #1447e6;
 
   /* Primary */
   --primary: oklch(0.546 0.245 262.881); /* #1447E6 */
@@ -142,18 +148,21 @@
   --radius: 4px;
 
   /* v2 显式色值：让 shadcn 语义 token 直接落到 Figma 设计系统 */
-  --background: #FFFFFF;          /* 页面底色（用户端会被 .tenant-bg 覆盖为白→灰渐变） */
-  --foreground: #0A0A0A;          /* 主文字 */
-  --card: #FFFFFF;                /* 卡片底 */
-  --card-foreground: #0A0A0A;
-  --popover: #FFFFFF;             /* Popover/Dropdown/Tooltip 底 */
-  --popover-foreground: #0A0A0A;
-  --secondary: #F5F5F5;           /* 次级背景 */
+  --background: #ffffff; /* 页面底色（用户端会被 .tenant-bg 覆盖为白→灰渐变） */
+  --foreground: #0a0a0a; /* 主文字 */
+  --card: #ffffff; /* 卡片底 */
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff; /* Popover/Dropdown/Tooltip 底 */
+  --popover-foreground: #0a0a0a;
+  --secondary: #f5f5f5; /* 次级背景 */
   --secondary-foreground: #404040;
-  --muted: #F5F5F5;               /* Tab 容器、Disabled 背景 */
-  --muted-foreground: #737373;    /* 辅助文字（v2 §1） */
-  --accent: #F5F5F5;              /* hover 浅灰 */
-  --accent-foreground: #0A0A0A;
+  --muted: #f5f5f5; /* Tab 容器、Disabled 背景 */
+  --muted-foreground: #737373; /* 辅助文字（v2 §1） */
+  --general-foreground: #020617;
+  --admin-page-description-foreground: #596980;
+  --heading-3-letter-spacing: -1px;
+  --accent: #f5f5f5; /* hover 浅灰 */
+  --accent-foreground: #0a0a0a;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   --border: #EAEEF4;              /* 描边、分割线（全局统一 token） */
@@ -164,10 +173,10 @@
   --alert-radius: var(--radius);
 
   /* Alert：Info 类型（对齐 Figma，供 shadcn Alert variant="info" 使用） */
-  --alert-info-bg: #F0F3FC;
-  --alert-info-border: #BFCFFE;
-  --alert-info-foreground: #0A0A0A;
-  --alert-info-icon: #1447E6;
+  --alert-info-bg: #f0f3fc;
+  --alert-info-border: #bfcffe;
+  --alert-info-foreground: #0a0a0a;
+  --alert-info-icon: #1447e6;
 
   /* Alert：操作 Info 类型（对齐 Figma，供 shadcn Alert variant="operation-info" 使用） */
   --alert-operation-info-bg: #FFFFFF;
@@ -176,10 +185,10 @@
   --alert-operation-info-icon: #737373;
 
   /* Alert：Warning 类型（对齐 Figma，供 shadcn Alert variant="warning" 使用） */
-  --alert-warning-bg: #FFF7ED;
-  --alert-warning-border: #FED7AA;
-  --alert-warning-foreground: #0A0A0A;
-  --alert-warning-icon: #FF6900;
+  --alert-warning-bg: #fff7ed;
+  --alert-warning-border: #fed7aa;
+  --alert-warning-foreground: #0a0a0a;
+  --alert-warning-icon: #ff6900;
 
   /* Alert：产品动态类型（颜色对齐 Info，供 shadcn Alert variant="product-news" 使用） */
   --alert-product-news-bg: var(--alert-info-bg);
@@ -205,9 +214,9 @@
   --sidebar-ring: #1447E6;
 
   /* Admin Sidebar */
-  --admin-sidebar-width: 232px;
+  --admin-sidebar-width: 240px;
   --admin-sidebar-width-collapsed: 64px;
-  --admin-sidebar-header-height: 72px;
+  --admin-sidebar-header-height: 104px;
   --admin-sidebar-footer-height: 72px;
   --admin-sidebar-bg: #ffffff;
   --admin-sidebar-border: #EAEEF4;
@@ -215,21 +224,41 @@
   --admin-sidebar-muted: #737373;
   --admin-sidebar-item-height: 32px;
   --admin-sidebar-item-radius: 4px;
-  --admin-sidebar-item-hover-bg: #f5f5f5;
+  --admin-sidebar-item-hover-bg: rgba(180, 191, 225, 0.14);
 
-  --admin-sidebar-item-active-bg: linear-gradient(90deg, #EDF4FF 0%, #D9E4FC 100%);
+  --admin-sidebar-item-active-bg: linear-gradient(
+    90deg,
+    #e9f3ff 0%,
+    #e3eaff 100%
+  );
+  --admin-sidebar-badge-brand-bg: color-mix(
+    in srgb,
+    var(--brand-blue) 10%,
+    var(--admin-sidebar-bg)
+  );
+  --admin-sidebar-badge-brand-border: color-mix(
+    in srgb,
+    var(--brand-blue) 24%,
+    var(--admin-sidebar-bg)
+  );
   --admin-sidebar-action-bg: #ffffff;
   --admin-sidebar-action-border: #e3e3e3;
   --admin-sidebar-action-hover-bg: #f5f5f5;
   --admin-sidebar-action-hover-border: #e3e3e3;
   --admin-sidebar-badge-bg: #f5f5f5;
+  --admin-sidebar-avatar-bg: color-mix(
+    in srgb,
+    var(--brand-blue) 32%,
+    var(--admin-sidebar-bg)
+  );
+  --admin-sidebar-avatar-foreground: #020617;
 }
 
 /* Admin theme - v2：纯白背景（覆盖 :root） */
 .admin-theme {
-  --background: #FFFFFF;
-  --card: #FFFFFF;
-  --sidebar: #FFFFFF;
+  --background: #ffffff;
+  --card: #ffffff;
+  --sidebar: #ffffff;
 }
 
 @layer base {
@@ -242,7 +271,12 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-family:
+      "PingFang SC",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Helvetica Neue",
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -251,7 +285,12 @@
    * 仅 SVG <text> 等极少数标签保留自身定义（避免影响图表/图标内文字）。
    * ──────────────────────────────────────────────────────────── */
   *:not(svg):not(svg *) {
-    font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif !important;
+    font-family:
+      "PingFang SC",
+      -apple-system,
+      BlinkMacSystemFont,
+      "Helvetica Neue",
+      sans-serif !important;
   }
   /* 防止弹窗打开时页面晃动：确保 body 被锁定滚动时保持滚动条占位 */
   body[data-scroll-locked] {
@@ -324,11 +363,11 @@
     content: "";
     position: absolute;
     left: 16px;
-    top: -2px;
-    bottom: -2px;
+    top: -8px;
+    bottom: -8px;
     z-index: 0;
     width: 1px;
-    background: #EAEEF4;
+    background: var(--admin-sidebar-border);
   }
 
   .admin-sidebar-subitem-button::after {
@@ -338,8 +377,8 @@
     top: 8px;
     z-index: 1;
     width: 1px;
-    height: 16px;
-    background: #404040;
+    height: 18px;
+    background: var(--admin-sidebar-foreground);
     opacity: 0;
     transition: opacity 150ms ease;
   }
@@ -350,23 +389,25 @@
   }
 
   [data-slot="admin-sidebar-badge"] {
-    background: transparent;
+    background: var(--admin-sidebar-badge-bg);
+    color: var(--admin-sidebar-muted);
   }
 
   [data-slot="admin-sidebar-badge"][data-variant="new"] {
-    border-color: #CCD8FF;
-    color: #1447E6;
+    background: var(--admin-sidebar-badge-brand-bg);
+    color: var(--brand-blue);
   }
 
   [data-slot="admin-sidebar-badge"][data-variant="custom"],
   [data-slot="admin-sidebar-badge"][data-variant="coming-soon"] {
-    border-color: #EAEEF4;
-    color: #737373;
+    background: var(--admin-sidebar-badge-bg);
+    color: var(--admin-sidebar-muted);
   }
 
-  [data-slot="admin-sidebar-menu-button"][data-active="true"] [data-slot="admin-sidebar-badge"][data-variant="custom"] {
-    border-color: #CCD8FF;
-    color: #1447E6;
+  [data-slot="admin-sidebar-menu-button"][data-active="true"]
+    [data-slot="admin-sidebar-badge"][data-variant="custom"] {
+    background: var(--admin-sidebar-badge-brand-bg);
+    color: var(--brand-blue);
   }
 
   /* 选中态：左侧导航 SVG 图标渲染为纯黑（覆盖图标自带渐变色） */
@@ -378,6 +419,14 @@
   [data-slot="admin-sidebar-header-action"]:hover {
     background: var(--admin-sidebar-action-hover-bg);
     border-color: var(--admin-sidebar-action-hover-border);
+  }
+
+  [data-admin-menu-page-shell="true"] [data-slot="admin-page-header"] {
+    margin-bottom: 24px !important;
+  }
+
+  [data-admin-menu-page-shell="true"] [data-slot="admin-page-header"] + * {
+    margin-top: 0 !important;
   }
 
   @media (min-width: 640px) {
@@ -459,13 +508,18 @@
 
   /* 3) 分页器：所有内部元素强制 12px（无论 size="default" 还是 "small"） */
   [data-slot="pagination"],
-  [data-slot="pagination"] *:not([data-slot="badge"]):not([data-slot="badge"] *) {
+  [data-slot="pagination"]
+    *:not([data-slot="badge"]):not([data-slot="badge"] *) {
     font-size: 0.75rem !important; /* 12px */
   }
 
   /* 4) 数量统计 / 摘要文字：表格容器同级的兄弟元素全部 12px */
-  [data-surface="card"]:has([data-density="default"]) > :not([data-slot="table-container"]) *:not([data-slot="badge"]):not([data-slot="badge"] *),
-  [data-surface="card"]:has([data-density="compact"]) > :not([data-slot="table-container"]) *:not([data-slot="badge"]):not([data-slot="badge"] *) {
+  [data-surface="card"]:has([data-density="default"])
+    > :not([data-slot="table-container"])
+    *:not([data-slot="badge"]):not([data-slot="badge"] *),
+  [data-surface="card"]:has([data-density="compact"])
+    > :not([data-slot="table-container"])
+    *:not([data-slot="badge"]):not([data-slot="badge"] *) {
     font-size: 0.75rem !important; /* 12px */
   }
 
@@ -482,7 +536,10 @@
    * ──────────────────────────────────────────────────────────── */
 
   /* 表头：第一个 th + 所有 action-cell，仅当未显式 fixed 时 */
-  table[data-auto-fixed="true"] > thead > tr > th:first-child:not([data-fixed]) {
+  table[data-auto-fixed="true"]
+    > thead
+    > tr
+    > th:first-child:not([data-fixed]) {
     position: sticky;
     left: 0;
     z-index: 50;
@@ -497,38 +554,70 @@
   }
 
   /* 表体：第一个 td + action-cell，仅当未显式 fixed 时 */
-  table[data-auto-fixed="true"] > tbody > tr > td:first-child:not([data-fixed]) {
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr
+    > td:first-child:not([data-fixed]) {
     position: sticky;
     left: 0;
     z-index: 20;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     transition: background-color 0.15s ease;
   }
-  table[data-auto-fixed="true"] > tbody > tr > [data-slot="table-action-cell"]:not([data-fixed]) {
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr
+    > [data-slot="table-action-cell"]:not([data-fixed]) {
     position: sticky;
     right: 0;
     z-index: 20;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
     transition: background-color 0.15s ease;
   }
 
   /* 行 hover / selected 时同步固定列底色 */
-  table[data-auto-fixed="true"] > tbody > tr:hover > td:first-child:not([data-fixed]),
-  table[data-auto-fixed="true"] > tbody > tr:hover > [data-slot="table-action-cell"]:not([data-fixed]) {
-    background-color: #F9FAFB;
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr:hover
+    > td:first-child:not([data-fixed]),
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr:hover
+    > [data-slot="table-action-cell"]:not([data-fixed]) {
+    background-color: #f9fafb;
   }
-  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"] > td:first-child:not([data-fixed]),
-  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"] > [data-slot="table-action-cell"]:not([data-fixed]) {
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr[data-state="selected"]
+    > td:first-child:not([data-fixed]),
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr[data-state="selected"]
+    > [data-slot="table-action-cell"]:not([data-fixed]) {
     background-color: rgba(20, 71, 230, 0.06);
   }
-  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"]:hover > td:first-child:not([data-fixed]),
-  table[data-auto-fixed="true"] > tbody > tr[data-state="selected"]:hover > [data-slot="table-action-cell"]:not([data-fixed]) {
-    background-color: rgba(20, 71, 230, 0.10);
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr[data-state="selected"]:hover
+    > td:first-child:not([data-fixed]),
+  table[data-auto-fixed="true"]
+    > tbody
+    > tr[data-state="selected"]:hover
+    > [data-slot="table-action-cell"]:not([data-fixed]) {
+    background-color: rgba(20, 71, 230, 0.1);
   }
 
   /* 横向滚动时显示边界分隔线（仅当存在内容溢出 + 已偏移） */
-  [data-slot="table-container"][data-scroll-left="true"] table[data-auto-fixed="true"] > thead > tr > th:first-child:not([data-fixed])::after,
-  [data-slot="table-container"][data-scroll-left="true"] table[data-auto-fixed="true"] > tbody > tr > td:first-child:not([data-fixed])::after {
+  [data-slot="table-container"][data-scroll-left="true"]
+    table[data-auto-fixed="true"]
+    > thead
+    > tr
+    > th:first-child:not([data-fixed])::after,
+  [data-slot="table-container"][data-scroll-left="true"]
+    table[data-auto-fixed="true"]
+    > tbody
+    > tr
+    > td:first-child:not([data-fixed])::after {
     content: "";
     position: absolute;
     top: 0;
@@ -538,8 +627,16 @@
     background-color: #f0f0f0;
     pointer-events: none;
   }
-  [data-slot="table-container"][data-scroll-right="true"] table[data-auto-fixed="true"] > thead > tr > [data-slot="table-action-cell"]:not([data-fixed])::after,
-  [data-slot="table-container"][data-scroll-right="true"] table[data-auto-fixed="true"] > tbody > tr > [data-slot="table-action-cell"]:not([data-fixed])::after {
+  [data-slot="table-container"][data-scroll-right="true"]
+    table[data-auto-fixed="true"]
+    > thead
+    > tr
+    > [data-slot="table-action-cell"]:not([data-fixed])::after,
+  [data-slot="table-container"][data-scroll-right="true"]
+    table[data-auto-fixed="true"]
+    > tbody
+    > tr
+    > [data-slot="table-action-cell"]:not([data-fixed])::after {
     content: "";
     position: absolute;
     top: 0;
@@ -551,12 +648,14 @@
   }
 
   /* 收起态侧栏：内容区居中对齐图标 */
-  [data-slot="admin-sidebar"][data-state="collapsed"] [data-slot="admin-sidebar-content"] {
+  [data-slot="admin-sidebar"][data-state="collapsed"]
+    [data-slot="admin-sidebar-content"] {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
 
-  [data-slot="admin-sidebar"][data-state="collapsed"] [data-slot="admin-sidebar-footer"] {
+  [data-slot="admin-sidebar"][data-state="collapsed"]
+    [data-slot="admin-sidebar-footer"] {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
@@ -568,19 +667,29 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.06),
+      0 4px 16px rgba(0, 0, 0, 0.04);
   }
 
   /* Gradient orb decoration */
   .orb-blue {
-    background: radial-gradient(circle, rgba(20, 71, 230, 0.18) 0%, rgba(20, 71, 230, 0) 70%);
+    background: radial-gradient(
+      circle,
+      rgba(20, 71, 230, 0.18) 0%,
+      rgba(20, 71, 230, 0) 70%
+    );
     filter: blur(40px);
     border-radius: 50%;
     pointer-events: none;
   }
 
   .orb-purple {
-    background: radial-gradient(circle, rgba(88, 86, 214, 0.15) 0%, rgba(88, 86, 214, 0) 70%);
+    background: radial-gradient(
+      circle,
+      rgba(88, 86, 214, 0.15) 0%,
+      rgba(88, 86, 214, 0) 70%
+    );
     filter: blur(40px);
     border-radius: 50%;
     pointer-events: none;
@@ -595,8 +704,8 @@
   }
   .badge-loading {
     @apply inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium whitespace-nowrap;
-    background: rgba(20, 71, 230, 0.10);
-    color: #1447E6;
+    background: rgba(20, 71, 230, 0.1);
+    color: #1447e6;
     border-radius: 2px;
   }
   .badge-stopped {
@@ -626,7 +735,7 @@
   .badge-new {
     @apply inline-flex items-center px-1.5 text-[10px] font-medium whitespace-nowrap;
     font-family: var(--font-en);
-    background: #1447E6;
+    background: #1447e6;
     color: #ffffff;
     border-radius: 2px;
     padding-block: 1px;
@@ -634,7 +743,7 @@
 
   /* 用户端全局背景（白→灰渐变） */
   .tenant-bg {
-    background: linear-gradient(180deg, #FFFFFF 0%, #F5F5F5 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
     min-height: 100vh;
   }
 
@@ -649,8 +758,8 @@
   }
   .nav-item.active {
     background: rgba(20, 71, 230, 0.1);
-    color: #1447E6;
-    border-left: 2px solid #1447E6;
+    color: #1447e6;
+    border-left: 2px solid #1447e6;
     padding-left: calc(0.75rem - 2px);
   }
 
@@ -890,7 +999,7 @@
 }
 
 .md-preview a {
-  color: #1447E6;
+  color: #1447e6;
   text-decoration: none;
 }
 
@@ -949,8 +1058,6 @@
   accent-color: #3b82f6;
   cursor: default;
 }
-
-
 
 /* Fix: ensure sonner toast section appears above Radix UI Dialog overlays */
 section[aria-label="Notifications alt+T"] {

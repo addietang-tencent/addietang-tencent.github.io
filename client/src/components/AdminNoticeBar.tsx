@@ -4,8 +4,7 @@
  * - 三类通知：基础配置告警（橙色）、腾讯云配额告警（橙色）、产品动态（蓝色）
  * - 支持自动轮播（5s）+ 手动左右切换
  * - 只有 1 条通知时隐藏切换按钮
- * - 关闭按钮常驻，点击后隐藏当前通知
- * - 不吸顶：随页面内容自然滚动（位于内容区顶部，滚动后会被滚走）
+ * - sticky top-0 固定在内容区顶部，不随页面滚动
  * - 跳转链接紧跟在通知文字末尾
  * - 产品动态图标使用星星符号
  */
@@ -138,6 +137,11 @@ function buildNotices(stepStatus: Record<number, { label: string; done: boolean 
 
 const AUTO_PLAY_INTERVAL = 5000;
 
+export function getAdminNotices(isUnified: boolean): NoticeItem[] {
+  return buildNotices(buildStepStatus(isUnified));
+}
+
+
 function AdminNoticePrevIcon() {
   return (
     <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -154,24 +158,9 @@ function AdminNoticeNextIcon() {
   );
 }
 
-function AdminNoticeCloseIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        d="M11.958 5.17139L9.12891 7.99951L11.958 10.8286L10.8271 11.9595L7.99805 9.13037L5.16992 11.9595L4.03906 10.8286L6.86719 7.99951L4.03906 5.17139L5.16992 4.04053L7.99805 6.86865L10.8271 4.04053L11.958 5.17139Z"
-        fill="#020617"
-        fillOpacity="0.5"
-      />
-    </svg>
-  );
-}
-
 export default function AdminNoticeBar() {
   const { isUnified } = useAdminMode();
-  // [004] 每次渲染都重算通知列表，以便存量企业 ack 状态变化时能即时从通知条消失
-  const STEP_STATUS = buildStepStatus(isUnified);
-  const [dismissedNoticeIds, setDismissedNoticeIds] = useState<string[]>([]);
-  const NOTICES = buildNotices(STEP_STATUS).filter((notice) => !dismissedNoticeIds.includes(notice.id));
+  const NOTICES = getAdminNotices(isUnified);
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -202,10 +191,6 @@ export default function AdminNoticeBar() {
 
   const notice = NOTICES[current];
 
-  const closeCurrentNotice = () => {
-    setDismissedNoticeIds((prev) => (prev.includes(notice.id) ? prev : [...prev, notice.id]));
-  };
-
   const noticeContent = (
     <>
       <span>{notice.message}</span>
@@ -233,42 +218,35 @@ export default function AdminNoticeBar() {
     </>
   );
 
-  const renderControls = () => (
-    <div className="relative h-5 w-[80.07px] text-[#3F3F3F]">
-      {total > 1 ? (
-        <div className="absolute left-0 top-0 h-5 w-[44.07px]">
-          <button
-            onClick={goPrev}
-            className="absolute left-[-10px] top-0 inline-flex size-5 items-center justify-center rounded-[2px] text-[#3F3F3F] transition-colors hover:bg-black/10 hover:text-[#020617] active:bg-black/15"
-            aria-label="上一条"
-          >
-            <AdminNoticePrevIcon />
-          </button>
-          <span className="absolute left-[11.54px] top-0 text-xs leading-5 tabular-nums text-[#3F3F3F]">
-            {current + 1}/{total}
-          </span>
-          <button
-            onClick={goNext}
-            className="absolute left-[36.54px] top-0 inline-flex size-5 items-center justify-center rounded-[2px] text-[#3F3F3F] transition-colors hover:bg-black/10 hover:text-[#020617] active:bg-black/15"
-            aria-label="下一条"
-          >
-            <AdminNoticeNextIcon />
-          </button>
-        </div>
-      ) : null}
-      <button
-        onClick={closeCurrentNotice}
-        className="absolute left-[64.07px] top-[2px] inline-flex size-4 items-center justify-center transition-opacity hover:opacity-80 active:opacity-100"
-        aria-label="关闭通知"
-      >
-        <AdminNoticeCloseIcon />
-      </button>
-    </div>
-  );
+  const renderControls = () => {
+    if (total <= 1) return null;
+
+    return (
+      <div className="flex h-5 items-center gap-1 text-[#3F3F3F]">
+        <button
+          onClick={goPrev}
+          className="inline-flex size-5 items-center justify-center rounded-[2px] text-[#3F3F3F] transition-colors hover:bg-black/10 hover:text-[#020617] active:bg-black/15"
+          aria-label="上一条"
+        >
+          <AdminNoticePrevIcon />
+        </button>
+        <span className="min-w-[28px] text-center text-xs leading-5 tabular-nums text-[#3F3F3F]">
+          {current + 1}/{total}
+        </span>
+        <button
+          onClick={goNext}
+          className="inline-flex size-5 items-center justify-center rounded-[2px] text-[#3F3F3F] transition-colors hover:bg-black/10 hover:text-[#020617] active:bg-black/15"
+          aria-label="下一条"
+        >
+          <AdminNoticeNextIcon />
+        </button>
+      </div>
+    );
+  };
 
   return (
     <div
-      className="w-full min-w-[960px] max-w-[1600px] mx-auto px-10 pt-4 pb-2"
+      className="sticky top-0 z-20 w-full min-w-[960px] max-w-[1600px] mx-auto px-10 pt-4 pb-2"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

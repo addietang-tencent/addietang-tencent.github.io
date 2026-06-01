@@ -3,8 +3,8 @@
  * 数据驱动 AdminLayout 侧边栏渲染
  *
  * 注：badge 同时支持预设短语（"new" / "coming-soon"）和自定义文字（如 "原镜像管理"）
- * - 预设短语由 AdminSidebarBadge 组件渲染对应样式
- * - 自定义文字以普通灰色 chip 渲染
+ * - 预设短语由 AdminSidebarBadge 渲染为圆角胶囊标签
+ * - 自定义文字以灰色圆角胶囊标签渲染，视觉规范见 SKILL-GLOBAL-COMPONENTS.md · AdminSidebar
  */
 
 export type AdminNavBadge = "new" | "coming-soon" | string;

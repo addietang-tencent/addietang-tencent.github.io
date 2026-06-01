@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { ChevronDown, ChevronUp, PanelLeft } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -100,11 +100,12 @@ function AdminSidebarProvider({
   );
 }
 
-/** 收起/展开图标（用户提供的 SVG） */
+/** 收起/展开图标（对齐 Figma 20×20 图标区域） */
 function SidebarCollapseIcon({ className }: { className?: string }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
-      <path d="M13 1.5C14.1046 1.5 15 2.39543 15 3.5V12.5C15 13.5357 14.2128 14.387 13.2041 14.4893L13 14.5H3L2.7959 14.4893C1.85435 14.3938 1.1062 13.6457 1.01074 12.7041L1 12.5V3.5C1 2.39543 1.89543 1.5 3 1.5H13ZM3 2.7002C2.55817 2.7002 2.2002 3.05817 2.2002 3.5V12.5C2.2002 12.9418 2.55817 13.2998 3 13.2998H5.90039V2.7002H3ZM7.09961 13.2998H13C13.4418 13.2998 13.7998 12.9418 13.7998 12.5V3.5C13.7998 3.05817 13.4418 2.7002 13 2.7002H7.09961V13.2998ZM4.59961 8.59961H3.40039V7.40039H4.59961V8.59961ZM4.59961 5.59961H3.40039V4.40039H4.59961V5.59961Z" fill="currentColor"/>
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" className={className}>
+      <path d="M2.5 4.16663H17.5M7.5 9.99996H17.5M2.5 15.8333H17.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="square" />
+      <path d="M3.97314 8.52673L2.5 9.9999L3.97314 11.4731" stroke="currentColor" strokeWidth="1.25" strokeLinecap="square" />
     </svg>
   );
 }
@@ -140,8 +141,8 @@ const AdminSidebarHeader = React.forwardRef<HTMLDivElement, React.ComponentProps
         ref={ref}
         data-slot="admin-sidebar-header"
         className={cn(
-          "flex shrink-0 flex-col border-b border-[var(--admin-sidebar-border)]",
-          collapsed ? "items-center px-2 py-3" : "px-4 py-3",
+          "flex shrink-0 flex-col",
+          collapsed ? "items-center px-2 py-3" : "h-[var(--admin-sidebar-header-height)] px-0 py-0",
           className
         )}
         {...props}
@@ -252,7 +253,7 @@ const AdminSidebarContent = React.forwardRef<HTMLElement, React.ComponentProps<"
         ref={ref}
         data-slot="admin-sidebar-content"
         data-scrolling={isScrolling ? "true" : "false"}
-        className={cn("scrollbar-on-hover min-h-0 flex-1 overflow-y-auto px-4 py-4", className)}
+        className={cn("scrollbar-on-hover min-h-0 flex-1 overflow-y-auto px-4 mt-4 mb-3", className)}
         onScroll={(event) => {
           showScrollbarTemporarily();
           onScroll?.(event);
@@ -314,14 +315,19 @@ const AdminSidebarGroupTrigger = React.forwardRef<HTMLButtonElement, React.Compo
         data-slot="admin-sidebar-group-trigger"
         data-state={open ? "open" : "closed"}
         className={cn(
-          "mb-2 flex h-5 w-full items-center justify-between px-2 text-left text-xs font-normal tracking-[0.015em] text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]",
+          "mb-2 flex h-5 w-full items-center justify-between px-2 text-left text-xs font-normal leading-[1.5] tracking-[0.015em] text-[var(--admin-sidebar-muted)] outline-none transition-colors hover:text-[var(--admin-sidebar-foreground)] focus-visible:ring-2 focus-visible:ring-[var(--brand-blue)]",
           className
         )}
         onClick={() => setOpen(!open)}
         {...props}
       >
         <span>{children}</span>
-        {open ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
+        <img
+          src="/assets/admin-sidebar/group-collapse-arrow.svg"
+          alt=""
+          aria-hidden="true"
+          className={cn("size-3 shrink-0 transition-transform", open ? "" : "rotate-180")}
+        />
       </button>
     );
   }
@@ -333,7 +339,7 @@ const AdminSidebarGroupLabel = React.forwardRef<HTMLDivElement, React.ComponentP
     <div
       ref={ref}
       data-slot="admin-sidebar-group-label"
-      className={cn("mb-2 h-5 px-2 text-xs font-normal tracking-[0.015em] text-[var(--admin-sidebar-muted)]", className)}
+      className={cn("mb-2 h-5 px-2 text-xs font-normal leading-[1.5] tracking-[0.015em] text-[var(--admin-sidebar-muted)]", className)}
       {...props}
     />
   )
@@ -362,7 +368,7 @@ const AdminSidebarMenu = React.forwardRef<HTMLUListElement, React.ComponentProps
     <ul
       ref={ref}
       data-slot="admin-sidebar-menu"
-      className={cn("flex w-full flex-col gap-1", className)}
+      className={cn("flex w-full flex-col gap-0.5", className)}
       {...props}
     />
   )
@@ -426,8 +432,7 @@ const AdminSidebarBadge = React.forwardRef<HTMLSpanElement, React.ComponentProps
       data-slot="admin-sidebar-badge"
       data-variant={variant}
       className={cn(
-        "ml-auto inline-flex h-[18px] shrink-0 items-center justify-center rounded-[2px] border bg-transparent px-1 text-[10px] leading-none tracking-[0.015em] transition-colors duration-150",
-        variant === "new" ? "w-[31px] font-['Open_Sans'] font-semibold" : "w-auto font-normal",
+        "ml-auto inline-flex h-[18px] w-auto shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-normal leading-none tracking-[0.015em] transition-colors duration-150",
         className
       )}
       {...props}
@@ -439,16 +444,18 @@ const AdminSidebarBadge = React.forwardRef<HTMLSpanElement, React.ComponentProps
 AdminSidebarBadge.displayName = "AdminSidebarBadge";
 
 const AdminSidebarFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
-  ({ className, ...props }, ref) => (
+  ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
       data-slot="admin-sidebar-footer"
       className={cn(
-        "flex h-[var(--admin-sidebar-footer-height)] shrink-0 items-center gap-2 border-t border-[var(--admin-sidebar-border)] px-6",
+        "relative flex h-[var(--admin-sidebar-footer-height)] shrink-0 items-center gap-2 px-4 before:absolute before:left-4 before:right-4 before:top-0 before:h-px before:bg-[var(--admin-sidebar-border)] before:content-['']",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </div>
   )
 );
 AdminSidebarFooter.displayName = "AdminSidebarFooter";
@@ -461,7 +468,7 @@ const AdminSidebarUser = React.forwardRef<HTMLDivElement, React.ComponentProps<"
       className={cn("flex min-w-0 flex-1 items-center gap-2.5", className)}
       {...props}
     >
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-[4px] bg-gradient-to-br from-green-600 to-green-700 font-mono text-sm text-white">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--admin-sidebar-avatar-bg)] font-mono text-[14.22px] font-normal leading-none text-[var(--admin-sidebar-avatar-foreground)]">
         {fallback ?? name.charAt(0).toUpperCase()}
       </div>
       <div className="min-w-0 flex-1">

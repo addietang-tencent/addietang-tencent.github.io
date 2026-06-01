@@ -919,7 +919,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
         ) : (
           <>
             {/* 表格容器（与模型列表一致：bg-white + 4px 圆角 + #e5e5e5 边框） */}
-            <div className="bg-white rounded-[4px] border border-[#EAEEF5] overflow-hidden">
+            <div className="bg-white rounded-[4px] border border-[#EAEEF4] overflow-hidden">
               <div className="max-h-[420px] overflow-y-auto">
                 <Table density="compact">
                   <TableHeader>
@@ -1228,7 +1228,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       </div>
 
       {/* 技能列表 */}
-      <div className="bg-white rounded-xl border border-[#EAEEF5] overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#EAEEF4] overflow-hidden">
         {localSkills.length > 0 ? (
           <Table variant="elevated-white">
             <TableHeader>
@@ -1323,7 +1323,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
 
         {/* 表格底部：分页器（左侧显示总数，右侧分页控件） */}
         {localSkills.length > 0 && (
-          <div className="px-4 py-3 border-t border-[#EAEEF5]">
+          <div className="px-4 py-3 border-t border-[#EAEEF4]">
             <Pagination
               total={localSkills.length}
               current={1}
@@ -1684,7 +1684,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   )}
                   {/* 底部：已选数量 + 清除筛选 */}
                   {selectedScopes.size > 0 && (
-                    <div className="border-t border-[#EAEEF5] mt-1 px-3 py-2 flex items-center justify-between">
+                    <div className="border-t border-[#EAEEF4] mt-1 px-3 py-2 flex items-center justify-between">
                       <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                       <Button
                         type="button"
@@ -1712,7 +1712,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
 
       {/* 技能包列表 */}
       {filteredPackages.length > 0 ? (
-        <div className="bg-white rounded-xl border border-[#EAEEF5] overflow-hidden">
+        <div className="bg-white rounded-xl border border-[#EAEEF4] overflow-hidden">
           <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
@@ -1824,7 +1824,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
           </Table>
         </div>
       ) : (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#EAEEF5]"
+        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#EAEEF4]"
          >
           <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p className="text-sm font-medium">

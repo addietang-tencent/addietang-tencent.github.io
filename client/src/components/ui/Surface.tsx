@@ -58,7 +58,7 @@ export const SurfaceCard = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="card"
         className={cn(
-          "rounded-xl border border-[#EAEEF5]",
+          "rounded-xl border border-[#EAEEF4]",
           !bare && "bg-white",
           hover && "transition-all duration-200 hover:border-[#C9D5FC] hover:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] hover:-translate-y-0.5",
           "data-[state=selected]:border-[#1447E6] data-[state=selected]:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)]",
@@ -83,7 +83,7 @@ export const SurfaceInner = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="inner"
         className={cn(
-          "rounded-xl border border-[#EAEEF5]",
+          "rounded-xl border border-[#EAEEF4]",
           !bare && "bg-white",
           className,
         )}
@@ -107,7 +107,7 @@ export const SurfaceOverlay = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="overlay"
         className={cn(
-          "rounded-xl border border-[#EAEEF5]",
+          "rounded-xl border border-[#EAEEF4]",
           !bare && "bg-white",
           className,
         )}
@@ -133,7 +133,7 @@ export const SurfaceConfig = forwardRef<HTMLDivElement, SurfaceBaseProps>(
         ref={ref}
         data-surface="config"
         className={cn(
-          "rounded-xl border border-[#EAEEF5]",
+          "rounded-xl border border-[#EAEEF4]",
           !bare && "bg-white",
           hover && "transition-all duration-200 hover:-translate-y-0.5",
           className,
@@ -152,7 +152,7 @@ SurfaceConfig.displayName = "SurfaceConfig";
  * 与 SurfaceCard 的差异：
  *   - 圆角：12px（var(--radius-card)）vs SurfaceCard 的 4px（rounded-xl/--radius-xl）
  *   - 三状态：normal（默认 + 描边 + 阴影）/ hover（无描边 + 加强阴影 + 微抬）/ static（无阴影）
- *   - 描边：normal=#E2E8F0，static=#EAEEF5，hover=transparent（让阴影替代描边）
+ *   - 描边：normal=#E2E8F0，static=#EAEEF4，hover=transparent（让阴影替代描边）
  *   - 阴影（normal/active）：var(--shadow-tenant-card) = 0px 1px 4px rgba(0,0,0,0.05)
  *     【0523 修订】严格对齐 Figma 1077:33987 effect_KNJ2UO 单层值；
  *     不再复用 --shadow-card（管理端用，含一层 2px 环形描边阴影，会让 12px 大圆角呈现"灰圈感"）。

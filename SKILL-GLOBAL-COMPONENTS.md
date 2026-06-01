@@ -1987,7 +1987,57 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 27. 全局描边颜色规则
+## 27. Toast 通知组件
+
+> 源码路径: `client/src/components/ui/sonner.tsx`  
+> 基于: sonner 库  
+> 全局 CSS 覆写: `client/src/index.css` 中 `[data-sonner-toast]` 规则
+
+### 视觉规范
+
+| 属性 | 值 |
+|------|------|
+| 背景色 | `#FFFFFF` |
+| 文字色 | `#09090b` |
+| 边框色 | `#EAEEF4` |
+| 圆角 | `12px` (rounded-xl) |
+| 内边距 | `12px 16px` |
+| 字号 | `14px`，font-medium |
+| 阴影 | shadow-lg |
+| 定位 | 页面顶部居中 (top-center) |
+
+### 布局结构
+
+```
+┌─────────────────────────────────────────┐
+│  [icon]  消息文本内容          [×关闭]  │
+└─────────────────────────────────────────┘
+```
+
+- **图标**：左侧，由 sonner 根据类型自动渲染（error=黑色感叹号，success=勾）
+- **文本**：居中，14px font-medium
+- **关闭按钮**：**右侧垂直居中**，20×20px，hover 时 bg-[#f4f4f5]
+
+### 使用方式
+
+```tsx
+import { toast } from 'sonner';
+
+toast.error("请输入用户 ID");
+toast.success("操作成功");
+toast("普通提示消息");
+```
+
+### 关键约束
+
+- **关闭按钮必须在右侧**，禁止使用 sonner 默认的左上角定位
+- 所有 toast 类型（error/success/info/warning）使用统一白色背景 + `#EAEEF4` 边框
+- 禁止在业务代码中自行拼装弹出通知 UI，必须使用 `toast()` API
+- Toast 层级固定 `z-index: 99999`，确保在 Dialog 之上
+
+---
+
+## 28. 全局描边颜色规则
 
 | 用途 | 色值 | 说明 |
 |------|------|------|
@@ -2000,7 +2050,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 28. 强制执行规则
+## 29. 强制执行规则
 
 1. **组件源文件 (`client/src/components/ui/*.tsx`) 只有 addietang 可以修改**
 2. 其他人使用组件时，不允许通过 className 覆盖组件定义的颜色/边框/圆角
@@ -2017,7 +2067,7 @@ import { Pagination } from "@/components/ui/pagination";
 
 ---
 
-## 29. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
+## 30. 管控端左侧导航 AdminSidebar（owner: miekoyychen）
 
 > **Owner**: miekoyychen  
 > **源文件**: `client/src/components/ui/admin-sidebar.tsx`  

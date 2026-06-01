@@ -432,7 +432,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
  *   - right: 同上对称；左侧加分隔线 + 容器级连续投影
  *
  *  分隔与投影使用与 SKILL §15 一致的 token：
- *    after       → 1px 内嵌分割线 #EAEEF5（仅在对应方向需要 sticky 分隔时显示）
+ *    after       → 1px 内嵌分割线 #EAEEF4（仅在对应方向需要 sticky 分隔时显示）
  *    容器 overlay → 6px 边缘投影（不挂在单元格上，避免按行截断）
  *
  *  注：分隔线与投影根据横向滚动状态显示（left 仅在已向右滚动时出现；right 仅在右侧仍有内容时出现）。
@@ -449,9 +449,9 @@ const FIXED_LEFT_CLS = "left-0 z-50 bg-white";
 const FIXED_RIGHT_CLS = "right-0 z-50 bg-white";
 // 边界列的 1px 分隔线（仅 fixedShadow !== false 时附加）；投影由 Table 容器级 overlay 连续绘制
 const FIXED_LEFT_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:right-0 after:w-px after:bg-[#EAEEF5] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100";
+  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:right-0 after:w-px after:bg-[#EAEEF4] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100";
 const FIXED_RIGHT_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:left-0 after:w-px after:bg-[#EAEEF5] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100";
+  "after:content-[''] after:absolute after:top-0 after:bottom-0 after:left-0 after:w-px after:bg-[#EAEEF4] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100";
 
 // body 单元格的固定列样式：白底 + 跟随行 hover/selected
 // z-20 高于普通 body cell（z auto），避免横向滚动时被相邻列内容穿透
@@ -463,9 +463,9 @@ const FIXED_RIGHT_CELL_CLS =
   "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
 // body 边界列的 1px 分隔线；投影由 Table 容器级 overlay 连续绘制
 const FIXED_LEFT_CELL_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-px after:bg-[#EAEEF5] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100";
+  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-px after:bg-[#EAEEF4] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100";
 const FIXED_RIGHT_CELL_SHADOW_CLS =
-  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:left-0 after:w-px after:bg-[#EAEEF5] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100";
+  "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:left-0 after:w-px after:bg-[#EAEEF4] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-right=true]_&]:after:opacity-100";
 
 /**
  * TableHead - 表头单元格（强制样式）

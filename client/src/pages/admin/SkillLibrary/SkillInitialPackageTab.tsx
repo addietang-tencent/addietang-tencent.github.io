@@ -56,6 +56,7 @@ import {
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
+import { FilterChipGroup } from '@/components/ui/filter-chip';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScopeEditPopover, type ScopeType } from '@/components/ScopeEditPopover';
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from '../MemberManagement/mock';
@@ -542,31 +543,12 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           </div>
 
           {/* 分类标签 */}
-          <div className="pb-3 flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setActiveCategory('all')}
-              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                activeCategory === 'all'
-                  ? 'bg-[#020617] border-[#020617] text-white'
-                  : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
-              }`}
-            >
-              全部
-            </button>
-            {DEFAULT_CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                  activeCategory === cat.id
-                    ? 'bg-[#020617] border-[#020617] text-white'
-                    : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+          <FilterChipGroup
+            items={[{ id: 'all', label: '全部' }, ...DEFAULT_CATEGORIES.map(cat => ({ id: cat.id, label: cat.name }))]}
+            value={activeCategory}
+            onChange={setActiveCategory}
+            className="pb-3"
+          />
 
           {/* 技能卡片列表 */}
           {filteredSkills.length > 0 ? (
@@ -919,7 +901,7 @@ function BatchRefreshDialog({ open, skills, onConfirm, onCancel }: BatchRefreshD
         ) : (
           <>
             {/* 表格容器（与模型列表一致：bg-white + 4px 圆角 + #e5e5e5 边框） */}
-            <div className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden">
+            <div className="bg-white rounded-[4px] border border-[#EAEEF4] overflow-hidden">
               <div className="max-h-[420px] overflow-y-auto">
                 <Table density="compact">
                   <TableHeader>
@@ -1228,7 +1210,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
       </div>
 
       {/* 技能列表 */}
-      <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#EAEEF4] overflow-hidden">
         {localSkills.length > 0 ? (
           <Table variant="elevated-white">
             <TableHeader>
@@ -1323,7 +1305,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
 
         {/* 表格底部：分页器（左侧显示总数，右侧分页控件） */}
         {localSkills.length > 0 && (
-          <div className="px-4 py-3 border-t border-[#e5e5e5]">
+          <div className="px-4 py-3 border-t border-[#EAEEF4]">
             <Pagination
               total={localSkills.length}
               current={1}
@@ -1684,7 +1666,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
                   )}
                   {/* 底部：已选数量 + 清除筛选 */}
                   {selectedScopes.size > 0 && (
-                    <div className="border-t border-[#e5e5e5] mt-1 px-3 py-2 flex items-center justify-between">
+                    <div className="border-t border-[#EAEEF4] mt-1 px-3 py-2 flex items-center justify-between">
                       <span className="text-xs text-gray-500">已选 {selectedScopes.size} 个应用范围</span>
                       <Button
                         type="button"
@@ -1712,7 +1694,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
 
       {/* 技能包列表 */}
       {filteredPackages.length > 0 ? (
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+        <div className="bg-white rounded-xl border border-[#EAEEF4] overflow-hidden">
           <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
@@ -1824,7 +1806,7 @@ export default function SkillInitialPackageTab({ onPackagesChange }: SkillInitia
           </Table>
         </div>
       ) : (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#e5e5e5]"
+        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-[#EAEEF4]"
          >
           <Package className="w-12 h-12 mx-auto mb-3 opacity-20" />
           <p className="text-sm font-medium">

@@ -963,19 +963,12 @@ section[aria-label="Notifications alt+T"] > ol {
   pointer-events: auto;
 }
 
-/* ─── Toast / Sonner 统一样式：关闭按钮置于右侧 ─── */
-[data-sonner-toast] {
-  --toast-close-button-start: unset !important;
-  --toast-close-button-end: 0 !important;
-}
+/* ─── Toast / Sonner 统一样式：关闭按钮从左上角移到右上角 ─── */
 [data-sonner-toast] [data-close-button] {
   left: unset !important;
-  right: 6px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-}
-[data-sonner-toast] [data-content] {
-  padding-right: 24px;
+  right: -6px !important;
+  top: -6px !important;
+  transform: none !important;
 }
 
 /* ─── 导航栏按钮文字：固定展示不缩略 ─── */

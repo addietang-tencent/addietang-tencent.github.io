@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/ui/back-button';
+import { FileTree } from '@/components/ui/tree';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronDown, ChevronRight, Folder, FolderOpen, FileText, Search, Code, Eye, Pencil, Trash2, Download, Info, Loader, ShieldCheck, ShieldAlert, ShieldX, ExternalLink, ScanSearch, Send, X } from 'lucide-react';
@@ -132,7 +133,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [expandedFile, setExpandedFile] = useState<string | null>('SKILL.md');
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [activeDistributionId, setActiveDistributionId] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | DistributionStatus>('all');
@@ -252,124 +252,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     return VIEWABLE_EXTENSIONS.some(ext => lower.endsWith(ext));
   };
 
-  const toggleDir = (dirName: string) => {
-    setExpandedDirs(prev => {
-      const next = new Set(prev);
-      if (next.has(dirName)) {
-        next.delete(dirName);
-      } else {
-        next.add(dirName);
-      }
-      return next;
-    });
-  };
-
-  // 初始化时仅展开顶层文件夹（与公共技能库一致）
-  useEffect(() => {
-    if (processedFiles.length) {
-      const dirs = new Set<string>();
-      for (const file of processedFiles) {
-        const parts = file.name.split('/');
-        if (parts.length > 1) {
-          // 仅展开第一层目录
-          dirs.add(parts[0]);
-        }
-      }
-      setExpandedDirs(dirs);
-    }
-  }, [processedFiles]);
-
-  const renderFileTree = (files: Array<{ name: string; size?: number; content?: string }>) => {
-    // 按路径排序，同一文件夹的文件聚在一起
-    const sorted = [...files].sort((a, b) => a.name.localeCompare(b.name));
-    
-    // 收集所有文件夹及其层级
-    const renderedDirs = new Set<string>();
-    const result: React.ReactNode[] = [];
-    
-    for (const file of sorted) {
-      const parts = file.name.split('/');
-      const isDir = file.name.endsWith('/');
-      const isNested = parts.length > 1 && !isDir;
-      const canView = !isDir && isViewableFile(file.name);
-      
-      // 如果是子目录下的文件，先渲染各层目录头
-      if (isNested) {
-        for (let i = 1; i < parts.length; i++) {
-          const dirPath = parts.slice(0, i).join('/');
-          if (!renderedDirs.has(dirPath)) {
-            renderedDirs.add(dirPath);
-            const depth = i - 1;
-            const isExpanded = expandedDirs.has(dirPath);
-            
-            // 检查该目录的所有祖先是否展开，未展开则不渲染
-            let ancestorsExpanded = true;
-            for (let j = 1; j < i; j++) {
-              const ancestor = parts.slice(0, j).join('/');
-              if (!expandedDirs.has(ancestor)) {
-                ancestorsExpanded = false;
-                break;
-              }
-            }
-            if (!ancestorsExpanded) continue;
-            
-            result.push(
-              <button
-                key={`dir-${dirPath}`}
-                onClick={() => toggleDir(dirPath)}
-                className="w-full flex items-center gap-1.5 h-8 px-2 text-sm text-[#09090b] hover:bg-[#f4f4f5] rounded-[4px] transition-colors cursor-pointer"
-                style={{ paddingLeft: `${8 + depth * 16}px` }}
-              >
-                {isExpanded
-                  ? <ChevronDown className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
-                  : <ChevronRight className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
-                }
-                {isExpanded ? <FolderOpen className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" /> : <Folder className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />}
-                <span className="truncate font-medium">{parts[i - 1]}</span>
-              </button>
-            );
-          }
-        }
-        
-        // 检查父目录是否全部展开，否则隐藏该文件
-        const parentDir = parts.slice(0, -1).join('/');
-        let allParentsExpanded = true;
-        for (let i = 1; i < parts.length; i++) {
-          const ancestor = parts.slice(0, i).join('/');
-          if (!expandedDirs.has(ancestor)) {
-            allParentsExpanded = false;
-            break;
-          }
-        }
-        if (!allParentsExpanded) continue;
-      }
-      
-      // 跳过纯目录条目
-      if (isDir) continue;
-      
-      const depth = parts.length - 1;
-      result.push(
-        <button
-          key={file.name}
-          onClick={() => canView && setExpandedFile(expandedFile === file.name ? null : file.name)}
-          disabled={!canView}
-          className={`w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors ${
-            expandedFile === file.name
-              ? 'bg-[#f4f4f5] text-[#09090b] font-medium'
-              : canView
-              ? 'hover:bg-[#f4f4f5] text-[#09090b] cursor-pointer'
-              : 'text-[#a1a1aa] cursor-not-allowed opacity-60'
-          }`}
-          style={{ paddingLeft: `${8 + depth * 16}px` }}
-        >
-          <FileText className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
-          <span className="truncate">{parts[parts.length - 1]}</span>
-        </button>
-      );
-    }
-    
-    return result;
-  };
   
   // 递归在文件树中查找文件（支持 children 嵌套结构和 path 匹配）
   const findFileInTree = (files: any[], targetName: string): any => {
@@ -877,7 +759,13 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                     </button>
                   </div>
                   <div className="flex-1 overflow-y-auto px-3 py-2">
-                    {renderFileTree(processedFiles)}
+                    <FileTree
+                      files={processedFiles}
+                      selectedFile={expandedFile}
+                      onSelectFile={(name) => setExpandedFile(expandedFile === name ? null : name)}
+                      isViewable={(name) => isViewableFile(name)}
+                      defaultExpandAll={true}
+                    />
                   </div>
                 </div>
 

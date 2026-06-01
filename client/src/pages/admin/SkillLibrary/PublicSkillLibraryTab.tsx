@@ -26,6 +26,7 @@ import {
 } from './publicSkillMockData';
 import MDXRenderer from '@/components/MDXRenderer';
 import AddToPackageDialog from './AddToPackageDialog';
+import { SelectableTagGroup } from '@/components/ui/selectable-tag';
 
 // 懒加载 react-syntax-highlighter 减少首屏包体积
 const SyntaxHighlighter = lazy(() =>
@@ -655,13 +656,11 @@ export default function PublicSkillLibraryTab({
       </div>
 
       {/* 分类 Tab */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {PUBLIC_SKILL_CATEGORIES.map(cat => (
-          <Button key={cat.id} variant="plain" size="sm" data-state={activeCategory === cat.id ? "active" : undefined} onClick={() => handleCategoryChange(cat.id)}>
-            {cat.name}
-          </Button>
-        ))}
-      </div>
+      <SelectableTagGroup
+        items={PUBLIC_SKILL_CATEGORIES.map(cat => ({ id: cat.id, label: cat.name }))}
+        value={activeCategory}
+        onChange={handleCategoryChange}
+      />
 
 
 

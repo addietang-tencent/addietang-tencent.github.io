@@ -56,6 +56,7 @@ import {
 import { INITIAL_SKILL_PACKAGES_DEFAULT, PUBLIC_SKILLS, type PublicSkill, type SkillInitialPackage, type PackageSkillItem } from './publicSkillMockData';
 import { Star } from 'lucide-react';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS } from './mockData';
+import { SelectableTagGroup } from '@/components/ui/selectable-tag';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScopeEditPopover, type ScopeType } from '@/components/ScopeEditPopover';
 import { MOCK_GROUPS as MOCK_ONEID_GROUPS, MOCK_MANUAL_GROUPS } from '../MemberManagement/mock';
@@ -542,31 +543,12 @@ function AddEnterpriseSkillDialog({ open, existingSkillIds, onConfirm, onCancel,
           </div>
 
           {/* 分类标签 */}
-          <div className="pb-3 flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setActiveCategory('all')}
-              className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                activeCategory === 'all'
-                  ? 'bg-[#020617] border-[#020617] text-white'
-                  : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
-              }`}
-            >
-              全部
-            </button>
-            {DEFAULT_CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
-                  activeCategory === cat.id
-                    ? 'bg-[#020617] border-[#020617] text-white'
-                    : 'bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+          <SelectableTagGroup
+            items={[{ id: 'all', label: '全部' }, ...DEFAULT_CATEGORIES.map(cat => ({ id: cat.id, label: cat.name }))]}
+            value={activeCategory}
+            onChange={setActiveCategory}
+            className="pb-3"
+          />
 
           {/* 技能卡片列表 */}
           {filteredSkills.length > 0 ? (

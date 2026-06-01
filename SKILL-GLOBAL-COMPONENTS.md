@@ -284,9 +284,9 @@ import {
 
 | variant | 背景 | 边框 | 文字 | hover | disabled |
 |---------|------|------|------|-------|----------|
-| `claw-primary` / `default` | 黑蓝渐变 `#020617→#355EF1` | 无 | 白色 | 渐变加深 | 叠白30%+文字50% |
+| `claw-primary` / `default` | 纯黑 `#0A0A0A` | 无 | 白色 | `#1a1a1a` | `#0A0A0A/40` + 文字50% |
 | `dialog-confirm` | 纯黑 `#0A0A0A` | 无 | 白色 | `bg-[#404040]` | `bg-[#A3A3A3]` 白字 |
-| `claw-outline` / `outline` | 白色 | `#e5e5e5` | `#020617` | `bg-[#f5f5f5]` | 文字`rgba(2,6,23,0.3)` |
+| `claw-outline` / `outline` | 白色 | `#EAEEF4` | `#020617` | `bg-[#f5f5f5]` | 文字`rgba(2,6,23,0.3)` |
 | `destructive` | `#d42a1e` | 无 | 白色 | `#b91c1c` | 40%透明 |
 | `ghost` | 无 | 无 | `#020617` | `bg-[#f5f5f5]` | 文字30%透明 |
 | `plain` | 白色 | `#e4e4e4` | `#020617` | `border-[#020617]` | 文字`rgba(0,0,0,0.3)` |
@@ -346,7 +346,7 @@ import { TableActionCell } from "@/components/ui/table";
   </div>
 </TableActionCell>
 
-// ❌ 错误：省略 variant 会得到 claw-primary 实心黑蓝渐变按钮
+// ❌ 错误：省略 variant 会得到 claw-primary 实心纯黑按钮
 <TableActionCell>
   <Button onClick={onEdit}>编辑</Button>
 </TableActionCell>
@@ -700,7 +700,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 </div>
 ```
 
-**注意**：设计稿中 Active 态的颜色是 `#165DFC`，但在代码实现中统一映射到 `claw-primary` variant（使用品牌渐变）。如需精确还原设计稿的纯蓝色 Active 态，可使用 className 覆盖。
+**注意**：设计稿中 Active 态的颜色是 `#165DFC`，但在代码实现中统一映射到 `claw-primary` variant（使用纯黑背景）。如需精确还原设计稿的纯蓝色 Active 态，可使用 className 覆盖。
 
 ---
 
@@ -1284,7 +1284,7 @@ import {
 **操作列规则（强制）：**
 - 操作列必须使用 `<TableActionCell>` 包裹 —— 内置 `flex items-center gap-6` 容器，**操作项间距固定 24px**，且与表头 `<TableHead>` 的 `px-4` 完全对齐
 - 操作列必须使用**文字按钮**（如"编辑"、"删除"、"终端"、"关机"），禁止使用纯 icon 按钮
-- **每个 Button 必须显式 `variant="link"`**（品牌蓝文字按钮）——不显式声明会得到默认 claw-primary 实心按钮（黑→蓝渐变 + 白字）
+- **每个 Button 必须显式 `variant="link"`**（品牌蓝文字按钮）——不显式声明会得到默认 claw-primary 实心按钮（纯黑 + 白字）
 - **删除按钮也统一蓝色 link**，不再用红色覆盖；危险操作的语义由文案 + AlertDialog 二次确认承担（参考 Ant Design 等现代后台规范）。禁止再加 `text-red-600` / `hover:text-red-700` / `disabled:text-red-300` 等红色样式
 - **禁止业务侧再手写 `<div className="flex items-center gap-6">` wrapper**，直接把 Button 平铺为 TableActionCell 的 children 即可。如需在内置容器上追加 className（如固定高度 `h-5`），用 `actionsClassName` prop
 - 特殊布局（多行 / 自定义 wrapper）：设 `rawChildren` 关闭内置 flex 容器

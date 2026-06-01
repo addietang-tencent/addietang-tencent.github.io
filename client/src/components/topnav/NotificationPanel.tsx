@@ -298,7 +298,7 @@ export default function NotificationPanel({
         className="!w-[420px] !max-w-none !top-[64px] !bottom-0 !h-[calc(100vh-64px)] p-0 flex flex-col gap-0 border-t [&>[data-slot=sheet-close]]:hidden"
       >
         {/* ───── shadcn 规范：SheetHeader > SheetTitle + SheetDescription ───── */}
-        <SheetHeader className="px-5 pt-5 pb-4 border-b border-gray-200 gap-0 space-y-0">
+        <SheetHeader className="px-5 pt-5 pb-4 border-b border-[#E5E5E5] gap-0 space-y-0">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-base font-semibold text-[#0A0A0A]">
               消息通知

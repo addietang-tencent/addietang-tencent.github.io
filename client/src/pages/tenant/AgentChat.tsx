@@ -123,16 +123,27 @@ const QUICK_COMMANDS = [
 /** 红色渐变小星形（Figma fill_5X9YJJ：linear-gradient(112deg, #E3453D 7%, #7D2621 70%)，10×11） */
 function StarBullet() {
   return (
-    <span
+    <svg
       aria-hidden
-      className="flex h-[11px] w-[10px] flex-shrink-0 items-center justify-center"
-      style={{
-        background: "linear-gradient(112deg, #E3453D 7%, #7D2621 70%)",
-        clipPath:
-          "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-      }}
-      // allow-inline-gradient: Figma 设计稿 fill_5X9YJJ 红色装饰星形
-    />
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="flex-shrink-0"
+    >
+      <path
+        d="M6.55469 10.4499C6.49219 10.2077 6.36593 9.98662 6.18903 9.80972C6.01213 9.63282 5.79106 9.50656 5.54881 9.44406L1.25443 8.33669C1.18116 8.3159 1.11668 8.27177 1.07076 8.21101C1.02484 8.15024 1 8.07616 1 8C1 7.92384 1.02484 7.84976 1.07076 7.78899C1.11668 7.72823 1.18116 7.6841 1.25443 7.66331L5.54881 6.55524C5.79097 6.4928 6.01198 6.36664 6.18888 6.18987C6.36577 6.0131 6.49208 5.79218 6.55469 5.55006L7.66206 1.25567C7.68264 1.18211 7.72672 1.11731 7.78758 1.07115C7.84843 1.02499 7.92272 1 7.9991 1C8.07548 1 8.14976 1.02499 8.21062 1.07115C8.27147 1.11731 8.31556 1.18211 8.33614 1.25567L9.44281 5.55006C9.5053 5.7923 9.63157 6.01338 9.80847 6.19028C9.98537 6.36718 10.2064 6.49344 10.4487 6.55594L14.7431 7.66261C14.8169 7.68298 14.882 7.72701 14.9285 7.78796C14.9749 7.8489 15 7.92339 15 8C15 8.0766 14.9749 8.15109 14.9285 8.21204C14.882 8.27299 14.8169 8.31702 14.7431 8.33739L10.4487 9.44406C10.2064 9.50656 9.98537 9.63282 9.80847 9.80972C9.63157 9.98662 9.5053 10.2077 9.44281 10.4499L8.33544 14.7443C8.31486 14.8179 8.27077 14.8827 8.20992 14.9289C8.14907 14.975 8.07478 15 7.9984 15C7.92202 15 7.84773 14.975 7.78688 14.9289C7.72603 14.8827 7.68194 14.8179 7.66136 14.7443L6.55469 10.4499Z"
+        fill="url(#paint0_linear_star_bullet)"
+        fillOpacity="0.9"
+      />
+      <defs>
+        <linearGradient id="paint0_linear_star_bullet" x1="8" y1="1" x2="8" y2="15" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#050505" />
+          <stop offset="1" stopColor="#1447E6" />
+        </linearGradient>
+      </defs>
+    </svg>
   );
 }
 
@@ -994,6 +1005,17 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
               style={{ padding: "0 16px 16px" }}
             >
               <div className="flex items-center" style={{ gap: 8 }}>
+                {/* 添加按钮（+） */}
+                <button
+                  type="button"
+                  aria-label="附件"
+                  className="flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F6F9] active:scale-90 transition-all rounded-full"
+                  style={{ width: 32, height: 32 }}
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+                {/* 分割线 */}
+                <span className="w-px h-4 bg-[#E5E5E5]" />
                 {/* Deepseek pill：圆角 16、stroke #E6E9EF、padding 2 12 */}
                 <button
                   type="button"
@@ -1077,16 +1099,8 @@ export default function AgentChat({ embedded = false }: AgentChatProps) {
                 </button>
               </div>
 
-              {/* 右侧操作：附件 + 发送 */}
+              {/* 右侧操作：发送 */}
               <div className="flex items-center" style={{ gap: 8 }}>
-                <button
-                  type="button"
-                  aria-label="附件"
-                  className="flex items-center justify-center text-[#737373] hover:text-[#0A0A0A] hover:bg-[#F5F6F9] active:scale-90 transition-all rounded-full"
-                  style={{ width: 32, height: 32 }}
-                >
-                  <Plus className="h-5 w-5" />
-                </button>
                 <button
                   onClick={handleSend}
                   disabled={!inputText.trim()}

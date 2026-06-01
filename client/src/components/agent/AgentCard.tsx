@@ -159,8 +159,8 @@ export const AgentCard = ({
               style={{
                 fontFamily: "PingFang SC, -apple-system, BlinkMacSystemFont, sans-serif",
                 fontWeight: 500,
-                fontSize: "14px",
-                lineHeight: "22px",
+                fontSize: "16px",
+                lineHeight: "24px",
               }}
               title={claw.name}
             >
@@ -323,14 +323,15 @@ export const AgentCard = ({
           }}
         >
           <span
-            className="inline-flex items-center"
+            className="inline-flex items-center justify-center"
             style={{
-              padding: "2px 6px",
-              borderRadius: "2px",
+              padding: "2px 8px",
+              borderRadius: "20px",
               border: "1px solid #DAE0E9",
               background:
-                "linear-gradient(180deg, #FFFFFF 0%, #F9FBFC 100%)",
+                "linear-gradient(90deg, #FFF -9.74%, #F0F4FF 134.1%)",
               color: "#334155",
+              gap: "10px",
             }}
           >
             {claw.roleName || "通用助手"}
@@ -373,8 +374,8 @@ export const AgentCard = ({
         </div>
       </div>
 
-      {/* ===== 底部行：时间 + 操作按钮（无分隔线） ===== */}
-      <div className="flex items-center justify-between gap-3">
+      {/* ===== 底部行：时间 + 操作按钮（无分隔线）；mt-auto 固定贴卡片底部 ===== */}
+      <div className="flex items-center justify-between gap-3 mt-auto">
         <span
           className="truncate"
           style={{
@@ -397,7 +398,20 @@ export const AgentCard = ({
               variant="tenant-outline-r20"
               size="claw"
             >
-              <RefreshCw className="w-4 h-4" />
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4">
+                <path d="M8 6V4C5.79086 4 4 5.79086 4 8C4 8.27966 4.0287 8.55263 4.08332 8.8161L2.4993 10.4001C2.17816 9.66513 2 8.85337 2 8C2 4.68629 4.68629 2 8 2H13L8 6Z" fill="url(#paint0_retry)"/>
+                <path d="M8 12C10.2091 12 12 10.2091 12 8C12 7.56499 11.9306 7.1462 11.8022 6.75411L13.3246 5.23168C13.7561 6.05993 14 7.00148 14 8C14 11.3137 11.3137 14 8 14H3L8 10V12Z" fill="url(#paint1_retry)"/>
+                <defs>
+                  <radialGradient id="paint0_retry" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(14 8) rotate(159.444) scale(12.816 21.3007)">
+                    <stop offset="0.748539" stopColor="#202020"/>
+                    <stop offset="1" stopColor="#1447E6"/>
+                  </radialGradient>
+                  <radialGradient id="paint1_retry" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(14 8) rotate(159.444) scale(12.816 21.3007)">
+                    <stop offset="0.748539" stopColor="#202020"/>
+                    <stop offset="1" stopColor="#1447E6"/>
+                  </radialGradient>
+                </defs>
+              </svg>
               重试
             </Button>
           ) : isDisabled ? (

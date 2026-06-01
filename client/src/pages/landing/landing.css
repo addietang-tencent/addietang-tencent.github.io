@@ -433,9 +433,8 @@ html {
 }
 .yh-step-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  height: 24px;
   margin-bottom: 8px;
   white-space: nowrap;
 }

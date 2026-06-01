@@ -16,12 +16,19 @@ async function startServer() {
       ? path.resolve(__dirname, "public")
       : path.resolve(__dirname, "..", "dist", "public");
 
-  app.use(express.static(staticPath));
+  app.use(express.static(staticPath, {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+      }
+    },
+  }));
 
   // Handle client-side routing - serve index.html for all routes
   // Note: Express v5 / path-to-regexp v6+ no longer accepts bare "*";
   // use named splat parameter for catch-all routes.
   app.get("/*splat", (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
     res.sendFile(path.join(staticPath, "index.html"));
   });
 

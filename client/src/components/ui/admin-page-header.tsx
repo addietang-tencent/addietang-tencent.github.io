@@ -48,7 +48,7 @@ export function AdminPageHeader({
         {description ? (
           <p
             className={cn(
-              "font-sans text-xs font-normal leading-[14px] text-[#596980] mt-2",
+              "font-sans text-[12px] font-normal leading-[18px] text-[#596980] mt-2",
               descriptionClassName
             )}
           >

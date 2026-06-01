@@ -10,6 +10,7 @@ import { AlertCircle, Loader2, CheckCircle2, X, Info, ChevronDown, ArrowUpCircle
 import { SurfaceCard } from '@/components/ui/Surface';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AdminPageHeader } from '@/components/ui/admin-page-header';
 
 // 配置常量
 const FIXED_MEMORY_SPACES = 500; // 固定配额：每个用户限额 500 个记忆空间
@@ -169,12 +170,10 @@ export const MemoryManagement: React.FC = () => {
   return (
     <div className="page-enter">
       {/* 页面头部 */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0A0A0A]">记忆管理</h1>
-        <p className="text-sm text-[#737373] mt-1">
-          让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持（已支持 OpenClaw、Hermes，其他 Agent 类型敬请期待）。
-        </p>
-      </div>
+      <AdminPageHeader
+        title="记忆管理"
+        description="让 AI 智能体真正理解你、记住你，长期保持一致的工作习惯与决策偏好。由腾讯云数据库 Agent Memory 服务提供支持（已支持 OpenClaw、Hermes，其他 Agent 类型敬请期待）。"
+      />
 
       {/* 状态提示条 - 初始化中 */}
       {isProActivating && (

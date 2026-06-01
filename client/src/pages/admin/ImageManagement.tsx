@@ -464,7 +464,7 @@ function ImageScopePopover({
                 className={`flex-1 h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   draftScope === "all"
                     ? "bg-[#020617] border-[#020617] text-white"
-                    : "bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
+                    : "bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 全部用户
@@ -474,7 +474,7 @@ function ImageScopePopover({
                 className={`flex-1 h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   draftScope === "groups"
                     ? "bg-[#020617] border-[#020617] text-white"
-                    : "bg-white border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
+                    : "bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 按分组

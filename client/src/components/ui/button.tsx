@@ -92,11 +92,11 @@ const buttonVariants = cva(
          * - 用户端胶囊版本请用 `tenant-plain`
          */
         plain:
-          "bg-white border border-[#e4e4e4] text-[#020617] font-normal " +
+          "bg-white border border-[#E5E5E5] text-[#020617] font-normal " +
           "hover:border-[#020617] " +
           "active:bg-[#020617] active:border-[#020617] active:text-white " +
           "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
-          "disabled:bg-white disabled:border-[#e4e4e4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+          "disabled:bg-white disabled:border-[#E5E5E5] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
         link:
           // link 形态：无 padding 无高度，直接作为内联文字渲染（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
           "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-[#355EF1] font-normal underline-offset-4 " +
@@ -240,11 +240,11 @@ const buttonVariants = cva(
          *   tenant-primary / tenant-outline 等同手法）。
          */
         "tenant-plain":
-          "!rounded-full bg-white border border-[#e4e4e4] text-[#020617] font-normal " +
+          "!rounded-full bg-white border border-[#E5E5E5] text-[#020617] font-normal " +
           "hover:border-[#020617] " +
           "active:bg-[#020617] active:border-[#020617] active:text-white " +
           "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
-          "disabled:bg-[#f5f5f5] disabled:border-[#e4e4e4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+          "disabled:bg-[#f5f5f5] disabled:border-[#E5E5E5] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
 
         /**
          * 用户端纯黑实心按钮（tenant-dialog-confirm）

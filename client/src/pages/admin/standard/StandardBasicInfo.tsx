@@ -251,7 +251,7 @@ function InlineQuotaField({
                 className={`text-sm h-9 px-3 rounded-[4px] border transition-colors ${
                   draft === "unlimited"
                     ? "border-[#020617] bg-[#020617] text-white font-medium"
-                    : "border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
+                    : "border-[#EAEEF4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 无限制
@@ -264,7 +264,7 @@ function InlineQuotaField({
                 className={`text-sm h-9 px-3 rounded-[4px] border transition-colors ${
                   draft !== "unlimited"
                     ? "border-[#020617] bg-[#020617] text-white font-medium"
-                    : "border-[#e4e4e4] text-[#020617] hover:border-[#020617]"
+                    : "border-[#EAEEF4] text-[#020617] hover:border-[#020617]"
                 }`}
               >
                 自定义

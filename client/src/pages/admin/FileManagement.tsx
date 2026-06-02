@@ -554,7 +554,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                   type="button"
                   onClick={startAdd}
                   disabled={editingId !== null || addingNew}
-                  className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#E5E5E5] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#EAEEF4] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-3.5 h-3.5" />添加分组策略
                 </button>
@@ -1499,7 +1499,7 @@ export default function FileManagement() {
           </Table>
 
           {/* Pagination */}
-          <div className="px-4 py-3 border-t border-[#e5e5e5]">
+          <div className="px-4 py-3 border-t border-[#EAEEF4]">
             <Pagination
               total={filteredPersonalSpaces.length}
               current={currentPage}

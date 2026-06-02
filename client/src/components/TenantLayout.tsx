@@ -95,6 +95,11 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
   const [groupMode, setGroupMode] = useState<"normal" | "multi-group">(() => {
     return (localStorage.getItem("openclaw_group_mode") as "normal" | "multi-group") || "normal";
   });
+  const handleGroupModeChange = (mode: "normal" | "multi-group") => {
+    setGroupMode(mode);
+    localStorage.setItem("openclaw_group_mode", mode);
+    window.dispatchEvent(new StorageEvent("storage", { key: "openclaw_group_mode", newValue: mode }));
+  };
 
   // 重置密码弹窗
   const [resetPwdOpen, setResetPwdOpen] = useState(false);
@@ -163,10 +168,10 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
     <div
       className="min-h-screen"
       style={{
-        // v5：新背景图片 — 不拉伸，宽度撑满，高度自适应，顶部居中
+        // v5：新背景图片 — cover 铺满整个视口，固定不随滚动
         backgroundColor: "#FFFFFF",
         backgroundImage: "url(/tenant_bg.png)",
-        backgroundSize: "100% auto",
+        backgroundSize: "cover",
         backgroundPosition: "center top",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
@@ -248,6 +253,34 @@ export default function TenantLayout({ children }: { children: React.ReactNode }
                       className="inline-block text-xs px-1.5 py-0.5 rounded-[4px] font-medium bg-white text-[#737373] border border-gray-200"
                     >默认</span>
                   )}
+                </div>
+              </div>
+              {/* 分组模式切换 */}
+              <div className="px-3 py-2 border-b border-gray-100">
+                <p className="text-xs text-gray-500 mb-1.5">分组模式</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleGroupModeChange("normal")}
+                    className={`text-xs px-2 py-1 rounded-[4px] font-medium transition-colors ${
+                      groupMode === "normal"
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "bg-white text-[#737373] border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    普通
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGroupModeChange("multi-group")}
+                    className={`text-xs px-2 py-1 rounded-[4px] font-medium transition-colors ${
+                      groupMode === "multi-group"
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "bg-white text-[#737373] border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    多分组
+                  </button>
                 </div>
               </div>
               <DropdownMenuItem onClick={() => setResetPwdOpen(true)}>

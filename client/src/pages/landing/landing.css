@@ -14,6 +14,18 @@ html {
   scrollbar-gutter: stable;
 }
 
+/* ----------------------------------------------------------------
+   首屏整屏交互：仅在 Landing 页生效（:has 作用域，不影响其它路由）
+   - 滚动吸附：第一屏只展示 Hero，向下滚动后吸附到第二屏（Features）
+   - 用 proximity 而非 mandatory，避免在内容较长的 Features 区被困住
+   - scroll-padding-top 预留固定 Navbar（最大 64px）空间，使吸附后内容不被遮挡
+   ---------------------------------------------------------------- */
+html:has(.yh-root) {
+  scroll-snap-type: y proximity;
+  scroll-padding-top: 64px;
+  scroll-behavior: smooth;
+}
+
 .yh-root {
   --yh-blue: #1447E6;
   --yh-blue-dark: #163E9C;
@@ -35,7 +47,7 @@ html {
 
   width: 100%;
   min-height: 100vh;
-  background: var(--yh-bg-gray);
+  background: transparent;
 }
 
 /* ---------- 页面缩放容器（1920 基准） ---------- */
@@ -75,14 +87,13 @@ html {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* 内容容器：固定 1920 设计宽度，水平居中；左右各 32px 内边距 */
+/* 内容容器：铺满视口宽度，左右各留 28px 内边距，两端对齐 */
 .yh-navbar-inner {
   display: flex;
   width: 100%;
-  max-width: 1920px;
   height: 100%;
   margin: 0 auto;
-  padding: 8px 32px;
+  padding: 8px 28px;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
@@ -157,16 +168,23 @@ html {
 .yh-hero {
   position: relative;
   width: 100%;
-  height: 888px;
+  /* 第一屏占满整个视口高度（精确像素由 JS 按 视口高/缩放比 计算并以 inline 覆盖，
+     规避 zoom 下 vh 失真）；100vh 仅作为无 JS 时的兜底 */
+  height: 100vh;
+  /* 向下滚动后吸附到下一屏 */
+  scroll-snap-align: start;
   /* Navbar 是 fixed 64px，Hero 自带 64px 顶部内边距留出空间，避免内容被遮挡同时去除多余空隙 */
   padding-top: 64px;
   margin-top: 0;
   overflow: hidden;
 }
 
-/* ---- 背景层：banner-bg.png 整体铺底 ---- */
+/* ---- 背景层：视频固定在视口底层，滚动时始终可见 ---- */
+video.yh-hero-bg {
+  background: #eaf1ff;
+}
 .yh-hero-bg {
-  position: absolute;
+  position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -183,33 +201,40 @@ html {
   z-index: 10;
   width: 100%;
   height: 100%;
-  /* 内容竖直排布、整体水平居中 */
+  /* 内容竖直排布、整体水平居中，并在整屏高度内垂直居中 */
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Navbar 高度 64px 已由 .yh-hero 的 padding-top 处理；
-     Badge 距离导航 60px → 这里再补 60px 顶部内边距 */
-  padding-top: 60px;
+  justify-content: center;
+  /* 整体上移（视觉居中偏上） */
+  padding-top: 0;
+  padding-bottom: 76px;
 }
 
-/* Badge: ClawPro Enterprise */
-.yh-hero-badge {
+/* Logo + Badge 容器（Badge 盖在 Logo 右上角） */
+.yh-hero-logo-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 上移 32px（16 + 16） */
+  margin-top: -32px;
+}
+
+/* Badge: Enterprise（绝对定位到 Logo 卡片右上角） */
+.yh-hero-badge {
+  position: absolute;
+  top: -8px;
+  right: -24px;
+  z-index: 12;
   display: inline-flex;
+  padding: 4px 12px;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px;
   border-radius: 60px;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  background: linear-gradient(
-    98deg,
-    rgba(255, 255, 255, 0.50) 30.49%,
-    rgba(218, 234, 255, 0.50) 62.5%,
-    rgba(255, 255, 255, 0.50) 89.98%
-  );
-  box-shadow: 0 4px 16px 0 rgba(37, 114, 223, 0.09);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  border: 1px solid #EDF0F9;
+  background: linear-gradient(98deg, #FFF 30.49%, #F2F8FF 62.5%, #FFF 89.98%);
+  box-shadow: 0 4px 24px 0 rgba(27, 77, 148, 0.14);
   /* 让扫光被胶囊形状裁切，不溢出 */
   overflow: hidden;
 }
@@ -255,27 +280,25 @@ html {
   z-index: 1;
 }
 .yh-hero-badge span {
-  font-family: "Menlo", monospace;
+  font-family: "PingFang SC", "Noto Sans SC", sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 1;
-  background: linear-gradient(180deg, #000 0%, #163E9C 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0A0A0A;
   /* 提到扫光层之上 */
   position: relative;
   z-index: 1;
 }
 
-/* 中央图标卡片（距离 Badge 48px） */
+/* 中央图标卡片（160×160） */
 .yh-hero-icon-card {
-  margin-top: 48px;
-  width: 148px;
-  height: 148px;
+  position: relative;
+  z-index: 11;
+  width: 160px;
+  height: 160px;
   background: #FFF;
-  box-shadow: 0 4px 36px 0 rgba(45, 88, 149, 0.20);
-  border-radius: 18.5px;
+  box-shadow: 0 8px 32px 0 rgba(25, 32, 52, 0.08);
+  border-radius: 24px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -288,9 +311,11 @@ html {
   object-fit: contain;
 }
 
-/* 大标题（距离大图标 48px） */
+/* 大标题（距大图标 36px：1920 画布 y:408→y:444）。
+   始终水平居中：用户修改文案后仍保持水平居中（依靠父级 flex align-items: center
+   + 自身 text-align: center） */
 .yh-hero-title {
-  margin: 48px 0 0 0;
+  margin: 36px 0 0 0;
   text-align: center;
   font-family: "Noto Sans SC", "PingFang SC", sans-serif;
   font-size: 52px;
@@ -303,27 +328,47 @@ html {
   -webkit-text-fill-color: transparent;
 }
 
-/* 副标题（距离大标题 16px） */
-.yh-hero-subtitle {
+/* 副标题组（两行文字 + 横线装饰，作为一个整体）。
+   下方 CTA 与本组距离 36px，由 .yh-hero-cta 的 margin-top 控制。 */
+.yh-hero-subtitle-group {
   margin: 16px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 行间距 12px：用 gap 自然处理，不依赖 line-height */
+  gap: 12px;
+}
+.yh-hero-subtitle-line {
+  margin: 0;
   text-align: center;
-  white-space: nowrap;
-  color: #5D6576;
+  color: #000;
   font-family: "Noto Sans SC", "PingFang SC", sans-serif;
-  font-size: 16px;
+  font-size: 20px;
   font-style: normal;
   font-weight: 400;
-  line-height: 24px; /* 150% */
+  line-height: 28px; /* 140% */
+}
+.yh-hero-subtitle-underline {
+  /* 紧跟在第二行下方，按图片原始比例展示 */
+  display: block;
+  margin-top: 4px;
+  height: 16px;
+  width: auto;
+  pointer-events: none;
+  user-select: none;
+  /* 向右偏移 284px */
+  margin-left: 284px;
+  margin-top: -6px;
 }
 
-/* CTA 按钮（距离副标题 48px） */
+/* CTA 按钮（距离副标题组 48px） */
 .yh-hero-cta {
   margin-top: 48px;
   display: flex;
   width: 280px;
   height: 48px;
   padding: 4px 28px;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   border-radius: 80px;
   background: linear-gradient(96deg, #000 65.69%, #1447E6 120.32%);
@@ -378,99 +423,104 @@ html {
 }
 
 /* ============================================================
-   STEPS GUIDE - 三步引导卡片 (毛玻璃效果)
+   STEPS BAR - 步骤条（无背景、虚线分隔）
    ============================================================ */
-.yh-steps-card {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  /* 距离 CTA 按钮 92px（在原 72px 基础上下移 20px）：
-     Hero padding-top 64 + content padding-top 60 + badge 28 + 16 + icon 148
-     + 48 + title 72 + 16 + subtitle 24 + 48 + CTA 48 + 92 = 664 */
-  top: 664px;
-  width: 1269px;
-  height: 109px;
-  background: var(--yh-glass-bg), linear-gradient(90deg, #FBFCFF 0%, #F6F8FF 54%, #E7EDFF 100%);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-radius: 12px;
-  overflow: hidden;
+.yh-steps-bar {
+  position: relative;
+  /* 距离 CTA 按钮 72px（60 + 12） */
+  margin-top: 72px;
   display: flex;
   align-items: center;
-  /* 整体内容均分：左右各 100px 内边距 + 三组 step 之间用 space-between 平均分布 */
-  justify-content: space-between;
-  padding: 0 100px;
-  gap: 16px;
-}
-.yh-steps-glow {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(40px);
-  pointer-events: none;
-}
-.yh-steps-glow-1 {
-  width: 720px;
-  height: 142px;
-  left: 50px;
-  top: 38px;
-  background: rgba(166.41, 215.14, 255, 0.25);
-  transform: rotate(21deg);
-}
-.yh-steps-glow-2 {
-  width: 720px;
-  height: 142px;
-  left: 563px;
-  top: 319px;
-  background: rgba(46.82, 206.42, 255, 0.25);
-  transform: rotate(-26deg);
+  gap: 12px;
+  white-space: nowrap;
 }
 
-/* 单个 Step */
-.yh-step {
-  flex-shrink: 0;
-  /* 不再固定宽度：宽度由内容（最长那一行）决定，保证标题与描述都不换行 */
-  width: auto;
-}
-.yh-step-header {
+/* 单个步骤项：编号 + 标题 */
+.yh-step-item {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-bottom: 8px;
-  white-space: nowrap;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
 }
 .yh-step-num {
   font-family: "Menlo", monospace;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--yh-blue);
 }
 .yh-step-label {
-  font-family: "PingFang SC", sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--yh-text-primary);
-  letter-spacing: 0.08px;
-  white-space: nowrap;
-}
-.yh-step-desc {
-  font-family: "pingfangsc", "PingFang SC", sans-serif;
-  font-size: 12px;
+  color: rgba(10, 10, 10, 0.60);
+  font-family: var(--font-definitions-font-family-body, "PingFang SC");
+  font-size: var(--paragraph-small-font-size, 14px);
+  font-style: normal;
   font-weight: 400;
-  color: var(--yh-text-weak);
-  letter-spacing: 0.18px;
-  line-height: 1.5;
-  margin: 0;
+  line-height: var(--paragraph-small-line-height, 22px); /* 157.143% */
   white-space: nowrap;
 }
 
-/* 步骤间箭头：32×32 PNG，按原始比例展示，不再压扁成横线 */
-.yh-step-arrow {
+/* 虚线分隔线 */
+.yh-step-divider {
+  display: inline-block;
+  width: 64px;
+  height: 0;
+  border: none;
+  border-top: 1px dashed rgba(0, 0, 0, 0.46);
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  margin: 0;
-  opacity: 1;
+}
+
+/* ============================================================
+   SCROLL HINT - 底部滚动提示（距 Hero 底部 48px）
+   ============================================================ */
+.yh-scroll-hint {
+  position: absolute;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 鼠标图标：17×26 圆角矩形 */
+.yh-scroll-mouse {
+  width: 17px;
+  height: 26px;
+  border: 1px solid rgba(0, 0, 0, 0.40);
+  border-radius: 9px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 5px;
+}
+
+/* 滚轮：3×8 圆角矩形，呼吸闪烁动效 */
+.yh-scroll-wheel {
+  width: 3px;
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.40);
+  animation: yhScrollBreathe 1.8s ease-in-out infinite;
+}
+@keyframes yhScrollBreathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .yh-scroll-wheel {
+    animation: none !important;
+  }
+}
+
+/* 文字 */
+.yh-scroll-text {
+  font-family: "PingFang SC", "Noto Sans SC", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.40);
+  white-space: nowrap;
 }
 
 /* ============================================================
@@ -479,9 +529,21 @@ html {
 .yh-features {
   position: relative;
   width: 100%;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F7FAFC 100%);
-  /* 上间距 0：紧贴 Hero（banner）下边缘开始 */
-  padding: 0 0 100px;
+  /* 去掉背景：让固定视频透出 */
+  background: transparent;
+  /* 第二屏吸附：滚动后内容固定在标题可见处（配合 html scroll-padding-top: 64px） */
+  scroll-snap-align: start;
+  /* 顶部留白 */
+  padding: 72px 0 100px;
+  /* 初始隐藏（向上渐显） */
+  opacity: 0;
+  transform: translateY(60px);
+  transition: opacity 0.8s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.8s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.yh-features.yh-features-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ---- Section Header ---- */
@@ -678,17 +740,18 @@ html {
    FOOTER - 页脚
    ============================================================ */
 .yh-footer {
-  width: 100%;
-  height: 100px;
+  width: 1600px;
+  max-width: calc(100% - 160px);
+  margin: 48px auto 0;
+  height: 80px;
   border-top: 1px solid var(--yh-border-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F7FAFC;
+  background: transparent;
 }
 .yh-footer-inner {
-  width: 1600px;
-  max-width: calc(100% - 160px);
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;

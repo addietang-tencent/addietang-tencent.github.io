@@ -48,8 +48,8 @@ function RadioCard({
       className={cn(
         "flex items-start gap-2.5 rounded-[4px] border px-3 py-3 transition-colors",
         "border-gray-200 bg-white",
-        !checked && !disabled && "hover:border-[#1447E6]/40 cursor-pointer",
-        checked && (checkedClassName ?? "border-[#1447E6] bg-[#1447E6]/5"),
+        !checked && !disabled && "hover:border-blue-500/40 cursor-pointer",
+        checked && (checkedClassName ?? "border-blue-500 bg-blue-500/5"),
         disabled && "cursor-not-allowed opacity-60",
       )}
     >
@@ -63,11 +63,11 @@ function RadioCard({
         )}
       />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-[#0A0A0A] mb-0.5 leading-snug">
+        <div className="text-sm font-medium text-gray-950 mb-0.5 leading-snug">
           {title}
         </div>
         {description && (
-          <p className="text-xs text-[#737373] leading-relaxed">{description}</p>
+          <p className="text-xs text-gray-500 leading-relaxed">{description}</p>
         )}
         {children}
       </div>

@@ -51,7 +51,7 @@ import { cn } from "@/lib/utils";
  *   唯一豁免：**Badge** [data-slot="badge"] 始终保持自身尺寸，不被强制 12px。
  *
  *   ⚠️ 业务侧规范：
- *     - 不要在 TableCell 上手写 `text-sm` / `text-[14px]` / `text-[#505050]` 来"调字号"，
+ *     - 不要在 TableCell 上手写 `text-sm` / `text-[14px]` / `text-gray-700` 来"调字号"，
  *       不仅冗余（被 !important 覆盖），还会让代码层不一致。
  *     - 字号要变化时，请改 index.css 的全局规则，不要在 TableCell 局部硬写。
  *
@@ -501,8 +501,8 @@ function TableHead({ className, fixed, fixedShadow = true, ...props }: TableHead
       className={cn(
         "text-left align-middle font-sans whitespace-nowrap text-xs font-medium leading-[1.5] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         density === "compact"
-          ? "h-9 px-4 py-0 text-[#505050]"
-          : "h-10 px-4 py-0 text-[#505050]",
+          ? "h-9 px-4 py-0 text-gray-700"
+          : "h-10 px-4 py-0 text-gray-700",
         // separate 模式下 <tr> border-b 会失效，由单元格自身补一条下分隔线（仅在 separate 模式下生效）
         "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
         fixed === "left" && [FIXED_BASE, FIXED_LEFT_CLS],
@@ -529,7 +529,7 @@ function TableCell({ className, fixed, fixedShadow = true, ...props }: TableCell
       data-slot="table-cell"
       data-fixed={fixed}
       className={cn(
-        "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-[#0A0A0A] text-xs transition-colors group-hover:bg-[#FAFBFD] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-950 text-xs transition-colors group-hover:bg-[#FAFBFD] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         density === "compact" ? "h-10 px-4 py-2" : "h-[54px] px-4 py-3",
         // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
         "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",
@@ -595,7 +595,7 @@ function TableActionCell({
       data-slot="table-action-cell"
       data-fixed={fixed}
       className={cn(
-        "align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-[#0A0A0A] text-xs [&:has([role=checkbox])]:pr-0",
+        "align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-gray-950 text-xs [&:has([role=checkbox])]:pr-0",
         density === "compact" ? "h-10 px-4 py-2" : "h-[54px] px-4 py-3",
         // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
         "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",

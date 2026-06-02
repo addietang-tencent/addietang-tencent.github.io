@@ -58,9 +58,9 @@ export function Stepper({ current, steps, className }: StepperProps) {
               <span
                 className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium tabular-nums shrink-0 transition-colors",
-                  status === "completed" && "bg-[#1447E6] text-white",
-                  status === "active" && "bg-[#1447E6] text-white",
-                  status === "pending" && "bg-[#F5F5F5] text-[#A3A3A3]",
+                  status === "completed" && "bg-blue-500 text-white",
+                  status === "active" && "bg-blue-500 text-white",
+                  status === "pending" && "bg-gray-100 text-gray-400",
                 )}
               >
                 {status === "completed" ? <Check className="w-3.5 h-3.5" /> : idx + 1}
@@ -69,16 +69,16 @@ export function Stepper({ current, steps, className }: StepperProps) {
               <span
                 className={cn(
                   "text-sm transition-colors",
-                  status === "active" && "font-medium text-[#0A0A0A]",
-                  status === "completed" && "text-[#737373]",
-                  status === "pending" && "text-[#A3A3A3]",
+                  status === "active" && "font-medium text-gray-950",
+                  status === "completed" && "text-gray-500",
+                  status === "pending" && "text-gray-400",
                 )}
               >
                 {step.label}
               </span>
             </div>
             {idx < steps.length - 1 && (
-              <ChevronRight className="w-4 h-4 text-[#A3A3A3] shrink-0" aria-hidden />
+              <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" aria-hidden />
             )}
           </React.Fragment>
         );

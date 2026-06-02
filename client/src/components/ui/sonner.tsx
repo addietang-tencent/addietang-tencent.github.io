@@ -27,27 +27,27 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-white group-[.toaster]:text-[#09090b] group-[.toaster]:border-[#EAEEF4] group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl group-[.toaster]:px-4 group-[.toaster]:py-3 group-[.toaster]:text-sm group-[.toaster]:font-medium",
+            "group toast group-[.toaster]:bg-white group-[.toaster]:text-gray-950 group-[.toaster]:border-[#EAEEF4] group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl group-[.toaster]:px-4 group-[.toaster]:py-3 group-[.toaster]:text-sm group-[.toaster]:font-medium",
           closeButton:
             "group-[.toast]:!left-auto group-[.toast]:!right-[-6px] group-[.toast]:!top-[-6px] group-[.toast]:!translate-x-0 group-[.toast]:!translate-y-0",
-          title: "group-[.toast]:text-[#09090b] group-[.toast]:font-medium",
-          description: "group-[.toast]:text-[#737373]",
+          title: "group-[.toast]:text-gray-950 group-[.toast]:font-medium",
+          description: "group-[.toast]:text-gray-500",
           actionButton:
-            "group-[.toast]:bg-[#0A0A0A] group-[.toast]:text-white group-[.toast]:rounded-md group-[.toast]:text-xs group-[.toast]:font-medium",
+            "group-[.toast]:bg-gray-950 group-[.toast]:text-white group-[.toast]:rounded-md group-[.toast]:text-xs group-[.toast]:font-medium",
           cancelButton:
-            "group-[.toast]:bg-white group-[.toast]:text-[#525252] group-[.toast]:border group-[.toast]:border-[#EAEEF4] group-[.toast]:rounded-md group-[.toast]:text-xs",
+            "group-[.toast]:bg-white group-[.toast]:text-gray-600 group-[.toast]:border group-[.toast]:border-[#EAEEF4] group-[.toast]:rounded-md group-[.toast]:text-xs",
         },
       }}
       style={
         {
           "--normal-bg": "#ffffff",
-          "--normal-text": "#09090b",
+          "--normal-text": "#0a0a0a",
           "--normal-border": "#EAEEF4",
           "--error-bg": "#ffffff",
-          "--error-text": "#09090b",
+          "--error-text": "#0a0a0a",
           "--error-border": "#EAEEF4",
           "--success-bg": "#ffffff",
-          "--success-text": "#09090b",
+          "--success-text": "#0a0a0a",
           "--success-border": "#EAEEF4",
           zIndex: 99999,
         } as React.CSSProperties

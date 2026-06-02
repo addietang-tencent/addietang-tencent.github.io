@@ -77,7 +77,7 @@ function SheetContent({
         {children}
         <SheetPrimitive.Close
           data-slot="sheet-close"
-          className="absolute top-4 right-4 flex items-center justify-center rounded-sm text-[#7b818f] transition-colors hover:text-[#020617] focus:outline-none disabled:pointer-events-none"
+          className="absolute top-4 right-4 flex items-center justify-center rounded-sm text-gray-600 transition-colors hover:text-gray-950 focus:outline-none disabled:pointer-events-none"
         >
           <XIcon className="size-4" />
           <span className="sr-only">Close</span>

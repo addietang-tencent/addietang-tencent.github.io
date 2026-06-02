@@ -134,18 +134,18 @@ export function FileTree({
               key={`dir-${dirPath}`}
               type="button"
               onClick={() => toggleDir(dirPath)}
-              className="w-full flex items-center gap-1.5 h-8 px-2 text-sm text-[#09090b] hover:bg-[#f4f4f5] rounded-[4px] transition-colors cursor-pointer"
+              className="w-full flex items-center gap-1.5 h-8 px-2 text-sm text-gray-950 hover:bg-[#f4f4f5] rounded-[4px] transition-colors cursor-pointer"
               style={{ paddingLeft: `${8 + depth * 16}px` }}
             >
               {isExpanded ? (
-                <ChevronDown className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+                <ChevronDown className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
               ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+                <ChevronRight className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
               )}
               {isExpanded ? (
-                <FolderOpen className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+                <FolderOpen className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
               ) : (
-                <Folder className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+                <Folder className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
               )}
               <span className="truncate font-medium">{parts[i - 1]}</span>
             </button>
@@ -178,14 +178,14 @@ export function FileTree({
         className={cn(
           "w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors",
           selectedFile === file.name
-            ? "bg-[#f4f4f5] text-[#09090b] font-medium"
+            ? "bg-[#f4f4f5] text-gray-950 font-medium"
             : canView
-            ? "hover:bg-[#f4f4f5] text-[#09090b] cursor-pointer"
-            : "text-[#a1a1aa] cursor-not-allowed opacity-60"
+            ? "hover:bg-[#f4f4f5] text-gray-950 cursor-pointer"
+            : "text-gray-400 cursor-not-allowed opacity-60"
         )}
         style={{ paddingLeft: `${8 + depth * 16}px` }}
       >
-        <FileText className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+        <FileText className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
         <span className="truncate">{parts[parts.length - 1]}</span>
       </button>
     );

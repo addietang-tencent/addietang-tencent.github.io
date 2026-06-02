@@ -45,11 +45,11 @@ function SelectTrigger({
       className={cn(
         "flex w-fit items-center justify-between gap-2 border border-gray-200 bg-white px-3 py-[5px] text-sm font-normal whitespace-nowrap transition-colors outline-none",
         tenant ? "rounded-full" : "rounded-[4px]",
-        "hover:border-[#1447E6]",
-        "data-[state=open]:border-[#1447E6]",
-        "data-[placeholder]:text-[#A3A3A3]",
-        "disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",
-        "aria-invalid:border-[#d42a1e]",
+        "hover:border-blue-500",
+        "data-[state=open]:border-blue-500",
+        "data-[placeholder]:text-gray-400",
+        "disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-gray-400",
+        "aria-invalid:border-destructive",
         "data-[size=default]:h-9 data-[size=sm]:h-8",
         "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -59,7 +59,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 text-[#737373] transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+        <ChevronDownIcon className="size-4 text-gray-500 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -140,8 +140,8 @@ function SelectItem({
         "relative flex w-full cursor-default items-center gap-2 rounded-[6px] h-8 px-3 py-[9px] text-sm font-normal text-[color:var(--wm-color-text-primary,black)] outline-hidden select-none",
         "hover:bg-[#FAFAFA]",
         "focus:bg-[#FAFAFA]",
-        "data-[state=checked]:text-[#1447E6] data-[state=checked]:font-medium",
-        "data-[disabled]:pointer-events-none data-[disabled]:text-[#A3A3A3]",
+        "data-[state=checked]:text-blue-500 data-[state=checked]:font-medium",
+        "data-[disabled]:pointer-events-none data-[disabled]:text-gray-400",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
@@ -150,7 +150,7 @@ function SelectItem({
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
       <span className="absolute right-3 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-[#1447E6]" />
+          <CheckIcon className="size-4 text-blue-500" />
         </SelectPrimitive.ItemIndicator>
       </span>
     </SelectPrimitive.Item>

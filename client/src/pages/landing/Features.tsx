@@ -4,6 +4,7 @@
  * 每张卡片插图：normal 显示静态图，hover 切换为视频播放
  */
 import FeatureMedia from "./FeatureMedia";
+import Footer from "./Footer";
 
 const FEATURES = [
   {
@@ -124,6 +125,9 @@ export default function Features() {
           </article>
         ))}
       </div>
+
+      {/* Footer 内嵌在 Features 区底部 */}
+      <Footer />
     </section>
   );
 }

@@ -28,7 +28,7 @@ const ITEMS: { key: ViewMode; label: string; Icon: typeof LayoutGrid }[] = [
 export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) => {
   return (
     <div
-      className="inline-flex items-center h-[31px] rounded-[40px]"
+      className="inline-flex items-center h-[34px] rounded-[40px]"
       style={{ background: "rgba(228, 232, 241, 0.4)" }}
       role="tablist"
       aria-label="视图切换"
@@ -42,10 +42,10 @@ export const ViewModeSegmented = ({ value, onChange }: ViewModeSegmentedProps) =
             aria-selected={active}
             onClick={() => onChange(key)}
             className={[
-              "inline-flex h-[31px] items-center gap-2 px-3 rounded-[40px] text-[14px] leading-[22px] tracking-[0.005em] font-normal whitespace-nowrap transition-all duration-150",
+              "inline-flex h-[34px] items-center gap-2 px-3 rounded-[40px] text-[14px] leading-[22px] tracking-[0.005em] font-normal whitespace-nowrap transition-all duration-150 focus:ring-0 focus-visible:ring-0",
               active
-                ? "bg-white text-[#020617] outline outline-1 outline-[#DFE5ED] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
-                : "text-[#334155] hover:text-[#020617]",
+                ? "bg-white text-[#020617] border border-[#DFE5ED] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+                : "text-[#334155] hover:text-[#020617] border border-transparent",
             ].join(" ")}
           >
             <Icon className="w-4 h-4" />

@@ -54,7 +54,7 @@ export default function TopNav({
     <header
       className={`sticky top-0 z-50 h-[64px] backdrop-blur-md ${className}`}
       style={{
-        background: "rgba(255, 255, 255, 0.4)",
+        background: "rgba(255, 255, 255, 0.8)",
         borderBottom: "1px solid #E2E8F0",
         minWidth: "1200px",
       }}

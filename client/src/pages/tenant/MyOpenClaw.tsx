@@ -13,7 +13,6 @@ import { Link, useLocation } from "wouter";
 import TenantLayout from "@/components/TenantLayout";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
-import { TextSwitch, TextSwitchOption } from "@/components/ui/segment";
 import {
   Dialog,
   DialogContent,
@@ -200,6 +199,16 @@ export default function MyOpenClaw() {
     // 通知同页面其他组件
     window.dispatchEvent(new StorageEvent("storage", { key: "openclaw_group_mode", newValue: mode }));
   };
+  // 监听来自 TenantLayout 下拉菜单的分组模式切换
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "openclaw_group_mode") {
+        setGroupMode((e.newValue as UserGroupMode) || "normal");
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
   // 创建弹窗步骤（多分组模式下用）
   const [createStep, setCreateStep] = useState<1 | 2>(1);
   const [selectedGroup, setSelectedGroup] = useState<UserGroup>(() => getDefaultGroup(MOCK_USER_GROUPS));
@@ -486,29 +495,12 @@ export default function MyOpenClaw() {
                 我的 Agent
                 <span className="text-muted-foreground font-normal">（{claws.length}）</span>
               </h2>
-              {/* 视图切换：管理视图 / 对话视图 */}
-              <ViewModeSegmented value={viewMode} onChange={handleViewModeChange} />
             </div>
-            {/* TextSwitch 与按钮之间 32px 间距（Figma 1077:33979 layout_JMOUG3 gap=32） */}
-            <div className="flex items-center gap-8">
-              {/* 文字切换器：普通 / 多分组（Figma 1077:33980 文字版，弱切换语义） */}
-              <TextSwitch className="hidden md:inline-flex">
-                <TextSwitchOption
-                  active={groupMode === "normal"}
-                  onClick={() => handleGroupModeChange("normal")}
-                  title="切换到普通用户模式"
-                >
-                  普通
-                </TextSwitchOption>
-                <TextSwitchOption
-                  active={groupMode === "multi-group"}
-                  onClick={() => handleGroupModeChange("multi-group")}
-                  title="切换到多分组用户模式"
-                >
-                  多分组
-                </TextSwitchOption>
-              </TextSwitch>
-              {/* 创建 Agent 按钮：Figma 1077:33984，黑→蓝渐变 + h-10 + px-18 + icon-text gap 8 */}
+            {/* 视图切换与按钮之间间距 20px */}
+            <div className="flex items-center" style={{ gap: "20px" }}>
+              {/* 视图切换：管理视图 / 对话视图（移到右侧原"普通/多分组"位置） */}
+              <ViewModeSegmented value={viewMode} onChange={handleViewModeChange} />
+              {/* 创建 Agent 按钮：高度 34px，与视图切换等高 */}
               <Button
                 onClick={() => {
                   if (groupMode === "multi-group") {
@@ -519,6 +511,7 @@ export default function MyOpenClaw() {
                 }}
                 variant="tenant-primary"
                 size="claw-lg"
+                className="!h-[34px]"
               >
                 <Plus className="w-4 h-4" />
                 创建 Agent

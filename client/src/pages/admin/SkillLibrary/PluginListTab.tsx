@@ -18,8 +18,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Search, Grid3x3, List, Send, Trash2 } from 'lucide-react';
+import { Search, Grid3x3, List, Send, Trash2, MoreHorizontal } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -37,12 +43,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MOCK_OPENCLAW_INSTANCES } from './mockData';
+import { MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import PluginUploadDialog, { type Plugin } from './PluginUploadDialog';
+import PluginUpdateDialog from './PluginUpdateDialog';
 import PluginDetail from './PluginDetail';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import {
   getSkillDistributionSummary,
+  getInstancesWithPluginDistributionStatus,
+  getCurrentPluginInstalledInstances,
   addDistributionRecord,
   updateDistributionRecord,
   createDistributionRecordId,
@@ -142,8 +151,12 @@ export default function PluginListTab() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
   const [distributePluginId, setDistributePluginId] = useState<string | null>(null);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [updatePluginId, setUpdatePluginId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletePluginId, setDeletePluginId] = useState<string | null>(null);
+  const [uninstallDialogOpen, setUninstallDialogOpen] = useState(false);
+  const [uninstallPluginId, setUninstallPluginId] = useState<string | null>(null);
   const [distributionSummaries, setDistributionSummaries] = useState<Record<string, SkillDistributionSummary>>({});
   const [distributing, setDistributing] = useState<Record<string, boolean>>({});
 
@@ -166,6 +179,15 @@ export default function PluginListTab() {
   }, [refreshDistributionSummaries]);
 
   const isDistributing = (pluginId: string) => distributing[pluginId] || distributionSummaries[pluginId]?.hasInProgress || false;
+  const isPluginIdentifierMissing = (plugin?: Plugin) => !plugin?.id || !plugin.slug?.trim();
+  const isUpdateDisabled = (plugin: Plugin) => isDistributing(plugin.id) || isPluginIdentifierMissing(plugin);
+  const getUninstallableCount = (plugin: Plugin) =>
+    getCurrentPluginInstalledInstances(plugin.id, plugin.version, MOCK_OPENCLAW_INSTANCES).length;
+  const getUninstallDisabledReason = (plugin: Plugin) => {
+    if (isDistributing(plugin.id)) return '有任务进行中';
+    if (getUninstallableCount(plugin) === 0) return '暂无可卸载实例';
+    return '';
+  };
 
   const filteredPlugins = plugins.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -242,6 +264,23 @@ export default function PluginListTab() {
     }, 800);
   };
 
+  const handleUpdate = (pluginId: string) => {
+    const targetPlugin = plugins.find(p => p.id === pluginId);
+    if (!targetPlugin || isUpdateDisabled(targetPlugin)) return;
+    setUpdatePluginId(pluginId);
+    setUpdateDialogOpen(true);
+  };
+
+  const handlePluginUpdated = (updatedPlugin: Plugin) => {
+    setPlugins(prev => {
+      const updated = prev.map(p => p.id === updatedPlugin.id ? updatedPlugin : p);
+      saveCachedPlugins(updated);
+      return updated;
+    });
+    setUpdateDialogOpen(false);
+    setUpdatePluginId(null);
+  };
+
   const handleDelete = (pluginId: string) => {
     setDeletePluginId(pluginId);
     setDeleteDialogOpen(true);
@@ -260,8 +299,78 @@ export default function PluginListTab() {
     setDeletePluginId(null);
   };
 
+  const handleUninstall = (pluginId: string) => {
+    const plugin = plugins.find(p => p.id === pluginId);
+    if (!plugin || getUninstallDisabledReason(plugin)) return;
+    setUninstallPluginId(pluginId);
+    setUninstallDialogOpen(true);
+  };
+
+  const handleUninstallStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    if (!uninstallPluginId) return;
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId: uninstallPluginId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'deleting',
+      type: 'delete',
+      operator: 'admin',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as const,
+      })),
+    };
+    addDistributionRecord(newRecord);
+    setUninstallDialogOpen(false);
+    setDistributing(prev => ({ ...prev, [uninstallPluginId]: true }));
+    toast.success('已开始卸载流程');
+
+    const totalCount = selectedInstanceIds.length;
+    let completed = 0;
+    const failReasons = ['实例离线', '权限不足', '插件被占用', '网络超时', '实例已停止'];
+    const interval = setInterval(() => {
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
+        clearInterval(interval);
+        const results = Array.from({ length: totalCount }, () => Math.random() < 0.9);
+        const successCount = results.filter(Boolean).length;
+        const failedCount = totalCount - successCount;
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: 'success',
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: (results[idx] ? 'success' : 'failed') as 'success' | 'failed',
+            failReason: results[idx] ? undefined : failReasons[Math.floor(Math.random() * failReasons.length)],
+          })),
+        }));
+        setDistributing(prev => ({ ...prev, [uninstallPluginId!]: false }));
+        toast.success('卸载完成');
+      } else {
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
+        }));
+      }
+    }, 800);
+  };
+
   const distributePlugin = plugins.find(p => p.id === distributePluginId);
+  const updatePlugin = plugins.find(p => p.id === updatePluginId);
   const deletePlugin = plugins.find(p => p.id === deletePluginId);
+  const uninstallPlugin = plugins.find(p => p.id === uninstallPluginId);
 
   // 如果选中了插件，显示详情页
   if (selectedPluginId) {
@@ -349,9 +458,36 @@ export default function PluginListTab() {
                     <Send className="w-3 h-3" />
                     {dist ? '下发中' : '下发'}
                   </Button>
-                  <Button variant="claw-outline" size="claw-sm" onClick={() => handleDelete(plugin.id)} className="h-7 text-xs">
-                    <Trash2 className="w-3 h-3" />删除
+                  <Button
+                    variant="claw-outline"
+                    size="claw-sm"
+                    onClick={() => handleUpdate(plugin.id)}
+                    disabled={isUpdateDisabled(plugin)}
+                    className={`h-7 text-xs ${isUpdateDisabled(plugin) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    更新
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="claw-outline" size="claw-sm" className="h-7 text-xs px-2">
+                        <MoreHorizontal className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        disabled={!!getUninstallDisabledReason(plugin)}
+                        onClick={() => handleUninstall(plugin.id)}
+                      >
+                        卸载
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => handleDelete(plugin.id)}
+                      >
+                        <Trash2 className="w-3 h-3" />删除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </SurfaceCard>
             );
@@ -440,9 +576,35 @@ export default function PluginListTab() {
                       >
                         {dist ? '下发中' : '下发'}
                       </Button>
-                      <Button variant="link" size="sm" onClick={() => handleDelete(plugin.id)}>
-                        删除
+                      <Button
+                        variant="link"
+                        size="sm"
+                        onClick={() => handleUpdate(plugin.id)}
+                        disabled={isUpdateDisabled(plugin)}
+                      >
+                        更新
                       </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="link" size="sm">
+                            更多
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            disabled={!!getUninstallDisabledReason(plugin)}
+                            onClick={() => handleUninstall(plugin.id)}
+                          >
+                            卸载
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => handleDelete(plugin.id)}
+                          >
+                            删除
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableActionCell>
                   </TableRow>
                 );
@@ -469,6 +631,35 @@ export default function PluginListTab() {
         skillVersion={distributePlugin?.version}
         onDistributionStart={handleDistributeStart}
         title="批量下发插件"
+        showScopeFilter={false}
+        instances={MOCK_OPENCLAW_INSTANCES}
+      />
+
+      {/* 更新插件弹窗 */}
+      {updatePlugin && (
+        <PluginUpdateDialog
+          open={updateDialogOpen}
+          onOpenChange={(open) => {
+            setUpdateDialogOpen(open);
+            if (!open) setUpdatePluginId(null);
+          }}
+          plugin={updatePlugin}
+          onConfirm={handlePluginUpdated}
+        />
+      )}
+
+      {/* 批量卸载弹窗 */}
+      <BatchDistributeDialog
+        open={uninstallDialogOpen}
+        onOpenChange={(open) => {
+          setUninstallDialogOpen(open);
+          if (!open) setUninstallPluginId(null);
+        }}
+        skillId={uninstallPluginId || undefined}
+        skillName={uninstallPlugin?.name}
+        skillVersion={uninstallPlugin?.version}
+        onDistributionStart={handleUninstallStart}
+        title="批量卸载插件"
         showScopeFilter={false}
         instances={MOCK_OPENCLAW_INSTANCES}
       />

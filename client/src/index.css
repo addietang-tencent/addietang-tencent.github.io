@@ -1,8 +1,16 @@
 /* ─── Webfont（v2）必须放在最顶部 ──────────────────────────────────
- * PingFang SC / Menlo / DIN Alternate：系统字体，无需引入
+ * PingFang SC / Menlo：系统字体，无需引入
+ * DIN Next LT Pro Bold：数字字体，优先读取本机已安装字体
  * Open Sans：Google Fonts CDN（首版可用，后续可改 self-host）
  * TCloud Number：用户端 QuickStart 步骤编号字体
  * ──────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "DIN Next LT Pro";
+  src: url("/fonts/DINNextLTPro-Bold.OTF") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 @font-face {
   font-family: "TCloud Number";
   src: url("/fonts/TCloudNumber.ttf") format("truetype");
@@ -27,7 +35,7 @@
     "PingFang SC", -apple-system, BlinkMacSystemFont, "Helvetica Neue",
     sans-serif;
   --font-mono: "Menlo", "Consolas", "Courier New", monospace;
-  --font-din: "DIN Alternate", "DIN", "Helvetica Neue", sans-serif;
+  --font-din: "DIN Next LT Pro", "DIN Alternate", "DIN", "Helvetica Neue", sans-serif;
   --font-en: "Open Sans", "Helvetica Neue", sans-serif;
 
   /* v2 文字色阶（对齐 Figma 设计系统） */
@@ -139,6 +147,16 @@
   /* Brand Colors */
   --brand-blue: #1447e6;
   --brand-purple: #1447e6;
+
+  /* Text Semantic Tokens */
+  --text-emphasis: #020617;
+  --text-title: #0f172a;
+  --text-body: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-weak: #94a3b8;
+  --text-brand: #1447e6;
+  --text-danger: #dc2626;
 
   /* Primary */
   --primary: oklch(0.546 0.245 262.881); /* #1447E6 */

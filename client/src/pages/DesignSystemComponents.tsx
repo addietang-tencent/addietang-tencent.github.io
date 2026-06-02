@@ -259,6 +259,17 @@ const blueGrayTokens: ColorToken[] = [
   { name: "slate-950", cssVar: "--general-foreground", className: "text-slate-950", value: "#020617", usage: "强强调 / CTA 起点" },
 ];
 
+const textSemanticTokens: ColorToken[] = [
+  { name: "text-emphasis", cssVar: "--text-emphasis", className: "text-[var(--text-emphasis)]", value: "#020617", usage: "强强调、关键数字、强标题", badges: ["Typography 使用中"] },
+  { name: "text-title", cssVar: "--text-title", className: "text-[var(--text-title)]", value: "#0F172A", usage: "页面标题、模块标题", badges: ["Typography 使用中"] },
+  { name: "text-body", cssVar: "--text-body", className: "text-[var(--text-body)]", value: "#1E293B", usage: "普通正文", badges: ["Typography 使用中"] },
+  { name: "text-secondary", cssVar: "--text-secondary", className: "text-[var(--text-secondary)]", value: "#334155", usage: "描述、补充说明、表格次要字段", badges: ["Typography 使用中"] },
+  { name: "text-muted", cssVar: "--text-muted", className: "text-[var(--text-muted)]", value: "#64748B", usage: "时间、备注、辅助信息", badges: ["Typography 使用中"] },
+  { name: "text-weak", cssVar: "--text-weak", className: "text-[var(--text-weak)]", value: "#94A3B8", usage: "占位、空状态、极弱提示", badges: ["Typography 使用中"] },
+  { name: "text-brand", cssVar: "--text-brand", className: "text-[var(--text-brand)]", value: "#1447E6", usage: "链接、活跃态、品牌强调", badges: ["Typography 使用中"] },
+  { name: "text-danger", cssVar: "--text-danger", className: "text-[var(--text-danger)]", value: "#DC2626", usage: "删除、错误、危险操作", badges: ["Typography 使用中"] },
+];
+
 const semanticTokens: ColorToken[] = [
   { name: "background", cssVar: "--background", value: "#FFFFFF", usage: "页面底色" },
   { name: "card", cssVar: "--card", value: "#FFFFFF", usage: "卡片底" },
@@ -346,7 +357,8 @@ const adminSidebarTokens: ColorToken[] = [
 ];
 
 const colorGroups: ColorGroup[] = [
-  { title: "中灰色 Gray（当前全局 --color-gray-*）", description: "项目已覆盖的 gray 色阶，Typography tone 与多数基础组件正在使用这组 token。", tokens: neutralGrayTokens },
+  { title: "Text 文字语义色（--text-*）", description: "Typography 当前使用的文字语义 token，后续页面文字迁移优先收口到这一组。", tokens: textSemanticTokens },
+  { title: "中灰色 Gray（当前全局 --color-gray-*）", description: "项目已覆盖的 gray 色阶，保留给历史样式、背景与描边参考。", tokens: neutralGrayTokens },
   { title: "蓝灰色 Slate（替换候选）", description: "Tailwind slate 蓝灰色阶，包含 #334155、#475569、#020617 等候选。", tokens: blueGrayTokens },
   { title: "语义色 Semantic（:root）", description: "shadcn 与全局页面、卡片、浮层、描边、前景等语义 token。", tokens: semanticTokens },
   { title: "品牌 / 交互 Brand", description: "品牌蓝、主色、Focus Ring 与危险操作色。", tokens: brandTokens },
@@ -362,20 +374,20 @@ const COMPONENTS: ComponentMeta[] = [
     group: "foundation",
     name: "Color",
     cnName: "颜色 Token 色卡",
-    description: "集中展示全局颜色 token 色卡，并补充蓝灰色替换候选。",
+    description: "集中展示全局颜色 token 色卡，并突出 --text-* 文字语义色。",
     owner: "miekoyychen / addietang",
     source: "client/src/index.css",
     doc: "SKILL-GLOBAL-COMPONENTS.md · 色彩系统",
     platform: "Global 全局",
     adoption: "核心参考",
-    applicationSummary: "全局颜色替换和页面效果校准核心参考。",
+    applicationSummary: "全局文字色替换和页面效果校准核心参考。",
     applicationScope: "文字、描边、分割线、浅背景、品牌色、提示色、图表色和侧栏色",
-    moduleCount: 89,
-    instanceCount: 89,
+    moduleCount: 97,
+    instanceCount: 97,
     tags: ["已接入预览", "核心参考", "Color Token"],
-    usage: ["全局颜色 token 对照", "中灰色与蓝灰色替换校准", "品牌 / 提示 / 图表 / 侧栏色检查"],
-    notes: ["全局 token 主要来自 index.css 的 @theme 与 :root。", "蓝灰色 Slate 为替换候选，不是当前全部业务的默认色。", "后续如确认替换策略，应优先改全局 token，避免逐页写死色值。"],
-    migration: ["中灰文字 → 对照 slate 同阶或指定蓝灰 token", "中灰描边 → 对照 slate-200 / slate-300", "强强调文字 → 保持 #020617 或 slate-950"],
+    usage: ["文字语义 token 对照", "中灰色与蓝灰色替换校准", "品牌 / 提示 / 图表 / 侧栏色检查"],
+    notes: ["全局 token 主要来自 index.css 的 @theme 与 :root。", "Typography 已切换到 --text-* 文字语义 token。", "后续页面迁移应优先使用 Typography，避免逐页写死文字色。"],
+    migration: ["散落文字色 → Typography 或 text-[var(--text-*)]", "中灰描边 / 背景 → 暂不迁移到文字 token", "强强调文字 → --text-emphasis"],
   },
   {
     id: "typography",
@@ -394,7 +406,7 @@ const COMPONENTS: ComponentMeta[] = [
     instanceCount: 74,
     tags: ["已接入预览", "核心参考"],
     usage: ["页面标题、模块标题、卡片标题", "正文说明、辅助信息、时间与 ID", "统计数字、表格数字、代码路径"],
-    notes: ["新增页面优先使用 Typography 语义组件。", "不要用散落的 text-gray-* 表达基础文字色。", "数字、代码、步骤标识优先使用专用组件。"],
+    notes: ["新增页面优先使用 Typography 语义组件。", "Typography tone 已绑定 --text-* 语义 token。", "数字、代码、步骤标识优先使用专用组件。"],
     migration: ["页面标题 → TenantPageTitle / TenantHeroTitle", "卡片标题 → CardTitle", "ID / Token / 路径 → CodeText", "统计大数字 → StatNumber"],
   },
   {
@@ -1109,7 +1121,7 @@ function ColorPreview() {
           <div className="rounded-[4px] border border-[#DDE7F2] bg-[#F8FAFF] px-4 py-3">
             <BodyMedium>当前展示 token 共 {total} 个</BodyMedium>
             <BodyText className="mt-1" tone="secondary">
-              包含 index.css 中的全局颜色 token，并保留 Slate 蓝灰候选；每组均按浅到深排列，方便你指定后续替换映射。
+              包含 index.css 中的全局颜色 token，Text 文字语义色已接入 Typography；每组均按浅到深排列，方便你指定后续替换映射。
             </BodyText>
           </div>
           {colorGroups.map((group) => (
@@ -1137,14 +1149,14 @@ function TypographyPreview() {
     ["StepText", <StepText key="step">Step 1</StepText>, "步骤标识"],
   ] as const;
   const toneCards = [
-    { token: "primary", name: "标题色", value: "#171717", color: "#171717" },
-    { token: "emphasis", name: "强调", value: "#0A0A0A", color: "#0A0A0A" },
-    { token: "body", name: "正文", value: "#171717", color: "#171717" },
-    { token: "secondary", name: "描述正文", value: "#404040", color: "#404040" },
-    { token: "muted", name: "辅助", value: "#737373", color: "#737373" },
-    { token: "weak", name: "极弱", value: "#A3A3A3", color: "#A3A3A3" },
-    { token: "brand", name: "活跃", value: "#1447E6", color: "#1447E6" },
-    { token: "danger", name: "危险", value: "#DC2626", color: "#DC2626" },
+    { token: "primary", name: "标题色", value: "--text-title / #0F172A", color: "var(--text-title)" },
+    { token: "emphasis", name: "强调", value: "--text-emphasis / #020617", color: "var(--text-emphasis)" },
+    { token: "body", name: "正文", value: "--text-body / #1E293B", color: "var(--text-body)" },
+    { token: "secondary", name: "描述正文", value: "--text-secondary / #334155", color: "var(--text-secondary)" },
+    { token: "muted", name: "辅助", value: "--text-muted / #64748B", color: "var(--text-muted)" },
+    { token: "weak", name: "极弱", value: "--text-weak / #94A3B8", color: "var(--text-weak)" },
+    { token: "brand", name: "活跃", value: "--text-brand / #1447E6", color: "var(--text-brand)" },
+    { token: "danger", name: "危险", value: "--text-danger / #DC2626", color: "var(--text-danger)" },
   ] as const;
 
   return (

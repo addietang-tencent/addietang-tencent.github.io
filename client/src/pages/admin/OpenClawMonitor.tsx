@@ -18,7 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
-import { SurfaceCard, SurfaceOverlay } from "@/components/ui/Surface";
+import { SurfaceCard } from "@/components/ui/Surface";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -71,6 +72,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
+import { AdminPageHeader } from "@/components/ui/admin-page-header";
 import {
   Search, Trash2, ChevronLeft, ChevronRight, RefreshCw, AlertCircle,
   Terminal, Power, MoreHorizontal, RotateCcw, HardDriveDownload,
@@ -632,8 +634,6 @@ export default function AgentMonitor() {
   const ALL_STATUSES: ClawStatus[] = ["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"];
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [selectedStatuses, setSelectedStatuses] = useState<Set<ClawStatus>>(new Set(ALL_STATUSES));
-  const filterButtonRef = useRef<HTMLButtonElement>(null);
-  const [filterPosition, setFilterPosition] = useState<{ top: number; left: number } | null>(null);
 
   // 表格横向滚动 — 仅保留祖先 flex 容器 min-width:0 兜底，固定列/阴影由全局 Table 组件提供
   const tableScrollRef = useRef<HTMLDivElement>(null);
@@ -1628,51 +1628,54 @@ export default function AgentMonitor() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="page-enter min-w-0">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-          <div className="shrink-0 min-w-0">
-            <h1 className="text-2xl font-bold text-[#0A0A0A] whitespace-nowrap">Agent 列表</h1>
-            <p className="text-sm text-[#737373] mt-1 whitespace-nowrap">查看和管理所有企业用户创建的 Agent 云服务器。</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <DatePicker
-              value={dateFrom}
-              onChange={(v) => { setDateFrom(v); setPage(1); }}
-            />
-            <span className="text-[#A3A3A3] text-sm">—</span>
-            <DatePicker
-              value={dateTo}
-              onChange={(v) => { setDateTo(v); setPage(1); }}
-            />
-            {(dateFrom || dateTo) && (
-              <button
-                onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-                className="h-9 px-3 text-sm rounded-[4px] border border-[#e5e5e5] bg-white text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors whitespace-nowrap"
+        <AdminPageHeader
+          title="Agent 列表"
+          description="查看和管理所有企业用户创建的 Agent 云服务器。"
+          actions={
+            <div className="flex items-center gap-2">
+              <DatePicker
+                value={dateFrom}
+                onChange={(v) => { setDateFrom(v); setPage(1); }}
+              />
+              <span className="text-[#A3A3A3] text-sm">—</span>
+              <DatePicker
+                value={dateTo}
+                onChange={(v) => { setDateTo(v); setPage(1); }}
+              />
+              {(dateFrom || dateTo) && (
+                <button
+                  onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
+                  className="h-9 px-3 text-sm rounded-[4px] border border-[#e5e5e5] bg-white text-[#737373] hover:text-[#355EF1] hover:border-[#355EF1] transition-colors whitespace-nowrap"
+                >
+                  清除筛选
+                </button>
+              )}
+              <Button
+                variant="claw-outline"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={refreshing}
+                title="刷新列表"
+                className="w-9 h-9"
               >
-                清除筛选
-              </button>
-            )}
-            <Button
-              variant="claw-outline"
-              size="icon"
-              onClick={handleRefresh}
-              disabled={refreshing}
-              title="刷新列表"
-              className="w-9 h-9"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            </Button>
-          </div>
-        </div>
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              </Button>
+            </div>
+          }
+        />
 
         {/* 状态统计卡片 */}
         <div className="grid grid-cols-4 gap-5 mb-6">
           {/* 总数 */}
           <button
             onClick={() => handleCardFilterChange("all")}
-            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "all" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
-            }`}
+            data-surface="card"
+            data-state={activeCardFilter === "all" ? "selected" : undefined}
+            className={cn(
+              "bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4 text-left transition-all duration-200",
+              "hover:border-[#C9D5FC] hover:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] hover:-translate-y-0.5",
+              "data-[state=selected]:border-[#1447E6] data-[state=selected]:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)]"
+            )}
           >
             <div className="flex items-center gap-1">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.4375 2.1377C9.21415 2.1377 9.84375 2.76729 9.84375 3.54395V5.15625H14.4385C15.2151 5.15631 15.8447 5.78589 15.8447 6.5625V9.67383H16.5371C17.0031 9.67383 17.3809 10.0516 17.3809 10.5176C17.3807 10.9835 17.003 11.3613 16.5371 11.3613H15.8447V14.4375C15.8447 15.2141 15.2151 15.8437 14.4385 15.8438H3.55957C2.78303 15.8436 2.15332 15.2141 2.15332 14.4375V11.3613H1.46289C0.996982 11.3613 0.619273 10.9835 0.619141 10.5176C0.619141 10.0516 0.9969 9.67383 1.46289 9.67383H2.15332V6.5625C2.15332 5.78593 2.78303 5.15638 3.55957 5.15625H8.15625V3.8252H6.04688C5.58097 3.8252 5.20326 3.44732 5.20312 2.98145C5.20312 2.51546 5.58088 2.1377 6.04688 2.1377H8.4375ZM3.84082 14.1562H14.1572V6.84375H3.84082V14.1562ZM6.75 8.87109C7.21599 8.87109 7.59375 9.24885 7.59375 9.71484V11.29C7.59338 11.7557 7.21576 12.1338 6.75 12.1338C6.28424 12.1338 5.90662 11.7557 5.90625 11.29V9.71484C5.90625 9.24885 6.28401 8.87109 6.75 8.87109ZM11.25 8.87109C11.716 8.87109 12.0938 9.24885 12.0938 9.71484V11.29C12.0934 11.7557 11.7158 12.1338 11.25 12.1338C10.7842 12.1338 10.4066 11.7557 10.4062 11.29V9.71484C10.4062 9.24885 10.784 8.87109 11.25 8.87109Z" fill="url(#icon_total)"/><defs><linearGradient id="icon_total" x1="16" y1="16" x2="14" y2="10" gradientUnits="userSpaceOnUse"><stop stopColor="#0080FF"/><stop offset="1" stopColor="#202020"/></linearGradient></defs></svg>
@@ -1684,9 +1687,13 @@ export default function AgentMonitor() {
           {/* 运行中 */}
           <button
             onClick={() => handleCardFilterChange("running")}
-            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "running" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
-            }`}
+            data-surface="card"
+            data-state={activeCardFilter === "running" ? "selected" : undefined}
+            className={cn(
+              "bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4 text-left transition-all duration-200",
+              "hover:border-[#C9D5FC] hover:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] hover:-translate-y-0.5",
+              "data-[state=selected]:border-[#1447E6] data-[state=selected]:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)]"
+            )}
           >
             <div className="flex items-center gap-1">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.2998 1.6875C16.1697 1.6875 16.875 2.44302 16.875 3.375V11.8125C16.875 12.7445 16.1697 13.5 15.2998 13.5H9.84375V14.9062H12C12.466 14.9062 12.8438 15.284 12.8438 15.75C12.8438 16.216 12.466 16.5938 12 16.5938H6C5.53401 16.5938 5.15625 16.216 5.15625 15.75C5.15625 15.284 5.53401 14.9062 6 14.9062H8.15625V13.5H2.7002L2.53906 13.4912C1.74482 13.4048 1.125 12.6863 1.125 11.8125V3.375C1.125 2.50124 1.74482 1.78266 2.53906 1.69629L2.7002 1.6875H15.2998ZM2.8125 11.8125H15.1875V3.375H2.8125V11.8125ZM10.6533 5.40332C10.9828 5.07382 11.5172 5.07384 11.8467 5.40332C12.1762 5.73283 12.1762 6.26717 11.8467 6.59668L8.84668 9.59668C8.51717 9.92615 7.98282 9.92617 7.65332 9.59668L6.15332 8.09668C5.82385 7.76718 5.82386 7.23282 6.15332 6.90332C6.48282 6.57382 7.01717 6.57384 7.34668 6.90332L8.25 7.80664L10.6533 5.40332Z" fill="url(#icon_running)"/><defs><radialGradient id="icon_running" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.44798 9.14064) scale(13.427 563.02)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
@@ -1698,9 +1705,13 @@ export default function AgentMonitor() {
           {/* 已关机 */}
           <button
             onClick={() => handleCardFilterChange("shutdown")}
-            className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-              activeCardFilter === "shutdown" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
-            }`}
+            data-surface="card"
+            data-state={activeCardFilter === "shutdown" ? "selected" : undefined}
+            className={cn(
+              "bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4 text-left transition-all duration-200",
+              "hover:border-[#C9D5FC] hover:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] hover:-translate-y-0.5",
+              "data-[state=selected]:border-[#1447E6] data-[state=selected]:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)]"
+            )}
           >
             <div className="flex items-center gap-1">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.65345 2.38477C1.98295 2.05531 2.51732 2.05529 2.84681 2.38477L13.0011 12.5391L13.0021 12.5361L14.1974 13.7314L14.1964 13.7344L16.3468 15.8848C16.6762 16.2143 16.6762 16.7486 16.3468 17.0781C16.0173 17.4075 15.4829 17.4075 15.1534 17.0781L12.9142 14.8389C11.7646 15.6096 10.4045 16.0312 9.00013 16.0312C7.13536 16.0312 5.34705 15.2903 4.02845 13.9717C2.70984 12.6531 1.96888 10.8648 1.96888 9C1.96888 7.57678 2.40035 6.24293 3.19349 5.11816L1.65345 3.57812C1.32399 3.24865 1.32404 2.71427 1.65345 2.38477ZM4.41321 6.33789C3.92181 7.13042 3.65638 8.03988 3.65638 9C3.65638 10.4172 4.21967 11.7762 5.22181 12.7783C6.22394 13.7804 7.58291 14.3437 9.00013 14.3438C9.95388 14.3437 10.8806 14.0875 11.6906 13.6152L4.41321 6.33789ZM12.2081 3.12988C12.4228 3.08177 12.6487 3.11904 12.8361 3.23438C14.8672 4.55486 16.0314 6.65803 16.0314 9C16.0314 10.1751 15.7346 11.3183 15.1867 12.334L13.923 11.0703C14.1967 10.4209 14.3439 9.71855 14.3439 9C14.3439 7.24222 13.4582 5.65082 11.9142 4.64746C11.7332 4.52263 11.6082 4.33191 11.5656 4.11621C11.523 3.90039 11.5665 3.67649 11.6867 3.49219C11.8067 3.30809 11.9937 3.17812 12.2081 3.12988ZM9.00013 0.84375C9.22386 0.843782 9.4386 0.932622 9.59681 1.09082C9.755 1.24905 9.84388 1.46375 9.84388 1.6875V5.625C9.84388 5.84875 9.755 6.06345 9.59681 6.22168C9.4386 6.37988 9.22386 6.46872 9.00013 6.46875C8.77639 6.46874 8.56167 6.37987 8.40345 6.22168C8.24522 6.06345 8.15638 5.84877 8.15638 5.625V1.6875C8.15638 1.46373 8.24522 1.24905 8.40345 1.09082C8.56167 0.93263 8.77639 0.843756 9.00013 0.84375Z" fill="url(#icon_shutdown)"/><defs><radialGradient id="icon_shutdown" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.64638 9.08447) scale(12.9475 622.515)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
@@ -1714,9 +1725,13 @@ export default function AgentMonitor() {
             <HoverCardTrigger asChild>
               <button
                 onClick={() => handleCardFilterChange("other")}
-                className={`bg-white rounded-[4px] border px-6 py-5 flex flex-col gap-4 text-left transition-colors ${
-                  activeCardFilter === "other" ? "border-[#1447E6]" : "border-[#E5E5E5] hover:border-[#1447E6]"
-                }`}
+                data-surface="card"
+                data-state={activeCardFilter === "other" ? "selected" : undefined}
+                className={cn(
+                  "bg-white rounded-xl border border-gray-200 px-6 py-5 flex flex-col gap-4 text-left transition-all duration-200",
+                  "hover:border-[#C9D5FC] hover:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)] hover:-translate-y-0.5",
+                  "data-[state=selected]:border-[#1447E6] data-[state=selected]:shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05)]"
+                )}
               >
                 <div className="flex items-center gap-1">
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.59375 5.90625C7.59375 5.68375 7.65973 5.46624 7.78335 5.28123C7.90697 5.09623 8.08267 4.95203 8.28823 4.86689C8.4938 4.78174 8.72 4.75946 8.93823 4.80287C9.15646 4.84627 9.35691 4.95342 9.51425 5.11076C9.67158 5.26809 9.77873 5.46854 9.82214 5.68677C9.86555 5.905 9.84327 6.1312 9.75812 6.33677C9.67297 6.54234 9.52878 6.71804 9.34377 6.84165C9.15876 6.96527 8.94126 7.03125 8.71875 7.03125C8.42038 7.03125 8.13424 6.91272 7.92326 6.70174C7.71228 6.49077 7.59375 6.20462 7.59375 5.90625ZM16.5938 9C16.5938 10.5019 16.1484 11.9701 15.314 13.2189C14.4796 14.4676 13.2936 15.441 11.906 16.0157C10.5184 16.5905 8.99158 16.7408 7.51854 16.4478C6.04549 16.1548 4.69242 15.4316 3.63041 14.3696C2.56841 13.3076 1.84517 11.9545 1.55217 10.4815C1.25916 9.00842 1.40954 7.48157 1.98429 6.094C2.55905 4.70642 3.53236 3.52044 4.78114 2.68603C6.02993 1.85162 7.4981 1.40625 9 1.40625C11.0133 1.40848 12.9435 2.20925 14.3671 3.63287C15.7907 5.0565 16.5915 6.9867 16.5938 9ZM14.9063 9C14.9063 7.83185 14.5599 6.68994 13.9109 5.71866C13.2619 4.74739 12.3395 3.99037 11.2602 3.54334C10.181 3.09631 8.99345 2.97934 7.84775 3.20724C6.70205 3.43513 5.64966 3.99765 4.82365 4.82365C3.99765 5.64965 3.43513 6.70205 3.20724 7.84775C2.97935 8.99345 3.09631 10.181 3.54334 11.2602C3.99037 12.3394 4.74739 13.2619 5.71867 13.9109C6.68994 14.5599 7.83186 14.9062 9 14.9062C10.5659 14.9046 12.0672 14.2818 13.1745 13.1745C14.2818 12.0672 14.9046 10.5659 14.9063 9ZM9.84375 11.5791V9.28125C9.84375 8.90829 9.6956 8.5506 9.43187 8.28688C9.16815 8.02316 8.81046 7.875 8.4375 7.875C8.23824 7.8747 8.04531 7.94494 7.89287 8.07326C7.74043 8.20158 7.63833 8.37972 7.60464 8.57611C7.57095 8.7725 7.60786 8.97447 7.70882 9.14626C7.80978 9.31805 7.96828 9.44857 8.15625 9.51469V11.8125C8.15625 12.1855 8.30441 12.5431 8.56813 12.8069C8.83186 13.0706 9.18954 13.2188 9.5625 13.2188C9.76176 13.219 9.9547 13.1488 10.1071 13.0205C10.2596 12.8922 10.3617 12.714 10.3954 12.5176C10.4291 12.3213 10.3921 12.1193 10.2912 11.9475C10.1902 11.7757 10.0317 11.6452 9.84375 11.5791Z" fill="url(#icon_other)"/><defs><radialGradient id="icon_other" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(3.64626 9.00001) scale(12.9475 573.644)"><stop stopColor="#202020"/><stop offset="1" stopColor="#0080FF"/></radialGradient></defs></svg>
@@ -1784,10 +1799,7 @@ export default function AgentMonitor() {
                     className="px-3 gap-1.5"
                   >
                     <CircleArrowUp className="w-3.5 h-3.5" />
-                    批量更新
-                    {selectedCount > 0 && (
-                      <span className="ml-0.5 px-1.5 py-0.5 bg-[#f0f3ff] text-[#355EF1] rounded text-xs">{selectedCount}</span>
-                    )}
+                    批量更新{selectedCount > 0 ? `（${selectedCount}）` : ""}
                   </Button>
                 </span>
               </TooltipTrigger>
@@ -1814,10 +1826,7 @@ export default function AgentMonitor() {
                     }`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    批量删除
-                    {selectedCount > 0 && (
-                      <span className="ml-0.5 px-1.5 py-0.5 bg-[#fdecea] text-[#d42a1e] rounded text-xs">{selectedCount}</span>
-                    )}
+                    批量删除{selectedCount > 0 ? `（${selectedCount}）` : ""}
                   </Button>
                 </span>
               </TooltipTrigger>
@@ -1852,8 +1861,7 @@ export default function AgentMonitor() {
                     className="px-3 gap-1.5"
                   >
                     <TerminalSquare className="w-3.5 h-3.5" />
-                    命令下发
-                    <span className="ml-0.5 px-1.5 py-0.5 bg-white/20 rounded text-xs">{selectedCount}</span>
+                    命令下发（{selectedCount}）
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
@@ -1929,6 +1937,7 @@ export default function AgentMonitor() {
         {/* 表格卡片 */}
         <SurfaceCard className="overflow-hidden">
           <Table
+            variant="elevated-white"
             containerRef={tableScrollRef}
             className="text-sm"
             scrollX="max-content"
@@ -1948,63 +1957,48 @@ export default function AgentMonitor() {
                 {/* 名称 / ID 列 - 固定左侧（边界列，显示阴影），偏移 56px 错开复选框列 */}
                 <TableHead fixed="left" className="whitespace-nowrap px-4" style={{ left: 56, width: '240px', minWidth: '240px', maxWidth: '240px' }}>名称 / ID</TableHead>
                 <TableHead className="whitespace-nowrap" style={{ minWidth: '120px' }}>
-                  <div className="flex items-center gap-2 relative z-40">
-                    当前状态
-                    <button
-                      ref={filterButtonRef}
-                      className="p-1 hover:bg-[#f5f5f5] rounded-[4px]"
-                      onClick={(event) => {
-                        const rect = event.currentTarget.getBoundingClientRect();
-                        setFilterPosition({
-                          top: rect.bottom + 4,
-                          left: rect.left
-                        });
-                        setShowStatusFilter(!showStatusFilter);
-                      }}
-                    >
-                      <Filter className="w-3.5 h-3.5 text-[#A3A3A3]" />
-                    </button>
-                    {showStatusFilter && filterPosition && (
-                      <>
-                        <div 
-                          className="fixed inset-0 z-40" 
-                          onClick={() => setShowStatusFilter(false)}
-                          style={{ pointerEvents: 'auto' }}
-                        />
-                        <SurfaceOverlay
-                          className="fixed w-56 rounded-[4px] z-50 will-change-transform"
-                          style={{
-                            top: `${filterPosition.top}px`,
-                            left: `${filterPosition.left}px`,
-                            pointerEvents: 'auto',
-                          }}
-                        >
-                          <div className="p-3 space-y-2 max-h-64 overflow-y-auto">
-                            {["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"].map((status) => (
-                              <label key={status} className="flex items-center gap-2 cursor-pointer">
-                                <Checkbox
-                                  checked={selectedStatuses.has(status as ClawStatus)}
-                                  onCheckedChange={(checked) => handleStatusFilterChange(status as ClawStatus, !!checked)}
-                                  disabled={isStatusDisabled(status as ClawStatus)}
-                                />
-                                <span className={`text-sm ${isStatusDisabled(status as ClawStatus) ? "text-[#A3A3A3]" : "text-[#334155]"}`}>
-                                  {STATUS_CONFIG[status as ClawStatus].label}
-                                </span>
-                              </label>
-                            ))}
-                          </div>
-                          <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
-                            <Button variant="claw-outline" size="claw-sm" onClick={handleStatusFilterReset} className="flex-1">
-                              重置
-                            </Button>
-                            <Button variant="claw-primary" size="claw-sm" onClick={handleStatusFilterConfirm} className="flex-1">
-                              确认
-                            </Button>
-                          </div>
-                        </SurfaceOverlay>
-                      </>
-                    )}
-                  </div>
+                  <Popover open={showStatusFilter} onOpenChange={setShowStatusFilter}>
+                    <PopoverTrigger asChild>
+                      <button className="flex items-center gap-1 group/status">
+                        <span>当前状态</span>
+                        <Filter className={`w-3.5 h-3.5 transition-colors ${selectedStatuses.size > 0 && selectedStatuses.size < ALL_STATUSES.length ? 'text-[#355EF1]' : 'text-[#A3A3A3] group-hover/status:text-[#737373]'}`} />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                      <div className="p-2 space-y-0.5 max-h-64 overflow-y-auto">
+                        {["creating", "createFail", "running", "loading", "loadFail", "shutdown", "maintaining", "pending"].map((status) => {
+                          const disabled = isStatusDisabled(status as ClawStatus);
+                          return (
+                            <label
+                              key={status}
+                              className={`flex items-center gap-2 px-2 py-1.5 rounded-[4px] transition-colors ${
+                                disabled
+                                  ? "cursor-not-allowed opacity-60"
+                                  : "cursor-pointer hover:bg-[#f5f5f5]"
+                              }`}
+                            >
+                              <Checkbox
+                                checked={selectedStatuses.has(status as ClawStatus)}
+                                onCheckedChange={(checked) => handleStatusFilterChange(status as ClawStatus, !!checked)}
+                                disabled={disabled}
+                              />
+                              <span className={`text-sm ${disabled ? "text-[#A3A3A3]" : "text-[#334155]"}`}>
+                                {STATUS_CONFIG[status as ClawStatus].label}
+                              </span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <div className="border-t border-[#e5e5e5] p-2 flex gap-2">
+                        <Button variant="claw-outline" size="claw-sm" onClick={handleStatusFilterReset} className="flex-1">
+                          重置
+                        </Button>
+                        <Button variant="dialog-confirm" size="claw-sm" onClick={handleStatusFilterConfirm} className="flex-1">
+                          确认
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </TableHead>
                 <TableHead className="whitespace-nowrap" style={{ width: '208px', minWidth: '160px', maxWidth: '208px' }}>创建人</TableHead>
                 {hasOneid && (
@@ -2058,10 +2052,13 @@ export default function AgentMonitor() {
                         <Filter className={`w-3.5 h-3.5 transition-colors ${agentTypeFilter.size > 0 && agentTypeFilter.size < ALL_AGENT_TYPES.length ? 'text-[#355EF1]' : 'text-[#A3A3A3] group-hover/type:text-[#737373]'}`} />
                       </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-56 p-0" align="start" side="bottom">
-                      <div className="p-3 space-y-2">
+                    <PopoverContent className="w-[280px] p-0" align="start" side="bottom">
+                      <div className="p-2 space-y-0.5">
                         {Object.entries(AGENT_TYPE_DISPLAY).map(([key, label]) => (
-                          <label key={key} className="flex items-center gap-2 cursor-pointer">
+                          <label
+                            key={key}
+                            className="flex items-center gap-2 px-2 py-1.5 rounded-[4px] cursor-pointer transition-colors hover:bg-[#f5f5f5]"
+                          >
                             <Checkbox
                               checked={tempTypeFilter.has(key)}
                               onCheckedChange={(checked) => {
@@ -2083,7 +2080,7 @@ export default function AgentMonitor() {
                           setPage(1);
                           setTypeColFilterOpen(false);
                         }}>重置</Button>
-                        <Button variant="claw-primary" size="claw-sm" className="flex-1" onClick={() => {
+                        <Button variant="dialog-confirm" size="claw-sm" className="flex-1" onClick={() => {
                           setAgentTypeFilter(new Set(tempTypeFilter));
                           setPage(1);
                           setTypeColFilterOpen(false);
@@ -2119,7 +2116,17 @@ export default function AgentMonitor() {
                   const checkboxTooltip = "";
 
                   return (
-                    <TableRow key={claw.id}>
+                    <TableRow
+                      key={claw.id}
+                      className="cursor-pointer"
+                      onClick={(e) => {
+                        // 点击行内交互元素（按钮 / 链接 / 输入框 / 复选框等）时跳过，避免误触
+                        if ((e.target as HTMLElement).closest('button, a, input, label, [role="checkbox"], [data-no-row-select]')) {
+                          return;
+                        }
+                        handleSelectOne(claw.id, !selectedIds.has(claw.id));
+                      }}
+                    >
                       {/* 复选框 - 固定左侧（非边界列） */}
                       <TableCell fixed="left" fixedShadow={false} className="py-4 px-4 whitespace-nowrap" style={{ width: '56px', minWidth: '56px' }}>
                         <Checkbox
@@ -2247,8 +2254,8 @@ export default function AgentMonitor() {
                         {AGENT_TYPE_DISPLAY[claw.agentType] ?? claw.agentType}
                       </TableCell>
                       {/* Agent 版本 */}
-                      <TableCell className="px-4 py-4">
-                        <Badge variant="secondary" className="font-mono">{claw.version}</Badge>
+                      <TableCell className="px-4 py-4 text-sm text-[#0A0A0A] tabular-nums whitespace-nowrap">
+                        {claw.version}
                       </TableCell>
                       {/* 标签（当前页无任何带标签的实例时整列隐藏） */}
                       {hasAnyTagColumn && (
@@ -2380,7 +2387,7 @@ export default function AgentMonitor() {
 
           {/* Pagination */}
           {versionFiltered.length > PAGE_SIZE && (
-            <div className="px-4 py-2 border-t border-[#EAEEF4]">
+            <div className="px-4 py-3 border-t border-[#f0f0f0]">
               <Pagination
                 total={versionFiltered.length}
                 current={safePage}
@@ -2477,8 +2484,8 @@ export default function AgentMonitor() {
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="space-y-2">
-            <label className="text-[14px] font-medium text-[#0A0A0A]">请输入「重装」以确认</label>
+          <div>
+            <label className="block text-[14px] font-medium text-[#0A0A0A] mb-2">请输入「重装」以确认</label>
             <Input
               value={reinstallInput}
               onChange={(e) => setReinstallInput(e.target.value)}
@@ -2532,8 +2539,8 @@ export default function AgentMonitor() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               {isRunning && (
-                <div className="space-y-2">
-                  <label className="text-[14px] font-medium text-[#0A0A0A]">请输入「删除」以确认</label>
+                <div>
+                  <label className="block text-[14px] font-medium text-[#0A0A0A] mb-2">请输入「删除」以确认</label>
                   <Input
                     value={deleteInput}
                     onChange={(e) => setDeleteInput(e.target.value)}
@@ -2689,11 +2696,8 @@ export default function AgentMonitor() {
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <BodyText as="p" tone="secondary">待更新实例</BodyText>
-                <MetaText as="p">可移除不需要更新的实例</MetaText>
-              </div>
+            <div>
+              <div className="text-sm font-medium text-[#0A0A0A] mb-2">待更新实例</div>
 
               <Table
                 density="compact"
@@ -2701,46 +2705,58 @@ export default function AgentMonitor() {
               >
                 <TableHeader className="bg-[#FAFAFA]">
                   <TableRow className="border-b border-[#E5E5E5] hover:bg-transparent">
-                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">实例</TableHead>
-                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">Agent 类型</TableHead>
-                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">版本</TableHead>
-                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">状态</TableHead>
-                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA] text-center">操作</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA]">实例</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA]">Agent 类型</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA]">版本</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA]">状态</TableHead>
+                    <TableHead className="sticky top-0 z-10 bg-[#FAFAFA]">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {claws.filter(c => selectedIds.has(c.id)).map(c => {
+                  {(() => {
+                    const rows = claws.filter(c => selectedIds.has(c.id));
+                    if (rows.length === 0) {
+                      return (
+                        <TableRow className="hover:bg-transparent">
+                          <TableCell colSpan={5} className="h-[60px] text-center text-sm text-[#A3A3A3]">
+                            暂无待更新实例
+                          </TableCell>
+                        </TableRow>
+                      );
+                    }
+                    return rows.map(c => {
                     const sc = STATUS_CONFIG[c.status];
                     return (
                       <TableRow key={c.id} className="border-[#F0F0F0] hover:bg-[#FAFAFA]">
-                        <TableCell className="h-[52px] min-w-[180px] max-w-[260px] py-2.5 text-center">
-                          <div className="mx-auto min-w-0 max-w-full text-left">
+                        <TableCell className="h-[52px] min-w-[180px] max-w-[260px] py-2.5">
+                          <div className="min-w-0">
                             <div className="truncate text-xs font-medium text-[#0A0A0A]">{c.name}</div>
                             <div className="font-mono text-xs text-[#A3A3A3]">{c.instanceId}</div>
                           </div>
                         </TableCell>
-                        <TableCell className="h-[52px] py-2.5 text-center">
+                        <TableCell className="h-[52px] py-2.5">
                           <span className="text-xs text-[#334155]">{AGENT_TYPE_DISPLAY[c.agentType] ?? c.agentType}</span>
                         </TableCell>
-                        <TableCell className="h-[52px] py-2.5 text-center">
+                        <TableCell className="h-[52px] py-2.5">
                           <span className="font-mono text-xs text-[#334155]">{c.version}</span>
                         </TableCell>
-                        <TableCell className="h-[52px] py-2.5 text-center">
-                          <StatusTag mode="dot" variant={sc.tagVariant}>
+                        <TableCell className="h-[52px] py-2.5">
+                          <StatusTag mode="text" variant={sc.tagVariant}>
                             {sc.label}
                           </StatusTag>
                         </TableCell>
-                        <TableActionCell rawChildren className="h-[52px] py-2.5 text-center">
-                          <button
+                        <TableActionCell rawChildren className="h-[52px] py-2.5">
+                          <Button
+                            variant="link"
                             onClick={() => setSelectedIds(prev => { const n = new Set(prev); n.delete(c.id); return n; })}
-                            className="whitespace-nowrap text-xs text-[#737373] transition-colors hover:text-red-600"
                           >
                             移除
-                          </button>
+                          </Button>
                         </TableActionCell>
                       </TableRow>
                     );
-                  })}
+                    });
+                  })()}
                 </TableBody>
               </Table>
             </div>
@@ -2748,7 +2764,12 @@ export default function AgentMonitor() {
 
           <DialogFooter className="gap-2">
             <Button variant="claw-outline" size="claw-sm" onClick={() => setShowBatchUpgradeDialog(false)}>取消</Button>
-            <Button variant="dialog-confirm" size="claw-sm" onClick={confirmBatchUpgrade}>
+            <Button
+              variant="dialog-confirm"
+              size="claw-sm"
+              onClick={confirmBatchUpgrade}
+              disabled={selectedIds.size === 0}
+            >
               确认更新
             </Button>
           </DialogFooter>
@@ -2890,38 +2911,43 @@ export default function AgentMonitor() {
                         </button>
                       </PopoverTrigger>
                       <PopoverContent className="w-72 p-0" align="start" side="bottom">
-                        {/* 搜索框 */}
-                        <div className="flex items-center gap-2 px-3 py-2 border-b border-[#e5e5e5]">
-                          <Search className="w-3.5 h-3.5 text-[#A3A3A3] flex-shrink-0" />
-                          <input
-                            autoFocus
-                            className="flex-1 text-sm outline-none placeholder:text-[#A3A3A3]"
+                        <Command>
+                          <CommandInput
                             placeholder="搜索标签键..."
                             value={keySearch}
-                            onChange={(e) => setTagKeySearchByRow((prev) => ({ ...prev, [rowIdx]: e.target.value }))}
+                            onValueChange={(v) =>
+                              setTagKeySearchByRow((prev) => ({ ...prev, [rowIdx]: v }))
+                            }
                           />
-                        </div>
-                        {/* 标签键列表 */}
-                        <div className="max-h-52 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
-                          {tagKeys
-                            .filter(k => k.toLowerCase().includes(keySearch.toLowerCase()))
-                            .map(k => (
-                              <button
-                                key={k}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
-                                  row.key === k ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
-                                }`}
-                                onClick={() => setRowKey(k)}
-                              >
-                                {k}
-                              </button>
-                            ))
-                          }
-                          {tagKeys.filter(k => k.toLowerCase().includes(keySearch.toLowerCase())).length === 0 && (
-                            <div className="px-4 py-3 text-sm text-[#A3A3A3] text-center">无匹配结果</div>
-                          )}
-                        </div>
-                        <div className="px-3 py-1.5 border-t border-[#e5e5e5] text-xs text-[#A3A3A3]">共 {tagKeys.length} 条</div>
+                          <CommandList className="max-h-52">
+                            <CommandEmpty>无匹配结果</CommandEmpty>
+                            <CommandGroup>
+                              {tagKeys.map((k) => {
+                                const isSelected = row.key === k;
+                                return (
+                                  <CommandItem
+                                    key={k}
+                                    value={k}
+                                    onSelect={() => setRowKey(k)}
+                                    className={
+                                      isSelected
+                                        ? "text-[#1447E6] font-medium data-[selected=true]:text-[#1447E6]"
+                                        : ""
+                                    }
+                                  >
+                                    <Check
+                                      className={`w-3.5 h-3.5 ${isSelected ? "opacity-100 text-[#1447E6]" : "opacity-0"}`}
+                                    />
+                                    <span className="truncate">{k}</span>
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                          <div className="px-3 py-1.5 border-t border-[#e5e5e5] text-xs text-[#A3A3A3]">
+                            共 {tagKeys.length} 条
+                          </div>
+                        </Command>
                       </PopoverContent>
                     </Popover>
                   </div>
@@ -2958,22 +2984,33 @@ export default function AgentMonitor() {
                           </button>
                         </PopoverTrigger>
                         <PopoverContent className="w-48 p-0" align="start" side="bottom">
-                          <div className="max-h-44 overflow-y-auto py-1" onWheel={(e) => e.stopPropagation()}>
-                            {(tagKeyValues[row.key] || []).map(v => (
-                              <button
-                                key={v}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-[#f5f5f5] transition-colors ${
-                                  row.value === v ? 'text-[#355EF1] font-medium bg-[#eff4ff]/50' : 'text-[#334155]'
-                                }`}
-                                onClick={() => setRowValue(v)}
-                              >
-                                {v}
-                              </button>
-                            ))}
-                            {(tagKeyValues[row.key] || []).length === 0 && (
-                              <div className="px-4 py-3 text-sm text-[#A3A3A3] text-center">暂无可用值</div>
-                            )}
-                          </div>
+                          <Command>
+                            <CommandList className="max-h-44">
+                              <CommandEmpty>暂无可用值</CommandEmpty>
+                              <CommandGroup>
+                                {(tagKeyValues[row.key] || []).map((v) => {
+                                  const isSelected = row.value === v;
+                                  return (
+                                    <CommandItem
+                                      key={v}
+                                      value={v}
+                                      onSelect={() => setRowValue(v)}
+                                      className={
+                                        isSelected
+                                          ? "text-[#1447E6] font-medium data-[selected=true]:text-[#1447E6]"
+                                          : ""
+                                      }
+                                    >
+                                      <Check
+                                        className={`w-3.5 h-3.5 ${isSelected ? "opacity-100 text-[#1447E6]" : "opacity-0"}`}
+                                      />
+                                      <span className="truncate">{v}</span>
+                                    </CommandItem>
+                                  );
+                                })}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
                         </PopoverContent>
                       </Popover>
                     ) : (
@@ -3155,7 +3192,7 @@ export default function AgentMonitor() {
                           <div className="border-b border-[#f0f0f0] px-3 py-2">
                             <MetaMedium>模型配置</MetaMedium>
                           </div>
-                          <div className="divide-y divide-[#f0f0f0]">
+                          <div className="divide-y divide-gray-200">
                             <div className="px-3 py-2 space-y-1.5">
                               <MetaMedium as="label">模型厂商</MetaMedium>
                               <Select value={modelDraftProvider} onValueChange={handleDraftProviderChange}>
@@ -3415,7 +3452,7 @@ export default function AgentMonitor() {
                                     )}
                                   </div>
 
-                                  <div className="divide-y divide-[#f0f0f0]">
+                                  <div className="divide-y divide-gray-200">
                                     {fields.map((field) => {
                                       const visible = isSecretVisible(channel.name, field.key);
                                       if (isEditingThis) {
@@ -3507,7 +3544,7 @@ export default function AgentMonitor() {
                               <div className="border-b border-[#f0f0f0] px-3 py-2">
                                 <MetaMedium>通道配置</MetaMedium>
                               </div>
-                              <div className="divide-y divide-[#f0f0f0]">
+                              <div className="divide-y divide-gray-200">
                                 {/* 通道选择 */}
                                 <div className="px-3 py-2 space-y-1.5">
                                   <MetaMedium as="label">通道类型</MetaMedium>

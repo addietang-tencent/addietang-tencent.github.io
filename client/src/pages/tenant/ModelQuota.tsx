@@ -500,7 +500,7 @@ export default function ModelQuota() {
           <h2 className="text-sm font-semibold text-gray-900 mb-3">模型使用汇总</h2>
           <TenantCard padding="none" className="mb-5 overflow-hidden">
             <Table>
-              <TableHeader>
+              <TableHeader className="!bg-white">
                 <TableRow>
                   <TableHead>模型名称</TableHead>
                   <TableHead className="text-right w-32">总请求数</TableHead>
@@ -541,7 +541,7 @@ export default function ModelQuota() {
           <h2 className="text-sm font-semibold text-gray-900 mb-3">详细使用记录</h2>
           <TenantCard padding="none" className="overflow-hidden">
             <Table>
-              <TableHeader>
+              <TableHeader className="!bg-white">
                 <TableRow>
                   <TableHead className="w-44">请求时间</TableHead>
                   <TableHead>模型名称</TableHead>

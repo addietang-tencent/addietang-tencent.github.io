@@ -54,10 +54,10 @@ export function FilterChipGroup({
             type="button"
             onClick={() => onChange(item.id)}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border",
+              "px-4 py-1.5 rounded-[4px] text-sm font-normal transition-colors border",
               isActive
-                ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
-                : "bg-white text-[#525252] border-[#EAEEF4] hover:border-[#0A0A0A] hover:text-[#0A0A0A]"
+                ? "bg-[#020617] text-white border-[#020617]"
+                : "bg-white text-[#020617] border-[#EAEEF4] hover:border-[#020617]"
             )}
           >
             {item.label}
@@ -93,10 +93,10 @@ export function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border",
+        "px-4 py-1.5 rounded-[4px] text-sm font-normal transition-colors border",
         active
-          ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
-          : "bg-white text-[#525252] border-[#EAEEF4] hover:border-[#0A0A0A] hover:text-[#0A0A0A]",
+          ? "bg-[#020617] text-white border-[#020617]"
+          : "bg-white text-[#020617] border-[#EAEEF4] hover:border-[#020617]",
         className
       )}
     >

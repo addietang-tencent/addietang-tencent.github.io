@@ -17,28 +17,28 @@ import { SmallBodyText } from "@/components/ui/Typography";
 const statusTagColorTokens = {
   /** Existing global semantic tokens */
   blue: {
-    text: "text-[#1447E6]",
-    bg: "bg-[#E8ECFE]",
-    border: "border-[#C7D7FE]",
-    dot: "bg-[#1447E6]",
+    text: "text-blue-500",
+    bg: "bg-blue-50",
+    border: "border-blue-200",
+    dot: "bg-blue-500",
   },
   green: {
-    text: "text-[#008236]",
-    bg: "bg-[#E9F8EB]",
-    border: "border-[#BFE8C8]",
-    dot: "bg-[#008236]",
+    text: "text-green-700",
+    bg: "bg-green-50",
+    border: "border-green-200",
+    dot: "bg-green-700",
   },
   red: {
-    text: "text-[#DC2626]",
-    bg: "bg-[#FEF2F2]",
-    border: "border-[#FECACA]",
-    dot: "bg-[#DC2626]",
+    text: "text-red-600",
+    bg: "bg-red-50",
+    border: "border-red-200",
+    dot: "bg-red-600",
   },
   orange: {
     text: "text-orange-700",
     bg: "bg-orange-50",
     border: "border-orange-200",
-    dot: "bg-[#F59E0B]",
+    dot: "bg-orange-500",
   },
   gray: {
     text: "text-gray-900",

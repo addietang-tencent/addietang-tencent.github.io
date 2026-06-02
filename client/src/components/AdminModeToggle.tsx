@@ -32,7 +32,7 @@ const LABEL: Record<AdminMode, string> = {
 };
 
 export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
-  const { mode, setMode, isCustom } = useAdminMode();
+  const { mode, setMode, isCustom, isStandard, isUnified } = useAdminMode();
 
   /** 折叠态：点击循环切换到下一个模式 */
   const cycleMode = () => {
@@ -66,7 +66,7 @@ export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
 
           {/* 分段选择器容器 */}
           <div className="flex items-center bg-gray-100 rounded-[4px] p-0.5 gap-0.5">
-            {/* 普通模式（左侧，对应 custom） */}
+            {/* 普通模式（custom） */}
             <button
               onClick={() => setMode("custom")}
               className={`
@@ -86,13 +86,13 @@ export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
               普通
             </button>
 
-            {/* OneID 专用模式（右侧，对应 standard） */}
+            {/* OneID 专用模式（standard） */}
             <button
               onClick={() => setMode("standard")}
               className={`
                 flex-1 flex items-center justify-center gap-1 h-7 rounded-[4px] text-xs font-medium
                 transition-all duration-200 select-none
-                ${!isCustom
+                ${isStandard
                   ? "bg-white text-blue-600 shadow-sm shadow-black/10 font-semibold"
                   : "text-gray-500 hover:text-gray-700"
                 }
@@ -100,10 +100,30 @@ export default function AdminModeToggle({ collapsed }: { collapsed: boolean }) {
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors duration-200 ${
-                  !isCustom ? "bg-blue-500" : "bg-gray-400"
+                  isStandard ? "bg-blue-500" : "bg-gray-400"
                 }`}
               />
               oneid专用
+            </button>
+
+            {/* 统一模式（unified） */}
+            <button
+              onClick={() => setMode("unified")}
+              className={`
+                flex-1 flex items-center justify-center gap-1 h-7 rounded-[4px] text-xs font-medium
+                transition-all duration-200 select-none
+                ${isUnified
+                  ? "bg-white shadow-sm shadow-black/10 font-semibold"
+                  : "text-gray-500 hover:text-gray-700"
+                }
+              `}
+              style={isUnified ? { color: "#5856D6" } : undefined}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-all duration-200"
+                style={isUnified ? { background: BRAND_GRADIENT } : { background: "#9ca3af" }}
+              />
+              统一
             </button>
           </div>
         </div>

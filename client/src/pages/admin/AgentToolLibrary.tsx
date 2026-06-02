@@ -4,8 +4,9 @@
  * 四个 Tab：公共技能库、企业技能库、企业插件库、企业MCP库
  * 将原 SkillConfig 中的公共技能库和企业技能库迁移至此，并新增企业插件库和企业MCP库
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useLocation, useSearch } from "wouter";
 import { ShieldCheck, ExternalLink, Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,10 +42,17 @@ const TABS = [
     label: "企业MCP库",
     description: "统一管理 MCP 服务配置，支持远程服务和本地命令两种连接方式，按需下发到智能体实例。",
   },
-];
+] as const;
+
+type AgentToolLibraryTabId = (typeof TABS)[number]["id"];
+
+const isAgentToolLibraryTabId = (value: string | null): value is AgentToolLibraryTabId =>
+  TABS.some((tab) => tab.id === value);
 
 export default function AgentToolLibrary() {
-  const [activeTab, setActiveTab] = useState("public");
+  const [, navigate] = useLocation();
+  const searchStr = useSearch();
+  const [activeTab, setActiveTab] = useState<AgentToolLibraryTabId>("public");
   const [packages, setPackages] = useState<Array<{ id: string; name: string; isActive: boolean }>>([
     { id: 'pkg-1', name: '全员通用技能包', isActive: true },
     { id: 'pkg-2', name: '高级开发技能包', isActive: false },
@@ -60,6 +68,23 @@ export default function AgentToolLibrary() {
   const [securitySuccessDialogOpen, setSecuritySuccessDialogOpen] = useState(false);
   const [securityServiceUsed] = useState(156); // mock 已用额度
 
+  useEffect(() => {
+    const tab = new URLSearchParams(searchStr).get("tab");
+    setActiveTab(isAgentToolLibraryTabId(tab) ? tab : "public");
+  }, [searchStr]);
+
+  const handleTabChange = (tabId: AgentToolLibraryTabId) => {
+    setActiveTab(tabId);
+    const params = new URLSearchParams(searchStr);
+    if (tabId === "public") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tabId);
+    }
+    const queryString = params.toString();
+    navigate(queryString ? `/admin/agent-tool-library?${queryString}` : "/admin/agent-tool-library", { replace: true });
+  };
+
   const currentTab = TABS.find((t) => t.id === activeTab)!;
 
   return (
@@ -72,7 +97,7 @@ export default function AgentToolLibrary() {
           {TABS.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A] -mb-px"

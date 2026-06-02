@@ -42,9 +42,15 @@ import {
   ChevronLeft, ChevronRight, Copy, CheckCircle, AlertCircle, AlertTriangle, CircleAlert,
   Loader2, X, FileText, ExternalLink, RefreshCw, Users, Check,
   FolderOpen, UserMinus, FolderPlus, ChevronUp, Link2, Filter,
+  Eye, EyeOff,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdminMode } from "@/contexts/AdminModeContext";
+import {
+  PASSWORD_RULES_HINT,
+  PASSWORD_MAX_LENGTH,
+  validatePasswordStrength,
+} from "@/lib/password-rules";
 import AuthSourceImportDialog, { ConfiguredAuthSource } from "./AuthSourceImportDialog";
 // ─── 新：分组视图（多层级 + 节点健康度 + 覆盖状态 + 就地决策，v2.0） ────
 import NewGroupView from "./MemberManagement/GroupView";
@@ -488,6 +494,8 @@ const emptyEditForm = {
 
 const emptyResetForm = {
   notificationEmail: "",
+  newPassword: "",
+  confirmPassword: "",
 };
 
 // ─── TokenLimit 输入框：默认填数字，右侧「无限制」文字按钮切换 ─────────────────
@@ -1207,6 +1215,8 @@ const emptyOneidEditForm = {
 function OneidEditMemberFormFields({
   values,
   onChange,
+  isUnified = false,
+  isInitialAdmin = false,
   groups = [],
   userGroups = [],
   onOpenCreateGroupDialog,
@@ -1214,6 +1224,10 @@ function OneidEditMemberFormFields({
 }: {
   values: typeof emptyOneidEditForm;
   onChange: (v: typeof emptyOneidEditForm) => void;
+  /** unified 模式：允许编辑用户角色（与普通模式对齐） */
+  isUnified?: boolean;
+  /** 初始管理员：角色不可改，避免误降级 */
+  isInitialAdmin?: boolean;
   groups?: MemberGroup[];
   userGroups?: MMUserGroup[];
   onOpenCreateGroupDialog?: () => void;
@@ -1352,8 +1366,12 @@ function OneidEditMemberFormFields({
           </div>
           <div className="space-y-2">
             <Label>用户角色</Label>
-            <Select value={values.role} disabled>
-              <SelectTrigger className="bg-[#f5f5f5] cursor-not-allowed opacity-60 w-full">
+            <Select
+              value={values.role}
+              onValueChange={(v) => isUnified && !isInitialAdmin && onChange({ ...values, role: v })}
+              disabled={!isUnified || isInitialAdmin}
+            >
+              <SelectTrigger className={`w-full ${(!isUnified || isInitialAdmin) ? "bg-[#f5f5f5] cursor-not-allowed opacity-60" : "bg-white"}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -1875,6 +1893,11 @@ export default function MemberManagement() {
   const [newMember, setNewMember] = useState({ ...emptyNewMember });
   const [editForm, setEditForm] = useState({ ...emptyEditForm });
   const [resetForm, setResetForm] = useState({ ...emptyResetForm });
+  // ─── 重置密码（unified 模式手动输入）：行内错误 + 明文显示 ────────────────
+  const [resetNewPwdError, setResetNewPwdError] = useState<string | null>(null);
+  const [resetConfirmPwdError, setResetConfirmPwdError] = useState<string | null>(null);
+  const [showResetNewPwd, setShowResetNewPwd] = useState(false);
+  const [showResetConfirmPwd, setShowResetConfirmPwd] = useState(false);
 
   // 创建/重置成功弹窗
   const [credentialDialog, setCredentialDialog] = useState<{
@@ -2264,8 +2287,42 @@ export default function MemberManagement() {
   };
 
   const handleReset = () => {
-    const pwd = generatePassword();
     const memberId = showResetDialog ?? "";
+
+    // ─── unified 模式：管理员直接输入新密码 ─────────────────────────────────
+    if (isUnified) {
+      const { newPassword, confirmPassword } = resetForm;
+
+      // 1. 非空
+      if (!newPassword.trim() || !confirmPassword.trim()) {
+        if (!newPassword.trim()) setResetNewPwdError("请输入新密码");
+        if (!confirmPassword.trim()) setResetConfirmPwdError("请再次输入新密码");
+        return;
+      }
+      // 2. 强度校验
+      const strengthError = validatePasswordStrength(newPassword);
+      if (strengthError) {
+        setResetNewPwdError(strengthError);
+        return;
+      }
+      // 3. 两次一致
+      if (newPassword !== confirmPassword) {
+        setResetConfirmPwdError("两次输入的密码需保持一致");
+        return;
+      }
+
+      setShowResetDialog(null);
+      setResetForm({ ...emptyResetForm });
+      setResetNewPwdError(null);
+      setResetConfirmPwdError(null);
+      setShowResetNewPwd(false);
+      setShowResetConfirmPwd(false);
+      toast.success("密码重置成功");
+      return;
+    }
+
+    // ─── 其他模式（standard / custom）：保留原\"系统自动生成 + 结果弹窗\"流程 ─
+    const pwd = generatePassword();
     setShowResetDialog(null);
     setResetForm({ ...emptyResetForm });
     setCredentialDialog({ open: true, title: "密码已重置", memberId, password: pwd });
@@ -2551,8 +2608,8 @@ export default function MemberManagement() {
               </Button>
             )}
 
-            {/* 普通模式 + 全部视图：导出用户列表 + 添加用户 */}
-            {viewMode === "all" && !hasOneid && (
+            {/* 普通模式 + 统一模式：导出用户列表 + 添加用户（仅全部视图） */}
+            {viewMode === "all" && showCustomExtras && (
               <>
                 <Button
                   variant="outline"
@@ -2850,7 +2907,7 @@ export default function MemberManagement() {
                     >
                       编辑
                     </Button>
-                    {!hasOneid && (
+                    {showCustomExtras && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="link">
@@ -2871,7 +2928,7 @@ export default function MemberManagement() {
                                 <TooltipContent side="left" className="max-w-[220px] text-xs leading-relaxed">管理员账号不允许重置密码</TooltipContent>
                               </Tooltip>
                             ) : (
-                              <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); }}>
+                              <DropdownMenuItem onClick={() => { setShowResetDialog(member.id); setResetForm({ ...emptyResetForm }); setResetNewPwdError(null); setResetConfirmPwdError(null); setShowResetNewPwd(false); setShowResetConfirmPwd(false); }}>
                                 <Key />重置密码
                               </DropdownMenuItem>
                             )}
@@ -3031,6 +3088,8 @@ export default function MemberManagement() {
               <OneidEditMemberFormFields
                 values={oneidEditForm}
                 onChange={setOneidEditForm}
+                isUnified={isUnified}
+                isInitialAdmin={isInitialAdminEdit}
                 groups={groups}
                 userGroups={MM_MOCK_GROUPS}
                 onOpenCreateGroupDialog={() => { setShowCreateGroupDialog(true); setNewGroupName(""); setNewGroupParentId(null); }}
@@ -3240,7 +3299,7 @@ export default function MemberManagement() {
       </Dialog>
 
       {/* Reset Password Dialog */}
-      <Dialog open={!!showResetDialog} onOpenChange={(open) => { if (!open) { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); } }}>
+      <Dialog open={!!showResetDialog} onOpenChange={(open) => { if (!open) { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); setResetNewPwdError(null); setResetConfirmPwdError(null); setShowResetNewPwd(false); setShowResetConfirmPwd(false); } }}>
         <DialogContent
           className="sm:max-w-md"
           style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
@@ -3251,12 +3310,88 @@ export default function MemberManagement() {
           </DialogHeader>
           <DialogBody className="flex-1">
             <div className="space-y-4">
-              <Alert variant="info">
-                <AlertInfoIcon />
-                <AlertDescription>
-                  确认重置用户「<span className="font-medium">{showResetDialog}</span>」的密码？系统将自动生成新密码。
-                </AlertDescription>
-              </Alert>
+              {isUnified ? (
+                <>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    为用户 <span className="font-semibold text-gray-900">{showResetDialog}</span> 设置新密码。
+                  </p>
+
+                  {/* 新密码 */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Label className="text-sm font-medium text-gray-700">新密码</Label>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="cursor-help inline-flex">
+                            <Info className="w-3 h-3 text-gray-400" />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[240px] whitespace-normal text-xs leading-relaxed">
+                          {PASSWORD_RULES_HINT}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showResetNewPwd ? "text" : "password"}
+                        placeholder="请输入新密码"
+                        value={resetForm.newPassword}
+                        onChange={(e) => {
+                          setResetForm({ ...resetForm, newPassword: e.target.value });
+                          if (resetNewPwdError) setResetNewPwdError(null);
+                        }}
+                        onBlur={() => {
+                          if (!resetForm.newPassword) { setResetNewPwdError(null); return; }
+                          setResetNewPwdError(validatePasswordStrength(resetForm.newPassword));
+                        }}
+                        maxLength={PASSWORD_MAX_LENGTH}
+                        className={`pr-10 ${resetNewPwdError ? "border-red-500 focus-visible:ring-red-500/30" : ""}`}
+                      />
+                      <button type="button" onClick={() => setShowResetNewPwd((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors" aria-label={showResetNewPwd ? "隐藏密码" : "显示密码"} tabIndex={-1}>
+                        {showResetNewPwd ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {resetNewPwdError && <p className="text-xs text-red-500 leading-tight">{resetNewPwdError}</p>}
+                  </div>
+
+                  {/* 确认新密码 */}
+                  <div className="space-y-1.5">
+                    <Label className="text-sm font-medium text-gray-700">确认新密码</Label>
+                    <div className="relative">
+                      <Input
+                        type={showResetConfirmPwd ? "text" : "password"}
+                        placeholder="请再次输入新密码"
+                        value={resetForm.confirmPassword}
+                        onChange={(e) => {
+                          setResetForm({ ...resetForm, confirmPassword: e.target.value });
+                          if (resetConfirmPwdError) setResetConfirmPwdError(null);
+                        }}
+                        onBlur={() => {
+                          if (!resetForm.confirmPassword) { setResetConfirmPwdError(null); return; }
+                          if (resetForm.newPassword && resetForm.confirmPassword !== resetForm.newPassword) {
+                            setResetConfirmPwdError("两次输入的密码需保持一致");
+                          } else {
+                            setResetConfirmPwdError(null);
+                          }
+                        }}
+                        maxLength={PASSWORD_MAX_LENGTH}
+                        className={`pr-10 ${resetConfirmPwdError ? "border-red-500 focus-visible:ring-red-500/30" : ""}`}
+                      />
+                      <button type="button" onClick={() => setShowResetConfirmPwd((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 transition-colors" aria-label={showResetConfirmPwd ? "隐藏密码" : "显示密码"} tabIndex={-1}>
+                        {showResetConfirmPwd ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {resetConfirmPwdError && <p className="text-xs text-red-500 leading-tight">{resetConfirmPwdError}</p>}
+                  </div>
+                </>
+              ) : (
+                <Alert variant="info">
+                  <AlertInfoIcon />
+                  <AlertDescription>
+                    确认重置用户「<span className="font-medium">{showResetDialog}</span>」的密码？系统将自动生成新密码。
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* 信息发送地址 */}
               <div className="space-y-2">
@@ -3280,7 +3415,7 @@ export default function MemberManagement() {
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); }}>取消</Button>
+            <Button variant="outline" onClick={() => { setShowResetDialog(null); setResetForm({ ...emptyResetForm }); setResetNewPwdError(null); setResetConfirmPwdError(null); setShowResetNewPwd(false); setShowResetConfirmPwd(false); }}>取消</Button>
             <Button variant="dialog-confirm" onClick={handleReset}>
               确认重置
             </Button>

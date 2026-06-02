@@ -1,3 +1,4 @@
+import React from 'react';
 /**
  * MCPDetail - MCP 服务详情页
  * 展示基本信息 + 两个 Tab（文件列表 / 下发记录）
@@ -6,11 +7,9 @@
  */
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { BackButton } from '@/components/ui/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Trash2, Search, Eye, Code, FileText, Loader, Send } from 'lucide-react';
+import { ArrowLeft, Trash2, Search, Eye, Code, FileText, Loader } from 'lucide-react';
 import { toast } from 'sonner';
 import MDXRenderer from '@/components/MDXRenderer';
 import { Input } from '@/components/ui/input';
@@ -27,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import BatchDistributeDialog from './BatchDistributeDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
 import { type MCPService, type DistributionStatus, DISTRIBUTION_STATUS_MAP } from './types';
@@ -42,7 +40,7 @@ import {
 
 // 懒加载语法高亮
 const SyntaxHighlighter = lazy(() =>
-  import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any }))
+  import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any as React.ComponentType<any> }))
 );
 const loadedLanguages = new Set<string>();
 const registerJsonLanguage = async () => {
@@ -252,7 +250,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
   const renderFileContent = () => {
     if (!selectedFile) {
       return (
-        <div className="flex items-center justify-center h-full text-[#737373]">
+        <div className="flex items-center justify-center h-full text-gray-500">
           <p className="text-sm">选择一个文件查看内容</p>
         </div>
       );
@@ -264,11 +262,11 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
     if (!content) {
       return (
         <>
-          <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
-            <p className="text-sm font-medium text-[#09090b]">{selectedFile}</p>
+          <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+            <p className="text-xs font-medium text-gray-900">{selectedFile}</p>
             {isMd && renderViewModeSwitch()}
           </div>
-          <div className="flex items-center justify-center h-full text-[#A3A3A3]">
+          <div className="flex items-center justify-center h-full text-gray-400">
             <p className="text-sm">暂无内容</p>
           </div>
         </>
@@ -277,8 +275,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
     return (
       <>
-        <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center justify-between">
-          <p className="text-sm font-medium text-[#09090b]">{selectedFile}</p>
+        <div className="bg-gray-50/50 px-3 py-1.5 border-b border-gray-200 flex items-center justify-between min-h-[40px]">
+          <p className="text-xs font-medium text-gray-900">{selectedFile}</p>
           {isMd && renderViewModeSwitch()}
         </div>
         <div className="flex-1 overflow-y-auto">
@@ -296,7 +294,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
   const renderSourceView = (content: string, lang: string) => {
     return (
       <Suspense fallback={
-        <pre className="text-xs text-[#334155] overflow-x-auto whitespace-pre font-mono leading-5 bg-gray-50 p-3 m-0">
+        <pre className="text-xs text-gray-700 overflow-x-auto whitespace-pre font-mono leading-5 bg-gray-50 p-3 m-0">
           {content}
         </pre>
       }>
@@ -339,8 +337,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
         onClick={() => setFileViewMode('preview')}
         className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
           fileViewMode === 'preview'
-            ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
-            : 'text-[#737373] hover:text-[#334155]'
+            ? 'bg-white text-gray-900 shadow-sm font-medium'
+            : 'text-gray-500 hover:text-gray-700'
         }`}
       >
         <Eye className="w-3 h-3" />
@@ -350,8 +348,8 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
         onClick={() => setFileViewMode('source')}
         className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
           fileViewMode === 'source'
-            ? 'bg-white text-[#0A0A0A] shadow-sm font-medium'
-            : 'text-[#737373] hover:text-[#334155]'
+            ? 'bg-white text-gray-900 shadow-sm font-medium'
+            : 'text-gray-500 hover:text-gray-700'
         }`}
       >
         <Code className="w-3 h-3" />
@@ -361,26 +359,32 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* 返回按钮 */}
-      <BackButton onClick={onBack}>返回列表</BackButton>
+      <button
+        onClick={onBack}
+        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        返回列表
+      </button>
 
       {/* 基础信息卡片 */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-[#0A0A0A] mb-1">{mcp.displayName || mcp.name}</h1>
-            <p className="text-sm text-[#737373] mb-3">
-              <span className="font-mono text-[#A3A3A3]">{mcp.name}</span>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">{mcp.displayName || mcp.name}</h1>
+            <p className="text-sm text-gray-500 mb-3">
+              <span className="font-mono text-gray-400">{mcp.name}</span>
             </p>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge color="blue">
+              <span className="inline-block px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
                 {mcp.transport === 'stdio' ? '本地命令' : '远程服务'}
-              </Badge>
-              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-[#737373] text-xs font-medium rounded-full">
+              </span>
+              <span className="inline-block px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                 v{mcp.version}
               </span>
-              <span className="text-xs text-[#A3A3A3]">
+              <span className="text-xs text-gray-400">
                 创建于 {mcp.createdAt.toLocaleDateString('zh-CN')}
               </span>
             </div>
@@ -390,12 +394,12 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
               <TooltipTrigger asChild>
                 <span>
                   <Button
-                    variant="claw-outline"
-                    size="claw"
+                    variant="outline"
                     onClick={() => setDeleteDialogOpen(true)}
                     disabled={hasInProgress}
+                    className={`${hasInProgress ? 'opacity-50 cursor-not-allowed' : ''} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200`}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 mr-1.5" />
                     删除
                   </Button>
                 </span>
@@ -404,71 +408,38 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                 <TooltipContent>有下发任务进行中</TooltipContent>
               )}
             </Tooltip>
-            <Button
-              variant="claw-primary"
-              size="claw"
-              onClick={() => setDistributeDialogOpen(true)}
-              disabled={hasInProgress}
-            >
-              {hasInProgress ? '下发中...' : '批量下发'}
-              <Send className="w-4 h-4" />
-            </Button>
           </div>
         </div>
         {mcp.description && (
-          <p className="text-sm text-[#737373] mt-3">{mcp.description}</p>
+          <p className="text-sm text-gray-600 mt-3">{mcp.description}</p>
         )}
-      </div>
-
-      {/* ======== 横向 Segmented Tab（灰底 Tag 样式，与技能详情页一致）======== */}
-      <div>
-        <div
-          className="inline-flex items-center gap-1 p-1 rounded-[4px]"
-          style={{ background: "#F5F5F5" }}
-          role="tablist"
-          aria-label="MCP 详情 Tab 切换"
-        >
-          {[
-            { id: "files", label: "文件列表" },
-            { id: "distribution", label: "下发记录" },
-          ].map((t) => {
-            const active = t.id === activeTab;
-            return (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={active}
-                onClick={() => setActiveTab(t.id)}
-                className={`px-3 py-1.5 text-sm rounded-[3px] transition-all duration-150 ${
-                  active
-                    ? "bg-white text-[#0A0A0A] font-medium"
-                    : "text-[#737373] hover:text-[#0A0A0A] font-normal"
-                }`}
-                style={active ? { boxShadow: "var(--shadow-segment)" } : undefined}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Tab 区域 */}
       <div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* 隐藏原始 TabsList，使用上方自定义 Segmented */}
-          <TabsList className="hidden">
-            <TabsTrigger value="files">文件列表</TabsTrigger>
-            <TabsTrigger value="distribution">下发记录</TabsTrigger>
+          <TabsList className="w-full justify-start bg-white p-0 h-auto gap-2 border-b-0">
+            <TabsTrigger
+              value="files"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+            >
+              文件列表
+            </TabsTrigger>
+            <TabsTrigger
+              value="distribution"
+              className="rounded-lg px-4 py-1.5 text-sm text-gray-600 bg-white hover:bg-gray-50 border border-transparent data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:border-blue-200 transition-colors"
+            >
+              下发记录
+            </TabsTrigger>
           </TabsList>
 
           {/* 文件列表 Tab — 三栏布局 */}
-          <TabsContent value="files" className="mt-0 p-0">
-            <div className="flex h-[47rem] border border-[#e5e5e5] rounded-xl overflow-hidden bg-white">
+          <TabsContent value="files" className="mt-4 p-0">
+            <div className="flex h-[47rem] border border-gray-200 rounded-lg overflow-hidden bg-white">
               {/* 左列：版本列表 */}
-              <div className="w-[14%] min-w-[120px] border-r border-[#e5e5e5] flex flex-col">
-                <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
-                  <p className="text-sm font-medium text-[#09090b]">版本</p>
+              <div className="w-[14%] min-w-[120px] border-r border-gray-200 flex flex-col">
+                <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                  <p className="text-xs font-medium text-gray-900">版本</p>
                 </div>
                 <div className="flex-1 overflow-y-auto">
                   {versions.map((ver: string, idx: number) => {
@@ -478,25 +449,28 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                     const baseDate = mcp.updatedAt || mcp.createdAt;
                     const versionDate = new Date(baseDate);
                     versionDate.setDate(versionDate.getDate() - idx * 15);
-                    const dateStr = `${versionDate.getFullYear()}-${String(versionDate.getMonth() + 1).padStart(2, '0')}-${String(versionDate.getDate()).padStart(2, '0')}`;
                     return (
                       <button
                         key={ver}
                         onClick={() => setSelectedVersion(ver)}
-                        className={`w-full text-left px-3 py-3.5 border-b border-[#f4f4f5] transition-colors ${
-                          isSelected ? 'bg-[#f4f4f5]' : 'hover:bg-[#f4f4f5] cursor-pointer'
+                        className={`w-full text-left px-3 py-2.5 border-b border-gray-100 transition-colors ${
+                          isSelected ? 'bg-blue-50' : 'hover:bg-gray-50 cursor-pointer'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[14px] font-semibold text-[#09090b]">
+                          <span className={`text-[11px] font-semibold ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
                             {ver}
                           </span>
                           {isLatest && (
-                            <span className="inline-flex h-[18px] items-center justify-center rounded-[2px] border border-[#1447E6] px-1 text-[10px] font-semibold leading-none tracking-[0.015em] text-[#355EF1]">
-                              New
+                            <span className="text-[10px] font-medium text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded">
+                              最新
                             </span>
                           )}
-                          <span className="text-[12px] text-[#a1a1aa]">{dateStr}</span>
+                        </div>
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-[10px] text-gray-400">
+                            {versionDate.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}
+                          </span>
                         </div>
                       </button>
                     );
@@ -505,11 +479,11 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
               </div>
 
               {/* 中列：文件列表 */}
-              <div className="w-[22%] min-w-[160px] border-r border-[#e5e5e5] flex flex-col">
-                <div className="h-12 px-3 border-b border-[#e5e5e5] flex items-center">
-                  <p className="text-sm font-medium text-[#09090b]">{selectedVersion || mcp.version}</p>
+              <div className="w-[22%] min-w-[160px] border-r border-gray-200 flex flex-col">
+                <div className="bg-gray-50/50 px-3 py-3 border-b border-gray-200 flex items-center">
+                  <p className="text-xs font-medium text-gray-900">{selectedVersion || mcp.version}</p>
                 </div>
-                <div className="flex-1 overflow-y-auto px-3 py-2">
+                <div className="flex-1 overflow-y-auto">
                   {MCP_FILES.map((file) => {
                     const isActive = selectedFile === file.name;
                     return (
@@ -519,13 +493,14 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                           setSelectedFile(file.name);
                           setFileViewMode(isMarkdownFile(file.name) ? 'preview' : 'source');
                         }}
-                        className={`w-full flex items-center gap-1.5 h-8 px-2 text-sm rounded-[4px] transition-colors ${
+                        className={`w-full flex items-center gap-1.5 px-2 py-1 text-xs rounded transition-colors ${
                           isActive
-                            ? 'bg-[#f4f4f5] text-[#09090b] font-medium'
-                            : 'hover:bg-[#f4f4f5] text-[#09090b] cursor-pointer'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'hover:bg-gray-50 text-gray-600 cursor-pointer'
                         }`}
+                        style={{ paddingLeft: '8px' }}
                       >
-                        <FileText className="w-3.5 h-3.5 text-[#71717a] flex-shrink-0" />
+                        <FileText className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                         <span className="truncate">{file.label}</span>
                       </button>
                     );
@@ -541,15 +516,14 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
           </TabsContent>
 
           {/* 下发记录 Tab */}
-          <TabsContent value="distribution" className="mt-0 p-0">
-            <div className="bg-white rounded-xl p-6 border border-gray-200">
+          <TabsContent value="distribution" className="mt-4 p-0">
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-[#0A0A0A]">下发记录</h3>
+                  <h3 className="font-semibold text-gray-900">下发记录</h3>
                   <Button
-                    variant="claw-primary"
-                    size="claw-sm"
                     onClick={() => setDistributeDialogOpen(true)}
+                    className="bg-blue-600 hover:bg-blue-700"
                     disabled={hasInProgress}
                   >
                     {hasInProgress ? '下发中...' : '批量下发'}
@@ -559,24 +533,24 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
               <div className="space-y-3 mt-4">
                 {distributionRecords.length === 0 ? (
-                  <div className="text-center py-8 bg-gray-50 rounded-xl">
-                    <p className="text-[#737373]">还没有下发记录</p>
+                  <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <p className="text-gray-500">还没有下发记录</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {distributionRecords.map((record, idx) => {
                       const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
                       return (
-                        <div key={record.id} className="border border-gray-200 rounded-xl p-4">
+                        <div key={record.id} className="border border-gray-200 rounded-lg p-4">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <p className="text-sm font-semibold text-[#0A0A0A]">
+                              <p className="text-sm font-semibold text-gray-900">
                                 #{idx + 1} · {new Date(record.timestamp).toLocaleString('zh-CN')}
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                                record.status === 'distributing' ? 'bg-blue-50 text-[#355EF1]' :
+                                record.status === 'distributing' ? 'bg-blue-50 text-blue-700' :
                                 record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
                                 'bg-yellow-50 text-yellow-700'
                               }`}>
@@ -593,7 +567,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                                   setDetailSearchQuery('');
                                   setDetailsOpen(true);
                                 }}
-                                className="text-[#355EF1] hover:text-[#355EF1] h-auto py-1 px-2"
+                                className="text-blue-600 hover:text-blue-700 h-auto py-1 px-2"
                               >
                                 查看详情
                               </Button>
@@ -656,7 +630,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
 
       {/* 下发详情对话框 */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="sm:max-w-[720px] max-h-[80vh] flex flex-col">
+        <DialogContent className="!max-w-[700px] max-h-[80vh] flex flex-col w-[700px]">
           <DialogHeader>
             <DialogTitle>下发详情</DialogTitle>
           </DialogHeader>
@@ -664,7 +638,7 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
             <div className="space-y-4 overflow-hidden flex flex-col">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     placeholder="搜索实例名称/ID..."
                     value={detailSearchQuery}
@@ -684,46 +658,46 @@ export default function MCPDetail({ mcp, onBack, onMCPDelete }: MCPDetailProps) 
                   </SelectContent>
                 </Select>
               </div>
-              <div className="border border-gray-200 rounded-xl overflow-y-auto max-h-64">
-                <Table>
-                  <TableHeader className="bg-gray-50 border-b border-gray-200 sticky top-0">
-                    <TableRow>
-                      <TableHead className="text-left">实例名称</TableHead>
-                      <TableHead className="text-left">实例ID</TableHead>
-                      <TableHead className="text-left">状态</TableHead>
-                      <TableHead className="text-left">失败原因</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+              <div className="border border-gray-200 rounded-lg overflow-y-auto max-h-64">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例名称</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">实例ID</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">状态</th>
+                      <th className="px-4 py-2 text-left font-semibold text-gray-700">失败原因</th>
+                    </tr>
+                  </thead>
+                  <tbody>
                     {filteredInstances.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center text-[#737373]">
+                      <tr>
+                        <td colSpan={4} className="px-4 py-4 text-center text-gray-500">
                           没有符合条件的记录
-                        </TableCell>
-                      </TableRow>
+                        </td>
+                      </tr>
                     ) : (
                       filteredInstances.map((instance) => (
-                        <TableRow key={instance.id}>
-                          <TableCell className="text-[#0A0A0A]">{instance.name}</TableCell>
-                          <TableCell className="text-[#737373] font-mono text-xs">{instance.id}</TableCell>
-                          <TableCell>
+                        <tr key={instance.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="px-4 py-2.5 text-gray-900">{instance.name}</td>
+                          <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">{instance.id}</td>
+                          <td className="px-4 py-2.5">
                             <span className={`inline-block px-2 py-0.5 text-xs font-medium rounded ${
-                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-[#737373]'
+                              DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.color || 'bg-gray-50 text-gray-500'
                             }`}>
                               {DISTRIBUTION_STATUS_MAP[instance.distributionStatus]?.label || '未下发'}
                             </span>
-                          </TableCell>
-                          <TableCell className="text-xs text-[#737373] max-w-[200px]">
+                          </td>
+                          <td className="px-4 py-2.5 text-xs text-gray-500 max-w-[200px]">
                             {(instance as any).failReason
                               ? <span>{(instance as any).failReason}</span>
-                              : <span className="text-[#A3A3A3]">-</span>
+                              : <span className="text-gray-300">-</span>
                             }
-                          </TableCell>
-                        </TableRow>
+                          </td>
+                        </tr>
                       ))
                     )}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

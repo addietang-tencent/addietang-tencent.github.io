@@ -1,3 +1,4 @@
+import React from 'react';
 /**
  * 公共技能 Tab（原「公共技能库」单技能列表）
  *
@@ -8,22 +9,19 @@ import { useState, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { StatusTag } from '@/components/ui/status-tag';
-import { BackButton } from '@/components/ui/back-button';
 import {
   Search, Download, Star, Heart, ChevronRight,
-  ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
+  ArrowLeft, ChevronDown, ChevronRight as ChevronRightIcon, FileText, Folder, FolderOpen, RefreshCw, Package, Eye, Code
 } from 'lucide-react';
 import {
   PUBLIC_SKILLS, PUBLIC_SKILL_CATEGORIES, type PublicSkill, type FavoriteSkill, type PublicSkillFile
 } from './publicSkillMockData';
 import MDXRenderer from '@/components/MDXRenderer';
 import AddToPackageDialog from './AddToPackageDialog';
-import { FilterChipGroup } from '@/components/ui/filter-chip';
 
 // 懒加载 react-syntax-highlighter 减少首屏包体积
 const SyntaxHighlighter = lazy(() =>
-  import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any }))
+  import('react-syntax-highlighter').then(mod => ({ default: mod.Light as any as React.ComponentType<any> }))
 );
 const _loadedLanguages = new Set<string>();
 const registerLanguage = async (lang: string) => {
@@ -166,6 +164,31 @@ function Pagination({ currentPage, totalPages, totalCount, onPageChange }: Pagin
   );
 }
 
+// ─── 排名徽章 ─────────────────────────────────────────────────────────────────
+
+function RankBadge({ rank }: { rank: number }) {
+  if (rank === 1) return (
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-md z-10">
+      <span className="text-white text-xs font-bold">1</span>
+    </div>
+  );
+  if (rank === 2) return (
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md z-10">
+      <span className="text-white text-xs font-bold">2</span>
+    </div>
+  );
+  if (rank === 3) return (
+    <div className="absolute -top-1.5 -left-1.5 w-6 h-6 rounded-full bg-gradient-to-br from-amber-600 to-orange-700 flex items-center justify-center shadow-md z-10">
+      <span className="text-white text-xs font-bold">3</span>
+    </div>
+  );
+  return (
+    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-white border border-gray-200 flex items-center justify-center z-10 shadow-sm">
+      <span className="text-gray-500 font-medium" style={{ fontSize: '10px', lineHeight: 1 }}>{rank}</span>
+    </div>
+  );
+}
+
 // ─── 技能卡片 ─────────────────────────────────────────────────────────────────
 
 interface SkillCardProps {
@@ -200,22 +223,13 @@ function SkillCard({ skill, rank, isFavorited, onFavorite, onClick }: SkillCardP
       style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
       onClick={onClick}
     >
+      {rank > 0 && <RankBadge rank={rank} />}
+
       <div className="p-4 pl-4 flex flex-col flex-1">
-        {/* 技能名称 + Top 标签（前 3 名展示，标签贴右） */}
-        <div className="flex items-center justify-between gap-2 mb-1 pl-3">
-          <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight truncate min-w-0 flex-1">
-            {skill.name}
-          </h3>
-          {rank === 1 && (
-            <StatusTag mode="fill" variant="gray" className="shrink-0 bg-[#F3E8FF] text-[#7E22CE]">Top 1</StatusTag>
-          )}
-          {rank === 2 && (
-            <StatusTag mode="fill" variant="blue" className="shrink-0">Top 2</StatusTag>
-          )}
-          {rank === 3 && (
-            <StatusTag mode="fill" variant="green" className="shrink-0">Top 3</StatusTag>
-          )}
-        </div>
+        {/* 技能名称 */}
+        <h3 className="font-mono text-sm font-semibold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight mb-1 pl-3">
+          {skill.name}
+        </h3>
 
         {/* 中文简介 - 固定两行高度 */}
         <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed pl-3" style={{ minHeight: '2.5rem' }}>
@@ -363,7 +377,13 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
   return (
     <div className="space-y-4">
       {/* 顶部导航 */}
-      <BackButton onClick={onBack}>返回公共技能库</BackButton>
+      <button
+        onClick={onBack}
+        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        返回公共技能库
+      </button>
 
       {/* 技能信息头部 */}
       <div className="bg-white rounded-xl border border-gray-100 p-5"
@@ -371,7 +391,7 @@ function SkillDetailView({ skill, isFavorited, isInPackage, onFavorite, onAddToP
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h2 className="text-lg font-semibold text-gray-900">{skill.name}</h2>
+              <h2 className="font-mono text-lg font-bold text-gray-900">{skill.name}</h2>
               <Badge variant="secondary" className="text-xs font-mono">v{skill.version}</Badge>
             </div>
             <p className="text-xs text-gray-400 font-mono mb-2">slug：{skill.name}</p>
@@ -713,11 +733,22 @@ export default function PublicSkillTab({ packages, onAddSkillToPackage }: Public
       </div>
 
       {/* 分类 Tab */}
-      <FilterChipGroup
-        items={PUBLIC_SKILL_CATEGORIES.map(cat => ({ id: cat.id, label: cat.name }))}
-        value={activeCategory}
-        onChange={handleCategoryChange}
-      />
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {PUBLIC_SKILL_CATEGORIES.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => handleCategoryChange(cat.id)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+              activeCategory === cat.id
+                ? 'text-white border-transparent'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm'
+            }`}
+            style={activeCategory === cat.id ? { backgroundColor: '#007AFF', borderColor: '#007AFF' } : undefined}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
 
 
 

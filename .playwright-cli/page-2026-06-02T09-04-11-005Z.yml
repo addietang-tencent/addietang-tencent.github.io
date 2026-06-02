@@ -1,0 +1,563 @@
+- generic:
+  - generic:
+    - generic:
+      - complementary:
+        - generic:
+          - generic:
+            - link:
+              - /url: /
+              - img
+              - generic:
+                - paragraph: 管控端
+                - paragraph: ClawPro Admin
+            - button:
+              - img
+          - link:
+            - /url: /my-openclaw
+            - generic:
+              - img
+            - generic: 前往用户端
+        - navigation:
+          - generic:
+            - button:
+              - generic: 基础信息
+              - img
+            - generic:
+              - list:
+                - listitem:
+                  - link:
+                    - /url: /admin/basic-info
+                    - img
+                    - generic: 基础信息配置
+                - listitem:
+                  - link:
+                    - /url: /admin/platform-policy
+                    - img
+                    - generic: 平台策略
+                - listitem:
+                  - link:
+                    - /url: /admin/members
+                    - img
+                    - generic: 用户管理
+          - generic:
+            - button:
+              - generic: Agent 配置
+              - img
+            - generic:
+              - list:
+                - listitem:
+                  - link:
+                    - /url: /admin/model-config
+                    - img
+                    - generic: 模型配置
+                - listitem:
+                  - link:
+                    - /url: /admin/channel-config
+                    - img
+                    - generic: 通道配置
+                - listitem:
+                  - link:
+                    - /url: /admin/skill-config
+                    - img
+                    - generic: 技能配置
+                    - generic: New
+                - listitem:
+                  - link:
+                    - /url: /admin/agent-tool-library
+                    - img
+                    - generic: Agent 工具库
+                    - generic: New
+                - listitem:
+                  - button [expanded]:
+                    - img
+                    - generic: Agent 启动配置
+                    - img
+                - listitem:
+                  - link:
+                    - /url: /admin/agent-types
+                    - generic: Agent 类型
+                    - generic: 原镜像管理
+                - listitem:
+                  - link:
+                    - /url: /admin/agent-template
+                    - generic: 资源管理
+                - listitem:
+                  - link:
+                    - /url: /admin/security-group
+                    - generic: 网络管理
+          - generic:
+            - button:
+              - generic: 运维与观测
+              - img
+            - generic:
+              - list:
+                - listitem:
+                  - link:
+                    - /url: /admin/openclaw-monitor
+                    - img
+                    - generic: Agent 列表
+                - listitem:
+                  - link:
+                    - /url: /admin/tokens-monitor
+                    - img
+                    - generic: Tokens 监控
+                - listitem:
+                  - link:
+                    - /url: /admin/ops-observation
+                    - img
+                    - generic: 运维观测
+                    - generic: New
+          - generic:
+            - button:
+              - generic: Agent 服务
+              - img
+            - generic:
+              - list:
+                - listitem:
+                  - link:
+                    - /url: /admin/memory-management
+                    - img
+                    - generic: 记忆管理
+                - listitem:
+                  - link:
+                    - /url: /admin/file-management
+                    - img
+                    - generic: 网盘管理
+                - listitem:
+                  - link:
+                    - /url: /admin/cloud-dev
+                    - img
+                    - generic: 云开发管理
+                    - generic: 即将开放
+          - generic:
+            - button:
+              - generic: 安全审计
+              - img
+            - generic:
+              - list:
+                - listitem:
+                  - link:
+                    - /url: /admin/security-management
+                    - img
+                    - generic: AI Agent 安全
+                    - generic: New
+                - listitem:
+                  - link:
+                    - /url: /admin/session-management
+                    - img
+                    - generic: 会话管理
+                    - generic: New
+                - listitem:
+                  - link:
+                    - /url: /admin/audit-log
+                    - img
+                    - generic: 操作记录
+        - generic:
+          - generic:
+            - generic: J
+            - generic:
+              - paragraph: jingsujiang
+              - paragraph: 管理员
+          - button:
+            - img
+      - main:
+        - generic:
+          - alert:
+            - generic:
+              - generic:
+                - img
+              - generic: 产品动态
+            - generic:
+              - generic: OpenClaw v2.4.0 已发布：记忆管理功能上线，支持 Pro / Free 版本切换，Pro 版提供长期记忆存储与跨会话召回能力。
+            - generic:
+              - generic:
+                - button:
+                  - img
+                - generic: 4/5
+                - button:
+                  - img
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Agent 列表
+                  - paragraph: 查看和管理所有企业用户创建的 Agent 云服务器。
+                - generic:
+                  - generic:
+                    - button:
+                      - generic: 选择日期
+                      - img
+                    - generic: —
+                    - button:
+                      - generic: 选择日期
+                      - img
+                    - button:
+                      - img
+              - generic:
+                - button:
+                  - generic:
+                    - img
+                    - generic: 总数
+                  - paragraph: "24"
+                - button:
+                  - generic:
+                    - img
+                    - generic: 运行中
+                  - paragraph: "18"
+                - button:
+                  - generic:
+                    - img
+                    - generic: 已关机
+                  - paragraph: "1"
+                - button:
+                  - generic:
+                    - img
+                    - generic: 其他
+                  - paragraph: "5"
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - textbox:
+                      - /placeholder: 搜索名称、ID 或创建人
+                - button [active]:
+                  - img
+                  - generic: 有 3 个新版本
+                  - img
+                - button [disabled] [ref=e540]:
+                  - img
+                  - text: 批量更新
+                - button [disabled] [ref=e541]:
+                  - img
+                  - text: 批量删除
+                - button:
+                  - img
+                  - text: 命令下发
+                  - img
+                - button:
+                  - img
+                  - text: 配置默认标签
+                - link:
+                  - /url: /admin/agent-migration
+                  - button:
+                    - img
+                    - text: 智能体迁移
+              - generic:
+                - generic:
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader:
+                            - generic:
+                              - checkbox
+                          - columnheader: 名称 / ID
+                          - columnheader:
+                            - button:
+                              - generic: 当前状态
+                              - img
+                          - columnheader: 创建人
+                          - columnheader:
+                            - button:
+                              - generic: 分组
+                              - img
+                          - columnheader: 创建时间
+                          - columnheader:
+                            - button:
+                              - generic: Agent类型
+                              - img
+                          - columnheader: Agent 版本
+                          - columnheader: 操作
+                      - rowgroup:
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: GPULab产品线专属AI智能运营分析与决策支持系统
+                                - button: ins-e25z9taq
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: product-ops-admin@enterprise-acompany.com
+                          - cell: —
+                          - cell: 2026-05-02 10:30:00
+                          - cell: Hermes Agent
+                          - cell: 2026.4.2
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: 这是一个名称非常非常长的智能助手用来测试超长文本截断效果
+                                - button: ins-d14y8szp
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: longname-user@very-long-domain-example.com
+                          - cell: —
+                          - cell: 2026-05-01 09:00:00
+                          - cell: OpenClaw
+                          - cell: 2026.4.2
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Victor的技术助手
+                                - button: ins-c03x7ryo
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: victor@acompany.com
+                          - cell: —
+                          - cell: 2026-03-21 10:00:00
+                          - cell: OpenClaw
+                          - cell: 2026.3.28
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Uma的设计助手
+                                - button: ins-b92w6qxn
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: uma@acompany.com
+                          - cell: —
+                          - cell: 2026-03-20 09:30:00
+                          - cell: Hermes Agent
+                          - cell: 2026.4.2
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Tina的客服助手
+                                - button: ins-a81v5pwm
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: tina@acompany.com
+                          - cell: —
+                          - cell: 2026-03-19 15:00:00
+                          - cell: OpenClaw
+                          - cell: 2026.3.28
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Sam的产品助手
+                                - button: ins-z70u4ovl
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: sam@acompany.com
+                          - cell: —
+                          - cell: 2026-03-18 14:30:00
+                          - cell: LightClaw ACE
+                          - cell: 2026.4.2
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Rachel的HR助手
+                                - button: ins-y69t3nuk
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: rachel@acompany.com
+                          - cell: —
+                          - cell: 2026-03-17 13:10:00
+                          - cell: OpenClaw
+                          - cell: 2026.3.28
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Quinn的法务助手
+                                - button: ins-x58s2mtj
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: quinn@acompany.com
+                          - cell:
+                            - generic: 产品运营与市场推广团队
+                          - cell: 2026-03-16 11:45:00
+                          - cell: Hermes Agent
+                          - cell: 2026.4.2
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Peter的财务助手
+                                - button: ins-w47r1lsi
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: peter@acompany.com
+                          - cell: —
+                          - cell: 2026-03-15 10:20:00
+                          - cell: OpenClaw
+                          - cell: 2026.3.28
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                        - row:
+                          - cell:
+                            - checkbox
+                          - cell:
+                            - generic:
+                              - generic:
+                                - generic: Olivia的运营助手
+                                - button: ins-v36q0krh
+                          - cell:
+                            - generic:
+                              - generic: 运行中
+                          - cell:
+                            - generic: olivia@acompany.com
+                          - cell:
+                            - generic: 产品运营与市场推广团队
+                          - cell: 2026-03-14 09:00:00
+                          - cell: LightClaw ACE
+                          - cell: 2026.4.2
+                          - cell:
+                            - generic:
+                              - button: 终端
+                              - button: 关机
+                              - button: 删除
+                              - button: 更多
+                - generic:
+                  - navigation:
+                    - generic: 共 24 条记录
+                    - generic:
+                      - list:
+                        - listitem:
+                          - button [disabled]:
+                            - img
+                        - listitem:
+                          - button: "1"
+                        - listitem:
+                          - button: "2"
+                        - listitem:
+                          - button: "3"
+                        - listitem:
+                          - button:
+                            - img
+    - region "Notifications alt+T"
+  - dialog "版本更新记录" [ref=e543]:
+    - generic [ref=e544]:
+      - generic [ref=e545]:
+        - generic [ref=e546]:
+          - heading "版本更新记录" [level=2] [ref=e547]
+          - paragraph [ref=e548]: 集中查看各 Agent 镜像的版本演进、当前最新版本，以及员工端更新提醒状态。
+        - button "关闭" [ref=e549] [cursor=pointer]:
+          - img
+      - generic [ref=e550] [cursor=pointer]:
+        - generic [ref=e551]: 仅看可推送版本
+        - switch "仅看可推送版本" [checked] [ref=e552]
+    - generic [ref=e554]:
+      - generic [ref=e556]:
+        - img [ref=e557]
+        - generic [ref=e560]:
+          - paragraph [ref=e561]: 当前有 3 个镜像可推送新版本，0 个已提醒员工
+          - button "一键推送" [ref=e563] [cursor=pointer]
+      - generic [ref=e564]:
+        - generic [ref=e565]: 共 1 条记录
+        - list [ref=e568]:
+          - listitem [ref=e569]:
+            - generic [ref=e572]:
+              - generic [ref=e574]:
+                - generic [ref=e575]:
+                  - generic [ref=e576]:
+                    - img [ref=e578]
+                    - generic [ref=e583]: OpenClaw on Ubuntu 24.04
+                  - generic [ref=e585]: 最新版本
+                - generic [ref=e586]:
+                  - generic [ref=e587]: v2026.4.23
+                  - generic [ref=e588]:
+                    - generic [ref=e589]: 属于 OpenClaw
+                    - generic [ref=e590]: "|"
+                    - code [ref=e591]: img-idzg74s9
+                    - generic [ref=e592]: "|"
+                    - generic [ref=e593]: 2026-05-11 更新
+              - paragraph [ref=e594]: 增强终端响应性能，修复偶发崩溃问题
+              - button "推送 OpenClaw 最新版本" [ref=e596] [cursor=pointer]:
+                - img
+                - text: 推送 OpenClaw 最新版本

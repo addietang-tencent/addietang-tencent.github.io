@@ -3829,7 +3829,7 @@ export default function SecurityGroupManagement() {
             </Table>
 
             {/* 底部提示 */}
-            <div className="px-6 py-3 border-t border-[#e5e5e5] bg-[#fafafa]/50">
+            <div className="px-6 py-3 border-t border-[#EAEEF4]">
               <p className="text-xs text-[#737373] leading-relaxed">
                 如现有私有网络/子网不符合要求，可以去腾讯云控制台{" "}
                 <a

@@ -2395,7 +2395,7 @@ export default function AgentMonitor() {
 
           {/* Pagination */}
           {versionFiltered.length > PAGE_SIZE && (
-            <div className="px-4 py-3 border-t border-[#f0f0f0]">
+            <div className="px-4 py-3 border-t border-[#EAEEF4]">
               <Pagination
                 total={versionFiltered.length}
                 current={safePage}

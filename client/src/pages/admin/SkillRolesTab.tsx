@@ -1727,7 +1727,7 @@ export default function SkillRolesTab() {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <Table>
+          <Table variant="elevated-white">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10 px-3" />
@@ -1757,7 +1757,7 @@ export default function SkillRolesTab() {
             </SortableContext>
           </Table>
         </DndContext>
-        <div className="px-4 py-2 border-t border-[#EAEEF4] text-xs text-[#737373]">
+        <div className="px-4 h-10 flex items-center border-t border-[#EAEEF4] text-xs text-[#737373]">
           共 {filteredRoles.length} 个角色{selectedScopes.size > 0 ? `（筛选中，全部 ${roles.length} 个）` : ''}
         </div>
       </SurfaceCard>

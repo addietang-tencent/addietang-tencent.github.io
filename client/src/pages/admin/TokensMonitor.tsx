@@ -1263,7 +1263,7 @@ export default function TokensMonitor() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-gray-200">
+              <div className="px-4 py-2 border-t border-gray-200">
                 <Pagination total={instanceStats.length} current={instancePage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setInstancePage(p)} />
               </div>
             </div>
@@ -1320,7 +1320,7 @@ export default function TokensMonitor() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-gray-200">
+              <div className="px-4 py-2 border-t border-gray-200">
                 <Pagination total={memberStats.length} current={memberPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setMemberPage(p)} />
               </div>
             </div>
@@ -1370,7 +1370,7 @@ export default function TokensMonitor() {
                   ))}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-gray-200">
+              <div className="px-4 py-2 border-t border-gray-200">
                 <Pagination total={modelStats.length} current={modelPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setModelPage(p)} />
               </div>
             </div>
@@ -1430,7 +1430,7 @@ export default function TokensMonitor() {
                     ))}
                   </TableBody>
                 </Table>
-                <div className="px-4 py-3 border-t border-gray-200">
+                <div className="px-4 py-2 border-t border-gray-200">
                   <Pagination total={deptStats.length} current={deptPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setDeptPage(p)} />
                 </div>
               </div>
@@ -1512,7 +1512,7 @@ export default function TokensMonitor() {
                   })}
                 </TableBody>
               </Table>
-              <div className="px-4 py-3 border-t border-gray-200">
+              <div className="px-4 py-2 border-t border-gray-200">
                 <Pagination total={groupStats.length} current={groupPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setGroupPage(p)} />
               </div>
             </div>
@@ -1776,7 +1776,7 @@ export default function TokensMonitor() {
                     })}
                   </TableBody>
                 </Table>
-                <div className="px-4 py-3 border-t border-gray-200">
+                <div className="px-4 py-2 border-t border-gray-200">
                   <Pagination total={sessionStats.length} current={sessionPage} pageSize={PAGE_SIZE} showTotal={(total) => `共 ${total} 条记录`} className="w-full justify-between" onChange={(p) => setSessionPage(p)} />
                 </div>
               </div>

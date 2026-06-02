@@ -1499,7 +1499,7 @@ export default function FileManagement() {
           </Table>
 
           {/* Pagination */}
-          <div className="px-4 py-3 border-t border-[#EAEEF4]">
+          <div className="px-4 py-2 border-t border-[#EAEEF4]">
             <Pagination
               total={filteredPersonalSpaces.length}
               current={currentPage}

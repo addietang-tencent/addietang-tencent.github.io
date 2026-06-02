@@ -2922,7 +2922,7 @@ export default function MemberManagement() {
           </Table>
 
           {/* 底部翻页 */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-gray-200">
+          <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-2 border-t border-gray-200">
             <span className="justify-self-start text-xs leading-[1.5] text-[#737373]">
               共 {filtered.length} 名用户
             </span>

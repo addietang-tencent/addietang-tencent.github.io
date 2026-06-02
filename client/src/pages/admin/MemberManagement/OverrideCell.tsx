@@ -243,7 +243,7 @@ function ConflictPopover({
             确定后将为该用户写入一条显式决策记录；winner 被删除时自动失效。
           </div>
         </div>
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
+        <div className="flex items-center justify-end gap-2 px-4 py-2 border-t border-gray-200">
           <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
             取消
           </Button>

@@ -768,7 +768,7 @@ import { SmallIconStateButton } from "@/components/ui/button";
 | 属性 | 标准版（默认） | 紧凑版 `density="compact"` |
 |------|----------------|------------------------------|
 | 表格字号 | `text-sm`（14px） | `text-xs`（12px） |
-| 表头高度 | `h-[54px]`（54px） | `h-10`（40px） |
+| 表头高度 | `h-10`（40px） | `h-9`（36px） |
 | 表头文字 | `BodyMedium` 对应：14px / Medium / `text-gray-900` | `MetaMedium` 对应：12px / Medium / `text-gray-500` |
 | 表头 padding | `px-4`（左右 16px） | `px-4`（左右 16px） |
 | 正文单元格 | `h-[54px] px-4 py-3 text-sm` | `h-10 px-4 py-2 text-xs` |
@@ -827,7 +827,7 @@ import {
 当表格底部同时展示数量统计与分页器时，必须使用统一页脚布局：
 
 ```tsx
-<div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+<div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-2 border-t border-[#f0f0f0]">
   <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
     共 {total} 条
   </span>
@@ -1209,16 +1209,16 @@ import { Badge } from "@/components/ui/badge";
 | container | `w-full caption-bottom text-[14px] text-[#09090b]` |
 | header / bg | `bg-[#fafafa]` |
 | header / border | `border-b border-[#f0f0f0]` |
-| head cell / height | `54px` |
+| head cell / height | 标准版 `40px`（`h-10`）；紧凑版 `36px`（`h-9`） |
 | head cell / padding | `px-4` |
-| head cell / font | 标准版：`BodyMedium` 对应 `text-sm font-medium text-gray-900`；紧凑版：`MetaMedium` 对应 `text-xs font-medium text-gray-500` |
+| head cell / font | 统一 `text-xs font-medium text-[#737373]`（次级灰，不区分密度） |
 | body row / border | `border-b border-[#f0f0f0]` |
 | body row / hover | `hover:bg-[#fafafa]` |
 | body row / selected | `bg-[rgba(53,94,241,0.06)]` |
 | body cell / height | 标准版最小视觉高度 `54px`；紧凑版最小视觉高度 `40px`；复杂内容允许自然撑高 |
 | body cell / padding | 标准版 `px-4 py-3`；紧凑版 `px-4 py-2` |
 | body cell / font | 标准版 `text-sm`（14px）；紧凑版 `text-xs`（12px） |
-| footer / layout | `grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]` |
+| footer / layout | `grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-2 border-t border-[#f0f0f0]` |
 | footer / total | `justify-self-start text-sm leading-[1.5] text-[#737373]` |
 | footer / pagination | `justify-self-end justify-end flex-nowrap` |
 
@@ -1266,7 +1266,7 @@ import {
     </TableBody>
   </Table>
   {/* 表格页脚：数量统计左对齐，分页器右对齐 */}
-  <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-[#f0f0f0]">
+  <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-2 border-t border-[#f0f0f0]">
     <span className="justify-self-start text-sm leading-[1.5] text-[#737373]">
       共 {data.length} 条
     </span>
@@ -1459,7 +1459,7 @@ import {
 
 **表头规则（强制，参照 /admin/audit-log 页面视觉）：**
 - `TableHeader` 强制灰色背景 `bg-[#fafafa]`，不允许覆盖
-- `TableHead` 强制样式：标准版对齐 `BodyMedium`（`text-sm font-medium text-gray-900 h-[54px] px-4 py-0 text-left`）；紧凑版对齐 `MetaMedium`（`text-xs font-medium text-gray-500 h-10 px-4 py-0 text-left`）
+- `TableHead` 强制样式：标准版 `text-xs font-medium text-[#737373] h-10 px-4 py-0 text-left`；紧凑版 `text-xs font-medium text-[#737373] h-9 px-4 py-0 text-left`
 - `TableCell` / `TableActionCell` 强制样式：标准版 `text-sm h-[54px] px-4 py-3`；紧凑版 `text-xs h-10 px-4 py-2`；`h-*` 作为 table-cell 的最小视觉高度，复杂内容允许自然撑高
 - **表头与单元格横向 padding 必须一致**：标准版和紧凑版都使用 `px-4`（16px），确保左右内容到边框的距离一致；纵向 padding 由单元格控制，标准版 `py-3`、紧凑版 `py-2`；禁止紧凑版横向改成 `px-2` / `px-3`
 - **每列标题和内容必须左对齐**，禁止使用 `text-center` 或 `text-right`（数字列除外）
@@ -1474,7 +1474,7 @@ import {
 - 禁止自定义表头背景色（如 `bg-gray-50/50`），统一使用 TableHeader 的 `bg-[#fafafa]`
 - 禁止自定义行 hover 效果（如 `hover:bg-gray-50/50`），使用 TableRow 内置 `hover:bg-[#fafafa]`
 - 禁止在操作列使用非 link-dark 按钮或自定义 `<button>`
-- 分页器必须放在 Table 外部、容器内部，用 `<div className="px-4 py-3 border-t border-[#f0f0f0]">` 包裹
+- 分页器必须放在 Table 外部、容器内部，用 `<div className="px-4 py-2 border-t border-[#f0f0f0]">` 包裹
 - 不建议把页面级标准表格分页器切到 `size="small"`；`small` 更适合 Dialog 内空间受限场景
 
 ---

@@ -1,13 +1,27 @@
 /* ─── Webfont（v2）必须放在最顶部 ──────────────────────────────────
  * PingFang SC / Menlo：系统字体，无需引入
- * DIN Next LT Pro Bold：数字字体，优先读取本机已安装字体
+ * DIN Next LT Pro：数字字体
  * Open Sans：Google Fonts CDN（首版可用，后续可改 self-host）
  * TCloud Number：用户端 QuickStart 步骤编号字体
  * ──────────────────────────────────────────────────────────── */
 @font-face {
   font-family: "DIN Next LT Pro";
+  src: url("/fonts/DINNextLTPro-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DIN Next LT Pro";
   src: url("/fonts/DINNextLTPro-Bold.OTF") format("opentype");
   font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DIN Next LT Pro Stat";
+  src: url("/fonts/DINNextLTPro-Regular.otf") format("opentype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
@@ -298,8 +312,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* ─── 全站字体统一：强制 PingFang SC ───────────────────────────
-   * 业务侧 inline style fontFamily / Tailwind font-mono / font-din 等都被强制覆盖为 PingFang SC。
+  /* ─── 全站字体统一：默认 PingFang SC ───────────────────────────
+   * 默认业务文字统一使用 PingFang SC；数字 / 代码 / 英文标签通过语义字体工具类显式覆盖。
    * 仅 SVG <text> 等极少数标签保留自身定义（避免影响图表/图标内文字）。
    * ──────────────────────────────────────────────────────────── */
   *:not(svg):not(svg *) {
@@ -309,6 +323,22 @@
       BlinkMacSystemFont,
       "Helvetica Neue",
       sans-serif !important;
+  }
+  .font-din,
+  .font-din * {
+    font-family: "DIN Next LT Pro", "DIN Alternate", "DIN", "Helvetica Neue", sans-serif !important;
+  }
+  .font-din-stat,
+  .font-din-stat * {
+    font-family: "DIN Next LT Pro Stat", "DIN Next LT Pro", "DIN Alternate", "DIN", "Helvetica Neue", sans-serif !important;
+  }
+  .font-mono,
+  .font-mono * {
+    font-family: "Menlo", "Consolas", "Courier New", monospace !important;
+  }
+  .font-en,
+  .font-en * {
+    font-family: "Open Sans", "Helvetica Neue", sans-serif !important;
   }
   /* 防止弹窗打开时页面晃动：确保 body 被锁定滚动时保持滚动条占位 */
   body[data-scroll-locked] {

@@ -169,7 +169,7 @@ export const TinyText = createTypography(
 export const StatNumber = createTypography(
   "StatNumber",
   "span",
-  "font-din text-2xl font-bold leading-none tabular-nums",
+  "font-din-stat text-2xl font-semibold leading-none tabular-nums",
   "emphasis",
 );
 

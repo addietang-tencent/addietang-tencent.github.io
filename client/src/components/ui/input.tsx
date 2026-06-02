@@ -66,12 +66,12 @@ function Input({
         "h-9 w-full min-w-0 border border-gray-200 bg-white px-3 py-[5px] text-sm text-[var(--text-title)] font-normal transition-colors outline-none",
         tenant ? "rounded-full" : "rounded-[4px]",
         "placeholder:text-[var(--text-weak)]",
-        "hover:border-[#1447E6]",
-        "focus:border-[#1447E6]",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",
-        "aria-invalid:border-[#d42a1e]",
-        "selection:bg-[#1447E6]/10 selection:text-[#0A0A0A]",
-        "file:text-[#0A0A0A] file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
+        "hover:border-blue-500",
+        "focus:border-blue-500",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-gray-400",
+        "aria-invalid:border-destructive",
+        "selection:bg-blue-500/10 selection:text-gray-950",
+        "file:text-gray-950 file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
         "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-ms-reveal]:hidden",
         className
       )}

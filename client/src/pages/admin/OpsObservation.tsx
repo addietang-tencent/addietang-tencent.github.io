@@ -223,7 +223,7 @@ const CustomLegend = (props: any) => {
               className="w-3 h-3 rounded-full inline-block"
               style={{ backgroundColor: entry.color }}
             />
-            <span className="text-xs text-[#737373] inline-block">{entry.name}</span>
+            <span className="text-xs text-[var(--text-muted)] inline-block">{entry.name}</span>
             {legendTooltips[entry.name] && (
               <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 w-max whitespace-nowrap">
                 {legendTooltips[entry.name]}
@@ -461,7 +461,7 @@ export default function OpsObservation() {
               value={dateFrom}
               onChange={handleFromChange}
             />
-            <span className="text-[#A3A3A3] text-sm">—</span>
+            <span className="text-[var(--text-weak)] text-sm">—</span>
             <DatePicker
               value={dateTo}
               onChange={handleToChange}
@@ -488,8 +488,8 @@ export default function OpsObservation() {
           <div className="bg-white border border-gray-200 rounded-[4px] p-6 mb-6">
             <div className="flex items-start justify-between gap-6">
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-[#0A0A0A] mb-1">运维观测需要开启 CLS 日志服务</h3>
-                <p className="text-xs text-[#737373]">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:underline inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
+                <h3 className="text-sm font-semibold text-[var(--text-title)] mb-1">运维观测需要开启 CLS 日志服务</h3>
+                <p className="text-xs text-[var(--text-muted)]">开启后，为您赠送3个月ClawPro 专属 CLS 日志服务免费额度，预估可覆盖 500台 Agent 机器3个月的日志用量；服务到期后，CLS 将按量计费。<a href="https://cloud.tencent.com/document/product/614/45802" target="_blank" className="text-[#355EF1] hover:underline inline-flex items-center gap-1">计费详情 <ArrowUpRight className="w-3 h-3" /></a></p>
               </div>
               <Button
                 onClick={handleOpenCLS}
@@ -547,7 +547,7 @@ export default function OpsObservation() {
           <div className="space-y-4 mb-8">
             {/* 第一块：CLS 新增功能 */}
             <SurfaceCard className="px-6 py-5">
-              <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
+              <h4 className="text-[14px] font-medium text-[var(--text-muted)] mb-4">开启CLS日志服务后您可以在此处获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {EXISTING_OBSERVATION_CARDS.map((card) => {
                   return (
@@ -557,10 +557,10 @@ export default function OpsObservation() {
                     >
                       <img src={card.iconSrc} alt="" className="shrink-0 w-9 h-9" />
                       <div className="flex-1 min-w-0">
-                        <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">
+                        <h5 className="text-[14px] font-medium tracking-[0.005em] text-[var(--text-emphasis)] leading-[22px]">
                           {card.title}
                         </h5>
-                        <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">
+                        <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[var(--text-muted)]">
                           {card.description}
                         </p>
                       </div>
@@ -570,7 +570,7 @@ export default function OpsObservation() {
               </div>
             </SurfaceCard>
             <SurfaceCard className="px-6 py-5">
-              <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
+              <h4 className="text-[14px] font-medium text-[var(--text-muted)] mb-4">开启CLS日志服务后您还可以在Tokens监控和运维观测页面中获得以下观测数据：</h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                 {CLS_NEW_CARDS.map((card) => {
                   return (
@@ -580,10 +580,10 @@ export default function OpsObservation() {
                     >
                       <img src={card.iconSrc} alt="" className="shrink-0 w-9 h-9" />
                       <div className="flex-1 min-w-0">
-                        <h5 className="text-[14px] font-medium tracking-[0.005em] text-[#020617] leading-[22px]">
+                        <h5 className="text-[14px] font-medium tracking-[0.005em] text-[var(--text-emphasis)] leading-[22px]">
                           {card.title}
                         </h5>
-                        <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[#737373]">
+                        <p className="text-[12px] leading-[20px] tracking-[0.015em] text-[var(--text-muted)]">
                           {card.description}
                         </p>
                       </div>
@@ -751,7 +751,7 @@ export default function OpsObservation() {
           <SurfaceCard key={idx} className="p-5">
             <div className="flex items-center gap-2 mb-3">
               {METRIC_ICONS[idx]}
-              <span className="text-sm text-[#737373]">{card.title}</span>
+              <span className="text-sm text-[var(--text-title)]">{card.title}</span>
             </div>
             <StatNumber>{card.value}</StatNumber>
           </SurfaceCard>
@@ -828,7 +828,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#10B981' }} />
-                    <span className="text-[#737373]">已处理完成的消息数量</span>
+                    <span className="text-[var(--text-muted)]">已处理完成的消息数量</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">已成功处理完成的消息数量</TooltipContent>
@@ -837,7 +837,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#3B82F6' }} />
-                    <span className="text-[#737373]">等待处理的消息数量</span>
+                    <span className="text-[var(--text-muted)]">等待处理的消息数量</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">等待处理的消息数量</TooltipContent>
@@ -873,7 +873,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8B5CF6' }} />
-                    <span className="text-[#737373]">队列长度 P95</span>
+                    <span className="text-[var(--text-muted)]">队列长度 P95</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">95% 的时间队列长度不超过此值，反映队列拥堵程度</TooltipContent>
@@ -882,7 +882,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#06B6D4' }} />
-                    <span className="text-[#737373]">等待时间 P95</span>
+                    <span className="text-[var(--text-muted)]">等待时间 P95</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">95% 的消息等待时间不超过此值，反映队列延迟</TooltipContent>
@@ -918,7 +918,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#F59E0B' }} />
-                    <span className="text-[#737373]">处理耗时 P50</span>
+                    <span className="text-[var(--text-muted)]">处理耗时 P50</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">50% 的消息处理时间不超过此值，反映最差场景性能与边缘业务的延迟风险</TooltipContent>
@@ -927,7 +927,7 @@ export default function OpsObservation() {
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1 cursor-help">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#EF4444' }} />
-                    <span className="text-[#737373]">处理耗时 P95</span>
+                    <span className="text-[var(--text-muted)]">处理耗时 P95</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" align="start">95% 的消息处理时间不超过此值，反映典型处理性能与大部分业务的实际延迟体验</TooltipContent>
@@ -955,13 +955,13 @@ export default function OpsObservation() {
                 <>
                   {/* 检测中的旋转动画 */}
                   <div className="w-8 h-8 border-2 border-[#355EF1] border-t-[#355EF1] rounded-full animate-spin"></div>
-                  <p className="text-xs text-[#737373] text-center">检测中...</p>
+                  <p className="text-xs text-[var(--text-muted)] text-center">检测中...</p>
                 </>
               ) : authCompleted ? (
                 <>
                   {/* 检测完成后显示完成 icon */}
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
-                  <p className="text-xs text-[#737373] text-center">检测到已授权</p>
+                  <p className="text-xs text-[var(--text-muted)] text-center">检测到已授权</p>
                 </>
               ) : null}
             </div>
@@ -1035,16 +1035,16 @@ export default function OpsObservation() {
             type="button"
             aria-label="关闭"
             onClick={handleCloseClsConfirmCancel}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-title)] focus:outline-none"
           >
             <X className="size-5" />
             <span className="sr-only">关闭</span>
           </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">确定要关闭 CLS 日志服务吗？</AlertDialogTitle>
+            <AlertDialogTitle className="text-[var(--text-title)]">确定要关闭 CLS 日志服务吗？</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-4">
-                <p className="text-sm text-[#0A0A0A]">
+                <p className="text-sm text-[var(--text-title)]">
                   关闭后以下功能将无法使用，<span className="text-[#DC2626]">此操作可能影响业务运行。</span>
                 </p>
                 <Alert variant="warning">
@@ -1081,7 +1081,7 @@ export default function OpsObservation() {
                     <div className="flex-1 space-y-2">
                       <Label
                         htmlFor="deleteLogTopic"
-                        className="text-sm font-medium text-[#0A0A0A] cursor-pointer"
+                        className="text-sm font-medium text-[var(--text-title)] cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                       >
                         同时删除关联的日志主题资源

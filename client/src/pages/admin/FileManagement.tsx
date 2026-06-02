@@ -172,7 +172,7 @@ function FMGroupFilter({
         </div>
         <div className="max-h-[280px] overflow-y-auto p-2">
           <div className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${tempValue === "" ? "bg-[#eff4ff]" : "hover:bg-[#f5f5f5]"}`} onClick={() => setTempValue("")}>
-            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[#334155]"}`}>全部分组</span>
+            <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#355EF1] font-medium" : "text-[var(--text-secondary)]"}`}>全部分组</span>
             {tempValue === "" && <Check className="w-4 h-4 text-[#355EF1] flex-shrink-0" />}
           </div>
           {groups.map(g => <TreeNode key={g.id} node={g} />)}
@@ -258,7 +258,7 @@ function FMGroupTagSelector({
             </button>
           ) : <span className="w-4 shrink-0" />}
           <Checkbox checked={checked} disabled={disabled} className="w-3.5 h-3.5 shrink-0" onChange={() => {}} />
-          <span className="text-xs text-[#334155] truncate">{node.name}</span>
+          <span className="text-xs text-[var(--text-secondary)] truncate">{node.name}</span>
         </div>
         {expanded && node.children.map((c) => <TreeNode key={c.id} node={c} depth={depth + 1} />)}
       </div>
@@ -276,7 +276,7 @@ function FMGroupTagSelector({
             : selectedIds.map((id) => (
               <span key={id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px]">
                 {getGroupName(id)}
-                <button onClick={(e) => { e.stopPropagation(); toggle(id); }} className="hover:text-[#0A0A0A]"><X className="w-2.5 h-2.5" /></button>
+                <button onClick={(e) => { e.stopPropagation(); toggle(id); }} className="hover:text-[var(--text-title)]"><X className="w-2.5 h-2.5" /></button>
               </span>
             ))}
         </div>
@@ -337,7 +337,7 @@ function PolicyOverviewCard({ icon, iconBg, title, description, fallbackValue, g
         <div className="flex items-start gap-3">
           <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-[4px] flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-[14px] font-semibold text-[#020617] truncate">{title}</h3>
+            <h3 className="text-[14px] font-semibold text-[var(--text-emphasis)] truncate">{title}</h3>
             <p className="text-[12px] text-[var(--text-muted)] leading-relaxed mt-1 line-clamp-2">{description}</p>
           </div>
         </div>
@@ -346,7 +346,7 @@ function PolicyOverviewCard({ icon, iconBg, title, description, fallbackValue, g
         <div className="mt-4 rounded-[4px] bg-[#FAFAFA] px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-4 text-[12px]">
             <span className="text-[var(--text-muted)] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackValue ? "green" : "gray"}>{fallbackValue ? "开启" : "关闭"}</StatusTag></span>
-            <span className="text-[var(--text-muted)]">分组策略：<span className="text-[#020617] font-medium">{groupCount} 条</span></span>
+            <span className="text-[var(--text-muted)]">分组策略：<span className="text-[var(--text-emphasis)] font-medium">{groupCount} 条</span></span>
           </div>
           <span className="text-[12px] text-[#1447E6] inline-flex items-center gap-0.5">
             编辑策略<ChevronRight className="w-3.5 h-3.5" />
@@ -447,7 +447,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
               {/* 汇总行 */}
               <div className="flex items-center gap-4 text-[13px]">
                 <span className="text-[var(--text-muted)] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag></span>
-                <span className="text-[var(--text-muted)]">分组策略：<span className="text-[#020617] font-medium">{groupRules.length} 个</span></span>
+                <span className="text-[var(--text-muted)]">分组策略：<span className="text-[var(--text-emphasis)] font-medium">{groupRules.length} 个</span></span>
               </div>
 
               {/* 表格 */}
@@ -461,7 +461,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                     {/* 预设策略行 */}
                     <TableRow className="hover:bg-transparent border-0">
                       <TableCell className="text-[13px] text-[var(--text-muted)] align-middle">预设策略</TableCell>
-                      <TableCell className="text-[13px] text-[#020617] align-middle">
+                      <TableCell className="text-[13px] text-[var(--text-emphasis)] align-middle">
                         {groupRules.length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}
                       </TableCell>
                       <TableCell className="align-middle">
@@ -554,7 +554,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                   type="button"
                   onClick={startAdd}
                   disabled={editingId !== null || addingNew}
-                  className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[#020617] bg-white border-t border-dashed border-[#EAEEF4] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-1 px-3 py-2 text-[13px] text-[var(--text-emphasis)] bg-white border-t border-dashed border-[#EAEEF4] hover:bg-[#FAFAFA] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="w-3.5 h-3.5" />添加分组策略
                 </button>
@@ -651,9 +651,9 @@ const StatCard = ({ title, value, icon: IconComponent }: { title: string; value:
   <div className="bg-white rounded-[4px] border border-[#EAEEF4] px-6 py-5 flex flex-col gap-4">
     <div className="flex items-center gap-1">
       <IconComponent />
-      <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">{title}</span>
+      <span className="text-sm font-medium text-[var(--text-title)] leading-[22px] tracking-[0.07px]">{title}</span>
     </div>
-    <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{value}</p>
+    <p className="text-2xl font-bold text-[var(--text-title)] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{value}</p>
   </div>
 );
 
@@ -1263,7 +1263,7 @@ export default function FileManagement() {
       {/* Enterprise Public Space Section */}
       <div className="space-y-4">
         <div>
-          <h2 className="font-semibold text-[#0A0A0A]">企业公共空间</h2>
+          <h2 className="font-semibold text-[var(--text-title)]">企业公共空间</h2>
           <p className="text-sm text-[var(--text-muted)] mt-1">默认开启,为您赠送 50GB + 50GB 永久免费空间,用于存放 Agent 工具库和初始技能包</p>
         </div>
 
@@ -1301,7 +1301,7 @@ export default function FileManagement() {
       {/* AI Agent Private Space Section */}
       <div className="space-y-4">
         <div>
-          <h2 className="font-semibold text-[#0A0A0A]">智能体网盘</h2>
+          <h2 className="font-semibold text-[var(--text-title)]">智能体网盘</h2>
           <p className="text-sm text-[var(--text-muted)] mt-1">开启后,为您赠送每个 OpenClaw 实例 3个月50GB 免费额度,到期后可以通过购买资源包进行续租</p>
         </div>
 
@@ -1344,7 +1344,7 @@ export default function FileManagement() {
                 <Trash2 className="w-4 h-4" />
                 回收站{getRecyclebinInstances().length > 0 && `(${getRecyclebinInstances().length})`}
               </Button>
-              <span className="text-[14px] text-[var(--text-muted)]">共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例启用了该服务</span>
+              <span className="text-[14px] text-[var(--text-muted)]">共计 <span className="font-semibold text-[var(--text-title)] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例启用了该服务</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-64">
@@ -1433,7 +1433,7 @@ export default function FileManagement() {
                         <div className="flex flex-col min-w-0">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="text-sm font-medium text-[#0A0A0A] truncate max-w-[180px]">{item.instanceName}</span>
+                                <span className="text-sm font-medium text-[var(--text-title)] truncate max-w-[180px]">{item.instanceName}</span>
                               </TooltipTrigger>
                               <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.instanceName}</TooltipContent>
                             </Tooltip>
@@ -1443,7 +1443,7 @@ export default function FileManagement() {
                       <td className="px-4 py-3" style={{ width: '220px', minWidth: '220px' }}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="text-sm text-[#0A0A0A] truncate block max-w-[200px]">{item.creator}</span>
+                            <span className="text-sm text-[var(--text-title)] truncate block max-w-[200px]">{item.creator}</span>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs max-w-xs break-all">{item.creator}</TooltipContent>
                         </Tooltip>
@@ -1451,7 +1451,7 @@ export default function FileManagement() {
                       <td className="px-4 py-3 text-[14px] text-[#09090b]">
                           {item.type}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#334155]">
+                      <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">
                         {isEnabled ? (
                           <span className="tabular-nums">
                             {item.used}/{<span className="font-semibold">{item.quota}</span>}
@@ -1482,7 +1482,7 @@ export default function FileManagement() {
                           <span className="text-[var(--text-weak)]">未启用</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">
+                      <td className="px-4 py-3 text-sm text-[var(--text-secondary)] tabular-nums">
                         {isEnabled ? item.expiry : <span className="text-[var(--text-weak)]">-</span>}
                       </td>
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -1517,16 +1517,16 @@ export default function FileManagement() {
       <Dialog open={disableDialogOpen} onOpenChange={setDisableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A]">
+            <DialogTitle className="text-[var(--text-title)]">
               确认关闭网盘
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-[#334155]">
-              您确定要关闭 <span className="font-bold text-[#0A0A0A]">"{instanceToDisable?.name}"</span> 的网盘功能吗？
+            <p className="text-sm text-[var(--text-secondary)]">
+              您确定要关闭 <span className="font-bold text-[var(--text-title)]">"{instanceToDisable?.name}"</span> 的网盘功能吗？
             </p>
             <div className="p-3 bg-[#fafafa] border border-[#EAEEF4] rounded-[4px]">
-              <div className="text-xs text-[#334155] space-y-1">
+              <div className="text-xs text-[var(--text-secondary)] space-y-1">
                 <p className="font-semibold">关闭网盘后：</p>
                 <div className="space-y-0.5 ml-1">
                   <p>• 该实例将无法访问网盘中的文件</p>
@@ -1548,16 +1548,16 @@ export default function FileManagement() {
       <Dialog open={batchEnableDialogOpen} onOpenChange={setBatchEnableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A]">
+            <DialogTitle className="text-[var(--text-title)]">
               批量启用网盘服务
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-[#334155]">
-              您确定要为选中的 <span className="font-semibold text-[#0A0A0A] tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
+            <p className="text-sm text-[var(--text-secondary)]">
+              您确定要为选中的 <span className="font-semibold text-[var(--text-title)] tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
             </p>
             <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
-              <div className="text-xs text-[#334155] space-y-1 leading-relaxed">
+              <div className="text-xs text-[var(--text-secondary)] space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li>每个实例将获得 3个月50GB 免费额度</li>
@@ -1580,12 +1580,12 @@ export default function FileManagement() {
       <Dialog open={enableChoiceDialogOpen} onOpenChange={setEnableChoiceDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A]">
+            <DialogTitle className="text-[var(--text-title)]">
               选择启用方式
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-[#334155]">
+            <p className="text-sm text-[var(--text-secondary)]">
               检测到回收站中有该实例之前的网盘空间（15天内可恢复），您可以选择：
             </p>
             
@@ -1602,7 +1602,7 @@ export default function FileManagement() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">新启用网盘</h3>
+                    <h3 className="text-base font-semibold text-[var(--text-title)] mb-1">新启用网盘</h3>
                     <p className="text-sm text-[var(--text-muted)]">
                       为该实例创建新的网盘空间
                     </p>
@@ -1620,7 +1620,7 @@ export default function FileManagement() {
                     <RotateCcw className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">恢复已有网盘</h3>
+                    <h3 className="text-base font-semibold text-[var(--text-title)] mb-1">恢复已有网盘</h3>
                     <p className="text-sm text-[var(--text-muted)]">
                       恢复该实例之前的网盘空间，保留原有文件和数据
                     </p>
@@ -1639,16 +1639,16 @@ export default function FileManagement() {
       <Dialog open={singleEnableDialogOpen} onOpenChange={setSingleEnableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A]">
+            <DialogTitle className="text-[var(--text-title)]">
               启用网盘服务
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-[#334155]">
-              您确定要为 <span className="font-bold text-[#0A0A0A]">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
+            <p className="text-sm text-[var(--text-secondary)]">
+              您确定要为 <span className="font-bold text-[var(--text-title)]">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
             </p>
             <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
-              <div className="text-xs text-[#334155] space-y-1 leading-relaxed">
+              <div className="text-xs text-[var(--text-secondary)] space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
                   <li>该实例将获得 3个月50GB 免费额度</li>
@@ -1671,7 +1671,7 @@ export default function FileManagement() {
       <Dialog open={purchaseDialogOpen} onOpenChange={setPurchaseDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+            <DialogTitle className="text-[var(--text-title)] flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-purple-600" />
               购买网盘容量
             </DialogTitle>
@@ -1685,7 +1685,7 @@ export default function FileManagement() {
 
             {/* 选择存储容量 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-[#0A0A0A]">选择存储容量</Label>
+              <Label className="text-sm font-semibold text-[var(--text-title)]">选择存储容量</Label>
               <RadioGroup value={selectedCapacity} onValueChange={setSelectedCapacity}>
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -1699,7 +1699,7 @@ export default function FileManagement() {
                         htmlFor={item.value}
                         className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
-                        <span className="text-sm font-semibold text-[#0A0A0A]">{item.label}</span>
+                        <span className="text-sm font-semibold text-[var(--text-title)]">{item.label}</span>
                         <span className="text-xs text-[var(--text-muted)] mt-1">{item.price}</span>
                       </Label>
                     </div>
@@ -1710,7 +1710,7 @@ export default function FileManagement() {
 
             {/* 选择购买时长 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-[#0A0A0A]">选择购买时长</Label>
+              <Label className="text-sm font-semibold text-[var(--text-title)]">选择购买时长</Label>
               <RadioGroup value={selectedDuration} onValueChange={setSelectedDuration}>
                 <div className="space-y-2">
                   {[
@@ -1725,7 +1725,7 @@ export default function FileManagement() {
                         htmlFor={`duration-${item.value}`}
                         className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
-                        <span className="text-sm font-medium text-[#0A0A0A]">{item.label}</span>
+                        <span className="text-sm font-medium text-[var(--text-title)]">{item.label}</span>
                       </Label>
                     </div>
                   ))}
@@ -1736,7 +1736,7 @@ export default function FileManagement() {
             {/* 价格汇总 */}
             <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100 rounded-[4px] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#334155]">合计金额：</span>
+                <span className="text-sm text-[var(--text-secondary)]">合计金额：</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculatePrice()}</span>
                 </div>
@@ -1763,7 +1763,7 @@ export default function FileManagement() {
       <Dialog open={renewDialogOpen} onOpenChange={setRenewDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+            <DialogTitle className="text-[var(--text-title)] flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-[#355EF1]" />
               续费网盘
             </DialogTitle>
@@ -1776,7 +1776,7 @@ export default function FileManagement() {
             </div>
 
             <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
-              <div className="text-xs text-[#334155] space-y-1">
+              <div className="text-xs text-[var(--text-secondary)] space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
                 <p>• 到期时间：2026-06-30</p>
@@ -1785,7 +1785,7 @@ export default function FileManagement() {
 
             {/* 选择续费时长 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-[#0A0A0A]">选择续费时长</Label>
+              <Label className="text-sm font-semibold text-[var(--text-title)]">选择续费时长</Label>
               <RadioGroup value={renewDuration} onValueChange={setRenewDuration}>
                 <div className="space-y-2">
                   {[
@@ -1800,7 +1800,7 @@ export default function FileManagement() {
                         htmlFor={`renew-duration-${item.value}`}
                         className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-[#eff4ff] transition-all"
                       >
-                        <span className="text-sm font-medium text-[#0A0A0A]">{item.label}</span>
+                        <span className="text-sm font-medium text-[var(--text-title)]">{item.label}</span>
                       </Label>
                     </div>
                   ))}
@@ -1811,7 +1811,7 @@ export default function FileManagement() {
             {/* 价格汇总 */}
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-[#355EF1] rounded-[4px] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#334155]">续费金额：</span>
+                <span className="text-sm text-[var(--text-secondary)]">续费金额：</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold text-[#355EF1] tabular-nums">¥{calculateRenewPrice()}</span>
                 </div>
@@ -1834,7 +1834,7 @@ export default function FileManagement() {
       <Dialog open={expandDialogOpen} onOpenChange={setExpandDialogOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-[#0A0A0A] flex items-center gap-2">
+            <DialogTitle className="text-[var(--text-title)] flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-purple-600" />
               扩容网盘
             </DialogTitle>
@@ -1847,7 +1847,7 @@ export default function FileManagement() {
             </div>
 
             <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
-              <div className="text-xs text-[#334155] space-y-1">
+              <div className="text-xs text-[var(--text-secondary)] space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
                 <p>• 到期时间：2026-06-30</p>
@@ -1856,7 +1856,7 @@ export default function FileManagement() {
 
             {/* 选择扩容容量 */}
             <div className="space-y-3">
-              <Label className="text-sm font-semibold text-[#0A0A0A]">选择扩容容量</Label>
+              <Label className="text-sm font-semibold text-[var(--text-title)]">选择扩容容量</Label>
               <RadioGroup value={expandCapacity} onValueChange={setExpandCapacity}>
                 <div className="grid grid-cols-3 gap-3 max-h-[240px] overflow-y-auto pr-2">
                   {generateExpandCapacityOptions().map((item) => (
@@ -1866,7 +1866,7 @@ export default function FileManagement() {
                         htmlFor={`expand-${item.value}`}
                         className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
-                        <span className="text-sm font-semibold text-[#0A0A0A]">{item.label}</span>
+                        <span className="text-sm font-semibold text-[var(--text-title)]">{item.label}</span>
                         <span className="text-xs text-[var(--text-muted)] mt-1">{item.price}</span>
                       </Label>
                     </div>
@@ -1878,7 +1878,7 @@ export default function FileManagement() {
             {/* 价格汇总 */}
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100 rounded-[4px] p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-[#334155]">扩容费用：</span>
+                <span className="text-sm text-[var(--text-secondary)]">扩容费用：</span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculateExpandPrice()}</span>
                 </div>
@@ -1913,10 +1913,10 @@ export default function FileManagement() {
           }}
         >
           <SheetHeader className="px-6 pt-6 pb-4 gap-1.5">
-            <SheetTitle className="text-base font-semibold text-[#0A0A0A]">回收站</SheetTitle>
+            <SheetTitle className="text-base font-semibold text-[var(--text-title)]">回收站</SheetTitle>
             <SheetDescription className="text-sm text-[var(--text-muted)]">
               {getRecyclebinInstances().length > 0 ? (
-                <>共 <span className="text-[#020617] font-medium tabular-nums">{getRecyclebinInstances().length}</span> 个网盘空间待处理 · 关闭后保留 15 天，逾期自动永久删除</>
+                <>共 <span className="text-[var(--text-emphasis)] font-medium tabular-nums">{getRecyclebinInstances().length}</span> 个网盘空间待处理 · 关闭后保留 15 天，逾期自动永久删除</>
               ) : (
                 <>关闭后的网盘空间将在此保留 15 天，逾期自动永久删除</>
               )}
@@ -1929,7 +1929,7 @@ export default function FileManagement() {
                 <div className="w-16 h-16 rounded-full bg-white border border-[#EAEEF4] flex items-center justify-center mb-4">
                   <Trash2 className="w-7 h-7 text-[var(--text-weak)]" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm font-medium text-[#0A0A0A]">回收站为空</p>
+                <p className="text-sm font-medium text-[var(--text-title)]">回收站为空</p>
                 <p className="text-xs text-[var(--text-muted)] mt-1">没有待恢复的网盘空间</p>
               </div>
             ) : (
@@ -1958,7 +1958,7 @@ export default function FileManagement() {
                           {/* 主信息 */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h4 className="text-sm font-medium text-[#0A0A0A] truncate">
+                              <h4 className="text-sm font-medium text-[var(--text-title)] truncate">
                                 {instance.instanceName}
                               </h4>
                               <span
@@ -1993,7 +1993,7 @@ export default function FileManagement() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 px-2.5 gap-1.5 text-[#525252] hover:text-[#0A0A0A]"
+                            className="h-8 px-2.5 gap-1.5 text-[#525252] hover:text-[var(--text-title)]"
                             onClick={() => handleOpenTransfer(instance.id, instance.instanceName, instance.instanceId)}
                           >
                             <Link className="w-3.5 h-3.5" />
@@ -2043,8 +2043,8 @@ export default function FileManagement() {
                   </ul>
                 </AlertDescription>
               </Alert>
-              <p className="text-sm text-[#0A0A0A]">
-                确定要恢复 <span className="font-medium text-[#0A0A0A]">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
+              <p className="text-sm text-[var(--text-title)]">
+                确定要恢复 <span className="font-medium text-[var(--text-title)]">"{instanceToRecoverFromRecyclebin?.name}"</span> 的网盘服务吗？
               </p>
             </div>
           </DialogBody>
@@ -2064,13 +2064,13 @@ export default function FileManagement() {
             type="button"
             aria-label="关闭"
             onClick={handleCancelPermanentDelete}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[var(--text-muted)] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-title)] focus:outline-none"
           >
             <X className="size-5" />
             <span className="sr-only">关闭</span>
           </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">永久删除网盘空间</AlertDialogTitle>
+            <AlertDialogTitle className="text-[var(--text-title)]">永久删除网盘空间</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <Alert variant="warning">
@@ -2084,8 +2084,8 @@ export default function FileManagement() {
                     </ul>
                   </AlertDescription>
                 </Alert>
-                <p className="text-sm text-[#0A0A0A]">
-                  确定要永久删除 <span className="font-medium text-[#0A0A0A]">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
+                <p className="text-sm text-[var(--text-title)]">
+                  确定要永久删除 <span className="font-medium text-[var(--text-title)]">"{instanceToDeletePermanently?.name}"</span> 的网盘空间吗？
                 </p>
               </div>
             </AlertDialogDescription>
@@ -2122,17 +2122,17 @@ export default function FileManagement() {
 
               {/* 待转接的网盘信息卡片：白底黑字 */}
               <div className="bg-white border border-[#EAEEF4] rounded-[4px] p-4">
-                <p className="text-sm text-[#0A0A0A] leading-relaxed">
-                  将 <span className="font-medium text-[#0A0A0A]">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
+                <p className="text-sm text-[var(--text-title)] leading-relaxed">
+                  将 <span className="font-medium text-[var(--text-title)]">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
                 </p>
                 <p className="text-xs text-[var(--text-muted)] mt-2">
-                  实例ID：<span className="font-mono text-[#0A0A0A]">{instanceToTransfer?.instanceId}</span>
+                  实例ID：<span className="font-mono text-[var(--text-title)]">{instanceToTransfer?.instanceId}</span>
                 </p>
               </div>
 
               {/* 选择目标实例 */}
               <div className="space-y-3">
-                <div className="text-sm font-medium text-[#0A0A0A]">选择目标实例</div>
+                <div className="text-sm font-medium text-[var(--text-title)]">选择目标实例</div>
                 {getAvailableTargetInstances().length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-[var(--text-weak)]">
                     <Bot className="w-12 h-12 mb-3 opacity-30" />
@@ -2159,7 +2159,7 @@ export default function FileManagement() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <h4 className={`text-sm font-medium truncate ${isSelected ? "text-[#355EF1]" : "text-[#0A0A0A]"}`}>
+                              <h4 className={`text-sm font-medium truncate ${isSelected ? "text-[#355EF1]" : "text-[var(--text-title)]"}`}>
                                 {item.instanceName}
                               </h4>
                               <StatusTag mode="fill" variant="gray">未启用</StatusTag>

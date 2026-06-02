@@ -364,7 +364,7 @@ function ImageScopePopover({
           {hasChildren ? (
             <span
               onClick={(e) => { e.stopPropagation(); toggleExpand(node.id); }}
-              className="w-4 h-4 flex items-center justify-center text-[#A3A3A3] hover:text-[#737373] shrink-0 cursor-pointer"
+              className="w-4 h-4 flex items-center justify-center text-[var(--text-weak)] hover:text-[var(--text-muted)] shrink-0 cursor-pointer"
             >
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </span>
@@ -383,7 +383,7 @@ function ImageScopePopover({
             {checkState === "checked" && <Check className="w-2.5 h-2.5 text-white" />}
             {checkState === "indeterminate" && <Minus className="w-2.5 h-2.5 text-white" />}
           </span>
-          <span className="text-xs text-[#334155] truncate">{node.name}</span>
+          <span className="text-xs text-[var(--text-secondary)] truncate">{node.name}</span>
         </button>
         {hasChildren && isExpanded && node.children.map((c) => renderTreeNode(c, depth + 1))}
       </div>
@@ -453,7 +453,7 @@ function ImageScopePopover({
       {renderScopeText()}
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
-          <button className="self-center text-[#A3A3A3] hover:text-[#355EF1] transition-colors" title="编辑应用范围">
+          <button className="self-center text-[var(--text-weak)] hover:text-[#355EF1] transition-colors" title="编辑应用范围">
             <Pencil className="w-3 h-3" />
           </button>
         </PopoverTrigger>
@@ -465,7 +465,7 @@ function ImageScopePopover({
                 className={`flex-1 h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   draftScope === "all"
                     ? "bg-[#020617] border-[#020617] text-white"
-                    : "bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]"
+                    : "bg-white border-[#EAEEF4] text-[var(--text-emphasis)] hover:border-[#020617]"
                 }`}
               >
                 全部用户
@@ -475,7 +475,7 @@ function ImageScopePopover({
                 className={`flex-1 h-8 px-4 rounded-[4px] text-sm leading-[22px] tracking-[0.07px] border transition-colors ${
                   draftScope === "groups"
                     ? "bg-[#020617] border-[#020617] text-white"
-                    : "bg-white border-[#EAEEF4] text-[#020617] hover:border-[#020617]"
+                    : "bg-white border-[#EAEEF4] text-[var(--text-emphasis)] hover:border-[#020617]"
                 }`}
               >
                 按分组
@@ -485,7 +485,7 @@ function ImageScopePopover({
               <div className="space-y-1.5">
                 {!hasGroups ? (
                   <div className="text-center py-5 px-2">
-                    <p className="text-xs text-[#A3A3A3] leading-relaxed">
+                    <p className="text-xs text-[var(--text-weak)] leading-relaxed">
                       暂无分组，请前往
                       <a
                         href="/admin/members"
@@ -537,12 +537,12 @@ function ImageScopePopover({
                         placeholder={selectedTags.length === 0 ? "请输入分组名称" : ""}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-[#A3A3A3]"
+                        className="flex-1 min-w-[60px] text-xs bg-transparent outline-none placeholder:text-[var(--text-weak)]"
                       />
                       {(selectedTags.length > 0 || searchQuery) && (
                         <button
                           onClick={handleClearSelection}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A3A3A3] hover:text-[#737373] opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-weak)] hover:text-[var(--text-muted)] opacity-0 group-hover:opacity-100 transition-opacity"
                           title="清除全部"
                         >
                           <XIcon className="w-3.5 h-3.5" />
@@ -557,7 +557,7 @@ function ImageScopePopover({
                         if (!anyVisible) return null;
                         return (
                           <div key={bucket} className="mb-1">
-                            <div className="px-2 py-1 text-[10px] font-medium text-[#A3A3A3] uppercase tracking-wider">
+                            <div className="px-2 py-1 text-[10px] font-medium text-[var(--text-weak)] uppercase tracking-wider">
                               {BUCKET_LABELS[bucket]}
                             </div>
                             {trees.map((root) => renderTreeNode(root, 0))}
@@ -600,13 +600,13 @@ function OverviewStats({
   return (
     <div className="h-9 inline-flex items-center gap-4 px-4 rounded-[4px] bg-white border border-gray-200">
       <div className="flex items-center gap-2">
-        <span className="text-[13px] text-[#737373]">Agent 类型</span>
-        <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{typeCount}</span>
+        <span className="text-[13px] text-[var(--text-muted)]">Agent 类型</span>
+        <span className="text-[13px] text-[var(--text-title)] font-semibold tabular-nums">{typeCount}</span>
       </div>
       <span className="w-px h-3 bg-[#E5E5E5]" />
       <div className="flex items-center gap-2">
-        <span className="text-[13px] text-[#737373]">已对用户可见</span>
-        <span className="text-[13px] text-[#0A0A0A] font-semibold tabular-nums">{enabledTypeCount}</span>
+        <span className="text-[13px] text-[var(--text-muted)]">已对用户可见</span>
+        <span className="text-[13px] text-[var(--text-title)] font-semibold tabular-nums">{enabledTypeCount}</span>
       </div>
     </div>
   );
@@ -1297,7 +1297,7 @@ export default function ImageManagement() {
             <DialogTitle>
               导入自定义镜像
               {importTargetAgentType && (
-                <span className="text-xs text-[#A3A3A3] font-normal ml-2">
+                <span className="text-xs text-[var(--text-weak)] font-normal ml-2">
                   · {getTypeLabel(importTargetAgentType)}
                 </span>
               )}
@@ -1318,7 +1318,7 @@ export default function ImageManagement() {
                   <span>可基于业务需要预装技能、插件、企业内部依赖</span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <XIcon className="w-3 h-3 mt-0.5 text-[#A3A3A3] shrink-0" />
+                  <XIcon className="w-3 h-3 mt-0.5 text-[var(--text-weak)] shrink-0" />
                   <span>需要企业自行跟进版本更新与维护</span>
                 </li>
               </ul>
@@ -1353,7 +1353,7 @@ export default function ImageManagement() {
                       <SelectItem key={img.id} value={img.id}>
                         <span className="inline-flex items-center gap-2">
                           <span>{img.name}</span>
-                          <span className="text-xs text-[#A3A3A3] font-mono">{img.id}</span>
+                          <span className="text-xs text-[var(--text-weak)] font-mono">{img.id}</span>
                         </span>
                       </SelectItem>
                     ))}
@@ -1370,7 +1370,7 @@ export default function ImageManagement() {
                   <RefreshCw className={refreshing ? "animate-spin" : ""} />
                 </Button>
               </div>
-              <p className="text-xs text-[#A3A3A3]">镜像大小不允许超过 50 GiB</p>
+              <p className="text-xs text-[var(--text-weak)]">镜像大小不允许超过 50 GiB</p>
             </div>
 
             <div className="space-y-2">
@@ -1394,7 +1394,7 @@ export default function ImageManagement() {
                   ))}
                   {customTypes.length > 0 && (
                     <>
-                      <div className="px-2 py-1 text-[10px] text-[#A3A3A3] uppercase tracking-wide border-t border-gray-100 mt-1">
+                      <div className="px-2 py-1 text-[10px] text-[var(--text-weak)] uppercase tracking-wide border-t border-gray-100 mt-1">
                         自定义类型
                       </div>
                       {customTypes.map((t) => (
@@ -1450,7 +1450,7 @@ export default function ImageManagement() {
         >
           <DialogHeader>
             <DialogTitle>编辑镜像信息</DialogTitle>
-            <DialogDescription className="text-xs text-[#737373]">
+            <DialogDescription className="text-xs text-[var(--text-muted)]">
               修改该自定义镜像所属的 Agent 类型和版本号
             </DialogDescription>
           </DialogHeader>
@@ -1470,7 +1470,7 @@ export default function ImageManagement() {
                   ))}
                   {customTypes.length > 0 && (
                     <>
-                      <div className="px-2 py-1 text-[10px] text-[#A3A3A3] uppercase tracking-wide border-t border-gray-100 mt-1">
+                      <div className="px-2 py-1 text-[10px] text-[var(--text-weak)] uppercase tracking-wide border-t border-gray-100 mt-1">
                         自定义类型
                       </div>
                       {customTypes.map((t) => (
@@ -1513,7 +1513,7 @@ export default function ImageManagement() {
         >
           <DialogHeader>
             <DialogTitle>添加自定义 Agent 类型</DialogTitle>
-            <DialogDescription className="text-xs text-[#737373]">
+            <DialogDescription className="text-xs text-[var(--text-muted)]">
               支持基于现有 Agent 内核扩展，或添加完全自研的 Agent 类型
             </DialogDescription>
           </DialogHeader>
@@ -1534,7 +1534,7 @@ export default function ImageManagement() {
               {newTypeNameError ? (
                 <p className="text-xs text-red-500 mt-1">{newTypeNameError}</p>
               ) : (
-                <p className="text-xs text-[#A3A3A3] mt-1">用户端展示的类型名称，可包含中英文，需保持唯一</p>
+                <p className="text-xs text-[var(--text-weak)] mt-1">用户端展示的类型名称，可包含中英文，需保持唯一</p>
               )}
             </div>
 
@@ -1595,7 +1595,7 @@ export default function ImageManagement() {
                     onCheckedChange={(c) => setNativeAck(!!c)}
                     className="mt-0.5"
                   />
-                  <span className="text-xs text-[#334155] leading-relaxed">
+                  <span className="text-xs text-[var(--text-secondary)] leading-relaxed">
                     我已知晓上述限制，且确认<span className="font-medium">允许用户进入该类型 Agent 的终端</span>
                   </span>
                 </label>
@@ -1626,13 +1626,13 @@ export default function ImageManagement() {
             type="button"
             aria-label="关闭"
             onClick={() => setRemoveCustomConfirm(null)}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[var(--text-muted)] transition-colors hover:text-[var(--text-title)] focus:outline-none"
           >
             <XIcon className="size-5" />
             <span className="sr-only">关闭</span>
           </button>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#0A0A0A]">删除自定义 Agent 类型</AlertDialogTitle>
+            <AlertDialogTitle className="text-[var(--text-title)]">删除自定义 Agent 类型</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <Alert variant="warning">
@@ -1642,8 +1642,8 @@ export default function ImageManagement() {
                     删除后该类型及其下镜像将不再展示，可重新添加。此操作不会影响已存在的腾讯云镜像数据。
                   </AlertDescription>
                 </Alert>
-                <p className="text-sm text-[#0A0A0A]">
-                  确定要删除自定义 Agent 类型 <span className="font-medium text-[#0A0A0A]">「{removeCustomConfirm?.displayName}」</span> 吗？
+                <p className="text-sm text-[var(--text-title)]">
+                  确定要删除自定义 Agent 类型 <span className="font-medium text-[var(--text-title)]">「{removeCustomConfirm?.displayName}」</span> 吗？
                 </p>
               </div>
             </AlertDialogDescription>

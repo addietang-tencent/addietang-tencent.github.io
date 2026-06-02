@@ -231,9 +231,9 @@ function Pagination({
           onClick={() => handleChange(currentPage - 1)}
           disabled={disabled || currentPage === 1}
           className={cn(
-            "inline-flex items-center justify-center rounded-md text-[#000000a6] transition-colors",
+            "inline-flex items-center justify-center rounded-md text-gray-500 transition-colors",
             itemSize,
-            "hover:bg-[#0000000a]",
+            "hover:bg-gray-100",
             "disabled:opacity-40 disabled:cursor-not-allowed"
           )}
         >
@@ -249,15 +249,15 @@ function Pagination({
             onKeyDown={(e) => e.key === "Enter" && handleJump()}
             disabled={disabled}
             className={cn(
-              "w-12 text-center border border-[#d9d9d9] rounded-md outline-none transition-colors",
-              "focus:border-[#1447E6] focus:shadow-[0_0_0_2px_rgba(53,94,241,0.1)]",
+              "w-12 text-center border border-gray-200 rounded-md outline-none transition-colors",
+              "focus:border-blue-500 focus:shadow-[0_0_0_2px_rgba(53,94,241,0.1)]",
               itemSize,
               textSize,
               "disabled:bg-gray-50 disabled:cursor-not-allowed"
             )}
           />
-          <span className="text-[#000000a6]">/</span>
-          <span className="text-[#000000a6]">{totalPages}</span>
+          <span className="text-gray-500">/</span>
+          <span className="text-gray-500">{totalPages}</span>
         </div>
 
         {/* Next */}
@@ -265,9 +265,9 @@ function Pagination({
           onClick={() => handleChange(currentPage + 1)}
           disabled={disabled || currentPage === totalPages}
           className={cn(
-            "inline-flex items-center justify-center rounded-md text-[#000000a6] transition-colors",
+            "inline-flex items-center justify-center rounded-md text-gray-500 transition-colors",
             itemSize,
-            "hover:bg-[#0000000a]",
+            "hover:bg-gray-100",
             "disabled:opacity-40 disabled:cursor-not-allowed"
           )}
         >
@@ -287,7 +287,7 @@ function Pagination({
     >
       {/* Show Total */}
       {showTotal && (
-        <span className="text-[#000000a6]">
+        <span className="text-gray-500">
           {showTotal(total, [rangeStart, rangeEnd])}
         </span>
       )}
@@ -303,10 +303,10 @@ function Pagination({
             disabled={disabled || currentPage === 1}
             aria-label="上一页"
             className={cn(
-              "inline-flex items-center justify-center rounded-lg border border-gray-200 text-[#000000a6] bg-white transition-colors",
+              "inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 bg-white transition-colors",
               itemSize,
-              !disabled && currentPage !== 1 && "hover:bg-[#f5f5f5]",
-              "disabled:text-[#00000040] disabled:cursor-not-allowed"
+              !disabled && currentPage !== 1 && "hover:bg-gray-100",
+              "disabled:text-gray-400 disabled:cursor-not-allowed"
             )}
           >
             <ChevronLeftIcon className={isSmall ? "w-3.5 h-3.5" : "w-4 h-4"} />
@@ -323,9 +323,9 @@ function Pagination({
                   disabled={disabled}
                   aria-label="向前 5 页"
                   className={cn(
-                    "inline-flex items-center justify-center rounded-md text-[#00000040] transition-colors group",
+                    "inline-flex items-center justify-center rounded-md text-gray-400 transition-colors group",
                     itemSize,
-                    !disabled && "hover:text-[#355EF1]"
+                    !disabled && "hover:text-blue-500"
                   )}
                 >
                   <MoreHorizontalIcon className="w-4 h-4 group-hover:hidden" />
@@ -343,9 +343,9 @@ function Pagination({
                   disabled={disabled}
                   aria-label="向后 5 页"
                   className={cn(
-                    "inline-flex items-center justify-center rounded-md text-[#00000040] transition-colors group",
+                    "inline-flex items-center justify-center rounded-md text-gray-400 transition-colors group",
                     itemSize,
-                    !disabled && "hover:text-[#355EF1]"
+                    !disabled && "hover:text-blue-500"
                   )}
                 >
                   <MoreHorizontalIcon className="w-4 h-4 group-hover:hidden" />
@@ -368,9 +368,9 @@ function Pagination({
                   "px-1.5",
                   textSize,
                   isActive
-                    ? "border-[#1447E6] text-[#355EF1] bg-white"
-                    : "border-gray-200 text-[#000000e0] bg-white",
-                  !disabled && !isActive && "hover:bg-[#f5f5f5]",
+                    ? "border-blue-500 text-blue-500 bg-white"
+                    : "border-gray-200 text-gray-900 bg-white",
+                  !disabled && !isActive && "hover:bg-gray-100",
                   disabled && "cursor-not-allowed opacity-60"
                 )}
               >
@@ -387,10 +387,10 @@ function Pagination({
             disabled={disabled || currentPage === totalPages}
             aria-label="下一页"
             className={cn(
-              "inline-flex items-center justify-center rounded-lg border border-gray-200 text-[#000000a6] bg-white transition-colors",
+              "inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 bg-white transition-colors",
               itemSize,
-              !disabled && currentPage !== totalPages && "hover:bg-[#f5f5f5]",
-              "disabled:text-[#00000040] disabled:cursor-not-allowed"
+              !disabled && currentPage !== totalPages && "hover:bg-gray-100",
+              "disabled:text-gray-400 disabled:cursor-not-allowed"
             )}
           >
             <ChevronRightIcon className={isSmall ? "w-3.5 h-3.5" : "w-4 h-4"} />
@@ -408,8 +408,8 @@ function Pagination({
           <SelectTrigger
             size="sm"
             className={cn(
-              "bg-white text-[#09090b]",
-              "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-gray-200",
+              "bg-white text-gray-950",
+              "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:border-gray-200",
               textSize,
               // 与分页主控件高度对齐：default → 28px, small → 24px
               isSmall ? "!h-6 px-2 [&_svg]:size-3" : "!h-7",
@@ -430,7 +430,7 @@ function Pagination({
       {/* Quick jumper */}
       {showQuickJumper && (
         <div className={cn("flex items-center gap-2", textSize)}>
-          <span className="text-[#09090b]">跳至</span>
+          <span className="text-gray-950">跳至</span>
           <input
             value={jumpValue}
             onChange={(e) => setJumpValue(e.target.value)}
@@ -439,14 +439,14 @@ function Pagination({
             disabled={disabled}
             className={cn(
               "w-12 text-center border border-gray-200 rounded-[4px] outline-none transition-colors",
-              "hover:border-[#355EF1]",
-              "focus:border-[#355EF1]",
+              "hover:border-blue-500",
+              "focus:border-blue-500",
               itemSize,
               textSize,
-              "disabled:bg-[#f3f3f4] disabled:cursor-not-allowed"
+              "disabled:bg-gray-50 disabled:cursor-not-allowed"
             )}
           />
-          <span className="text-[#09090b]">页</span>
+          <span className="text-gray-950">页</span>
         </div>
       )}
       </div>

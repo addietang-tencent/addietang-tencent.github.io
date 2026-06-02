@@ -158,7 +158,7 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none outline-none ring-0 focus:ring-0 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-gray-500 transition-colors hover:text-gray-950 focus:outline-none outline-none ring-0 focus:ring-0 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
           >
             <XIcon />
             <span className="sr-only">Close</span>
@@ -217,8 +217,8 @@ function DialogBody({ className, style, ...props }: React.ComponentProps<"div">)
         "[&::-webkit-scrollbar-thumb]:rounded-full",
         "[&::-webkit-scrollbar-thumb]:bg-transparent",
         "[&::-webkit-scrollbar-track]:bg-transparent",
-        "hover:[&::-webkit-scrollbar-thumb]:bg-[#D4D4D4]",
-        "[&:active::-webkit-scrollbar-thumb]:bg-[#D4D4D4]",
+        "hover:[&::-webkit-scrollbar-thumb]:bg-gray-300",
+        "[&:active::-webkit-scrollbar-thumb]:bg-gray-300",
         className
       )}
       style={{ scrollbarGutter: "stable", ...style }}
@@ -234,7 +234,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-[16px] leading-6 font-semibold text-[rgba(0,0,0,0.88)]", className)}
+      className={cn("text-[16px] leading-6 font-semibold text-gray-900", className)}
       {...props}
     />
   );
@@ -247,7 +247,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-sm text-[#737373]", className)}
+      className={cn("text-sm text-gray-500", className)}
       {...props}
     />
   );
@@ -266,4 +266,3 @@ export {
   DialogTitle,
   DialogTrigger
 };
-

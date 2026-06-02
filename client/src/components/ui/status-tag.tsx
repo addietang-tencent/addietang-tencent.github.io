@@ -41,10 +41,10 @@ const statusTagColorTokens = {
     dot: "bg-[#F59E0B]",
   },
   gray: {
-    text: "text-[#0A0A0A]",
-    bg: "bg-[#F5F5F5]",
+    text: "text-gray-900",
+    bg: "bg-gray-100",
     border: "border-gray-200",
-    dot: "bg-[#0A0A0A]",
+    dot: "bg-gray-900",
   },
 
   /** shadcn / Tailwind palette extensions for soft classification tags */
@@ -146,7 +146,7 @@ const statusTagColorTokens = {
   },
 } as const;
 
-const roleTagClassName = "h-[22px] rounded-full border border-gray-200 bg-white px-2 text-[#020617]";
+const roleTagClassName = "h-[22px] rounded-full border border-gray-200 bg-white px-2 text-gray-950";
 
 export type StatusTagColor = keyof typeof statusTagColorTokens;
 type StatusTagVariant = StatusTagColor | "role";

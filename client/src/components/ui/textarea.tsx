@@ -53,12 +53,12 @@ function Textarea({
     <textarea
       data-slot="textarea"
       className={cn(
-        "flex field-sizing-content min-h-16 w-full rounded-[4px] border border-gray-200 bg-white px-3 py-2 text-sm text-[#0A0A0A] transition-colors outline-none",
-        "placeholder:text-[#A3A3A3]",
-        "hover:border-[#1447E6]",
-        "focus:border-[#1447E6]",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",
-        "aria-invalid:border-[#d42a1e]",
+        "flex field-sizing-content min-h-16 w-full rounded-[4px] border border-gray-200 bg-white px-3 py-2 text-sm text-gray-950 transition-colors outline-none",
+        "placeholder:text-gray-400",
+        "hover:border-blue-500",
+        "focus:border-blue-500",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-gray-400",
+        "aria-invalid:border-destructive",
         className
       )}
       onCompositionStart={handleCompositionStart}

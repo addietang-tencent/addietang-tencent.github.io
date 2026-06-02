@@ -786,7 +786,7 @@ export default function NodeContentPanel({
               </div>
 
               {/* 底部：共 N 名用户 + 分页 */}
-              <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-3 border-t border-gray-200">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-4 px-4 py-2 border-t border-gray-200">
                 <span className="justify-self-start text-xs leading-[18px] text-[#737373]">
                   共 {total} 名用户
                 </span>

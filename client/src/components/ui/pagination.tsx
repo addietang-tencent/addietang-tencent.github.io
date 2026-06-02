@@ -172,7 +172,7 @@ function Pagination({
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const isSmall = size === "small";
-  const itemSize = isSmall ? "h-6 min-w-[24px]" : "h-8 min-w-[32px]";
+  const itemSize = isSmall ? "h-6 min-w-[24px]" : "h-7 min-w-[28px]";
   // 字号统一 12px：default / small 一致；与表格组件 12px 规范保持一致
   const textSize = "text-xs";
 
@@ -411,8 +411,8 @@ function Pagination({
               "bg-white text-[#09090b]",
               "disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-[#f3f3f4] disabled:border-gray-200",
               textSize,
-              // 与分页主控件高度对齐：default → 32px, small → 24px
-              isSmall ? "!h-6 px-2 [&_svg]:size-3" : "!h-8",
+              // 与分页主控件高度对齐：default → 28px, small → 24px
+              isSmall ? "!h-6 px-2 [&_svg]:size-3" : "!h-7",
             )}
           >
             <SelectValue />

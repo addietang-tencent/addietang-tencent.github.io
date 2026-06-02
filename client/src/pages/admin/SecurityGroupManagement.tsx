@@ -3017,7 +3017,7 @@ export default function SecurityGroupManagement() {
         </table>
 
         {paginate && (
-          <div className="px-4 py-3 border-t border-[#f0f0f0] bg-white">
+          <div className="px-4 py-2 border-t border-[#f0f0f0] bg-white">
             <Pagination
               total={rules.length}
               current={currentPage}

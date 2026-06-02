@@ -719,7 +719,7 @@ export default function SessionManagement() {
               </Table>
 
               {/* 翻页控件 — 与表格同一容器，顶部分隔线对齐 AuditLog 规范 */}
-              <div className="px-4 py-3 border-t border-gray-200">
+              <div className="px-4 py-2 border-t border-gray-200">
                 <Pagination
                   total={filteredSessions.length}
                   current={currentPage}

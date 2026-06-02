@@ -1305,7 +1305,7 @@ function PackageDetailView({ pkg, onBack, onPublish, onRemoveSkill }: PackageDet
 
         {/* 表格底部：分页器（左侧显示总数，右侧分页控件） */}
         {localSkills.length > 0 && (
-          <div className="px-4 py-3 border-t border-[#EAEEF4]">
+          <div className="px-4 py-2 border-t border-[#EAEEF4]">
             <Pagination
               total={localSkills.length}
               current={1}

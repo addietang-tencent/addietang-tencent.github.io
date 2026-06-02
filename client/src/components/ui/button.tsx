@@ -66,20 +66,20 @@ const buttonVariants = cva(
           "active:bg-[#991b1b] " +
           "disabled:bg-[#d42a1e]/40 disabled:text-white/60 disabled:opacity-100",
         outline:
-          "bg-white border border-gray-200 text-[#020617] font-normal " +
+          "bg-white border border-gray-200 text-gray-950 font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-gray-200 disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-gray-400 disabled:opacity-100 disabled:[&_svg]:opacity-30",
         secondary:
-          "bg-[#f5f5f5] border border-[#e3e3e3] text-[#020617] font-normal " +
+          "bg-[#f5f5f5] border border-[#e3e3e3] text-gray-950 font-normal " +
           "hover:bg-[#ebebeb] hover:border-[#d4d4d4] " +
           "active:bg-[#e0e0e0] " +
-          "disabled:bg-[#f5f5f5] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+          "disabled:bg-[#f5f5f5] disabled:text-gray-400 disabled:opacity-100",
         ghost:
-          "text-[#020617] font-normal " +
+          "text-gray-950 font-normal " +
           "hover:bg-[#f5f5f5] " +
           "active:bg-[#ebebeb] " +
-          "disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+          "disabled:text-gray-400 disabled:opacity-100",
         /**
          * 分类筛选 Tab（管控端 / Admin）
          * - 形态：4px 方角（沿用基类 rounded-[4px]，对齐管控端规范）
@@ -92,17 +92,17 @@ const buttonVariants = cva(
          * - 用户端胶囊版本请用 `tenant-plain`
          */
         plain:
-          "bg-white border border-[#EAEEF4] text-[#020617] font-normal " +
-          "hover:border-[#020617] " +
-          "active:bg-[#020617] active:border-[#020617] active:text-white " +
-          "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
-          "disabled:bg-white disabled:border-[#EAEEF4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+          "bg-white border border-[#EAEEF4] text-gray-950 font-normal " +
+          "hover:border-gray-950 " +
+          "active:bg-gray-950 active:border-gray-950 active:text-white " +
+          "data-[state=active]:bg-gray-950 data-[state=active]:border-gray-950 data-[state=active]:text-white " +
+          "disabled:bg-white disabled:border-[#EAEEF4] disabled:text-gray-400 disabled:opacity-100",
         link:
-          // link 形态：无 padding 无高度，直接作为内联文字渲染（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
-          "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-[#355EF1] font-normal underline-offset-4 " +
+          // link 형태：무 padding 무 높이，직接作为内联文字渲染（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
+          "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-blue-500 font-normal underline-offset-4 " +
           "hover:underline " +
-          "active:text-[#0a226f] " +
-          "disabled:text-[rgba(20,71,230,0.4)] disabled:opacity-100 disabled:no-underline",
+          "active:text-blue-900 " +
+          "disabled:text-blue-400 disabled:opacity-100 disabled:no-underline",
 
         /**
          * 黑色文字按钮（用于表格操作列）
@@ -113,10 +113,10 @@ const buttonVariants = cva(
          */
         "link-dark":
           // link 形态：无 padding 无高度（用 ! 提升优先级以胜过 size variant 的 px-6 / h-9）
-          "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-[#020617] font-normal underline-offset-4 " +
-          "hover:text-[#525252] " +
-          "active:text-[#020617] active:underline " +
-          "disabled:text-[rgba(2,6,23,0.3)] disabled:no-underline disabled:opacity-100",
+          "!px-0 !py-0 !h-auto has-[>svg]:!px-0 text-gray-950 font-normal underline-offset-4 " +
+          "hover:text-gray-600 " +
+          "active:text-gray-950 active:underline " +
+          "disabled:text-gray-400 disabled:no-underline disabled:opacity-100",
 
         /* ============================================================== */
         /*  Figma「按钮」ComponentSet 317:1051 对齐变体                       */
@@ -130,10 +130,10 @@ const buttonVariants = cva(
          * - disabled: 白底 + #EAEEF4 边 + rgba(2,6,23,0.3) 字
          */
         "claw-outline":
-          "bg-white border border-gray-200 text-[var(--text-title)] font-normal " +
+          "bg-white border border-gray-200 text-gray-950 font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-gray-200 disabled:text-[var(--text-weak)] disabled:opacity-100 disabled:[&_svg]:opacity-50",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-gray-400 disabled:opacity-100 disabled:[&_svg]:opacity-50",
 
         /**
          * 深色填充（主按钮）
@@ -186,10 +186,10 @@ const buttonVariants = cva(
          * - 用途：用户端业务页次级按钮、弹窗取消、表单重置
          */
         "tenant-outline":
-          "!rounded-full bg-white border border-gray-200 text-[#020617] font-normal " +
+          "!rounded-full bg-white border border-gray-200 text-gray-950 font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] hover:[box-shadow:0_1px_3px_rgba(0,0,0,0.08)] " +
           "active:bg-white active:border-[#e3e3e3] active:[box-shadow:none] " +
-          "disabled:bg-white disabled:border-gray-200 disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-gray-400 disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
 
         /**
          * 用户端线性描边按钮（tenant-outline-r20） — [Figma 1077-33986] 卡片底部专用
@@ -199,10 +199,10 @@ const buttonVariants = cva(
          *   规范的 20px 圆角，介于 4px（claw）和 full（tenant）之间
          */
         "tenant-outline-r20":
-          "!rounded-[20px] bg-white border border-[#cbcbcb] text-[#020617] font-normal " +
+          "!rounded-[20px] bg-white border border-[#cbcbcb] text-gray-950 font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#b5b5b5] " +
           "active:bg-white active:border-[#b5b5b5] active:[box-shadow:none] " +
-          "disabled:bg-white disabled:border-[#cbcbcb] disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-[#cbcbcb] disabled:text-gray-400 disabled:opacity-100 disabled:[box-shadow:none] disabled:[&_svg]:opacity-30",
 
         /**
          * 用户端危险按钮（tenant-destructive）
@@ -223,10 +223,10 @@ const buttonVariants = cva(
          * - 用途：用户端工具条 / 卡片角操作 / 极弱视觉权重的按钮
          */
         "tenant-ghost":
-          "!rounded-full bg-transparent text-[#020617] font-normal border-0 " +
+          "!rounded-full bg-transparent text-gray-950 font-normal border-0 " +
           "hover:bg-[#f5f5f5] " +
           "active:bg-[#ebebeb] " +
-          "disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100",
+          "disabled:text-gray-400 disabled:opacity-100",
 
         /**
          * 用户端分类筛选 Tab（tenant-plain，Pill / Chip 形态）
@@ -240,11 +240,11 @@ const buttonVariants = cva(
          *   tenant-primary / tenant-outline 等同手法）。
          */
         "tenant-plain":
-          "!rounded-full bg-white border border-[#EAEEF4] text-[#020617] font-normal " +
-          "hover:border-[#020617] " +
-          "active:bg-[#020617] active:border-[#020617] active:text-white " +
-          "data-[state=active]:bg-[#020617] data-[state=active]:border-[#020617] data-[state=active]:text-white " +
-          "disabled:bg-[#f5f5f5] disabled:border-[#EAEEF4] disabled:text-[rgba(0,0,0,0.3)] disabled:opacity-100",
+          "!rounded-full bg-white border border-[#EAEEF4] text-gray-950 font-normal " +
+          "hover:border-gray-950 " +
+          "active:bg-gray-950 active:border-gray-950 active:text-white " +
+          "data-[state=active]:bg-gray-950 data-[state=active]:border-gray-950 data-[state=active]:text-white " +
+          "disabled:bg-[#f5f5f5] disabled:border-[#EAEEF4] disabled:text-gray-400 disabled:opacity-100",
 
         /**
          * 用户端纯黑实心按钮（tenant-dialog-confirm）
@@ -327,12 +327,12 @@ const smallIconButtonStateConfig: Record<
 > = {
   default: {
     className:
-      "border-[#D4D4D4] bg-white text-[#0A0A0A] hover:border-[#C9C9C9] hover:bg-[#FAFAFA] active:bg-[#F5F5F5]",
+      "border-[#D4D4D4] bg-white text-gray-950 hover:border-[#C9C9C9] hover:bg-[#FAFAFA] active:bg-[#F5F5F5]",
   },
   disabled: {
     disabled: true,
     className:
-      "border-[#D4D4D4] bg-white text-[#A3A3A3] disabled:border-[#D4D4D4] disabled:bg-white disabled:text-[#A3A3A3] disabled:opacity-100 disabled:[&_svg]:opacity-100",
+      "border-[#D4D4D4] bg-white text-gray-400 disabled:border-[#D4D4D4] disabled:bg-white disabled:text-gray-400 disabled:opacity-100 disabled:[&_svg]:opacity-100",
   },
 };
 

@@ -632,7 +632,7 @@
     > tbody
     > tr:hover
     > [data-slot="table-action-cell"]:not([data-fixed]) {
-    background-color: #f9fafb;
+    background-color: #FAFBFD !important;
   }
   table[data-auto-fixed="true"]
     > tbody

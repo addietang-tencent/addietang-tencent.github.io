@@ -57,7 +57,7 @@ export function FilterChipGroup({
               "px-4 py-1.5 rounded-[4px] text-sm font-normal transition-colors border",
               isActive
                 ? "bg-[#020617] text-white border-[#020617]"
-                : "bg-white text-[#020617] border-[#EAEEF4] hover:border-[#020617]"
+                : "bg-white text-gray-950 border-[#EAEEF4] hover:border-gray-950"
             )}
           >
             {item.label}
@@ -96,7 +96,7 @@ export function FilterChip({
         "px-4 py-1.5 rounded-[4px] text-sm font-normal transition-colors border",
         active
           ? "bg-[#020617] text-white border-[#020617]"
-          : "bg-white text-[#020617] border-[#EAEEF4] hover:border-[#020617]",
+          : "bg-white text-gray-950 border-[#EAEEF4] hover:border-gray-950",
         className
       )}
     >

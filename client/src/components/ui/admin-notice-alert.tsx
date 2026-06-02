@@ -72,7 +72,7 @@ export function AdminNoticeAlert({ type, children, controls, className }: AdminN
     <div
       role="alert"
       className={cn(
-        "flex h-10 w-full items-center gap-2.5 rounded-[4px] border border-white bg-white/75 px-3 text-xs leading-[18px] text-[#3F3F3F]",
+        "flex h-10 w-full items-center gap-2.5 rounded-[4px] border border-white bg-white/75 px-3 text-xs leading-[18px] text-gray-950",
         className,
       )}
     >

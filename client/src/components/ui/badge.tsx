@@ -28,11 +28,11 @@ const badgeVariants = cva(
         default:
           "border-transparent bg-[#0A0A0A] text-white [a&]:hover:bg-[#0A0A0A]/90",
         secondary:
-          "border-transparent bg-[#F5F5F5] text-[#0A0A0A] [a&]:hover:bg-[#EDEDED]",
+          "border-transparent bg-[#F5F5F5] text-gray-950 [a&]:hover:bg-[#EDEDED]",
         destructive:
           "border-transparent bg-red-100/60 text-red-600 [a&]:hover:bg-red-100 dark:bg-red-950/40 dark:text-red-300",
         outline:
-          "border-gray-200 bg-white text-[#0A0A0A] [a&]:hover:bg-[#F5F5F5]",
+          "border-gray-200 bg-white text-gray-950 [a&]:hover:bg-[#F5F5F5]",
       },
     },
     defaultVariants: {
@@ -42,7 +42,7 @@ const badgeVariants = cva(
 );
 
 const badgeColorVariants = {
-  blue: "border-transparent bg-[#E8ECFE] text-[#1447E6] dark:bg-blue-950/40 dark:text-blue-300",
+  blue: "border-transparent bg-[#E8ECFE] text-blue-500 dark:bg-blue-950/40 dark:text-blue-300",
   green:
     "border-transparent bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300",
   purple:

@@ -67,7 +67,7 @@ function AlertDialogContent({
         {showCloseButton && (
           <AlertDialogPrimitive.Cancel
             data-slot="alert-dialog-close"
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none outline-none ring-0 focus:ring-0 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-gray-500 transition-colors hover:text-gray-950 focus:outline-none outline-none ring-0 focus:ring-0 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5"
           >
             <XIcon />
             <span className="sr-only">关闭</span>

@@ -39,7 +39,7 @@ export function BackButton({
       type={type}
       data-slot="back-button"
       className={cn(
-        "inline-flex items-center gap-1.5 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors",
+        "inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-950 transition-colors",
         className
       )}
       {...props}

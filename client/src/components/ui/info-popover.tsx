@@ -104,7 +104,7 @@ function InfoPopover({
           // 阻止默认 click 触发：仅 hover 控制开合
           onClick={(e) => e.preventDefault()}
         >
-          {children ?? <Info className="w-3.5 h-3.5 text-[#A3A3A3]" />}
+          {children ?? <Info className="w-3.5 h-3.5 text-gray-400" />}
         </span>
       </PopoverTrigger>
       <PopoverContent
@@ -125,11 +125,11 @@ function InfoPopover({
         style={{ maxWidth: typeof maxWidth === "number" ? `${maxWidth}px` : maxWidth }}
       >
         {title && (
-          <div className="text-sm font-medium text-[#020617] pb-2 mb-2 border-b border-gray-200">
+          <div className="text-sm font-medium text-gray-950 pb-2 mb-2 border-b border-gray-200">
             {title}
           </div>
         )}
-        <div className="text-sm leading-relaxed text-[#020617]">
+        <div className="text-sm leading-relaxed text-gray-950">
           {content}
         </div>
       </PopoverContent>

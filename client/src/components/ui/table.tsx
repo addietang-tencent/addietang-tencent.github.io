@@ -418,7 +418,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "group border-b border-gray-200 transition-colors hover:bg-gray-50 data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)] [thead_&]:hover:bg-transparent",
+        "group border-b border-gray-200 transition-colors hover:bg-[#FAFBFD] data-[state=selected]:bg-[rgba(20,71,230,0.06)] data-[state=selected]:hover:bg-[rgba(20,71,230,0.1)] [thead_&]:hover:bg-transparent",
         className
       )}
       {...props}
@@ -457,10 +457,10 @@ const FIXED_RIGHT_SHADOW_CLS =
 // z-20 高于普通 body cell（z auto），避免横向滚动时被相邻列内容穿透
 const FIXED_LEFT_CELL_CLS =
   "left-0 z-20 bg-white transition-colors " +
-  "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
+  "group-hover:bg-[#FAFBFD] group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
 const FIXED_RIGHT_CELL_CLS =
   "right-0 z-20 bg-white transition-colors " +
-  "group-hover:bg-gray-50 group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
+  "group-hover:bg-[#FAFBFD] group-data-[state=selected]:bg-[rgba(20,71,230,0.06)] group-data-[state=selected]:group-hover:bg-[rgba(20,71,230,0.1)]";
 // body 边界列的 1px 分隔线；投影由 Table 容器级 overlay 连续绘制
 const FIXED_LEFT_CELL_SHADOW_CLS =
   "after:content-[''] after:absolute after:top-0 after:bottom-[-1px] after:right-0 after:w-px after:bg-[#EAEEF4] after:pointer-events-none after:opacity-0 after:transition-opacity [[data-scroll-left=true]_&]:after:opacity-100";
@@ -529,7 +529,7 @@ function TableCell({ className, fixed, fixedShadow = true, ...props }: TableCell
       data-slot="table-cell"
       data-fixed={fixed}
       className={cn(
-        "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-[#0A0A0A] text-xs [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        "text-left align-middle whitespace-nowrap font-sans font-normal leading-[1.5] text-[#0A0A0A] text-xs transition-colors group-hover:bg-[#FAFBFD] [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         density === "compact" ? "h-10 px-4 py-2" : "h-[54px] px-4 py-3",
         // separate 模式下补下分隔线（默认 collapse 模式由 <tr> border-b 接管）
         "[table.border-separate_&]:border-b [table.border-separate_&]:border-gray-200",

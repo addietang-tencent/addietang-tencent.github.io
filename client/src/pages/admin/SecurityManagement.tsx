@@ -287,8 +287,8 @@ export default function SecurityManagement() {
                 onClick={() => setActiveTab(tab.value)}
                 className={`pb-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
                   activeTab === tab.value
-                    ? "text-[#0A0A0A] border-[#0A0A0A]"
-                    : "text-[#A3A3A3] border-transparent hover:text-[#525252]"
+                    ? "text-[var(--text-title)] border-[#0A0A0A]"
+                    : "text-[var(--text-muted)] border-transparent hover:text-[var(--text-title)]"
                 }`}
               >
                 {tab.label}

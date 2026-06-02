@@ -130,10 +130,10 @@ const buttonVariants = cva(
          * - disabled: 白底 + #EAEEF4 边 + rgba(2,6,23,0.3) 字
          */
         "claw-outline":
-          "bg-white border border-gray-200 text-[#020617] font-normal " +
+          "bg-white border border-gray-200 text-[var(--text-title)] font-normal " +
           "hover:bg-[#f5f5f5] hover:border-[#e3e3e3] " +
           "active:bg-white active:border-[#e3e3e3] " +
-          "disabled:bg-white disabled:border-gray-200 disabled:text-[rgba(2,6,23,0.3)] disabled:opacity-100 disabled:[&_svg]:opacity-30",
+          "disabled:bg-white disabled:border-gray-200 disabled:text-[var(--text-weak)] disabled:opacity-100 disabled:[&_svg]:opacity-50",
 
         /**
          * 深色填充（主按钮）

@@ -63,9 +63,9 @@ function Input({
       data-slot="input"
       data-tenant={tenant ? "true" : undefined}
       className={cn(
-        "h-9 w-full min-w-0 border border-gray-200 bg-white px-3 py-[5px] text-sm text-[#0A0A0A] font-normal transition-colors outline-none",
+        "h-9 w-full min-w-0 border border-gray-200 bg-white px-3 py-[5px] text-sm text-[var(--text-title)] font-normal transition-colors outline-none",
         tenant ? "rounded-full" : "rounded-[4px]",
-        "placeholder:text-[#A3A3A3]",
+        "placeholder:text-[var(--text-weak)]",
         "hover:border-[#1447E6]",
         "focus:border-[#1447E6]",
         "disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#FAFAFA] disabled:border-gray-200 disabled:text-[#A3A3A3]",

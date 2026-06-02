@@ -28,9 +28,9 @@ export default function PageTabs<T extends string>({
 }: Props<T>) {
   return (
     <div>
-      {/* Tab 切换器（与 Agent 工具库同款 LineTabs：黑色下划线） */}
+      {/* Tab 切换器（与 Agent 工具库 / ChannelConfig / SkillConfig 同款 LineTabs：黑色下划线 + 浅蓝底线） */}
       <div className="mb-1">
-        <div className="flex items-center gap-2 border-b border-[#f0f0f0]">
+        <div className="flex items-center gap-2 border-b border-[#dbe6ff]">
           {tabs.map((tab) => (
             <button
               key={tab.id}

@@ -196,7 +196,6 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   useEffect(() => {
     if (selectedVersion) {
       setExpandedFile('SKILL.md');
-      setExpandedDirs(new Set());
     }
   }, [selectedVersion]);
 

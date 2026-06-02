@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SurfaceCard } from "@/components/ui/Surface";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
@@ -57,20 +58,15 @@ export default function CommandTaskTab() {
 
   return (
     <div className="space-y-4">
-      {/* ─── 标题栏：标题 + 搜索 + 创建命令 ─────────────────────── */}
+      {/* ─── 标题栏：标题 + 共 N 条 + 搜索 + 创建命令 ─────────────────────── */}
       <div className="flex items-center gap-3">
-        <Code2 className="w-4 h-4 text-purple-500" />
-        <div className="flex-1">
-          <h2 className="font-semibold text-[#0A0A0A] text-base">命令库</h2>
-          <p className="text-xs text-[#737373] mt-0.5">
-            沉淀团队的运维命令模板，便于复用与审计；当前共
-            <span className="font-semibold tabular-nums text-[#0A0A0A] mx-1">
-              {MOCK_COMMAND_TEMPLATES.length}
-            </span>
-            个命令
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+        <h2 className="font-semibold text-[#0A0A0A] text-base inline-flex items-center gap-2 shrink-0">
+          命令库
+          <span className="text-xs font-normal text-[#737373] tabular-nums">
+            共 {templates.length} 条
+          </span>
+        </h2>
+        <div className="ml-auto flex items-center gap-2">
           <div className="relative w-[260px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
             <Input
@@ -94,16 +90,17 @@ export default function CommandTaskTab() {
         </div>
       </div>
 
-      {/* ─── 表格（独立卡片样式） ───────────────────────────────── */}
+      {/* ─── 表格（与执行记录同款 SurfaceCard + elevated-white） ──────── */}
       {templates.length === 0 ? (
-        <div className="py-16 text-center bg-white rounded-lg border border-gray-100">
+        <SurfaceCard className="py-16 text-center overflow-hidden">
           <Code2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
           <p className="text-sm text-[#A3A3A3]">
             {search ? "没有匹配的命令" : "暂无命令，点击「创建命令」开始沉淀团队 SOP"}
           </p>
-        </div>
+        </SurfaceCard>
       ) : (
-        <Table containerClassName="border border-gray-100 rounded-lg overflow-hidden bg-white">
+        <SurfaceCard className="overflow-hidden">
+        <Table variant="elevated-white">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[22%]">命令 ID / 名称</TableHead>
@@ -118,7 +115,7 @@ export default function CommandTaskTab() {
             {templates.map((t) => (
               <TableRow key={t.id}>
                 <TableCell>
-                  <CopyableId id={t.id} primary />
+                  <CopyableId id={t.id} />
                   <div className="font-medium text-[#0A0A0A] mt-0.5">{t.name}</div>
                   {t.description && (
                     <div className="text-[#A3A3A3] mt-0.5 truncate max-w-[260px]">
@@ -183,6 +180,7 @@ export default function CommandTaskTab() {
             ))}
           </TableBody>
         </Table>
+        </SurfaceCard>
       )}
 
       {/* 子弹窗 */}

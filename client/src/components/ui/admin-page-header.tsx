@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { BodyText, TenantHeroTitle } from "@/components/ui/Typography";
 import { cn } from "@/lib/utils";
 
 type AdminPageHeaderProps = {
@@ -35,25 +36,13 @@ export function AdminPageHeader({
     >
       <div className={cn("min-w-0", actions && "flex-1", contentClassName)}>
         <div className="flex items-center gap-3 flex-wrap">
-          <h1
-            className={cn(
-              "font-sans text-[28px] font-medium leading-[36px] text-[#020617]",
-              titleClassName
-            )}
-          >
-            {title}
-          </h1>
+          <TenantHeroTitle className={titleClassName}>{title}</TenantHeroTitle>
           {titleAccessory}
         </div>
         {description ? (
-          <p
-            className={cn(
-              "font-sans text-[12px] font-normal leading-[18px] text-[#596980] mt-2",
-              descriptionClassName
-            )}
-          >
+          <BodyText tone="secondary" className={cn("mt-1", descriptionClassName)}>
             {description}
-          </p>
+          </BodyText>
         ) : null}
       </div>
       {actions ? (

@@ -504,7 +504,7 @@ export default function ModelConfig() {
                           </UrlText>
                         </TooltipTrigger>
                         <TooltipContent className="max-w-[360px]">
-                          <UrlText>{model.modelUrl}</UrlText>
+                          <UrlText tone="inherit">{model.modelUrl}</UrlText>
                         </TooltipContent>
                       </Tooltip>
                     </TableCell>

@@ -3,25 +3,27 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Typography（用户端文字语义组件）
+ * Typography（文字语义组件）
  *
- * 默认颜色全部绑定到 v2 颜色 token：
- * - text-gray-900 → #171717 主文字 / 正文
- * - text-gray-950 → #0A0A0A 强调文字
- * - text-gray-700 → #404040 同字号描述性正文 / 次级文字
- * - text-gray-500 → #737373 辅助文字
- * - text-gray-400 → #A3A3A3 极弱文字
- * - text-[var(--brand-blue)] → #1447E6 品牌 / 活跃文字
+ * 默认颜色全部绑定到 --text-* 语义 token：
+ * - primary → --text-title
+ * - emphasis → --text-emphasis
+ * - body → --text-body
+ * - secondary → --text-secondary
+ * - muted → --text-muted
+ * - weak → --text-weak
+ * - brand → --text-brand
+ * - danger → --text-danger
  */
 export const typographyColorTokens = {
-  primary: "text-gray-900",
-  emphasis: "text-gray-950",
-  body: "text-gray-900",
-  secondary: "text-gray-700",
-  muted: "text-gray-500",
-  weak: "text-gray-400",
-  brand: "text-[var(--brand-blue)]",
-  danger: "text-red-600",
+  primary: "text-[var(--text-title)]",
+  emphasis: "text-[var(--text-emphasis)]",
+  body: "text-[var(--text-body)]",
+  secondary: "text-[var(--text-secondary)]",
+  muted: "text-[var(--text-muted)]",
+  weak: "text-[var(--text-weak)]",
+  brand: "text-[var(--text-brand)]",
+  danger: "text-[var(--text-danger)]",
   inherit: "text-inherit",
 } as const;
 
@@ -167,7 +169,7 @@ export const TinyText = createTypography(
 export const StatNumber = createTypography(
   "StatNumber",
   "span",
-  "font-din text-2xl font-bold leading-none tabular-nums",
+  "font-din-stat text-2xl font-semibold leading-none tabular-nums",
   "emphasis",
 );
 
@@ -195,6 +197,6 @@ export const StepText = createTypography(
 export const UrlText = createTypography(
   "UrlText",
   "span",
-  "font-sans text-sm font-normal leading-[1.5] break-all text-[#020617]",
-  "inherit",
+  "font-sans text-sm font-normal leading-[1.5] break-all",
+  "emphasis",
 );

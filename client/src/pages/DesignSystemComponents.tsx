@@ -134,7 +134,7 @@ import {
 import type { Notification } from "@/components/topnav";
 
 const ADMIN_ICON_BASE = "/assets/admin-sidebar";
-const DOCUMENTED_COMPONENT_COUNT = "31+";
+const DOCUMENTED_COMPONENT_COUNT = "32+";
 
 const GROUP_LABELS = {
   foundation: "基础视觉",
@@ -149,6 +149,7 @@ const GROUP_LABELS = {
 type GroupKey = keyof typeof GROUP_LABELS;
 type Platform = "Global 全局" | "Tenant 用户端" | "Admin 管控端";
 type ComponentId =
+  | "color"
   | "typography"
   | "surface-card"
   | "surface-inner"
@@ -215,7 +216,179 @@ const baseGuidance = {
   admin: ["管控端组件需要关注信息密度、表格、导航、配置表单和操作反馈。", "管控端专属组件不套用用户端页面骨架。"],
 };
 
+type ColorToken = {
+  name: string;
+  cssVar?: string;
+  className?: string;
+  value: string;
+  swatch?: string;
+  usage: string;
+  badges?: string[];
+};
+
+type ColorGroup = {
+  title: string;
+  description: string;
+  tokens: ColorToken[];
+};
+
+const neutralGrayTokens: ColorToken[] = [
+  { name: "gray-50", cssVar: "--color-gray-50", className: "bg-gray-50 / text-gray-50", value: "#FAFAFA", usage: "极浅背景" },
+  { name: "gray-100", cssVar: "--color-gray-100", className: "bg-gray-100 / text-gray-100", value: "#F5F5F5", usage: "浅背景 / Tab 底" },
+  { name: "gray-200", cssVar: "--color-gray-200", className: "bg-gray-200 / border-gray-200", value: "#EAEEF4", usage: "描边 / 分割线" },
+  { name: "gray-300", cssVar: "--color-gray-300", className: "bg-gray-300 / border-gray-300", value: "#D4D4D4", usage: "描边强调" },
+  { name: "gray-400", cssVar: "--color-gray-400", className: "text-gray-400", value: "#A3A3A3", usage: "极弱文字" },
+  { name: "gray-500", cssVar: "--color-gray-500", className: "text-gray-500", value: "#737373", usage: "辅助文字" },
+  { name: "gray-600", cssVar: "--color-gray-600", className: "text-gray-600", value: "#475569", usage: "中等文字" },
+  { name: "gray-700", cssVar: "--color-gray-700", className: "text-gray-700", value: "#404040", usage: "次级正文" },
+  { name: "gray-900", cssVar: "--color-gray-900", className: "text-gray-900", value: "#171717", usage: "主文字 / 正文" },
+  { name: "gray-950", cssVar: "--color-gray-950", className: "text-gray-950", value: "#0A0A0A", usage: "强调文字" },
+];
+
+const blueGrayTokens: ColorToken[] = [
+  { name: "slate-50", className: "bg-slate-50 / text-slate-50", value: "#F8FAFC", usage: "蓝灰极浅背景" },
+  { name: "slate-100", className: "bg-slate-100 / text-slate-100", value: "#F1F5F9", usage: "蓝灰浅背景" },
+  { name: "slate-200", className: "bg-slate-200 / border-slate-200", value: "#E2E8F0", usage: "蓝灰分割线" },
+  { name: "slate-300", className: "bg-slate-300 / border-slate-300", value: "#CBD5E1", usage: "蓝灰描边" },
+  { name: "slate-400", className: "text-slate-400", value: "#94A3B8", usage: "蓝灰弱文字" },
+  { name: "slate-500", className: "text-slate-500", value: "#64748B", usage: "蓝灰辅助文字" },
+  { name: "slate-600", className: "text-slate-600", value: "#475569", usage: "蓝灰中等文字" },
+  { name: "slate-700", className: "text-slate-700", value: "#334155", usage: "蓝灰次级正文" },
+  { name: "slate-800", className: "text-slate-800", value: "#1E293B", usage: "蓝灰深正文" },
+  { name: "slate-900", className: "text-slate-900", value: "#0F172A", usage: "蓝灰强调" },
+  { name: "slate-950", cssVar: "--general-foreground", className: "text-slate-950", value: "#020617", usage: "强强调 / CTA 起点" },
+];
+
+const textSemanticTokens: ColorToken[] = [
+  { name: "text-emphasis", cssVar: "--text-emphasis", className: "text-[var(--text-emphasis)]", value: "#020617", usage: "强强调、关键数字、强标题", badges: ["Typography 使用中"] },
+  { name: "text-title", cssVar: "--text-title", className: "text-[var(--text-title)]", value: "#0F172A", usage: "页面标题、模块标题", badges: ["Typography 使用中"] },
+  { name: "text-body", cssVar: "--text-body", className: "text-[var(--text-body)]", value: "#1E293B", usage: "普通正文", badges: ["Typography 使用中"] },
+  { name: "text-secondary", cssVar: "--text-secondary", className: "text-[var(--text-secondary)]", value: "#334155", usage: "描述、补充说明、表格次要字段", badges: ["Typography 使用中"] },
+  { name: "text-muted", cssVar: "--text-muted", className: "text-[var(--text-muted)]", value: "#64748B", usage: "时间、备注、辅助信息", badges: ["Typography 使用中"] },
+  { name: "text-weak", cssVar: "--text-weak", className: "text-[var(--text-weak)]", value: "#94A3B8", usage: "占位、空状态、极弱提示", badges: ["Typography 使用中"] },
+  { name: "text-brand", cssVar: "--text-brand", className: "text-[var(--text-brand)]", value: "#1447E6", usage: "链接、活跃态、品牌强调", badges: ["Typography 使用中"] },
+  { name: "text-danger", cssVar: "--text-danger", className: "text-[var(--text-danger)]", value: "#DC2626", usage: "删除、错误、危险操作", badges: ["Typography 使用中"] },
+];
+
+const semanticTokens: ColorToken[] = [
+  { name: "background", cssVar: "--background", value: "#FFFFFF", usage: "页面底色" },
+  { name: "card", cssVar: "--card", value: "#FFFFFF", usage: "卡片底" },
+  { name: "popover", cssVar: "--popover", value: "#FFFFFF", usage: "浮层底" },
+  { name: "primary-foreground", cssVar: "--primary-foreground", value: "oklch(0.985 0 0)", swatch: "oklch(0.985 0 0)", usage: "主按钮前景" },
+  { name: "destructive-foreground", cssVar: "--destructive-foreground", value: "oklch(0.985 0 0)", swatch: "oklch(0.985 0 0)", usage: "危险按钮前景" },
+  { name: "secondary", cssVar: "--secondary", value: "#F5F5F5", usage: "次级背景" },
+  { name: "muted", cssVar: "--muted", value: "#F5F5F5", usage: "静默背景" },
+  { name: "accent", cssVar: "--accent", value: "#F5F5F5", usage: "Hover 浅背景" },
+  { name: "border", cssVar: "--border", value: "#EAEEF4", usage: "描边 / 分割线" },
+  { name: "input", cssVar: "--input", value: "#EAEEF4", usage: "输入框描边" },
+  { name: "muted-foreground", cssVar: "--muted-foreground", value: "#737373", usage: "辅助文字" },
+  { name: "admin-description", cssVar: "--admin-page-description-foreground", value: "#596980", usage: "管控端页头描述" },
+  { name: "secondary-foreground", cssVar: "--secondary-foreground", value: "#404040", usage: "次级前景" },
+  { name: "foreground", cssVar: "--foreground", value: "#0A0A0A", usage: "主文字" },
+  { name: "card-foreground", cssVar: "--card-foreground", value: "#0A0A0A", usage: "卡片文字" },
+  { name: "popover-foreground", cssVar: "--popover-foreground", value: "#0A0A0A", usage: "浮层文字" },
+  { name: "accent-foreground", cssVar: "--accent-foreground", value: "#0A0A0A", usage: "Hover 前景" },
+  { name: "general-foreground", cssVar: "--general-foreground", value: "#020617", usage: "强强调文字" },
+];
+
+const brandTokens: ColorToken[] = [
+  { name: "blue-500", cssVar: "--color-blue-500", className: "text-blue-500", value: "#355EF1", usage: "Tailwind 蓝色覆盖" },
+  { name: "brand-blue", cssVar: "--brand-blue", value: "#1447E6", usage: "品牌主蓝" },
+  { name: "brand-purple", cssVar: "--brand-purple", value: "#1447E6", usage: "品牌紫别名" },
+  { name: "ring", cssVar: "--ring", value: "#1447E6", usage: "Focus 外环" },
+  { name: "primary", cssVar: "--primary", value: "oklch(0.546 0.245 262.881)", swatch: "oklch(0.546 0.245 262.881)", usage: "主色语义" },
+  { name: "destructive", cssVar: "--destructive", value: "oklch(0.577 0.245 27.325)", swatch: "oklch(0.577 0.245 27.325)", usage: "危险操作" },
+];
+
+const alertTokens: ColorToken[] = [
+  { name: "operation-info-bg", cssVar: "--alert-operation-info-bg", value: "#FFFFFF", usage: "操作说明底" },
+  { name: "info-bg", cssVar: "--alert-info-bg", value: "#F0F3FC", usage: "Info 底" },
+  { name: "product-news-bg", cssVar: "--alert-product-news-bg", value: "var(--alert-info-bg)", swatch: "#F0F3FC", usage: "产品动态底" },
+  { name: "operation-info-border", cssVar: "--alert-operation-info-border", value: "#EAEEF4", usage: "操作说明描边" },
+  { name: "info-border", cssVar: "--alert-info-border", value: "#BFCFFE", usage: "Info 描边" },
+  { name: "product-news-border", cssVar: "--alert-product-news-border", value: "var(--alert-info-border)", swatch: "#BFCFFE", usage: "产品动态描边" },
+  { name: "operation-info-icon", cssVar: "--alert-operation-info-icon", value: "#737373", usage: "操作说明图标" },
+  { name: "warning-bg", cssVar: "--alert-warning-bg", value: "#FFF7ED", usage: "Warning 底" },
+  { name: "warning-border", cssVar: "--alert-warning-border", value: "#FED7AA", usage: "Warning 描边" },
+  { name: "warning-icon", cssVar: "--alert-warning-icon", value: "#FF6900", usage: "Warning 图标" },
+  { name: "info-icon", cssVar: "--alert-info-icon", value: "#1447E6", usage: "Info 图标" },
+  { name: "product-news-icon", cssVar: "--alert-product-news-icon", value: "var(--alert-info-icon)", swatch: "#1447E6", usage: "产品动态图标" },
+  { name: "info-foreground", cssVar: "--alert-info-foreground", value: "#0A0A0A", usage: "Alert 文字" },
+  { name: "warning-foreground", cssVar: "--alert-warning-foreground", value: "#0A0A0A", usage: "Warning 文字" },
+  { name: "operation-info-fg", cssVar: "--alert-operation-info-foreground", value: "var(--alert-info-foreground)", swatch: "#0A0A0A", usage: "操作说明文字" },
+  { name: "product-news-fg", cssVar: "--alert-product-news-foreground", value: "var(--alert-info-foreground)", swatch: "#0A0A0A", usage: "产品动态文字" },
+];
+
+const chartTokens: ColorToken[] = [
+  { name: "chart-5", cssVar: "--chart-5", value: "oklch(0.78 0.12 120)", swatch: "oklch(0.78 0.12 120)", usage: "图表色 5" },
+  { name: "chart-4", cssVar: "--chart-4", value: "oklch(0.72 0.15 160)", swatch: "oklch(0.72 0.15 160)", usage: "图表色 4" },
+  { name: "chart-3", cssVar: "--chart-3", value: "oklch(0.65 0.18 200)", swatch: "oklch(0.65 0.18 200)", usage: "图表色 3" },
+  { name: "chart-1", cssVar: "--chart-1", value: "oklch(0.546 0.245 262.881)", swatch: "oklch(0.546 0.245 262.881)", usage: "图表色 1" },
+  { name: "chart-2", cssVar: "--chart-2", value: "oklch(0.48 0.22 280)", swatch: "oklch(0.48 0.22 280)", usage: "图表色 2" },
+];
+
+const sidebarTokens: ColorToken[] = [
+  { name: "sidebar", cssVar: "--sidebar", value: "#FFFFFF", usage: "侧栏底" },
+  { name: "sidebar-primary-fg", cssVar: "--sidebar-primary-foreground", value: "#FFFFFF", usage: "侧栏主色前景" },
+  { name: "sidebar-accent", cssVar: "--sidebar-accent", value: "#F5F5F5", usage: "侧栏 Hover 底" },
+  { name: "sidebar-border", cssVar: "--sidebar-border", value: "#EAEEF4", usage: "侧栏描边" },
+  { name: "sidebar-primary", cssVar: "--sidebar-primary", value: "#1447E6", usage: "侧栏活跃主色" },
+  { name: "sidebar-ring", cssVar: "--sidebar-ring", value: "#1447E6", usage: "侧栏 Focus" },
+  { name: "sidebar-foreground", cssVar: "--sidebar-foreground", value: "#0A0A0A", usage: "侧栏文字" },
+  { name: "sidebar-accent-fg", cssVar: "--sidebar-accent-foreground", value: "#0A0A0A", usage: "侧栏 Hover 文字" },
+];
+
+const adminSidebarTokens: ColorToken[] = [
+  { name: "admin-sidebar-bg", cssVar: "--admin-sidebar-bg", value: "#FFFFFF", usage: "管控侧栏底" },
+  { name: "action-bg", cssVar: "--admin-sidebar-action-bg", value: "#FFFFFF", usage: "侧栏操作按钮底" },
+  { name: "action-hover-bg", cssVar: "--admin-sidebar-action-hover-bg", value: "#F5F5F5", usage: "操作按钮 Hover" },
+  { name: "badge-bg", cssVar: "--admin-sidebar-badge-bg", value: "#F5F5F5", usage: "侧栏 Badge 底" },
+  { name: "item-hover-bg", cssVar: "--admin-sidebar-item-hover-bg", value: "rgba(180, 191, 225, 0.14)", usage: "菜单 Hover 底" },
+  { name: "badge-brand-bg", cssVar: "--admin-sidebar-badge-brand-bg", value: "color-mix(in srgb, var(--brand-blue) 10%, var(--admin-sidebar-bg))", usage: "品牌 Badge 底" },
+  { name: "avatar-bg", cssVar: "--admin-sidebar-avatar-bg", value: "color-mix(in srgb, var(--brand-blue) 32%, var(--admin-sidebar-bg))", usage: "头像底" },
+  { name: "item-active-bg", cssVar: "--admin-sidebar-item-active-bg", value: "linear-gradient(90deg, #E9F3FF 0%, #E3EAFF 100%)", usage: "菜单选中底" },
+  { name: "action-border", cssVar: "--admin-sidebar-action-border", value: "#E3E3E3", usage: "操作按钮描边" },
+  { name: "action-hover-border", cssVar: "--admin-sidebar-action-hover-border", value: "#E3E3E3", usage: "操作按钮 Hover 描边" },
+  { name: "admin-sidebar-border", cssVar: "--admin-sidebar-border", value: "#EAEEF4", usage: "管控侧栏描边" },
+  { name: "badge-brand-border", cssVar: "--admin-sidebar-badge-brand-border", value: "color-mix(in srgb, var(--brand-blue) 24%, var(--admin-sidebar-bg))", usage: "品牌 Badge 描边" },
+  { name: "admin-sidebar-muted", cssVar: "--admin-sidebar-muted", value: "#737373", usage: "侧栏辅助文字" },
+  { name: "avatar-fg", cssVar: "--admin-sidebar-avatar-foreground", value: "#020617", usage: "头像文字" },
+  { name: "admin-sidebar-fg", cssVar: "--admin-sidebar-foreground", value: "#0A0A0A", usage: "侧栏正文" },
+];
+
+const colorGroups: ColorGroup[] = [
+  { title: "Text 文字语义色（--text-*）", description: "Typography 当前使用的文字语义 token，后续页面文字迁移优先收口到这一组。", tokens: textSemanticTokens },
+  { title: "中灰色 Gray（当前全局 --color-gray-*）", description: "项目已覆盖的 gray 色阶，保留给历史样式、背景与描边参考。", tokens: neutralGrayTokens },
+  { title: "蓝灰色 Slate（替换候选）", description: "Tailwind slate 蓝灰色阶，包含 #334155、#475569、#020617 等候选。", tokens: blueGrayTokens },
+  { title: "语义色 Semantic（:root）", description: "shadcn 与全局页面、卡片、浮层、描边、前景等语义 token。", tokens: semanticTokens },
+  { title: "品牌 / 交互 Brand", description: "品牌蓝、主色、Focus Ring 与危险操作色。", tokens: brandTokens },
+  { title: "Alert 提示", description: "Info / Warning / Operation Info 等提示组件色值。", tokens: alertTokens },
+  { title: "Chart 图表", description: "Recharts 等图表使用的全局 chart token。", tokens: chartTokens },
+  { title: "Sidebar 侧栏", description: "shadcn sidebar 语义 token。", tokens: sidebarTokens },
+  { title: "Admin Sidebar 管控侧栏", description: "管控端侧栏专属色彩 token。", tokens: adminSidebarTokens },
+];
+
 const COMPONENTS: ComponentMeta[] = [
+  {
+    id: "color",
+    group: "foundation",
+    name: "Color",
+    cnName: "颜色 Token 色卡",
+    description: "集中展示全局颜色 token 色卡，并突出 --text-* 文字语义色。",
+    owner: "miekoyychen / addietang",
+    source: "client/src/index.css",
+    doc: "SKILL-GLOBAL-COMPONENTS.md · 色彩系统",
+    platform: "Global 全局",
+    adoption: "核心参考",
+    applicationSummary: "全局文字色替换和页面效果校准核心参考。",
+    applicationScope: "文字、描边、分割线、浅背景、品牌色、提示色、图表色和侧栏色",
+    moduleCount: 97,
+    instanceCount: 97,
+    tags: ["已接入预览", "核心参考", "Color Token"],
+    usage: ["文字语义 token 对照", "中灰色与蓝灰色替换校准", "品牌 / 提示 / 图表 / 侧栏色检查"],
+    notes: ["全局 token 主要来自 index.css 的 @theme 与 :root。", "Typography 已切换到 --text-* 文字语义 token。", "后续页面迁移应优先使用 Typography，避免逐页写死文字色。"],
+    migration: ["散落文字色 → Typography 或 text-[var(--text-*)]", "中灰描边 / 背景 → 暂不迁移到文字 token", "强强调文字 → --text-emphasis"],
+  },
   {
     id: "typography",
     group: "foundation",
@@ -233,7 +406,7 @@ const COMPONENTS: ComponentMeta[] = [
     instanceCount: 74,
     tags: ["已接入预览", "核心参考"],
     usage: ["页面标题、模块标题、卡片标题", "正文说明、辅助信息、时间与 ID", "统计数字、表格数字、代码路径"],
-    notes: ["新增页面优先使用 Typography 语义组件。", "不要用散落的 text-gray-* 表达基础文字色。", "数字、代码、步骤标识优先使用专用组件。"],
+    notes: ["新增页面优先使用 Typography 语义组件。", "Typography tone 已绑定 --text-* 语义 token。", "数字、代码、步骤标识优先使用专用组件。"],
     migration: ["页面标题 → TenantPageTitle / TenantHeroTitle", "卡片标题 → CardTitle", "ID / Token / 路径 → CodeText", "统计大数字 → StatNumber"],
   },
   {
@@ -872,6 +1045,94 @@ function PreviewPanel({
   );
 }
 
+function isDarkColor(value: string) {
+  const hex = value.trim().match(/^#([0-9a-f]{6})$/i)?.[1];
+  if (!hex) return false;
+  const r = Number.parseInt(hex.slice(0, 2), 16);
+  const g = Number.parseInt(hex.slice(2, 4), 16);
+  const b = Number.parseInt(hex.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 < 118;
+}
+
+const componentUsedSlateValues = new Set(["#F8FAFC", "#E2E8F0", "#475569", "#334155", "#020617"]);
+
+function getColorTokenBadges(token: ColorToken, groupTitle: string) {
+  if (token.badges?.length) return token.badges;
+  if (groupTitle.includes("Slate")) {
+    return componentUsedSlateValues.has((token.swatch ?? token.value).toUpperCase()) ? ["组件使用"] : ["候选"];
+  }
+  return ["使用中"];
+}
+
+function ColorRamp({
+  title,
+  description,
+  tokens,
+}: ColorGroup) {
+  return (
+    <div className="space-y-3">
+      <div>
+        <BodyMedium>{title}</BodyMedium>
+        <MetaText className="mt-1 block" tone="secondary">{description}</MetaText>
+      </div>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-3">
+        {tokens.map((token) => {
+          const swatchColor = token.swatch ?? token.value;
+          const dark = isDarkColor(swatchColor);
+          const badges = getColorTokenBadges(token, title);
+          return (
+            <div key={`${title}-${token.name}`} className="overflow-hidden rounded-[4px] border border-[#DDE7F2] bg-white">
+              <div className="relative h-[72px] border-b border-[#EAEEF4]" style={{ background: swatchColor }}>
+                <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">
+                  {badges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-[2px] px-1.5 py-0.5 text-[10px] font-medium leading-none backdrop-blur-sm"
+                      style={{ color: dark ? "#FFFFFF" : "#020617", backgroundColor: dark ? "rgba(2, 6, 23, 0.42)" : "rgba(255, 255, 255, 0.82)" }}
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1 px-3 py-3">
+                <BodyMedium className="block truncate text-[13px]">{token.name}</BodyMedium>
+                <CodeText className="block truncate text-[11px]">{token.value}</CodeText>
+                {token.cssVar ? <MetaText className="block truncate">{token.cssVar}</MetaText> : null}
+                {token.className ? <MetaText className="block truncate">{token.className}</MetaText> : null}
+                <MetaText className="block truncate" tone="secondary">{token.usage}</MetaText>
+                {dark ? <span className="sr-only">深色色卡</span> : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ColorPreview() {
+  const total = colorGroups.reduce((sum, group) => sum + group.tokens.length, 0);
+
+  return (
+    <div className="space-y-4">
+      <PreviewPanel title="全局颜色 token 色卡" layout="wide">
+        <div className="space-y-7">
+          <div className="rounded-[4px] border border-[#DDE7F2] bg-[#F8FAFF] px-4 py-3">
+            <BodyMedium>当前展示 token 共 {total} 个</BodyMedium>
+            <BodyText className="mt-1" tone="secondary">
+              包含 index.css 中的全局颜色 token，Text 文字语义色已接入 Typography；每组均按浅到深排列，方便你指定后续替换映射。
+            </BodyText>
+          </div>
+          {colorGroups.map((group) => (
+            <ColorRamp key={group.title} {...group} />
+          ))}
+        </div>
+      </PreviewPanel>
+    </div>
+  );
+}
+
 function TypographyPreview() {
   const rows = [
     ["TenantHeroTitle", <TenantHeroTitle key="hero">模型额度与用量总览</TenantHeroTitle>, "用户端 Hero 标题"],
@@ -888,14 +1149,14 @@ function TypographyPreview() {
     ["StepText", <StepText key="step">Step 1</StepText>, "步骤标识"],
   ] as const;
   const toneCards = [
-    { token: "primary", name: "标题色", value: "#171717", color: "#171717" },
-    { token: "emphasis", name: "强调", value: "#0A0A0A", color: "#0A0A0A" },
-    { token: "body", name: "正文", value: "#171717", color: "#171717" },
-    { token: "secondary", name: "描述正文", value: "#404040", color: "#404040" },
-    { token: "muted", name: "辅助", value: "#737373", color: "#737373" },
-    { token: "weak", name: "极弱", value: "#A3A3A3", color: "#A3A3A3" },
-    { token: "brand", name: "活跃", value: "#1447E6", color: "#1447E6" },
-    { token: "danger", name: "危险", value: "#DC2626", color: "#DC2626" },
+    { token: "primary", name: "标题色", value: "--text-title / #0F172A", color: "var(--text-title)" },
+    { token: "emphasis", name: "强调", value: "--text-emphasis / #020617", color: "var(--text-emphasis)" },
+    { token: "body", name: "正文", value: "--text-body / #1E293B", color: "var(--text-body)" },
+    { token: "secondary", name: "描述正文", value: "--text-secondary / #334155", color: "var(--text-secondary)" },
+    { token: "muted", name: "辅助", value: "--text-muted / #64748B", color: "var(--text-muted)" },
+    { token: "weak", name: "极弱", value: "--text-weak / #94A3B8", color: "var(--text-weak)" },
+    { token: "brand", name: "活跃", value: "--text-brand / #1447E6", color: "var(--text-brand)" },
+    { token: "danger", name: "危险", value: "--text-danger / #DC2626", color: "var(--text-danger)" },
   ] as const;
 
   return (
@@ -1327,6 +1588,7 @@ function getApplicationPages(component: ComponentMeta): ApplicationPage[] {
 }
 
 function renderPreview(id: ComponentId) {
+  if (id === "color") return <ColorPreview />;
   if (id === "typography") return <TypographyPreview />;
   if (["surface-card", "surface-inner", "surface-config", "surface-overlay"].includes(id)) return <SurfacePreview id={id} />;
   if (id === "button") return <ButtonPreview />;
@@ -1345,7 +1607,7 @@ function renderPreview(id: ComponentId) {
 }
 
 export default function DesignSystemComponents() {
-  const [selectedId, setSelectedId] = useState<ComponentId>("button");
+  const [selectedId, setSelectedId] = useState<ComponentId>("color");
   const [keyword, setKeyword] = useState("");
   const [platformFilter, setPlatformFilter] = useState<"全部组件" | Platform>("全部组件");
 

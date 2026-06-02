@@ -206,11 +206,11 @@ export const MemoryManagement: React.FC = () => {
           }`}
         >
           <div className="flex items-center gap-2">
-            <Info className="w-4 h-4 text-[#0A0A0A]" />
-            <span className="text-sm font-medium text-[#0A0A0A]">了解 Memory Free 版与 Pro 版的区别</span>
+            <Info className="w-4 h-4 text-[var(--text-title)]" />
+            <span className="text-sm font-medium text-[var(--text-title)]">了解 Memory Free 版与 Pro 版的区别</span>
           </div>
           <ChevronDown
-            className={`w-4 h-4 text-[#737373] transition-transform duration-200 ${versionCompareExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-[var(--text-muted)] transition-transform duration-200 ${versionCompareExpanded ? 'rotate-180' : ''}`}
           />
         </button>
         
@@ -229,7 +229,7 @@ export const MemoryManagement: React.FC = () => {
         className="mb-6 bg-white rounded-xl border border-gray-200"
       >
         <div className="px-6 py-5 border-b border-gray-50">
-          <h2 className="font-semibold text-[#0A0A0A]">服务概览</h2>
+          <h2 className="font-semibold text-[var(--text-title)]">服务概览</h2>
         </div>
         <div className="p-5">
           <div className="grid grid-cols-5 gap-4">
@@ -239,9 +239,9 @@ export const MemoryManagement: React.FC = () => {
             >
               <div className="flex items-center gap-1">
                 <img src="/assets/admin-memory-management/instance-total.svg" className="shrink-0" />
-                <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">实例总数</span>
+                <span className="text-sm font-medium text-[var(--text-title)] leading-[22px] tracking-[0.07px]">实例总数</span>
               </div>
-              <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.total}</p>
+              <p className="text-2xl font-bold text-[var(--text-title)] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.total}</p>
             </div>
 
             {/* 未开启 */}
@@ -250,9 +250,9 @@ export const MemoryManagement: React.FC = () => {
             >
               <div className="flex items-center gap-1">
                 <img src="/assets/admin-memory-management/instance-disabled.svg" className="shrink-0" />
-                <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">未开启</span>
+                <span className="text-sm font-medium text-[var(--text-title)] leading-[22px] tracking-[0.07px]">未开启</span>
               </div>
-              <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.noneCount}</p>
+              <p className="text-2xl font-bold text-[var(--text-title)] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.noneCount}</p>
             </div>
 
             {/* Free 版 */}
@@ -261,9 +261,9 @@ export const MemoryManagement: React.FC = () => {
             >
               <div className="flex items-center gap-1">
                 <img src="/assets/admin-memory-management/instance-free.svg" className="shrink-0" />
-                <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">Free 版</span>
+                <span className="text-sm font-medium text-[var(--text-title)] leading-[22px] tracking-[0.07px]">Free 版</span>
               </div>
-              <p className="text-2xl font-bold text-[#0A0A0A] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.freeCount}</p>
+              <p className="text-2xl font-bold text-[var(--text-title)] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.freeCount}</p>
             </div>
 
             {/* Pro 版 - 融合配额管理 */}
@@ -281,7 +281,7 @@ export const MemoryManagement: React.FC = () => {
                   <img src="/assets/admin-memory-management/instance-pro.svg" className="shrink-0" />
                   <div className="flex flex-col gap-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">Pro 版</span>
+                      <span className="text-sm font-medium text-[var(--text-title)] leading-[22px] tracking-[0.07px]">Pro 版</span>
                       <Badge color="blue">免费体验中</Badge>
                     </div>
 
@@ -303,7 +303,7 @@ export const MemoryManagement: React.FC = () => {
                     // 避免在 Pro 卡片再放一个语义重复的「一键升级」造成认知割裂。
                     <button
                       onClick={(e) => { e.stopPropagation(); setCloseDialogOpen(true); }}
-                      className="whitespace-nowrap text-xs text-[#737373] hover:text-red-600 font-medium hover:underline"
+                      className="whitespace-nowrap text-xs text-[var(--text-muted)] hover:text-red-600 font-medium hover:underline"
                     >
                       关闭服务
                     </button>
@@ -320,7 +320,7 @@ export const MemoryManagement: React.FC = () => {
               {/* 未开通状态 */}
               {isProInactive && (
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-[#A3A3A3] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>0/0</span>
+                  <span className="text-2xl font-bold text-[var(--text-weak)] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>0/0</span>
                 </div>
               )}
 
@@ -337,7 +337,7 @@ export const MemoryManagement: React.FC = () => {
                 <div>
                   <div className="flex items-baseline gap-2 mb-1">
                     <span className="text-2xl font-bold text-[#355EF1] leading-normal" style={{ fontFamily: "'DIN Next LT Pro', 'DIN', sans-serif" }}>{stats.proCount}/{purchasedSpaces}</span>
-                    <span className="text-xs text-[#A3A3A3]">已分配 <span className="text-[#355EF1]">{stats.proCount}</span> 个，剩余 <span className="text-[#355EF1]">{purchasedSpaces - stats.proCount}</span> 个可分配</span>
+                    <span className="text-xs text-[var(--text-weak)]">已分配 <span className="text-[#355EF1]">{stats.proCount}</span> 个，剩余 <span className="text-[#355EF1]">{purchasedSpaces - stats.proCount}</span> 个可分配</span>
                   </div>
                   {/* 进度条 */}
                   <div className="mt-2">
@@ -352,7 +352,7 @@ export const MemoryManagement: React.FC = () => {
                       />
                     </div>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-[10px] text-[#A3A3A3]">{memoryAllocationPercent}% 已用</span>
+                      <span className="text-[10px] text-[var(--text-weak)]">{memoryAllocationPercent}% 已用</span>
                       {memoryAllocationPercent >= 80 && (
                         <span className={`text-[10px] ${memoryAllocationPercent >= 100 ? 'text-red-500' : 'text-yellow-500'}`}>
                           {memoryAllocationPercent >= 100 ? '空间已满' : '即将用完'}
@@ -398,9 +398,9 @@ export const MemoryManagement: React.FC = () => {
                  · 未开通 Pro / 无候选 Agent / 有 Agent 升级中：按钮置灰，hover 文案按场景区分 */}
           <div className="mt-4 flex items-center gap-4 rounded-[4px] border border-gray-200 px-5 py-4">
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[#0A0A0A] mb-1">Memory Pro 新能力：短期记忆压缩</div>
-              <div className="text-xs text-[#737373] leading-relaxed">
-                基于 WideSearch 等数据集测试，长任务可节省 <span className="font-semibold text-[#0A0A0A]">45%</span> 的 Token 消耗、提高 <span className="font-semibold text-[#0A0A0A]">20%</span> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）
+              <div className="text-sm font-semibold text-[var(--text-title)] mb-1">Memory Pro 新能力：短期记忆压缩</div>
+              <div className="text-xs text-[var(--text-muted)] leading-relaxed">
+                基于 WideSearch 等数据集测试，长任务可节省 <span className="font-semibold text-[var(--text-title)]">45%</span> 的 Token 消耗、提高 <span className="font-semibold text-[var(--text-title)]">20%</span> 完成率（需开通 Pro 并升级记忆服务至最新版本，暂仅对 OpenClaw 类型 Agent 生效）
               </div>
             </div>
             {(() => {
@@ -424,7 +424,7 @@ export const MemoryManagement: React.FC = () => {
                   title={title}
                   className={`shrink-0 self-center inline-flex items-center gap-1.5 px-4 py-2 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap ${
                     disabled
-                      ? 'text-[#A3A3A3] bg-gray-100 border-gray-200 cursor-not-allowed'
+                      ? 'text-[var(--text-weak)] bg-gray-100 border-gray-200 cursor-not-allowed'
                       : 'text-white bg-[#0A0A0A] border-[#0A0A0A] hover:bg-[#333] hover:border-[#333]'
                   }`}
                 >

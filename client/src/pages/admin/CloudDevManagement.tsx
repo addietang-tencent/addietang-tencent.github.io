@@ -60,10 +60,10 @@ export default function CloudDevManagement() {
             <div className="flex items-start gap-4">
               <img src={feature.iconSrc} alt="" className="shrink-0" />
               <div className="flex flex-col pt-0.5">
-                <h3 className="text-sm font-semibold text-[#0A0A0A]">
+                <h3 className="text-sm font-semibold text-[var(--text-title)]">
                   {feature.title}
                 </h3>
-                <p className="mt-1 text-xs text-[#737373] leading-relaxed">
+                <p className="mt-1 text-xs text-[var(--text-muted)] leading-relaxed">
                   {feature.description}
                 </p>
               </div>

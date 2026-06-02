@@ -142,7 +142,7 @@ function FMGroupFilter({
           onClick={() => setTempValue(node.id)}
         >
           {hasChildren ? (
-            <button className="p-0.5 text-[#A3A3A3] shrink-0" onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}>
+            <button className="p-0.5 text-[var(--text-weak)] shrink-0" onClick={e => { e.stopPropagation(); toggleExpand(node.id); }}>
               {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </button>
           ) : <span className="w-4 shrink-0" />}
@@ -160,11 +160,11 @@ function FMGroupFilter({
         <Button variant="outline" role="combobox"
           className={`w-[140px] justify-between bg-white text-sm font-normal h-9 ${triggerNode ? "text-foreground" : "text-muted-foreground"}`}>
           <span className="truncate">{triggerNode?.name || "全部分组"}</span>
-          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 text-[#737373] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-3.5 h-3.5 ml-1 shrink-0 text-[var(--text-muted)] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="end">
-        <div className="p-2 border-b border-[#e5e5e5]">
+        <div className="p-2 border-b border-[#EAEEF4]">
           <Input
             placeholder="搜索分组" value={search} onChange={e => setSearch(e.target.value)}
             className="h-8 text-sm"
@@ -177,14 +177,14 @@ function FMGroupFilter({
           </div>
           {groups.map(g => <TreeNode key={g.id} node={g} />)}
         </div>
-        <div className="border-t border-[#e5e5e5] px-3 py-2 flex items-center justify-between gap-2">
+        <div className="border-t border-[#EAEEF4] px-3 py-2 flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0 text-xs overflow-hidden">
             {tempValue === "" ? (
-              <span className="text-[#A3A3A3] truncate">全部分组</span>
+              <span className="text-[var(--text-weak)] truncate">全部分组</span>
             ) : selectedNode ? (
-              <span className="text-[#A3A3A3] truncate">已选 {selectedNode.name}</span>
+              <span className="text-[var(--text-weak)] truncate">已选 {selectedNode.name}</span>
             ) : (
-              <span className="text-[#A3A3A3] truncate">未选择</span>
+              <span className="text-[var(--text-weak)] truncate">未选择</span>
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -253,7 +253,7 @@ function FMGroupTagSelector({
           onClick={() => !disabled && toggle(node.id)}
         >
           {node.children.length > 0 ? (
-            <button className="p-0.5 text-[#A3A3A3] shrink-0" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+            <button className="p-0.5 text-[var(--text-weak)] shrink-0" onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
               {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
             </button>
           ) : <span className="w-4 shrink-0" />}
@@ -270,9 +270,9 @@ function FMGroupTagSelector({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <div className="min-h-7 flex flex-wrap gap-1 items-center px-2 py-1 border border-[#e5e5e5] rounded-md cursor-pointer hover:border-[#355EF1] transition-colors bg-white">
+        <div className="min-h-7 flex flex-wrap gap-1 items-center px-2 py-1 border border-[#EAEEF4] rounded-md cursor-pointer hover:border-[#355EF1] transition-colors bg-white">
           {selectedIds.length === 0
-            ? <span className="text-xs text-[#A3A3A3]">选择分组…</span>
+            ? <span className="text-xs text-[var(--text-weak)]">选择分组…</span>
             : selectedIds.map((id) => (
               <span key={id} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-[#eff4ff] text-[#355EF1] text-[11px]">
                 {getGroupName(id)}
@@ -285,7 +285,7 @@ function FMGroupTagSelector({
         <Input placeholder="搜索分组…" value={search} onChange={(e) => setSearch(e.target.value)} className="h-7 text-xs mb-2" />
         <div className="max-h-48 overflow-y-auto">
           {filtered.length === 0
-            ? <p className="text-xs text-[#A3A3A3] text-center py-4">无匹配分组</p>
+            ? <p className="text-xs text-[var(--text-weak)] text-center py-4">无匹配分组</p>
             : filtered.map((n) => <TreeNode key={n.id} node={n} />)}
         </div>
       </PopoverContent>
@@ -298,7 +298,7 @@ function FMGroupBadges({ groupIds }: { groupIds: string[] }) {
   const allGroups: UserGroup[] = [...MOCK_ONEID_GROUPS, ...MOCK_MANUAL_GROUPS];
   const paths = groupIds.map((id) => allGroups.find((g) => g.id === id)?.name ?? id);
 
-  if (groupIds.length === 0) return <span className="text-xs text-[#737373] font-medium">预设策略</span>;
+  if (groupIds.length === 0) return <span className="text-xs text-[var(--text-muted)] font-medium">预设策略</span>;
 
   const firstName = paths[0];
   const rest = paths.length - 1;
@@ -338,15 +338,15 @@ function PolicyOverviewCard({ icon, iconBg, title, description, fallbackValue, g
           <div className={`shrink-0 ${iconBg ? `w-8 h-8 rounded-[4px] flex items-center justify-center ${iconBg}` : ''}`}>{icon}</div>
           <div className="min-w-0 flex-1">
             <h3 className="text-[14px] font-semibold text-[#020617] truncate">{title}</h3>
-            <p className="text-[12px] text-[#737373] leading-relaxed mt-1 line-clamp-2">{description}</p>
+            <p className="text-[12px] text-[var(--text-muted)] leading-relaxed mt-1 line-clamp-2">{description}</p>
           </div>
         </div>
 
         {/* 底部灰色摘要条 */}
         <div className="mt-4 rounded-[4px] bg-[#FAFAFA] px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-4 text-[12px]">
-            <span className="text-[#737373] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackValue ? "green" : "gray"}>{fallbackValue ? "开启" : "关闭"}</StatusTag></span>
-            <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupCount} 条</span></span>
+            <span className="text-[var(--text-muted)] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackValue ? "green" : "gray"}>{fallbackValue ? "开启" : "关闭"}</StatusTag></span>
+            <span className="text-[var(--text-muted)]">分组策略：<span className="text-[#020617] font-medium">{groupCount} 条</span></span>
           </div>
           <span className="text-[12px] text-[#1447E6] inline-flex items-center gap-0.5">
             编辑策略<ChevronRight className="w-3.5 h-3.5" />
@@ -446,12 +446,12 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
             <div className="space-y-3">
               {/* 汇总行 */}
               <div className="flex items-center gap-4 text-[13px]">
-                <span className="text-[#737373] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag></span>
-                <span className="text-[#737373]">分组策略：<span className="text-[#020617] font-medium">{groupRules.length} 个</span></span>
+                <span className="text-[var(--text-muted)] inline-flex items-center gap-1">预设策略：<StatusTag mode="fill" variant={fallbackRule.value ? "green" : "gray"}>{fallbackRule.value ? "开启" : "关闭"}</StatusTag></span>
+                <span className="text-[var(--text-muted)]">分组策略：<span className="text-[#020617] font-medium">{groupRules.length} 个</span></span>
               </div>
 
               {/* 表格 */}
-              <div className="rounded-[4px] bg-white border border-[#E5E5E5]">
+              <div className="rounded-[4px] bg-white border border-[#EAEEF4]">
                 <Table density="compact">
                   <colgroup><col style={{ width: 90 }} /><col /><col style={{ width: 100 }} /><col style={{ width: 100 }} /></colgroup>
                   <TableHeader>
@@ -460,7 +460,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                   <TableBody>
                     {/* 预设策略行 */}
                     <TableRow className="hover:bg-transparent border-0">
-                      <TableCell className="text-[13px] text-[#737373] align-middle">预设策略</TableCell>
+                      <TableCell className="text-[13px] text-[var(--text-muted)] align-middle">预设策略</TableCell>
                       <TableCell className="text-[13px] text-[#020617] align-middle">
                         {groupRules.length > 0 ? "全部用户(分组策略用户除外)" : "全部用户"}
                       </TableCell>
@@ -501,7 +501,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                     {/* 分组策略行 */}
                     {groupRules.map((rule, idx) => (
                       <TableRow key={rule.id} className="hover:bg-transparent border-0">
-                        <TableCell className="text-[13px] text-[#737373] align-middle">分组策略{idx + 1}</TableCell>
+                        <TableCell className="text-[13px] text-[var(--text-muted)] align-middle">分组策略{idx + 1}</TableCell>
                         <TableCell className="align-middle">
                           {editingId === rule.id ? (
                             <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds(rule.id)} onChange={setDraftGroupIds} />
@@ -531,7 +531,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                     {/* 新增行 */}
                     {addingNew && (
                       <TableRow className="hover:bg-transparent border-0">
-                        <TableCell className="text-[13px] text-[#737373] align-middle">分组策略{groupRules.length + 1}</TableCell>
+                        <TableCell className="text-[13px] text-[var(--text-muted)] align-middle">分组策略{groupRules.length + 1}</TableCell>
                         <TableCell className="align-middle">
                           <FMGroupTagSelector selectedIds={draftGroupIds} disabledIds={getDisabledIds()} onChange={setDraftGroupIds} />
                         </TableCell>
@@ -541,7 +541,7 @@ function FMTogglePolicyCard({ icon, iconBg, title, description, rules, onRulesCh
                         <TableCell className="align-middle">
                           <div className="flex items-center gap-2">
                             <Button variant="link" size="sm" className="h-auto px-0 text-[12px]" onClick={cancelEdit}>取消</Button>
-                            <Button variant="link" size="sm" className={`h-auto px-0 text-[12px] ${draftGroupIds.length === 0 ? "text-[#A3A3A3] pointer-events-none" : "text-[#1447E6]"}`} disabled={draftGroupIds.length === 0} onClick={() => saveEdit()}>保存</Button>
+                            <Button variant="link" size="sm" className={`h-auto px-0 text-[12px] ${draftGroupIds.length === 0 ? "text-[var(--text-weak)] pointer-events-none" : "text-[#1447E6]"}`} disabled={draftGroupIds.length === 0} onClick={() => saveEdit()}>保存</Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -648,7 +648,7 @@ function AgentDiskIcon() {
 }
 
 const StatCard = ({ title, value, icon: IconComponent }: { title: string; value: number; icon: React.FC }) => (
-  <div className="bg-white rounded-[4px] border border-[#E5E5E5] px-6 py-5 flex flex-col gap-4">
+  <div className="bg-white rounded-[4px] border border-[#EAEEF4] px-6 py-5 flex flex-col gap-4">
     <div className="flex items-center gap-1">
       <IconComponent />
       <span className="text-sm font-medium text-[#0A0A0A] leading-[22px] tracking-[0.07px]">{title}</span>
@@ -1264,11 +1264,11 @@ export default function FileManagement() {
       <div className="space-y-4">
         <div>
           <h2 className="font-semibold text-[#0A0A0A]">企业公共空间</h2>
-          <p className="text-sm text-[#737373] mt-1">默认开启,为您赠送 50GB + 50GB 永久免费空间,用于存放 Agent 工具库和初始技能包</p>
+          <p className="text-sm text-[var(--text-muted)] mt-1">默认开启,为您赠送 50GB + 50GB 永久免费空间,用于存放 Agent 工具库和初始技能包</p>
         </div>
 
         <div
-          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-[4px] border border-[#EAEEF4] overflow-hidden"
         >
           <Table variant="elevated-white">
             <TableHeader>
@@ -1302,7 +1302,7 @@ export default function FileManagement() {
       <div className="space-y-4">
         <div>
           <h2 className="font-semibold text-[#0A0A0A]">智能体网盘</h2>
-          <p className="text-sm text-[#737373] mt-1">开启后,为您赠送每个 OpenClaw 实例 3个月50GB 免费额度,到期后可以通过购买资源包进行续租</p>
+          <p className="text-sm text-[var(--text-muted)] mt-1">开启后,为您赠送每个 OpenClaw 实例 3个月50GB 免费额度,到期后可以通过购买资源包进行续租</p>
         </div>
 
         {/* 网盘配置卡片 */}
@@ -1344,11 +1344,11 @@ export default function FileManagement() {
                 <Trash2 className="w-4 h-4" />
                 回收站{getRecyclebinInstances().length > 0 && `(${getRecyclebinInstances().length})`}
               </Button>
-              <span className="text-[14px] text-[#737373]">共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例启用了该服务</span>
+              <span className="text-[14px] text-[var(--text-muted)]">共计 <span className="font-semibold text-[#0A0A0A] tabular-nums">{stats.totalPersonalInstances}</span> 个 OpenClaw 实例启用了该服务</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-weak)]" />
                 <Input
                   placeholder="搜索名称、ID或创建人"
                   className="pl-9 h-9"
@@ -1365,7 +1365,7 @@ export default function FileManagement() {
         </div>
 
         <div
-          className="bg-white rounded-[4px] border border-[#e5e5e5] overflow-hidden"
+          className="bg-white rounded-[4px] border border-[#EAEEF4] overflow-hidden"
         >
 
           {/* Flat Table */}
@@ -1396,9 +1396,9 @@ export default function FileManagement() {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
-                      <Search className="w-12 h-12 text-[#A3A3A3]" />
-                      <p className="text-sm text-[#737373]">未找到匹配的记录</p>
-                      <p className="text-xs text-[#A3A3A3]">请尝试其他搜索关键词</p>
+                      <Search className="w-12 h-12 text-[var(--text-weak)]" />
+                      <p className="text-sm text-[var(--text-muted)]">未找到匹配的记录</p>
+                      <p className="text-xs text-[var(--text-weak)]">请尝试其他搜索关键词</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -1479,11 +1479,11 @@ export default function FileManagement() {
                             </TooltipProvider>
                           </span>
                         ) : (
-                          <span className="text-[#A3A3A3]">未启用</span>
+                          <span className="text-[var(--text-weak)]">未启用</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-[#334155] tabular-nums">
-                        {isEnabled ? item.expiry : <span className="text-[#A3A3A3]">-</span>}
+                        {isEnabled ? item.expiry : <span className="text-[var(--text-weak)]">-</span>}
                       </td>
                       <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <Switch 
@@ -1525,7 +1525,7 @@ export default function FileManagement() {
             <p className="text-sm text-[#334155]">
               您确定要关闭 <span className="font-bold text-[#0A0A0A]">"{instanceToDisable?.name}"</span> 的网盘功能吗？
             </p>
-            <div className="p-3 bg-[#fafafa] border border-[#e5e5e5] rounded-[4px]">
+            <div className="p-3 bg-[#fafafa] border border-[#EAEEF4] rounded-[4px]">
               <div className="text-xs text-[#334155] space-y-1">
                 <p className="font-semibold">关闭网盘后：</p>
                 <div className="space-y-0.5 ml-1">
@@ -1556,7 +1556,7 @@ export default function FileManagement() {
             <p className="text-sm text-[#334155]">
               您确定要为选中的 <span className="font-semibold text-[#0A0A0A] tabular-nums">{selectedInstances.size}</span> 个实例启用网盘服务吗?
             </p>
-            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+            <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
               <div className="text-xs text-[#334155] space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -1593,7 +1593,7 @@ export default function FileManagement() {
               {/* 新启用网盘 */}
               <button
                 onClick={handleChooseNewEnable}
-                className="w-full group relative overflow-hidden rounded-[4px] border-2 border-[#e5e5e5] hover:border-[#355EF1] bg-white p-5 text-left transition-all duration-200"
+                className="w-full group relative overflow-hidden rounded-[4px] border-2 border-[#EAEEF4] hover:border-[#355EF1] bg-white p-5 text-left transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-[4px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -1603,7 +1603,7 @@ export default function FileManagement() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">新启用网盘</h3>
-                    <p className="text-sm text-[#737373]">
+                    <p className="text-sm text-[var(--text-muted)]">
                       为该实例创建新的网盘空间
                     </p>
                   </div>
@@ -1613,7 +1613,7 @@ export default function FileManagement() {
               {/* 恢复已有网盘 */}
               <button
                 onClick={handleChooseRecoverExisting}
-                className="w-full group relative overflow-hidden rounded-[4px] border-2 border-[#e5e5e5] hover:border-green-400 bg-white p-5 text-left transition-all duration-200"
+                className="w-full group relative overflow-hidden rounded-[4px] border-2 border-[#EAEEF4] hover:border-green-400 bg-white p-5 text-left transition-all duration-200"
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-12 h-12 rounded-[4px] bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
@@ -1621,7 +1621,7 @@ export default function FileManagement() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-base font-semibold text-[#0A0A0A] mb-1">恢复已有网盘</h3>
-                    <p className="text-sm text-[#737373]">
+                    <p className="text-sm text-[var(--text-muted)]">
                       恢复该实例之前的网盘空间，保留原有文件和数据
                     </p>
                   </div>
@@ -1647,7 +1647,7 @@ export default function FileManagement() {
             <p className="text-sm text-[#334155]">
               您确定要为 <span className="font-bold text-[#0A0A0A]">"{instanceToEnable?.name}"</span> 启用网盘服务吗?
             </p>
-            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+            <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
               <div className="text-xs text-[#334155] space-y-1 leading-relaxed">
                 <p className="font-semibold">启用后：</p>
                 <ul className="list-disc list-inside space-y-0.5 ml-1">
@@ -1697,10 +1697,10 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={item.value} className="peer sr-only" />
                       <Label
                         htmlFor={item.value}
-                        className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
                         <span className="text-sm font-semibold text-[#0A0A0A]">{item.label}</span>
-                        <span className="text-xs text-[#737373] mt-1">{item.price}</span>
+                        <span className="text-xs text-[var(--text-muted)] mt-1">{item.price}</span>
                       </Label>
                     </div>
                   ))}
@@ -1723,7 +1723,7 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`duration-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
                         <span className="text-sm font-medium text-[#0A0A0A]">{item.label}</span>
                       </Label>
@@ -1741,7 +1741,7 @@ export default function FileManagement() {
                   <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculatePrice()}</span>
                 </div>
               </div>
-              <p className="text-xs text-[#737373] mt-2">
+              <p className="text-xs text-[var(--text-muted)] mt-2">
                 购买后立即生效，有效期 {selectedDuration} 个月
               </p>
             </div>
@@ -1775,7 +1775,7 @@ export default function FileManagement() {
               </p>
             </div>
 
-            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+            <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
               <div className="text-xs text-[#334155] space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
@@ -1798,7 +1798,7 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`renew-duration-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`renew-duration-${item.value}`}
-                        className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-[#eff4ff] transition-all"
+                        className="flex flex-1 items-center justify-between rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-blue-600 peer-data-[state=checked]:bg-[#eff4ff] transition-all"
                       >
                         <span className="text-sm font-medium text-[#0A0A0A]">{item.label}</span>
                       </Label>
@@ -1816,7 +1816,7 @@ export default function FileManagement() {
                   <span className="text-2xl font-bold text-[#355EF1] tabular-nums">¥{calculateRenewPrice()}</span>
                 </div>
               </div>
-              <p className="text-xs text-[#737373] mt-2">
+              <p className="text-xs text-[var(--text-muted)] mt-2">
                 续费后有效期延长 {renewDuration} 个月
               </p>
             </div>
@@ -1846,7 +1846,7 @@ export default function FileManagement() {
               </p>
             </div>
 
-            <div className="bg-[#fafafa] border border-[#e5e5e5] rounded-[4px] px-3 py-2.5">
+            <div className="bg-[#fafafa] border border-[#EAEEF4] rounded-[4px] px-3 py-2.5">
               <div className="text-xs text-[#334155] space-y-1">
                 <p className="font-semibold">当前配置：</p>
                 <p>• 存储容量：50GB</p>
@@ -1864,10 +1864,10 @@ export default function FileManagement() {
                       <RadioGroupItem value={item.value} id={`expand-${item.value}`} className="peer sr-only" />
                       <Label
                         htmlFor={`expand-${item.value}`}
-                        className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#e5e5e5] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
+                        className="flex flex-1 flex-col items-center justify-center rounded-[4px] border-2 border-[#EAEEF4] bg-white p-3 hover:bg-[#fafafa] cursor-pointer peer-data-[state=checked]:border-purple-600 peer-data-[state=checked]:bg-purple-50 transition-all"
                       >
                         <span className="text-sm font-semibold text-[#0A0A0A]">{item.label}</span>
-                        <span className="text-xs text-[#737373] mt-1">{item.price}</span>
+                        <span className="text-xs text-[var(--text-muted)] mt-1">{item.price}</span>
                       </Label>
                     </div>
                   ))}
@@ -1883,7 +1883,7 @@ export default function FileManagement() {
                   <span className="text-2xl font-bold text-purple-600 tabular-nums">¥{calculateExpandPrice()}</span>
                 </div>
               </div>
-              <p className="text-xs text-[#737373] mt-2">
+              <p className="text-xs text-[var(--text-muted)] mt-2">
                 扩容 {expandCapacity}，立即生效，不延长有效期
               </p>
             </div>
@@ -1914,7 +1914,7 @@ export default function FileManagement() {
         >
           <SheetHeader className="px-6 pt-6 pb-4 gap-1.5">
             <SheetTitle className="text-base font-semibold text-[#0A0A0A]">回收站</SheetTitle>
-            <SheetDescription className="text-sm text-[#737373]">
+            <SheetDescription className="text-sm text-[var(--text-muted)]">
               {getRecyclebinInstances().length > 0 ? (
                 <>共 <span className="text-[#020617] font-medium tabular-nums">{getRecyclebinInstances().length}</span> 个网盘空间待处理 · 关闭后保留 15 天，逾期自动永久删除</>
               ) : (
@@ -1926,11 +1926,11 @@ export default function FileManagement() {
           <div className="flex-1 min-h-0 overflow-y-auto px-6 py-2" style={{ scrollbarGutter: "stable" }}>
             {getRecyclebinInstances().length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <div className="w-16 h-16 rounded-full bg-white border border-[#E5E5E5] flex items-center justify-center mb-4">
-                  <Trash2 className="w-7 h-7 text-[#A3A3A3]" strokeWidth={1.5} />
+                <div className="w-16 h-16 rounded-full bg-white border border-[#EAEEF4] flex items-center justify-center mb-4">
+                  <Trash2 className="w-7 h-7 text-[var(--text-weak)]" strokeWidth={1.5} />
                 </div>
                 <p className="text-sm font-medium text-[#0A0A0A]">回收站为空</p>
-                <p className="text-xs text-[#737373] mt-1">没有待恢复的网盘空间</p>
+                <p className="text-xs text-[var(--text-muted)] mt-1">没有待恢复的网盘空间</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -1942,12 +1942,12 @@ export default function FileManagement() {
                       ? { bg: "bg-[#FEF2F2]", text: "text-[#DC2626]", iconColor: "text-[#DC2626]" }
                       : days <= 7
                       ? { bg: "bg-[#FFF7ED]", text: "text-[#C2410C]", iconColor: "text-[#EA580C]" }
-                      : { bg: "bg-[#F5F5F5]", text: "text-[#525252]", iconColor: "text-[#737373]" };
+                      : { bg: "bg-[#F5F5F5]", text: "text-[#525252]", iconColor: "text-[var(--text-muted)]" };
 
                   return (
                     <div
                       key={instance.id}
-                      className="bg-white border border-[#E5E5E5] rounded-[4px] px-4 py-3.5 hover:border-[#1447E6]/30 transition-colors"
+                      className="bg-white border border-[#EAEEF4] rounded-[4px] px-4 py-3.5 hover:border-[#1447E6]/30 transition-colors"
                     >
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-3 min-w-0">
@@ -1968,7 +1968,7 @@ export default function FileManagement() {
                                 {days === 0 ? "今日永久删除" : `${days} 天后永久删除`}
                               </span>
                             </div>
-                            <div className="flex items-center text-xs text-[#737373]">
+                            <div className="flex items-center text-xs text-[var(--text-muted)]">
                               <span className="truncate">{instance.creator}</span>
                               <span className="mx-2 text-[#D4D4D4]">·</span>
                               <span className="tabular-nums whitespace-nowrap">{instance.used} / {instance.quota}</span>
@@ -2003,7 +2003,7 @@ export default function FileManagement() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 px-2.5 gap-1.5 text-[#737373] hover:text-[#DC2626]"
+                            className="h-8 px-2.5 gap-1.5 text-[var(--text-muted)] hover:text-[#DC2626]"
                             onClick={() => {
                               setInstanceToDeletePermanently({ id: instance.id, name: instance.instanceName });
                               setRecyclebinDeleteDialogOpen(true);
@@ -2064,7 +2064,7 @@ export default function FileManagement() {
             type="button"
             aria-label="关闭"
             onClick={handleCancelPermanentDelete}
-            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
+            className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[var(--text-muted)] transition-colors hover:text-[#0A0A0A] focus:outline-none"
           >
             <X className="size-5" />
             <span className="sr-only">关闭</span>
@@ -2121,11 +2121,11 @@ export default function FileManagement() {
               </Alert>
 
               {/* 待转接的网盘信息卡片：白底黑字 */}
-              <div className="bg-white border border-[#E5E5E5] rounded-[4px] p-4">
+              <div className="bg-white border border-[#EAEEF4] rounded-[4px] p-4">
                 <p className="text-sm text-[#0A0A0A] leading-relaxed">
                   将 <span className="font-medium text-[#0A0A0A]">"{instanceToTransfer?.name}"</span> 的网盘空间转接给其他实例
                 </p>
-                <p className="text-xs text-[#737373] mt-2">
+                <p className="text-xs text-[var(--text-muted)] mt-2">
                   实例ID：<span className="font-mono text-[#0A0A0A]">{instanceToTransfer?.instanceId}</span>
                 </p>
               </div>
@@ -2134,7 +2134,7 @@ export default function FileManagement() {
               <div className="space-y-3">
                 <div className="text-sm font-medium text-[#0A0A0A]">选择目标实例</div>
                 {getAvailableTargetInstances().length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-[#A3A3A3]">
+                  <div className="flex flex-col items-center justify-center py-8 text-[var(--text-weak)]">
                     <Bot className="w-12 h-12 mb-3 opacity-30" />
                     <p className="text-sm">暂无可转接的目标实例</p>
                     <p className="text-xs mt-1">只能转接给未启用过网盘的实例</p>
@@ -2151,7 +2151,7 @@ export default function FileManagement() {
                           className={`w-full text-left flex items-center gap-3 rounded-[4px] border bg-white p-4 transition-colors ${
                             isSelected
                               ? "border-[#355EF1] bg-[#F5F8FF]"
-                              : "border-[#E5E5E5] hover:border-[#355EF1]"
+                              : "border-[#EAEEF4] hover:border-[#355EF1]"
                           }`}
                         >
                           <div className="w-10 h-10 rounded-[4px] bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm shrink-0">
@@ -2164,7 +2164,7 @@ export default function FileManagement() {
                               </h4>
                               <StatusTag mode="fill" variant="gray">未启用</StatusTag>
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-[#737373]">
+                            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
                               <span>创建人: {item.creator}</span>
                               <span className="font-mono">{item.instanceId}</span>
                             </div>

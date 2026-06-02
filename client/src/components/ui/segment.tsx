@@ -76,7 +76,7 @@ function SegmentList({
     <TabsPrimitive.List
       data-slot="segment-list"
       className={cn(
-        "bg-[#d7d7e354] text-[#7b818f] inline-flex h-9 w-fit items-center justify-center rounded-[6px] border border-border p-[2px]",
+        "bg-[#d7d7e354] text-gray-600 inline-flex h-9 w-fit items-center justify-center rounded-[6px] border border-border p-[2px]",
         className
       )}
       {...props}
@@ -92,11 +92,11 @@ function SegmentItem({
     <TabsPrimitive.Trigger
       data-slot="segment-item"
       className={cn(
-        "text-[#7b818f] font-normal inline-flex h-[calc(100%-1px)] items-center justify-center rounded-[4px] border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
-          "data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-semibold data-[state=active]:shadow-[0px_1px_2px_rgba(0,0,0,0.05)] " +
-          "hover:text-[#4b5563] " +
-          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 focus-visible:outline-none " +
-          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+        "text-gray-600 font-normal inline-flex h-[calc(100%-1px)] items-center justify-center rounded-[4px] border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
+          "data-[state=active]:bg-white data-[state=active]:text-gray-950 data-[state=active]:font-semibold data-[state=active]:shadow-[0px_1px_2px_rgba(0,0,0,0.05)] " +
+          "hover:text-gray-700 " +
+          "focus-visible:ring-[3px] focus-visible:ring-blue-500/20 focus-visible:outline-none " +
+          "disabled:pointer-events-none disabled:text-gray-300",
         className
       )}
       {...props}
@@ -130,7 +130,7 @@ function SegmentGroup({
       data-slot="segment-group"
       role="tablist"
       className={cn(
-        "bg-[#d7d7e354] text-[#7b818f] inline-flex h-9 w-fit items-center justify-center rounded-[6px] border border-border p-[2px]",
+        "bg-[#d7d7e354] text-gray-600 inline-flex h-9 w-fit items-center justify-center rounded-[6px] border border-border p-[2px]",
         className
       )}
       {...props}
@@ -155,11 +155,11 @@ function SegmentOption({
       data-state={active ? "active" : "inactive"}
       className={cn(
         "inline-flex h-[calc(100%-1px)] items-center justify-center rounded-[4px] border border-transparent px-4 py-1 text-sm whitespace-nowrap transition-all " +
-          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 focus-visible:outline-none " +
-          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+          "focus-visible:ring-[3px] focus-visible:ring-blue-500/20 focus-visible:outline-none " +
+          "disabled:pointer-events-none disabled:text-gray-300",
         active
-          ? "bg-white text-[#020617] font-semibold shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
-          : "text-[#7b818f] font-normal hover:text-[#4b5563]",
+          ? "bg-white text-gray-950 font-semibold shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
+          : "text-gray-600 font-normal hover:text-gray-700",
         className
       )}
       {...props}
@@ -215,11 +215,11 @@ function TenantSegmentItem({
     <TabsPrimitive.Trigger
       data-slot="tenant-segment-item"
       className={cn(
-        "relative z-10 text-[#334155] font-normal inline-flex h-full items-center justify-center rounded-[40px] px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] whitespace-nowrap transition-all " +
-          "data-[state=active]:bg-white data-[state=active]:text-[#020617] data-[state=active]:font-medium data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] " +
-          "hover:text-[#020617] " +
-          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 " +
-          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+        "relative z-10 text-slate-700 font-normal inline-flex h-full items-center justify-center rounded-[40px] px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] whitespace-nowrap transition-all " +
+          "data-[state=active]:bg-white data-[state=active]:text-gray-950 data-[state=active]:font-medium data-[state=active]:outline data-[state=active]:outline-1 data-[state=active]:outline-[#CDD4DC] data-[state=active]:shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)] " +
+          "hover:text-gray-950 " +
+          "focus-visible:ring-[3px] focus-visible:ring-blue-500/20 " +
+          "disabled:pointer-events-none disabled:text-gray-300",
         className
       )}
       {...props}
@@ -275,11 +275,11 @@ function TenantSegmentOption({
       data-state={active ? "active" : "inactive"}
       className={cn(
         "relative z-10 inline-flex h-full items-center justify-center gap-2 rounded-[40px] px-3 py-1 text-[14px] leading-[22px] tracking-[0.005em] whitespace-nowrap transition-all " +
-          "focus-visible:ring-[3px] focus-visible:ring-[#355EF1]/20 " +
-          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+          "focus-visible:ring-[3px] focus-visible:ring-blue-500/20 " +
+          "disabled:pointer-events-none disabled:text-gray-300",
         active
-          ? "bg-white text-[#020617] font-medium outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
-          : "text-[#334155] font-normal hover:text-[#020617]",
+          ? "bg-white text-gray-950 font-medium outline outline-1 outline-[#CDD4DC] shadow-[0px_1px_4px_0px_rgba(0,0,0,0.05)]"
+          : "text-slate-700 font-normal hover:text-gray-950",
         className
       )}
       {...props}
@@ -335,7 +335,7 @@ function TextSwitch({
         <span
           key={`sep-${idx}`}
           aria-hidden="true"
-          className="text-[#E2E8F0] text-sm font-normal leading-none select-none"
+          className="text-gray-200 text-sm font-normal leading-none select-none"
         >
           /
         </span>
@@ -374,11 +374,11 @@ function TextSwitchOption({
       className={cn(
         // 基础排版：14px / 400 / line-height 22px / letter-spacing 0.5%（Figma style_3FUI4B）
         "text-sm font-normal leading-[22px] tracking-[0.005em] transition-colors " +
-          "focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-[#355EF1]/20 focus-visible:rounded-sm " +
-          "disabled:pointer-events-none disabled:text-[#d3d6db]",
+          "focus-visible:outline-none focus-visible:ring-[2px] focus-visible:ring-blue-500/20 focus-visible:rounded-sm " +
+          "disabled:pointer-events-none disabled:text-gray-300",
         active
-          ? "text-[#020617] cursor-default"
-          : "text-[#A7A7A7] hover:text-[#020617] cursor-pointer",
+          ? "text-gray-950 cursor-default"
+          : "text-gray-400 hover:text-gray-950 cursor-pointer",
         className
       )}
       {...props}

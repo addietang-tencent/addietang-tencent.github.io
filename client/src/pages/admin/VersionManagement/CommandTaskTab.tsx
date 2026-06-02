@@ -56,140 +56,134 @@ export default function CommandTaskTab() {
   }, [search, tick]);
 
   return (
-    <div className="space-y-6">
-      {/* ─── 命令库 ─────────────────────────────────────────── */}
-      <section
-        className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
-        style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)" }}
-      >
-        {/* 标题栏 */}
-        <div className="px-6 py-4 border-b border-gray-50 flex items-center gap-3">
-          <Code2 className="w-4 h-4 text-[#355EF1]" />
-          <div className="flex-1">
-            <h2 className="font-semibold text-[#0A0A0A] text-base">命令库</h2>
-            <p className="text-xs text-[#737373] mt-0.5">
-              沉淀团队的运维命令模板，便于复用与审计；当前共
-              <span className="font-semibold tabular-nums text-[#334155] mx-1">
-                {MOCK_COMMAND_TEMPLATES.length}
-              </span>
-              个命令
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative w-[260px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="搜索命令 ID、名称、内容、创建人"
-                className="h-9 pl-9 bg-white"
-              />
-            </div>
-            <Button
-              variant="claw-primary"
-              size="claw-sm"
-              onClick={() => {
-                setEditTarget(undefined);
-                setCreateOpen(true);
-              }}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              创建命令
-            </Button>
-          </div>
+    <div className="space-y-4">
+      {/* ─── 标题栏：标题 + 搜索 + 创建命令 ─────────────────────── */}
+      <div className="flex items-center gap-3">
+        <Code2 className="w-4 h-4 text-purple-500" />
+        <div className="flex-1">
+          <h2 className="font-semibold text-[#0A0A0A] text-base">命令库</h2>
+          <p className="text-xs text-[#737373] mt-0.5">
+            沉淀团队的运维命令模板，便于复用与审计；当前共
+            <span className="font-semibold tabular-nums text-[#0A0A0A] mx-1">
+              {MOCK_COMMAND_TEMPLATES.length}
+            </span>
+            个命令
+          </p>
         </div>
-
-        {/* 列表 */}
-        {templates.length === 0 ? (
-          <div className="py-16 text-center">
-            <Code2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
-            <p className="text-sm text-[#A3A3A3]">
-              {search ? "没有匹配的命令" : "暂无命令，点击「创建命令」开始沉淀团队 SOP"}
-            </p>
+        <div className="flex items-center gap-2">
+          <div className="relative w-[260px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="搜索命令 ID、名称、内容、创建人"
+              className="h-9 pl-9 bg-white"
+            />
           </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[22%]">命令 ID / 名称</TableHead>
-                <TableHead className="w-[8%]">类型</TableHead>
-                <TableHead>命令内容</TableHead>
-                <TableHead className="w-[14%]">创建人</TableHead>
-                <TableHead className="w-[14%]">最近执行</TableHead>
-                <TableHead className="w-[14%]">操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {templates.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell>
-                    <CopyableId id={t.id} primary />
-                    <div className="text-sm font-medium text-[#0A0A0A] mt-0.5">{t.name}</div>
-                    {t.description && (
-                      <div className="text-xs text-[#A3A3A3] mt-0.5 truncate max-w-[260px]">
-                        {t.description}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <StatusTag mode="fill" variant="blue">{t.type}</StatusTag>
-                  </TableCell>
-                  <TableCell>
-                    <TooltipProvider delayDuration={150}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <code className="text-xs font-mono text-[#737373] bg-gray-50 px-2 py-1 rounded block truncate max-w-[420px]">
-                            {t.content.split("\n")[0]}
-                            {t.content.includes("\n") && (
-                              <span className="text-[#A3A3A3] ml-1">…</span>
-                            )}
-                          </code>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="max-w-[480px]">
-                          <pre className="text-[11px] font-mono whitespace-pre-wrap break-all">
-                            {t.content}
-                          </pre>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm text-[#0A0A0A] truncate max-w-[120px]">{t.createdBy}</div>
-                    <div className="text-[11px] text-[#A3A3A3] tabular-nums">{t.createdAt.slice(0, 10)}</div>
-                  </TableCell>
-                  <TableCell>
-                    {t.lastRunAt ? (
-                      <div className="text-sm text-[#0A0A0A] tabular-nums">{t.lastRunAt.slice(5, 16)}</div>
-                    ) : (
-                      <span className="text-sm text-[#A3A3A3]">从未执行</span>
-                    )}
-                    <div className="text-[11px] text-[#A3A3A3] tabular-nums">
-                      共 {t.totalRuns} 次
+          <Button
+            variant="claw-primary"
+            size="claw-sm"
+            onClick={() => {
+              setEditTarget(undefined);
+              setCreateOpen(true);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            创建命令
+          </Button>
+        </div>
+      </div>
+
+      {/* ─── 表格（独立卡片样式） ───────────────────────────────── */}
+      {templates.length === 0 ? (
+        <div className="py-16 text-center bg-white rounded-lg border border-gray-100">
+          <Code2 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+          <p className="text-sm text-[#A3A3A3]">
+            {search ? "没有匹配的命令" : "暂无命令，点击「创建命令」开始沉淀团队 SOP"}
+          </p>
+        </div>
+      ) : (
+        <Table containerClassName="border border-gray-100 rounded-lg overflow-hidden bg-white">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[22%]">命令 ID / 名称</TableHead>
+              <TableHead className="w-[8%]">类型</TableHead>
+              <TableHead>命令内容</TableHead>
+              <TableHead className="w-[14%]">创建人</TableHead>
+              <TableHead className="w-[14%]">最近执行</TableHead>
+              <TableHead className="w-[14%]">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {templates.map((t) => (
+              <TableRow key={t.id}>
+                <TableCell>
+                  <CopyableId id={t.id} primary />
+                  <div className="font-medium text-[#0A0A0A] mt-0.5">{t.name}</div>
+                  {t.description && (
+                    <div className="text-[#A3A3A3] mt-0.5 truncate max-w-[260px]">
+                      {t.description}
                     </div>
-                  </TableCell>
-                  <TableActionCell actionsClassName="gap-3">
-                    <Button variant="link" onClick={() => setDispatchTarget(t)}>
-                      下发
-                    </Button>
-                    <Button
-                      variant="link"
-                      onClick={() => {
-                        setEditTarget(t);
-                        setCreateOpen(true);
-                      }}
-                    >
-                      编辑
-                    </Button>
-                    <Button variant="link" onClick={() => setDeleteTarget(t)}>
-                      删除
-                    </Button>
-                  </TableActionCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </section>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <StatusTag mode="fill" variant="blue">{t.type}</StatusTag>
+                </TableCell>
+                <TableCell>
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <code className="font-mono text-[#737373] bg-gray-50 px-2 py-1 rounded block truncate max-w-[420px]">
+                          {t.content.split("\n")[0]}
+                          {t.content.includes("\n") && (
+                            <span className="text-[#A3A3A3] ml-1">…</span>
+                          )}
+                        </code>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-[480px]">
+                        <pre className="text-[11px] font-mono whitespace-pre-wrap break-all">
+                          {t.content}
+                        </pre>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+                <TableCell>
+                  <div className="text-[#0A0A0A] truncate max-w-[120px]">{t.createdBy}</div>
+                  <div className="text-[#A3A3A3] tabular-nums">{t.createdAt.slice(0, 10)}</div>
+                </TableCell>
+                <TableCell>
+                  {t.lastRunAt ? (
+                    <div className="text-[#0A0A0A] tabular-nums">{t.lastRunAt.slice(5, 16)}</div>
+                  ) : (
+                    <span className="text-[#A3A3A3]">从未执行</span>
+                  )}
+                  <div className="text-[#A3A3A3] tabular-nums">
+                    共 {t.totalRuns} 次
+                  </div>
+                </TableCell>
+                <TableActionCell actionsClassName="gap-3">
+                  <Button variant="link" onClick={() => setDispatchTarget(t)}>
+                    下发
+                  </Button>
+                  <Button
+                    variant="link"
+                    onClick={() => {
+                      setEditTarget(t);
+                      setCreateOpen(true);
+                    }}
+                  >
+                    编辑
+                  </Button>
+                  <Button variant="link" onClick={() => setDeleteTarget(t)}>
+                    删除
+                  </Button>
+                </TableActionCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       {/* 子弹窗 */}
       <CreateCommandDialog

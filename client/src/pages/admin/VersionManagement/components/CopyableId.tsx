@@ -16,11 +16,13 @@ interface Props {
   id: string;
   /** 是否使用蓝色文字（强调风格，匹配 TAT 截图）；默认 false 用灰色 */
   primary?: boolean;
+  /** 是否使用黑色正文文字（用于该 ID 是当前列唯一主文字时） */
+  dark?: boolean;
   /** 自定义额外的 className */
   className?: string;
 }
 
-export default function CopyableId({ id, primary = false, className = "" }: Props) {
+export default function CopyableId({ id, primary = false, dark = false, className = "" }: Props) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -37,6 +39,8 @@ export default function CopyableId({ id, primary = false, className = "" }: Prop
 
   const textColor = primary
     ? "text-[#355EF1] hover:text-[#355EF1]"
+    : dark
+    ? "text-[#0A0A0A] hover:text-[#0A0A0A]"
     : "text-[#737373] hover:text-[#0A0A0A]";
 
   return (

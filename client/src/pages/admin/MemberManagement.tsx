@@ -3117,19 +3117,25 @@ export default function MemberManagement() {
                         }} />
                     </label>
                   ) : (
-                    <div className="flex items-center gap-3 p-3 rounded-[4px] border border-gray-200 bg-[#F5F5F5]">
-                      <FileText className="w-8 h-8 text-[#1447E6] flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[#0A0A0A] truncate">{batchImportFile.name}</p>
-                        <p className="text-xs text-[#737373]">{(batchImportFile.size / 1024).toFixed(1)} KB</p>
+                    <div className="flex items-center justify-between gap-2 px-3 py-3 rounded-[4px] border border-[#E5E5E5] bg-white">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span className="w-7 h-7 rounded-full bg-[#F5F5F5] flex items-center justify-center shrink-0">
+                          <FileText className="w-4 h-4 text-[#525252]" />
+                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="text-sm font-normal text-[#0A0A0A] truncate">{batchImportFile.name}</p>
+                          <span className="text-xs text-[#737373] shrink-0">{(batchImportFile.size / 1024).toFixed(1)} KB</span>
+                        </div>
                       </div>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         aria-label="移除文件"
-                        className="w-6 h-6 rounded-full text-[#737373] hover:text-[#d42a1e] hover:bg-[#FEF2F2] flex items-center justify-center transition-colors flex-shrink-0"
+                        className="h-7 w-7 p-0 hover:bg-red-50 hover:text-red-500 shrink-0"
                         onClick={() => setBatchImportFile(null)}
                       >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   )}
                 </div>

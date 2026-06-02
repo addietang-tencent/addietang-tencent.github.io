@@ -2,7 +2,7 @@
  * NewVersionPushNotice - 新版本提醒组件
  *
  * 两种 trigger 形态：
- *   - banner: 黄色横幅按钮「有 N 个新版本，M 个正在提醒员工更新 / 可去提醒员工更新」
+ *   - banner: 黄色横幅按钮「有 N 个新版本」（已推送时追加「，M 个正在提醒员工更新」）
  *             右侧跟一个向右箭头图标，点击即打开「全部更新记录」侧边栏
  *             （用于镜像管理 / Agent 类型页面顶部）
  *   - bell:   工具栏右上角铃铛图标按钮（带红点提示），用于 Agent 列表页面
@@ -85,7 +85,7 @@ export default function NewVersionPushNotice({
         {variant === "bell"
           ? `${total} 个新版本`
           : pushed === 0
-            ? `有 ${total} 个新版本，可去提醒员工更新`
+            ? `有 ${total} 个新版本`
             : `有 ${total} 个新版本，${pushed} 个正在提醒员工更新`}
       </span>
       <ChevronRight className="w-3.5 h-3.5 text-[var(--alert-warning-icon)]" />

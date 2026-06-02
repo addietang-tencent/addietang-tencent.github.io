@@ -1335,9 +1335,9 @@ function CreateSecurityGroupDialog({
                 </SegmentOption>
               </SegmentGroup>
 
-              <div className="overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
+              <SurfaceCard className="overflow-hidden">
                 <div className="max-h-40 overflow-y-auto scrollbar-on-hover">
-                  <Table density="compact">
+                  <Table density="compact" autoFixedColumns={false}>
                     <TableHeader>
                       <TableRow>
                         <TableHead>{previewTab === "outbound" ? "目标" : "来源"}</TableHead>
@@ -1373,7 +1373,7 @@ function CreateSecurityGroupDialog({
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={5} className="text-center text-[#A3A3A3]">
+                          <TableCell colSpan={5} className="text-center text-[#A3A3A3] py-8">
                             暂无规则
                           </TableCell>
                         </TableRow>
@@ -1381,7 +1381,7 @@ function CreateSecurityGroupDialog({
                     </TableBody>
                   </Table>
                 </div>
-              </div>
+              </SurfaceCard>
             </div>
           </div>
         </div>
@@ -3173,9 +3173,9 @@ export default function SecurityGroupManagement() {
                     </SegmentGroup>
                   </div>
 
-                  <div className="overflow-hidden rounded-[4px] border border-[#E5E5E5] bg-white">
+                  <SurfaceCard className="overflow-hidden">
                     <div className="max-h-64 overflow-y-auto scrollbar-on-hover">
-                      <Table density="compact">
+                      <Table density="compact" autoFixedColumns={false}>
                         <TableHeader>
                           <TableRow>
                             <TableHead>{previewTab === "outbound" ? "目标" : "来源"}</TableHead>
@@ -3208,7 +3208,7 @@ export default function SecurityGroupManagement() {
                             ))
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={5} className="text-center text-[#A3A3A3]">
+                              <TableCell colSpan={5} className="text-center text-[#A3A3A3] py-8">
                                 {previewTab === "outbound"
                                   ? "出站规则为空时，所有出站流量将被拒绝，Agent 将无法正常使用"
                                   : "暂无入站规则"}
@@ -3218,7 +3218,7 @@ export default function SecurityGroupManagement() {
                         </TableBody>
                       </Table>
                     </div>
-                  </div>
+                  </SurfaceCard>
                 </div>
               );
             })()}

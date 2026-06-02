@@ -1928,18 +1928,25 @@ echo "✅ 导出完成，数据已上传到 COS"`;
                 </div>
               )}
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    className="w-full text-sm" 
-                    variant="tenant-outline" 
-                    onClick={handleApplyModel}
-                    disabled={isConfiguring}
-                  >
-                    {connectTesting && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
-                    {connectTesting ? "检测中…" : "连通性检测"}
-                  </Button>
-                )}
+              <div className="flex gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      className="flex-1 text-sm" 
+                      variant="tenant-outline" 
+                      onClick={handleApplyModel}
+                      disabled={isConfiguring}
+                    >
+                      {connectTesting && <Loader2 className="w-4 h-4 animate-spin mr-1" />}
+                      {connectTesting ? "检测中…" : "连通性检测"}
+                    </Button>
+                  </TooltipTrigger>
+                  {isConfiguring && (
+                    <TooltipContent side="top" className="bg-gray-900 text-white text-xs">
+                      当前TAT状态不在线，无法操作
+                    </TooltipContent>
+                  )}
+                </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button 

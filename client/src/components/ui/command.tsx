@@ -84,6 +84,7 @@ function CommandInput({
 
 function CommandList({
   className,
+  onWheel,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
@@ -93,6 +94,12 @@ function CommandList({
         "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
         className
       )}
+      // 阻止滚轮事件冒泡，避免被外层 Popover / Drawer / Dialog 吞掉，
+      // 让鼠标滚轮可以滚动列表本身。业务侧仍可通过传入 onWheel 追加自定义逻辑。
+      onWheel={(e) => {
+        e.stopPropagation();
+        onWheel?.(e);
+      }}
       {...props}
     />
   );

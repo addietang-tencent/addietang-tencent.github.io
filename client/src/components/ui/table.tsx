@@ -317,7 +317,7 @@ function Table({
         ref={outerContainerRef}
         className={cn(
           "relative isolate w-full",
-          variant === "elevated-white" && "rounded-xl border border-white shadow-[0_1px_3px_0_rgba(0,0,0,0.08)] overflow-hidden"
+          variant === "elevated-white" && "rounded-xl border border-white overflow-hidden"
         )}
       >
         <div

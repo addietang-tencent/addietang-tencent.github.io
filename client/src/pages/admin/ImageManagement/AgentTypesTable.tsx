@@ -1,11 +1,12 @@
 /**
  * AgentTypesTable - 所有 Agent 类型在一张大表里
  *
- * 列定义（6 列）：
- *   Agent 类型 | Agent 版本 | 镜像 | 应用范围 | 用户可见 | 操作
+ * 列定义（8 列）：
+ *   Agent 类型 | Agent 版本 | 镜像来源 | 镜像 | 镜像状态 | 应用范围 | 用户可见 | 操作
  *
  *   - 「Agent 版本」列：版本号 + 更新记录入口；公共镜像副文案为"腾讯云维护更新"
- *   - 「镜像」列复合：第一行 = 来源 tag（公共/自定义） + 镜像名 + 切换图标；第二行 = 镜像 ID + 镜像状态徽章
+ *   - 「镜像来源」列：来源 tag（公共/自定义）独立成列
+ *   - 「镜像」列：第一行 = 镜像名 + 切换图标；第二行 = 镜像 ID
  *   - 「应用范围」列：每类型一个 Popover，决定该类型的镜像对哪些用户可见
  *   - 「操作」列：「设为首选 / 删除」两枚文字按钮（link 蓝色文字）；不可执行时禁用并 Tooltip 提示原因
  *
@@ -120,7 +121,8 @@ export default function AgentTypesTable({
               Agent 类型
             </TableHead>
             <TableHead style={{ minWidth: 160 }}>Agent 版本</TableHead>
-            <TableHead style={{ minWidth: 320 }}>镜像</TableHead>
+            <TableHead style={{ minWidth: 100 }}>镜像来源</TableHead>
+            <TableHead style={{ minWidth: 280 }}>镜像</TableHead>
             <TableHead style={{ minWidth: 100 }}>镜像状态</TableHead>
             <TableHead style={{ minWidth: 160 }}>应用范围</TableHead>
             <TableHead style={{ minWidth: 100 }}>用户可见</TableHead>
@@ -212,7 +214,7 @@ function AgentTypeRow({
     <TableRow
       id={`section-${row.agentType}`}
       data-anchor={row.agentType}
-      className="group [&>td]:py-4 [&>td]:align-top"
+      className="group [&>td]:py-4 [&>td]:align-middle"
     >
       {/* 1. Agent 类型 */}
       <TableCell
@@ -229,11 +231,13 @@ function AgentTypeRow({
             {label}
           </span>
           {(isDefault || isNative || (customType && !isNative && kernelBaseLabel)) && (
-            <span className="text-xs text-[#A3A3A3] mt-1 block">
-              {isDefault && "用户端首选"}
-              {isNative && "自定义内核"}
-              {customType && !isNative && kernelBaseLabel && `兼容 ${kernelBaseLabel}`}
-            </span>
+            <div className="mt-1">
+              {isDefault && <StatusTag mode="fill" variant="blue">用户端首选</StatusTag>}
+              {isNative && <StatusTag mode="fill" variant="gray">自定义内核</StatusTag>}
+              {customType && !isNative && kernelBaseLabel && (
+                <StatusTag variant="role">{`兼容 ${kernelBaseLabel}`}</StatusTag>
+              )}
+            </div>
           )}
         </div>
       </TableCell>
@@ -253,14 +257,22 @@ function AgentTypeRow({
         )}
       </TableCell>
 
-      {/* 3. 镜像（合并：类型标签 + 名称 + 切换镜像按钮 + ID） */}
+      {/* 3. 镜像来源（独立列：公共/自定义） */}
+      <TableCell>
+        {selected ? (
+          <StatusTag mode="fill" variant={selected.source === "public" ? "blue" : "gray"}>
+            {selected.source === "public" ? "公共" : "自定义"}
+          </StatusTag>
+        ) : (
+          <span className="text-sm text-[#A3A3A3]">—</span>
+        )}
+      </TableCell>
+
+      {/* 4. 镜像（名称 + 切换镜像按钮 + ID） */}
       <TableCell className="whitespace-normal">
         {selected ? (
           <div className="min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <StatusTag mode="fill" variant={selected.source === "public" ? "blue" : "gray"}>
-                {selected.source === "public" ? "公共" : "自定义"}
-              </StatusTag>
               <span className="text-sm font-medium text-gray-900 truncate min-w-0">
                 {selected.name}
               </span>
@@ -286,11 +298,16 @@ function AgentTypeRow({
             </div>
           </div>
         ) : (
-          <span className="text-sm text-[#A3A3A3]">尚未选择镜像</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-[#A3A3A3]">尚未选择镜像</span>
+            <Button variant="link" size="sm" onClick={onOpenSwitchDialog}>
+              去选择
+            </Button>
+          </div>
         )}
       </TableCell>
 
-      {/* 4. 镜像状态（独立列） */}
+      {/* 5. 镜像状态（独立列） */}
       <TableCell>
         {selected ? (
           <ImageStatusBadge status={selected.status} />
@@ -356,26 +373,45 @@ function AgentTypeRow({
 
       {/* 6. 操作：「设为首选 / 删除」两枚文字按钮（条件不满足时禁用） */}
       <TableActionCell fixed="right">
-        <div className="flex items-center gap-4">
-          {/* 设为首选 — 仅在「未首选 + 已选镜像 + 用户可见」三者满足时展示 */}
-          {!isDefault && selected && isEnabled && (
-            <Button variant="link" size="sm" onClick={onSetDefaultType}>
-              设为首选
-            </Button>
-          )}
+        {/* 设为首选 — 已首选时保留按钮但禁用；未选镜像/用户不可见时禁用并 Tooltip 提示原因 */}
+        {isDefault ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0} className="inline-block">
+                <Button variant="link" size="sm" disabled>
+                  设为首选
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              当前已是用户端首选类型
+            </TooltipContent>
+          </Tooltip>
+        ) : !selected || !isEnabled ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={0} className="inline-block">
+                <Button variant="link" size="sm" disabled>
+                  设为首选
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {!selected ? "请先选择该类型的镜像" : "请先开启用户可见"}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button variant="link" size="sm" onClick={onSetDefaultType}>
+            设为首选
+          </Button>
+        )}
 
-          {/* 删除 — 仅自定义类型可删除；系统预设类型隐藏 */}
-          {isCustom && (
-            <Button variant="link" size="sm" onClick={onRemoveCustomType}>
-              删除
-            </Button>
-          )}
-
-          {/* 占位：当一行所有操作均不可用时（系统预设 + 已是首选），展示极弱占位字符 */}
-          {!isCustom && (isDefault || !selected || !isEnabled) && (
-            <span className="text-xs text-[#D4D4D4]">—</span>
-          )}
-        </div>
+        {/* 删除 — 仅自定义类型可删除；系统预设类型隐藏 */}
+        {isCustom && (
+          <Button variant="link" size="sm" onClick={onRemoveCustomType}>
+            删除
+          </Button>
+        )}
       </TableActionCell>
     </TableRow>
   );
@@ -423,8 +459,8 @@ function AgentVersionCell({
           </Tooltip>
         )}
       </div>
-      {isPublic && (
-        <div className="mt-0.5">
+      <div className="mt-0.5">
+        {isPublic ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="inline-flex">
@@ -435,8 +471,19 @@ function AgentVersionCell({
               由腾讯云持续维护更新，自动跟随官方版本
             </TooltipContent>
           </Tooltip>
-        </div>
-      )}
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex">
+                <StatusTag variant="role">企业自行维护</StatusTag>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-xs">
+              企业自行维护此镜像版本，不会随官方版本自动更新
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
     </div>
   );
 }

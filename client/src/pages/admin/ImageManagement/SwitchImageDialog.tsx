@@ -43,6 +43,7 @@ import {
   TableRow,
   TableActionCell,
 } from "@/components/ui/table";
+import { SurfaceCard } from "@/components/ui/Surface";
 import { ImageStatusBadge } from "./ImageStatusBadge";
 import { getCurrentVersion } from "./publicImageRecords";
 import type { AgentTypeView, ViewImage } from "./deriveAgentTypeView";
@@ -156,44 +157,26 @@ export default function SwitchImageDialog({
         </DialogHeader>
 
         <DialogBody className="flex-1">
-          {isCustomAgentType ? (
-            // 自定义类型：无 Tab，顶部直接放导入按钮
-            <div className="space-y-3">
-              <div className="flex justify-end">
-                <Button variant="outline" size="sm" onClick={onImportCustom}>
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  导入自定义镜像
-                </Button>
-              </div>
-              <CustomList
-                row={view.customRow}
-                pendingId={pendingId}
-                onSelect={setPendingId}
-                onEditImage={onEditImage}
-                onDeleteImage={onDeleteImage}
-                onViewHistory={onViewPublicHistory}
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* 当前生效镜像信息卡片 —— 使用规范 Table 组件，结构与下方列表完全一致 */}
-              {effectiveImage && (
-                <div className="space-y-2">
-                  <div className="text-xs font-medium text-[#737373]">当前用户可见镜像</div>
-                  <Table density="compact" containerClassName="rounded-[3px] border border-gray-200">
-                    <TableHeader>
+          <div className="space-y-3">
+            {/* 当前用户可见镜像 —— 始终展示（无论是否已选择 / 是否自定义类型） */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-[#737373]">当前用户可见镜像</div>
+              <SurfaceCard className="overflow-hidden">
+                <Table density="compact" autoFixedColumns={false} className="table-fixed">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead style={{ width: 40 }} />
+                      <TableHead style={{ width: 160 }}>Agent 版本</TableHead>
+                      <TableHead style={{ width: 120 }}>镜像来源</TableHead>
+                      <TableHead>镜像</TableHead>
+                      <TableHead style={{ width: 120 }}>镜像状态</TableHead>
+                      <TableHead style={{ width: 140 }}>创建时间</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {effectiveImage ? (
                       <TableRow>
-                        <TableHead className="w-[40px]" />
-                        <TableHead>Agent 版本</TableHead>
-                        <TableHead>来源</TableHead>
-                        <TableHead>镜像</TableHead>
-                        <TableHead>镜像状态</TableHead>
-                        <TableHead>创建时间</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="w-[40px]" />
+                        <TableCell style={{ width: 40 }} />
                         {/* Agent 版本：版本号 + History / 腾讯云维护 */}
                         <TableCell>
                           <div className="flex items-center gap-1.5">
@@ -224,11 +207,11 @@ export default function SwitchImageDialog({
                           </div>
                         </TableCell>
 
-                        {/* 来源 */}
+                        {/* 镜像来源 */}
                         <TableCell>
-                          <Badge variant="outline">
+                          <StatusTag mode="fill" variant={effectiveImage.source === "public" ? "blue" : "gray"}>
                             {effectiveImage.source === "public" ? "公共" : "自定义"}
-                          </Badge>
+                          </StatusTag>
                         </TableCell>
 
                         {/* 镜像：名称 / ID */}
@@ -253,11 +236,39 @@ export default function SwitchImageDialog({
                           {effectiveImage.createTime ? effectiveImage.createTime.split(" ")[0] : "—"}
                         </TableCell>
                       </TableRow>
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-sm text-[#A3A3A3] py-6">
+                          尚未选择镜像
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </SurfaceCard>
+            </div>
 
+            {isCustomAgentType ? (
+              // 自定义类型：无 Tab，顶部直接放"导入自定义镜像"按钮
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-[#737373]">可选自定义镜像</div>
+                  <Button variant="outline" size="sm" onClick={onImportCustom}>
+                    <Plus className="w-3.5 h-3.5 mr-1" />
+                    导入自定义镜像
+                  </Button>
+                </div>
+                <CustomList
+                  row={view.customRow}
+                  pendingId={pendingId}
+                  onSelect={setPendingId}
+                  onEditImage={onEditImage}
+                  onDeleteImage={onDeleteImage}
+                  onViewHistory={onViewPublicHistory}
+                />
+              </>
+            ) : (
+              <>
               <div className="flex items-center gap-3">
                 <SegmentGroup>
                   <Tooltip>
@@ -329,8 +340,9 @@ export default function SwitchImageDialog({
                   onViewHistory={onViewPublicHistory}
                 />
               )}
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </DialogBody>
 
         <DialogFooter>
@@ -433,16 +445,17 @@ function ImageList({
 }) {
   return (
     <RadioGroup value={pendingId} onValueChange={onSelect}>
-      <Table density="compact" containerClassName="rounded-[3px] border border-gray-200">
+      <SurfaceCard className="overflow-hidden">
+      <Table density="compact" autoFixedColumns={false} className="table-fixed">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40px]" />
-            <TableHead>Agent 版本</TableHead>
-            <TableHead>来源</TableHead>
+            <TableHead style={{ width: 40 }} />
+            <TableHead style={{ width: 160 }}>Agent 版本</TableHead>
+            <TableHead style={{ width: 120 }}>镜像来源</TableHead>
             <TableHead>镜像</TableHead>
-            <TableHead>镜像状态</TableHead>
-            <TableHead>创建时间</TableHead>
-            {renderActions && <TableHead>操作</TableHead>}
+            <TableHead style={{ width: 120 }}>镜像状态</TableHead>
+            <TableHead style={{ width: 140 }}>创建时间</TableHead>
+            {renderActions && <TableHead style={{ width: 200 }}>操作</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -514,9 +527,11 @@ function ImageList({
                   </div>
                 </TableCell>
 
-                {/* 来源（公共/自定义） */}
+                {/* 镜像来源（公共/自定义） */}
                 <TableCell>
-                  <Badge variant="outline">{imgType}</Badge>
+                  <StatusTag mode="fill" variant={img.source === "public" ? "blue" : "gray"}>
+                    {imgType}
+                  </StatusTag>
                 </TableCell>
 
                 {/* 镜像：名称 + ID */}
@@ -561,6 +576,7 @@ function ImageList({
           })}
         </TableBody>
       </Table>
+      </SurfaceCard>
     </RadioGroup>
   );
 }
@@ -568,9 +584,9 @@ function ImageList({
 // ─── 空提示 ─────────────────────────────────────────────────────────
 function EmptyHint({ text }: { text: string }) {
   return (
-    <div className="rounded-[3px] border border-dashed border-gray-200 px-3 py-6 text-center">
-      <span className="text-xs text-[#A3A3A3]">{text}</span>
-    </div>
+    <SurfaceCard className="px-3 py-8 text-center">
+      <span className="text-sm text-[#A3A3A3]">{text}</span>
+    </SurfaceCard>
   );
 }
 

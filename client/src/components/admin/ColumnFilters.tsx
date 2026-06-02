@@ -8,6 +8,7 @@
  */
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Search, ChevronDown, ChevronRight, Check } from "lucide-react";
 import { type DepartmentNode } from "@/lib/mockData";
 import type { UserGroup, GroupSource } from "@/pages/admin/MemberManagement/types";
@@ -19,6 +20,23 @@ const GROUP_SOURCE_LABELS: Record<GroupSource, string> = {
   "oneid-group": "自定义分组",
   manual: "自定义分组",
 };
+
+// ─── 列头筛选下拉里复用的行样式（避免重复硬编码） ────────────────────────
+// 「树节点行」：gap-1，含展开 chevron 占位；选中态文字 #1447E6 + 浅灰底
+const treeRowBaseClass =
+  "flex items-center gap-1 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors";
+const treeRowSelectedClass = "bg-[#F5F5F5] text-[#1447E6]";
+const treeRowIdleClass = "text-[#334155] hover:bg-[#F5F5F5]";
+const treeRowClass = (selected: boolean) =>
+  `${treeRowBaseClass} ${selected ? treeRowSelectedClass : treeRowIdleClass}`;
+
+// 「根选项行」：gap-2，"全部 X" 一类；文字色由内部 span 控制
+const rootRowBaseClass =
+  "flex items-center gap-2 py-1.5 px-2 rounded-[4px] cursor-pointer transition-colors";
+const rootRowSelectedClass = "bg-[#F5F5F5]";
+const rootRowIdleClass = "hover:bg-[#F5F5F5]";
+const rootRowClass = (selected: boolean) =>
+  `${rootRowBaseClass} ${selected ? rootRowSelectedClass : rootRowIdleClass}`;
 
 // ─── 部门列头筛选面板 ─────────────────────────────────────────────────────
 export function DepartmentColumnFilter({
@@ -59,9 +77,7 @@ export function DepartmentColumnFilter({
     return (
       <div key={node.id}>
         <div
-          className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
-            isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
-          }`}
+          className={treeRowClass(isSelected)}
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => setTempValue(node.id)}
         >
@@ -74,18 +90,18 @@ export function DepartmentColumnFilter({
               }}
             >
               {isExpanded ? (
-                <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#A3A3A3]" />
               ) : (
-                <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />
               )}
             </button>
           ) : (
             <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4D4D4]" />
             </span>
           )}
-          <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
-          {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+          <span className={`text-sm truncate flex-1 ${isSelected ? "text-[#1447E6] font-medium" : ""}`}>{node.name}</span>
+          {isSelected && <Check className="w-4 h-4 ml-auto text-[#1447E6] flex-shrink-0" />}
         </div>
         {hasChildren && isExpanded && node.children!.map((child) => renderNode(child, level + 1))}
       </div>
@@ -96,38 +112,30 @@ export function DepartmentColumnFilter({
     <>
       <div className="px-3 pt-3 pb-2">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-          <input
-            type="text"
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3] pointer-events-none" />
+          <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索部门"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="h-8 pl-8"
           />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
         <div
-          className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
-            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
-          }`}
+          className={rootRowClass(tempValue === "")}
           onClick={() => setTempValue("")}
         >
-          <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部部门</span>
-          {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#1447E6] font-medium" : "text-[#334155]"}`}>全部部门</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-[#1447E6] flex-shrink-0" />}
         </div>
         {departments.map((d) => renderNode(d, 0))}
       </div>
-      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
-        <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>
+      <div className="border-t border-[#E5E5E5] p-2 flex gap-2">
+        <Button variant="claw-outline" size="claw-sm" className="flex-1" onClick={onCancel}>
           取消
         </Button>
-        <Button
-          size="sm"
-          className="text-xs h-7 px-3"
-          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }}
-          onClick={() => onConfirm(tempValue)}
-        >
+        <Button variant="dialog-confirm" size="claw-sm" className="flex-1" onClick={() => onConfirm(tempValue)}>
           确认
         </Button>
       </div>
@@ -158,9 +166,7 @@ function GroupTreeNodeItem({
   return (
     <div>
       <div
-        className={`flex items-center gap-1 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
-          isSelected ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-100"
-        }`}
+        className={treeRowClass(isSelected)}
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => onSelect(node.id)}
       >
@@ -173,18 +179,18 @@ function GroupTreeNodeItem({
             }}
           >
             {isExpanded ? (
-              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#A3A3A3]" />
             ) : (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-[#A3A3A3]" />
             )}
           </button>
         ) : (
           <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+            <span className="w-1.5 h-1.5 rounded-full bg-[#D4D4D4]" />
           </span>
         )}
-        <span className={`text-sm truncate flex-1 ${isSelected ? "text-blue-600 font-medium" : ""}`}>{node.name}</span>
-        {isSelected && <Check className="w-4 h-4 ml-auto text-blue-600 flex-shrink-0" />}
+        <span className={`text-sm truncate flex-1 ${isSelected ? "text-[#1447E6] font-medium" : ""}`}>{node.name}</span>
+        {isSelected && <Check className="w-4 h-4 ml-auto text-[#1447E6] flex-shrink-0" />}
       </div>
       {hasChildren && isExpanded &&
         node.children.map((child) => (
@@ -258,31 +264,28 @@ export function GroupColumnFilter({
     <>
       <div className="px-3 pt-3 pb-2">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-          <input
-            type="text"
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3] pointer-events-none" />
+          <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索分组"
-            className="w-full h-8 pl-8 pr-3 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="h-8 pl-8"
           />
         </div>
       </div>
       <div className="max-h-[280px] overflow-y-auto px-2 pb-2">
         <div
-          className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
-            tempValue === "" ? "bg-blue-50" : "hover:bg-gray-100"
-          }`}
+          className={rootRowClass(tempValue === "")}
           onClick={() => setTempValue("")}
         >
-          <span className={`text-sm flex-1 ${tempValue === "" ? "text-blue-600 font-medium" : "text-gray-700"}`}>全部分组</span>
-          {tempValue === "" && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+          <span className={`text-sm flex-1 ${tempValue === "" ? "text-[#1447E6] font-medium" : "text-[#334155]"}`}>全部分组</span>
+          {tempValue === "" && <Check className="w-4 h-4 text-[#1447E6] flex-shrink-0" />}
         </div>
         {activeSources.map((source) => (
           <div key={source}>
             {hasOneid && (
               <div className="px-2 pt-3 pb-1">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-[#A3A3A3] uppercase tracking-wider">
                   {GROUP_SOURCE_LABELS[source]}
                 </span>
               </div>
@@ -303,16 +306,11 @@ export function GroupColumnFilter({
           </div>
         ))}
       </div>
-      <div className="border-t border-gray-100 px-3 py-2 flex items-center justify-end gap-1.5">
-        <Button variant="ghost" size="sm" className="text-xs text-gray-500 h-7 px-2" onClick={onCancel}>
+      <div className="border-t border-[#E5E5E5] p-2 flex gap-2">
+        <Button variant="claw-outline" size="claw-sm" className="flex-1" onClick={onCancel}>
           取消
         </Button>
-        <Button
-          size="sm"
-          className="text-xs h-7 px-3"
-          style={{ background: "linear-gradient(135deg, #007AFF, #5856D6)", color: "white" }}
-          onClick={() => onConfirm(tempValue)}
-        >
+        <Button variant="dialog-confirm" size="claw-sm" className="flex-1" onClick={() => onConfirm(tempValue)}>
           确认
         </Button>
       </div>

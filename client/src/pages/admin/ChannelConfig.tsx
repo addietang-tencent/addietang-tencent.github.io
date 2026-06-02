@@ -376,7 +376,6 @@ export default function ChannelConfig() {
             </a>
             <Button
               size="sm"
-              variant="outline"
               className="flex items-center gap-1.5 text-sm"
               onClick={openAddDialog}
             >

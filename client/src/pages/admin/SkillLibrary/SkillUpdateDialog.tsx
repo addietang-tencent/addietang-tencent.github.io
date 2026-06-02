@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogB
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription, AlertInfoIcon } from '@/components/ui/alert';
 import { AlertCircle, AlertTriangle, CheckCircle, X, ChevronDown, ChevronRight, Loader, Sparkles, FileText, Download, Search as SearchIcon, Check, Trash2 } from 'lucide-react';
 import JSZip from 'jszip';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -390,15 +391,12 @@ export default function SkillUpdateDialog({ open, onOpenChange, skill, onConfirm
         <DialogBody className="flex-1">
         <div className="space-y-5">
           {/* 更新提示 */}
-          <div
-            role="alert"
-            className="relative w-full rounded-[4px] border px-4 py-3 flex items-start gap-2 text-xs border-[#FCD28C] bg-[#FFFBED] text-[#181818] [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:mt-0.5 [&>svg]:text-[#FCA004]"
-          >
-            <AlertTriangle className="w-4 h-4" />
-            <div className="flex-1 min-w-0 leading-5">
-              <p>仅更新企业技能库中的技能版本。已下发至 Agent 实例的技能不会同步升级，需手动重新下发。</p>
-            </div>
-          </div>
+          <Alert variant="warning">
+            <AlertInfoIcon />
+            <AlertDescription>
+              仅更新企业技能库中的技能版本。已下发至 Agent 实例的技能不会同步升级，需手动重新下发。
+            </AlertDescription>
+          </Alert>
 
           {/* 文件替换 */}
           <div className="space-y-3">

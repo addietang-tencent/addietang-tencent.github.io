@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Segment, SegmentList, SegmentItem, SegmentContent } from "@/components/ui/segment";
 import { Zap, TrendingUp, ArrowUp, ArrowDown, RefreshCw, ChevronRight, Info, AlertCircle, ArrowUpRight, BarChart3, Activity, CheckCircle2, ChevronDown, Check, Download, X } from "lucide-react";
 import { Pagination } from "@/components/ui/pagination";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle, AlertOperationInfoIcon } from "@/components/ui/alert";
@@ -1582,7 +1582,7 @@ export default function TokensMonitor() {
                 {/* 卡片功能展示 */}
                 <div className="space-y-4 mb-8">
                   {/* 第一块：当前页可获得的会话数据 */}
-                  <div className="border border-gray-200 rounded-[4px] px-6 py-5">
+                  <div className="bg-white border border-gray-200 rounded-[4px] px-6 py-5">
                     <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您可以在此处获得以下会话数据：</h4>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                       {[
@@ -1618,7 +1618,7 @@ export default function TokensMonitor() {
                   </div>
 
                   {/* 第二块：运维观测和会话管理中可获得的数据 */}
-                  <div className="border border-gray-200 rounded-[4px] px-6 py-5">
+                  <div className="bg-white border border-gray-200 rounded-[4px] px-6 py-5">
                     <h4 className="text-[14px] font-medium text-[#737373] mb-4">开启CLS日志服务后您还可以在运维观测和会话管理页面中获得以下观测数据：</h4>
                     <div className="grid grid-cols-2 gap-x-6 gap-y-5">
                       {[
@@ -1681,50 +1681,46 @@ export default function TokensMonitor() {
             {clsEnabled && (
               <>
 
-              {/* 顶部：关闭 CLS 按钮（右上角）+ OpenClaw 搜索框（左下方）*/}
-              <div className="flex items-start justify-between mb-6 gap-4">
-                {/* 左侧：Agent 名称筛选 */}
-                <div className="flex-1">
-                  <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
+              {/* 顶部工具栏：左侧 Agent 下拉 + 提示文案；右侧 升级CLS / 关闭CLS / 下载 */}
+              <div className="flex items-center justify-between mb-4 gap-4">
+                {/* 左侧：Agent 名称筛选 + 提示文案 */}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <AgentCombobox
                     value={selectedAgent}
                     onValueChange={setSelectedAgent}
-                    className="max-w-xs"
+                    className="w-[240px]"
                   />
+                  <p className="text-xs text-[#A3A3A3] truncate">全部会话已按 tokens 排序，点击可查看会话详情</p>
                 </div>
-                 {/* 右侧：升级CLS插件 + 关闭CLS按钮 */}
-                <div className="flex items-center gap-2 mt-6">
-                  <Button
-                    onClick={() => setShowPluginUpgradeDialog(true)}
-                    variant="outline"
-                    className="text-xs h-8 px-3 text-[#355EF1] border-[#355EF1] hover:bg-[#eff4ff] bg-white"
-                  >
-                    升级CLS采集插件
-                  </Button>
+                 {/* 右侧：下载 / 关闭CLS（次级）/ 升级CLS（主按钮）— 同档 32px 高度 */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <UITooltip>
+                    <UITooltipTrigger asChild>
+                      <Button
+                        variant="claw-outline"
+                        size="icon-sm"
+                        onClick={handleExportSession}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </Button>
+                    </UITooltipTrigger>
+                    <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
+                  </UITooltip>
                   <Button
                     onClick={() => setShowCloseClsConfirm(true)}
-                    variant="outline"
-                    className="text-xs h-8 px-3 text-red-600 border-red-200 hover:bg-white bg-white"
+                    variant="claw-outline"
+                    size="claw-sm"
                   >
                     关闭CLS服务
                   </Button>
+                  <Button
+                    onClick={() => setShowPluginUpgradeDialog(true)}
+                    variant="claw-primary"
+                    size="claw-sm"
+                  >
+                    升级CLS采集插件
+                  </Button>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs text-[#A3A3A3]">全部会话已按tokens排序，点击可查看会话详情</p>
-                <UITooltip>
-                  <UITooltipTrigger asChild>
-                    <Button
-                      variant="claw-outline"
-                      size="icon"
-                      className="w-9 h-9"
-                      onClick={handleExportSession}
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                    </Button>
-                  </UITooltipTrigger>
-                  <UITooltipContent side="top" className="text-xs">导出列表</UITooltipContent>
-                </UITooltip>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                >
@@ -1759,18 +1755,17 @@ export default function TokensMonitor() {
                         <TableCell className="font-mono">{(s.tokens / 1000000).toFixed(2)}M</TableCell>
                         <TableCell className="font-mono">${s.cost.toFixed(4)}</TableCell>
                         <TableCell className="text-[#737373]">{s.duration}</TableCell>
-                        <TableCell fixed="right">
+                        <TableActionCell fixed="right">
                           <Button
+                            variant="link"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/admin/session/${s.sessionId}`);
                             }}
-                            variant="outline"
-                            className="text-xs h-7 px-3"
                           >
                             查看详情
                           </Button>
-                        </TableCell>
+                        </TableActionCell>
                       </TableRow>
                       );
                     })}
@@ -1974,7 +1969,7 @@ export default function TokensMonitor() {
                 }}
                 className="contents"
               >
-              <Table>
+              <Table density="compact" autoFixedColumns={false}>
                 <TableHeader>
                   <TableRow>
                     <TableHead style={{ width: 40 }} />
@@ -1992,7 +1987,7 @@ export default function TokensMonitor() {
                         onClick={() => isUpgradeable && setSelectedPluginVersion(v)}
                         className={isUpgradeable ? "cursor-pointer" : "cursor-default"}
                       >
-                        <TableCell className="py-2">
+                        <TableCell>
                           <RadioGroupItem
                             value={v.version}
                             disabled={!isUpgradeable}

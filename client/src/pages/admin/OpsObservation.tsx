@@ -703,43 +703,41 @@ export default function OpsObservation() {
         </div>
       )}
 
-      {/* 已开启时显示搜索框 + 关闭button */}
+      {/* 已开启时显示工具栏：左侧 Agent 下拉；右侧 关闭CLS（次级）/ 升级CLS（主按钮） */}
       {clsEnabled && (
-        <div className="flex items-start justify-between mb-6 gap-4">
+        <div className="flex items-center justify-between mb-6 gap-4">
           {/* 左侧：Agent 名称筛选 */}
-          <div className="flex-1">
-            <label className="text-xs font-medium text-[#525252] block mb-2">Agent名称：</label>
-            <Select value={selectedAgent || "all"} onValueChange={(v) => setSelectedAgent(v === "all" ? "" : v)}>
-              <SelectTrigger className="max-w-xs bg-white border-gray-200 h-9">
-                <SelectValue placeholder="全部 Agent" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">全部 Agent</SelectItem>
-                <SelectItem value="Agent-A">Agent-A</SelectItem>
-                <SelectItem value="Agent-B">Agent-B</SelectItem>
-                <SelectItem value="Agent-C">Agent-C</SelectItem>
-                <SelectItem value="Agent-D">Agent-D</SelectItem>
-                <SelectItem value="Agent-E">Agent-E</SelectItem>
-                <SelectItem value="Agent-F">Agent-F</SelectItem>
-                <SelectItem value="Agent-G">Agent-G</SelectItem>
-                <SelectItem value="Agent-H">Agent-H</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-            {/* 右侧：升级和关闭CLS按钮 */}
-          <div className="flex gap-2 mt-6">
-            <Button
-              onClick={() => setShowPluginUpgradeDialog(true)}
-              className="text-xs h-8 px-3"
-            >
-              升级CLS采集插件
-            </Button>
+          <Select value={selectedAgent || "all"} onValueChange={(v) => setSelectedAgent(v === "all" ? "" : v)}>
+            <SelectTrigger className="w-[240px] bg-white">
+              <SelectValue placeholder="全部 Agent" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部 Agent</SelectItem>
+              <SelectItem value="Agent-A">Agent-A</SelectItem>
+              <SelectItem value="Agent-B">Agent-B</SelectItem>
+              <SelectItem value="Agent-C">Agent-C</SelectItem>
+              <SelectItem value="Agent-D">Agent-D</SelectItem>
+              <SelectItem value="Agent-E">Agent-E</SelectItem>
+              <SelectItem value="Agent-F">Agent-F</SelectItem>
+              <SelectItem value="Agent-G">Agent-G</SelectItem>
+              <SelectItem value="Agent-H">Agent-H</SelectItem>
+            </SelectContent>
+          </Select>
+          {/* 右侧：关闭CLS（次级）/ 升级CLS（主按钮）— 同档 32px 高度 */}
+          <div className="flex items-center gap-2 shrink-0">
             <Button
               onClick={() => setShowCloseClsConfirm(true)}
-              variant="outline"
-              className="text-xs h-8 px-3"
+              variant="claw-outline"
+              size="claw-sm"
             >
               关闭CLS服务
+            </Button>
+            <Button
+              onClick={() => setShowPluginUpgradeDialog(true)}
+              variant="claw-primary"
+              size="claw-sm"
+            >
+              升级CLS采集插件
             </Button>
           </div>
         </div>

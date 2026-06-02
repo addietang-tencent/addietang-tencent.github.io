@@ -19,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Pagination } from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
@@ -27,12 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Search, ChevronDown, Check, AlertTriangle, X } from 'lucide-react';
+import { Search, ChevronDown, Check, AlertTriangle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { type DistributionStatus, DISTRIBUTION_STATUS_MAP, type InstanceStatus, INSTANCE_STATUS_MAP, type SkillScope, type AgentInstance, type Group } from './types';
+import { DISTRIBUTION_STATUS_MAP, type SkillScope, type AgentInstance, type Group } from './types';
 
-/** 筛选选项类型 —— 多选 */
-type FilterOption = 'not_distributed' | 'failed' | 'pending_update';
+/** 筛选选项类型 —— 多选（pending_update 为运行时展示状态，不写入数据结构） */
+type FilterOption = 'not_distributed' | 'failed' | 'pending_update' | 'success';
 
 /** 版本筛选选项 */
 type VersionFilterOption = 'all' | 'gte_0328' | 'lt_0328';
@@ -103,6 +102,7 @@ const FILTER_OPTIONS: { key: FilterOption; label: string }[] = [
   { key: 'not_distributed', label: '未下发' },
   { key: 'failed', label: '下发失败' },
   { key: 'pending_update', label: '待更新' },
+  { key: 'success', label: '下发成功' },
 ];
 
 export default function BatchDistributeDialog({
@@ -125,6 +125,8 @@ export default function BatchDistributeDialog({
 }: BatchDistributeDialogProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInstances, setSelectedInstances] = useState<string[]>([]);
+  /** 是否处于"选择全部"模式（跨页全选） */
+  const [selectAllMode, setSelectAllMode] = useState(false);
   /** 状态多选筛选 */
   const [statusFilters, setStatusFilters] = useState<FilterOption[]>([]);
   /** 应用范围筛选：空数组=全部, 否则为选中的分组 ID 列表（多选） */
@@ -158,14 +160,15 @@ export default function BatchDistributeDialog({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 当打开弹窗时，重置筛选状态；技能库默认全选符合条件的实例，插件库不自动选中
+  // 当打开弹窗时，重置筛选状态；默认不选中任何实例
   useEffect(() => {
     if (open) {
-      // MCP 和 Skill 场景默认选中「未下发」+「下发失败」
-      setStatusFilters(['not_distributed', 'failed']);
+      // 默认显示全部下发状态，包含已下发成功但不可重复选择的实例
+      setStatusFilters([]);
       setSearchQuery('');
       setCurrentPage(1);
       setPageSize(20);
+      setSelectAllMode(false);
       setFilterDropdownOpen(false);
       setScopeDropdownOpen(false);
       setScopeSearchQuery('');
@@ -179,32 +182,13 @@ export default function BatchDistributeDialog({
         } else {
           setScopeFilters([]);
         }
-        const validIds = instances
-          .filter(i => {
-            if (i.status !== 'running') return false;
-            // 仅选中 未下发 和 下发失败 的实例
-            if (i.distributionStatus !== 'not_distributed' && i.distributionStatus !== 'failed') return false;
-            if (skillScope === 'private' && skillGroupIds && skillGroupIds.length > 0) {
-              return i.groupIds?.some(gId => skillGroupIds.includes(gId));
-            }
-            return true;
-          })
-          .map(i => i.id);
-        setSelectedInstances(validIds);
       } else {
         setScopeFilters([]);
-        setSelectedInstances([]);
       }
+      // 默认不选中任何实例
+      setSelectedInstances([]);
     }
   }, [open, skillScope, skillGroupIds]);
-
-  /** 切换筛选选项 */
-  const toggleFilterOption = (key: FilterOption) => {
-    setStatusFilters(prev =>
-      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
-    );
-    setCurrentPage(1);
-  };
 
   /** 获取筛选下拉的显示文本 */
   const getFilterDisplayText = () => {
@@ -214,7 +198,7 @@ export default function BatchDistributeDialog({
     return statusFilters.map(k => FILTER_OPTIONS.find(o => o.key === k)?.label).filter(Boolean).join('、');
   };
 
-  /** 判断当前是否为"全部状态"（所有3个选项都选中，或空数组） */
+  /** 判断当前是否为"全部状态"（所有状态选项都选中，或空数组） */
   const isAllStatusSelected = statusFilters.length === 0 || statusFilters.length === FILTER_OPTIONS.length;
 
   /** 获取分组筛选显示文本 */
@@ -236,13 +220,20 @@ export default function BatchDistributeDialog({
 
   /** 获取实例的显示状态（运行时计算，pending_update 不是持久化状态） */
   const getInstanceFilterKey = (instance: AgentInstance): FilterOption | null => {
-    if (instance.distributionStatus === 'not_distributed') return 'not_distributed';
+    if (!instance.distributionStatus || instance.distributionStatus === 'not_distributed') return 'not_distributed';
     if (instance.distributionStatus === 'failed') return 'failed';
-    // 已下发成功 + 版本与当前 Skill 最新版本不一致 → 待更新
-    if (instance.distributionStatus === 'success' && skillVersion && instance.distributedVersion && instance.distributedVersion !== skillVersion) {
-      return 'pending_update';
+    if (instance.distributionStatus === 'success') {
+      if (skillVersion && instance.distributedVersion) {
+        return instance.distributedVersion === skillVersion ? 'success' : 'pending_update';
+      }
+      return 'success';
     }
     return null;
+  };
+
+  /** 已下发成功且版本一致的实例不可重复选择 */
+  const isInstanceSelectable = (instance: AgentInstance) => {
+    return !(instance.distributionStatus === 'success' && skillVersion && instance.distributedVersion === skillVersion);
   };
 
   /** 获取分组名称 */
@@ -254,7 +245,7 @@ export default function BatchDistributeDialog({
     .filter(instance => {
       // 仅显示运行中的实例
       if (instance.status !== 'running') return false;
-      // 仅显示未下发、下发失败、待更新的实例
+      // 显示可下发状态与已成功状态；成功且版本一致展示但不可选择
       const filterKey = getInstanceFilterKey(instance);
       if (!filterKey) return false;
 
@@ -296,7 +287,15 @@ export default function BatchDistributeDialog({
       if (versionFilter === 'lt_0328') return cmp < 0;
       return true;
     })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .map((instance, index) => ({ instance, index }))
+    .sort((a, b) => {
+      const aSelectable = isInstanceSelectable(a.instance);
+      const bSelectable = isInstanceSelectable(b.instance);
+      if (aSelectable !== bSelectable) return aSelectable ? -1 : 1;
+      return a.index - b.index;
+    })
+    .map(({ instance }) => instance);
 
   // 分页计算
   const totalCount = allFilteredInstances.length;
@@ -304,24 +303,46 @@ export default function BatchDistributeDialog({
   const safeCurrentPage = Math.min(currentPage, totalPages);
   const startIndex = (safeCurrentPage - 1) * pageSize;
   const pagedInstances = allFilteredInstances.slice(startIndex, startIndex + pageSize);
+  const selectablePagedInstances = pagedInstances.filter(isInstanceSelectable);
+  const selectableFilteredInstances = allFilteredInstances.filter(isInstanceSelectable);
 
-  /** 全选 / 取消全选 —— 操作所有筛选后的实例（跨页） */
+  /** 全选 / 取消全选（仅当前页） */
   const handleSelectAll = () => {
-    const allIds = allFilteredInstances.map(i => i.id);
-    const allSelected = allIds.length > 0 && allIds.every(id => selectedInstances.includes(id));
-    if (allSelected) {
-      // 取消全选：移除所有筛选结果中的 id
-      setSelectedInstances(prev => prev.filter(id => !allIds.includes(id)));
+    const pageIds = selectablePagedInstances.map(i => i.id);
+    if (pageIds.length === 0) return;
+    const allPageSelected = pageIds.every(id => selectedInstances.includes(id));
+    if (allPageSelected) {
+      // 当前页已全选 → 清空当前页
+      setSelectedInstances(prev => prev.filter(id => !pageIds.includes(id)));
     } else {
-      // 全选：合并所有筛选结果的 id
-      setSelectedInstances(prev => [...new Set([...prev, ...allIds])]);
+      // 选中当前页所有可选实例
+      setSelectedInstances(prev => Array.from(new Set([...prev, ...pageIds])));
     }
   };
 
-  const handleSelectInstance = (id: string) => {
-    setSelectedInstances(prev =>
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
+  /** 选择全部（跨页）—— 仅选中所有筛选后的可选实例 */
+  const handleSelectAllFiltered = () => {
+    const allIds = selectableFilteredInstances.map(i => i.id);
+    setSelectedInstances(prev => Array.from(new Set([...prev, ...allIds])));
+    setSelectAllMode(true);
+  };
+
+  /** 取消选择全部 */
+  const handleDeselectAll = () => {
+    setSelectedInstances([]);
+    setSelectAllMode(false);
+  };
+
+  const handleSelectInstance = (instance: AgentInstance) => {
+    if (!isInstanceSelectable(instance)) return;
+
+    setSelectedInstances(prev => {
+      if (prev.includes(instance.id)) {
+        setSelectAllMode(false);
+        return prev.filter(i => i !== instance.id);
+      }
+      return [...prev, instance.id];
+    });
   };
 
   const handleDistribute = () => {
@@ -335,15 +356,25 @@ export default function BatchDistributeDialog({
   };
 
   const doDistribute = () => {
-    const selectedInstancesData = instances.filter(i => selectedInstances.includes(i.id));
-    
+    const selectedInstancesData = instances.filter(i => selectedInstances.includes(i.id) && isInstanceSelectable(i));
+    const selectedInstanceIds = selectedInstancesData.map(i => i.id);
+
+    if (selectedInstanceIds.length === 0) {
+      setSelectedInstances([]);
+      setSelectAllMode(false);
+      setConfirmDialogOpen(false);
+      setConfirmInput('');
+      return;
+    }
+
     if (onDistributionStart) {
-      onDistributionStart(selectedInstances, selectedInstancesData);
+      onDistributionStart(selectedInstanceIds, selectedInstancesData);
     }
     
     setSelectedInstances([]);
+    setSelectAllMode(false);
     setSearchQuery('');
-    setStatusFilters(['not_distributed', 'failed']);
+    setStatusFilters([]);
     setScopeFilters([]);
     setCurrentPage(1);
     setPageSize(20);
@@ -364,36 +395,44 @@ export default function BatchDistributeDialog({
       return (
         <div className="text-right">
           <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-yellow-700 bg-yellow-50">待更新</span>
-          <div className="text-[11px] text-[#A3A3A3] mt-0.5 text-center">v{instance.distributedVersion}</div>
+          <div className="text-[11px] text-gray-400 mt-0.5 text-center">v{instance.distributedVersion}</div>
         </div>
       );
+    }
+    if (filterKey === 'success') {
+      return <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-green-700 bg-green-50">下发成功</span>;
+    }
+    if (filterKey === 'failed') {
+      return <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-red-700 bg-red-50">下发失败</span>;
     }
     const s = instance.distributionStatus || 'not_distributed';
     const { label, color } = DISTRIBUTION_STATUS_MAP[s];
     return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>{label}</span>;
   };
 
-  // 全选判断：跨所有页
-  const allIds = allFilteredInstances.map(i => i.id);
+  // 全选判断：当前页级别（只统计可选实例）
+  const pageIds = selectablePagedInstances.map(i => i.id);
+  const selectedInPageCount = pageIds.filter(id => selectedInstances.includes(id)).length;
+  const isPageAllSelected = pageIds.length > 0 && selectedInPageCount === pageIds.length;
+  const isPageIndeterminate = selectedInPageCount > 0 && selectedInPageCount < pageIds.length;
+  // 跨页全选判断（只统计可选实例）
+  const allIds = selectableFilteredInstances.map(i => i.id);
   const selectedInFilterCount = allIds.filter(id => selectedInstances.includes(id)).length;
-  const isAllSelected = allIds.length > 0 && selectedInFilterCount === allIds.length;
-  const isIndeterminate = selectedInFilterCount > 0 && selectedInFilterCount < allIds.length;
+  const selectedSelectableCount = instances.filter(i => selectedInstances.includes(i.id) && isInstanceSelectable(i)).length;
+  const isAllFilteredSelected = allIds.length > 0 && selectedInFilterCount === allIds.length;
 
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        size="lg"
-        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
-      >
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-[16px] font-semibold text-[#020617]">{title}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription asChild>
-            <div className="space-y-1 pt-1">
+            <div className="text-sm text-muted-foreground">
               {descriptionNode || (
                 <>
-                  <p className="text-[13px] text-[#525252] leading-[20px]">将 <span className="font-medium text-[#020617]">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
-                  <p className="text-[12px] text-[#a3a3a3] leading-[18px]">筛选限制：仅限状态为<span className="text-[#525252]">运行中</span>的实例；下发状态须为<span className="text-[#525252]">未下发</span>、<span className="text-[#525252]">下发失败</span>或<span className="text-[#525252]">待更新</span>。</p>
+                  <p>将 <span className="font-semibold text-gray-900">{skillName}{skillVersion ? ` (${skillVersion})` : ''}</span> 部署至所选实例。</p>
+                  <p className="mt-1">筛选限制：仅限状态为 <span className="font-medium text-gray-700">运行中</span> 的实例；已下发成功且版本一致的实例会保留展示，但不可重复选择。</p>
                 </>
               )}
             </div>
@@ -401,9 +440,9 @@ export default function BatchDistributeDialog({
         </DialogHeader>
 
         {/* 搜索框 + 应用范围筛选 + 版本筛选 + 状态下拉 */}
-        <div className="flex gap-2 mt-4 mb-3">
+        <div className="flex gap-2 mb-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A3A3A3]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="搜索实例名称/ID..."
               value={searchQuery}
@@ -438,12 +477,12 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setScopeDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
+                    className="flex items-center justify-between gap-1 w-32 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left">
                       {getScopeDisplayText()}
                     </span>
-                    <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${scopeDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[280px]">
@@ -462,16 +501,16 @@ export default function BatchDistributeDialog({
               const showUngrouped = !scopeSearchQuery || '未分组'.includes(scopeSearchQuery);
 
               return (
-              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
+              <div className="absolute left-0 top-full mt-1 w-[220px] bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
                 {/* 搜索框 */}
                 <div className="px-2 pb-1.5 pt-1.5">
                   <div className="relative">
-                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A3A3A3]" />
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     <input
                       placeholder="搜索分组..."
                       value={scopeSearchQuery}
                       onChange={(e) => setScopeSearchQuery(e.target.value)}
-                    className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-[4px] focus:outline-none focus:border-[#1447E6] bg-white"
+                      className="w-full pl-7 pr-2 h-8 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                       onClick={(e) => e.stopPropagation()}
                       autoFocus
                     />
@@ -491,7 +530,7 @@ export default function BatchDistributeDialog({
                       }
                       setCurrentPage(1);
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors border-b border-gray-200"
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors border-b border-gray-100"
                   >
                     <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                       isAllGroupSelected ? 'bg-blue-600 border-blue-600' : isSomeGroupSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -531,7 +570,7 @@ export default function BatchDistributeDialog({
                           });
                           setCurrentPage(1);
                         }}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       >
                         <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                           isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -569,28 +608,28 @@ export default function BatchDistributeDialog({
                         });
                         setCurrentPage(1);
                       }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                         (isAllGroupSelected || hasUngrouped) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
                       }`}>
                         {(isAllGroupSelected || hasUngrouped) && <Check className="w-3 h-3 text-white" />}
                       </div>
-                      <span className="text-[#737373]">未分组</span>
+                      <span className="text-gray-500">未分组</span>
                     </button>
                   )}
                   {filteredGroups.length === 0 && !showUngrouped && scopeSearchQuery && (
-                    <p className="text-xs text-[#A3A3A3] py-3 text-center">没有匹配的分组</p>
+                    <p className="text-xs text-gray-400 py-3 text-center">没有匹配的分组</p>
                   )}
                 </div>
                 {/* 底部统计 + 清除筛选 */}
                 {selectedCount > 0 && !isAllGroupSelected && (
-                  <div className="flex items-center justify-between px-3 py-2 border-t border-gray-200 text-xs">
-                    <span className="text-[#737373]">已选 {selectedCount} 个分组</span>
+                  <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100 text-xs">
+                    <span className="text-gray-500">已选 {selectedCount} 个分组</span>
                     <button
                       type="button"
                       onClick={() => { setScopeFilters([]); setCurrentPage(1); }}
-                      className="text-[#355EF1] hover:text-[#355EF1] font-medium"
+                      className="text-blue-600 hover:text-blue-700 font-medium"
                     >
                       清除筛选
                     </button>
@@ -602,22 +641,18 @@ export default function BatchDistributeDialog({
           </div>
           )}
           {singleStatusFilter ? (
-            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」「待更新」 ── */
+            /* ── MCP 场景：单选下拉，「全部下发状态」「未下发」「下发失败」 ── */
             <Select
               value={
                 statusFilters.length === 0
                   ? '__all__'
                   : statusFilters.length === 1
                     ? statusFilters[0]
-                    : statusFilters.length === 2 && statusFilters.includes('not_distributed') && statusFilters.includes('failed')
-                      ? '__default__'
-                      : '__all__'
+                    : '__all__'
               }
               onValueChange={(value) => {
                 if (value === '__all__') {
                   setStatusFilters([]);
-                } else if (value === '__default__') {
-                  setStatusFilters(['not_distributed', 'failed']);
                 } else {
                   setStatusFilters([value as FilterOption]);
                 }
@@ -629,10 +664,8 @@ export default function BatchDistributeDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">全部下发状态</SelectItem>
-                <SelectItem value="__default__">未下发+下发失败</SelectItem>
                 <SelectItem value="not_distributed">未下发</SelectItem>
                 <SelectItem value="failed">下发失败</SelectItem>
-                <SelectItem value="pending_update">待更新</SelectItem>
               </SelectContent>
             </Select>
           ) : (
@@ -642,10 +675,10 @@ export default function BatchDistributeDialog({
                   <button
                     type="button"
                     onClick={() => setFilterDropdownOpen(prev => !prev)}
-                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-gray-200 rounded-[4px] bg-white text-sm text-[#334155] hover:border-[#1447E6] transition-colors"
+                    className="flex items-center justify-between gap-1 w-36 h-9 px-3 border border-gray-200 rounded-md bg-white text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     <span className="truncate text-left">{getFilterDisplayText()}</span>
-                    <ChevronDown className={`w-4 h-4 text-[#A3A3A3] flex-shrink-0 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${filterDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[280px]">
@@ -653,22 +686,22 @@ export default function BatchDistributeDialog({
                 </TooltipContent>
               </Tooltip>
             {filterDropdownOpen && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-[4px] shadow-lg z-50 py-1">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
                 {/* 全部状态选项 — toggle：点击全选，再次点击取消全部 */}
                 <button
                   type="button"
                   onClick={() => {
-                    setStatusFilters(prev => {
+                    setStatusFilters(() => {
                       if (isAllStatusSelected) {
                         // 当前是全选状态 → 取消所有选中
                         return ['__none__'] as any;
                       }
-                      // 非全选 → 全选（选中所有3项）
+                      // 非全选 → 全选（选中所有状态项）
                       return [];
                     });
                     setCurrentPage(1);
                   }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                     isAllStatusSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -706,7 +739,7 @@ export default function BatchDistributeDialog({
                         });
                         setCurrentPage(1);
                       }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-[#334155] hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                         isOptSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
@@ -724,60 +757,81 @@ export default function BatchDistributeDialog({
         </div>
 
         {/* 实例列表 */}
-        <div className="border border-gray-200 rounded-[4px] max-h-[340px] overflow-y-auto">
-          {/* 全选复选框 — 跨页全选 */}
-          <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-200 bg-[#FAFAFA] sticky top-0 z-10">
-            <Checkbox
-              checked={isAllSelected}
-              // @ts-ignore – indeterminate prop
-              indeterminate={isIndeterminate}
-              onCheckedChange={handleSelectAll}
-            />
-            <span className="text-[13px] font-medium text-[#525252]">
-              全选（{selectedInFilterCount}/{totalCount}）
-            </span>
+        <div className="border border-gray-200 rounded-lg max-h-[340px] overflow-y-auto">
+          {/* 全选复选框 — 当前页全选 */}
+          <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={isPageAllSelected ? true : isPageIndeterminate ? "indeterminate" : false}
+                disabled={pageIds.length === 0}
+                onCheckedChange={handleSelectAll}
+              />
+              <span className="text-sm font-medium text-gray-900">
+                全选
+              </span>
+            </div>
+            {selectedSelectableCount > 0 && (
+              <span className="text-sm text-gray-500">
+                已选 {selectedSelectableCount} 条
+              </span>
+            )}
           </div>
+
+          {allIds.length > pageIds.length && selectedInPageCount > 0 && !isAllFilteredSelected && (
+            <div className="flex items-center justify-center gap-1 px-3 py-2 border-b border-blue-100 bg-blue-50 text-xs text-blue-600">
+              <span>已选择当前页 {selectedInPageCount} 个可选实例。</span>
+              <button type="button" onClick={handleSelectAllFiltered} className="font-medium hover:text-blue-700">
+                选择全部 {allIds.length} 个可选实例
+              </button>
+            </div>
+          )}
+
+          {allIds.length > pageIds.length && selectAllMode && isAllFilteredSelected && (
+            <div className="flex items-center justify-center gap-1 px-3 py-2 border-b border-blue-100 bg-blue-50 text-xs text-blue-600">
+              <span>已选择全部 {allIds.length} 个可选实例。</span>
+              <button type="button" onClick={handleDeselectAll} className="font-medium hover:text-blue-700">
+                取消选择
+              </button>
+            </div>
+          )}
 
           {/* 实例项 */}
           {pagedInstances.length === 0 ? (
-            <div className="flex items-center justify-center py-10 text-[13px] text-[#a3a3a3]">
+            <div className="flex items-center justify-center py-8 text-sm text-gray-400">
               暂无匹配的实例
             </div>
           ) : (
-            pagedInstances.map(instance => (
+            pagedInstances.map(instance => {
+              const selectable = isInstanceSelectable(instance);
+              const disabledTextClass = selectable ? '' : 'text-gray-400';
+
+              return (
               <div
                 key={instance.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSelectInstance(instance.id)}
-                onKeyDown={(e) => {
-                  if (e.key === ' ' || e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSelectInstance(instance.id);
-                  }
-                }}
-                className="flex items-center gap-3 px-4 py-3 border-b border-[#F5F5F5] last:border-b-0 hover:bg-[#FAFAFA] transition-colors cursor-pointer select-none"
+                title={selectable ? undefined : '已下发当前版本，不可重复选择'}
+                className={`flex items-center gap-3 px-3 py-3 border-b border-gray-100 last:border-b-0 transition-colors ${selectable ? 'hover:bg-gray-50' : 'bg-gray-50 opacity-50 cursor-not-allowed hover:bg-gray-50'}`}
               >
-                <div className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                <div className="flex-shrink-0">
                   <Checkbox
-                    checked={selectedInstances.includes(instance.id)}
-                    onCheckedChange={() => handleSelectInstance(instance.id)}
+                    checked={selectable && selectedInstances.includes(instance.id)}
+                    disabled={!selectable}
+                    onCheckedChange={() => handleSelectInstance(instance)}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-medium text-[#020617] truncate">{instance.name}</span>
-                    <span className="text-[12px] text-[#a3a3a3] font-mono flex-shrink-0">{instance.id}</span>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm font-medium truncate ${selectable ? 'text-gray-900' : 'text-gray-400'}`}>{instance.name}</span>
+                    <span className="text-xs text-gray-400 font-mono flex-shrink-0">{instance.id}</span>
                   </div>
                   {/* Agent 类型和版本信息 — MCP 场景显示 */}
                   {showVersionFilter && instance.agentType && (
-                    <div className="text-[11px] text-[#a3a3a3] mt-0.5">
+                    <div className="text-xs text-gray-400 mt-0.5">
                       {instance.agentType}{instance.agentVersion ? `(${instance.agentVersion})` : ''}
                     </div>
                   )}
                   {!hideCreatorAndGroup && (
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[12px] text-[#737373]">创建人：{instance.createdBy}</span>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className={`text-xs ${selectable ? 'text-gray-500' : disabledTextClass}`}>创建人：{instance.createdBy}</span>
                     {(() => {
                       const groupText = instance.groupIds && instance.groupIds.length > 0
                         ? instance.groupIds.filter(gId => gId !== '__public__').map(gId => getGroupName(gId)).join('、')
@@ -786,7 +840,7 @@ export default function BatchDistributeDialog({
                       return (
                         <Tooltip delayDuration={300}>
                           <TooltipTrigger asChild>
-                            <span className="text-xs text-[#737373] max-w-[180px] truncate inline-block align-bottom cursor-default">
+                            <span className={`text-xs ${selectable ? 'text-gray-500' : disabledTextClass} max-w-[180px] truncate inline-block align-bottom cursor-default`}>
                               分组：{displayText}
                             </span>
                           </TooltipTrigger>
@@ -805,42 +859,63 @@ export default function BatchDistributeDialog({
                   {getStatusDisplay(instance)}
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
 
         {/* 分页控件 */}
-        <div className="pt-2">
-          <Pagination
-            total={totalCount}
-            current={safeCurrentPage}
-            pageSize={pageSize}
-            showSizeChanger
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-            showTotal={(total) => `共 ${total} 条`}
-            size="default"
-            className="w-full justify-between"
-            onChange={(page, size) => {
-              if (size !== pageSize) {
-                setPageSize(size);
-                setCurrentPage(1);
-              } else {
-                setCurrentPage(page);
-              }
-            }}
-          />
+        <div className="flex items-center justify-between text-sm text-gray-500 pt-1">
+          <div className="flex items-center gap-1.5">
+            <span>共 {totalCount} 条，每页</span>
+            <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setCurrentPage(1); }}>
+
+              <SelectTrigger className="w-16 h-7 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map(size => (
+                  <SelectItem key={size} value={String(size)}>{size}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <span>条</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              disabled={safeCurrentPage <= 1}
+              onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); }}
+
+            >
+              上一页
+            </Button>
+            <span className="px-2 text-gray-600">{safeCurrentPage} / {totalPages}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              disabled={safeCurrentPage >= totalPages}
+              onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); }}
+
+            >
+              下一页
+            </Button>
+          </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 !pt-4 !pb-4 border-t border-gray-200 mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="claw-outline" onClick={() => onOpenChange(false)}>
             取消
           </Button>
           <Button
             variant="dialog-confirm"
             onClick={handleDistribute}
-            disabled={selectedInstances.length === 0}
+            disabled={selectedSelectableCount === 0}
           >
-            确认下发（{selectedInstances.length}）
+            确认下发（{selectedSelectableCount}）
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -848,16 +923,7 @@ export default function BatchDistributeDialog({
 
     {/* 二次确认弹窗 */}
     <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-      <AlertDialogContent className="sm:max-w-[420px]">
-        <button
-          type="button"
-          aria-label="关闭"
-          onClick={() => setConfirmDialogOpen(false)}
-          className="absolute top-5 right-5 flex items-center justify-center size-5 rounded-sm text-[#737373] transition-colors hover:text-[#0A0A0A] focus:outline-none"
-        >
-          <X className="size-5" />
-          <span className="sr-only">关闭</span>
-        </button>
+      <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-amber-500" />
@@ -865,13 +931,13 @@ export default function BatchDistributeDialog({
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-4">
-              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
                 <p className="text-sm text-amber-700 leading-relaxed">
                   配置 MCP 会修改 <code className="px-1 py-0.5 bg-amber-100/60 rounded text-xs font-mono">~/.openclaw/openclaw.json</code> 文件中的 <code className="px-1 py-0.5 bg-amber-100/60 rounded text-xs font-mono">mcp.servers</code> 相关配置，修改后需重启 gateway 生效，将会导致实例短暂不可用，可能影响正在运行的任务。
                 </p>
               </div>
               <div>
-                <p className="text-sm text-[#737373] mb-2">请输入<span className="font-semibold text-[#0A0A0A]">「确认下发」</span>后开始执行。</p>
+                <p className="text-sm text-gray-600 mb-2">请输入<span className="font-semibold text-gray-900">「确认下发」</span>后开始执行。</p>
                 <Input
                   value={confirmInput}
                   onChange={(e) => setConfirmInput(e.target.value)}

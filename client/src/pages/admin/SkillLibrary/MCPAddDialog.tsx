@@ -8,19 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogBody,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { Eye, Code, ChevronDown, ChevronRight, Globe, Terminal, AlignLeft, Sparkles, CircleAlert } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { cn } from '@/lib/utils';
-
+import { Eye, Code, ChevronDown, ChevronRight, Globe, Terminal, AlignLeft, Sparkles, Plus, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { AnimatePresence, motion } from 'framer-motion';
 import MDXRenderer from '@/components/MDXRenderer';
 import {
@@ -33,6 +28,7 @@ import {
   type MCPTransportType,
   type MCPConnectionCategory,
   type MCPService,
+  type MCPCredentialField,
   MCP_CONNECTION_CATEGORY_MAP,
   MCP_REMOTE_PROTOCOL_MAP,
   MCP_TRANSPORT_MAP,
@@ -113,7 +109,7 @@ const CONFIG_REFERENCE: Record<MCPTransportType, string> = {
   'streamable-http': `| 字段 | 必填 | 说明 |
 |------|------|------|
 | \`transport\` | ✅ | 固定值 \`"streamable-http"\` |
-| \`url\` | ✅ | 必须以 http 或 https 开头（常见以 \`/mcp\` 结尾） |
+| \`url\` | ✅ | 必须以 http 或 https 开头（常见以 \`/mcp\` 结尾）。<br/>支持将凭据注入 Query 参数拼接到 URL 中，格式示例：\`http://mcp.cn?key1=<>&key2=<>\`，其中参数名（如 key1）需按 MCP 服务要求命名 |
 | \`headers\` | — | 如 MCP Server 要求 Token 认证，在此填写；否则可删除 |
 | \`security_zone\` | — | 如 MCP 部署在 DevCloud，填写 \`"devnet"\` |
 | \`timeout\` | — | 超时时间，单位秒，默认 60 |
@@ -129,7 +125,6 @@ const CONFIG_REFERENCE: Record<MCPTransportType, string> = {
 };
 
 // ── 连接方式对应的 server 内部 JSON 模板（不含 server key） ──────
-// 用户只编辑 server 对象的内部字段，外层 { "mcp": { "servers": { "{name}": { ... } } } } 由系统固化
 const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
   sse: [
     `"transport": "sse",`,
@@ -162,20 +157,16 @@ const SERVER_VALUE_TEMPLATES: Record<MCPTransportType, string> = {
 /** 整理缩进：移除所有行的最小公共前导空白，清理尾部空行 */
 function trimCommonIndent(text: string): string {
   const lines = text.replace(/\t/g, '    ').split('\n');
-  // 过滤出非空行，计算最小缩进
   const nonEmptyLines = lines.filter(l => l.trim().length > 0);
   if (nonEmptyLines.length === 0) return text;
   const minIndent = Math.min(...nonEmptyLines.map(l => l.match(/^(\s*)/)?.[1].length ?? 0));
   if (minIndent === 0) return text;
-  // 移除每行的公共缩进
   const trimmed = lines.map(l => (l.trim().length > 0 ? l.slice(minIndent) : '')).join('\n');
-  // 移除尾部多余空行
   return trimmed.replace(/\n+$/, '');
 }
 
 /** 将用户编辑的 server 内部内容组装成完整 JSON 字符串 */
 function assembleFullJson(serverName: string, serverValueContent: string): string {
-  // 给用户输入的每一行加上 8 个空格的缩进（第四层在完整 JSON 中的位置，每层 2 空格）
   const indentedLines = serverValueContent
     .split('\n')
     .map(line => (line.trim() ? `        ${line}` : ''))
@@ -184,29 +175,27 @@ function assembleFullJson(serverName: string, serverValueContent: string): strin
   return `{\n  "mcp": {\n    "servers": {\n      ${escapedName}: {\n${indentedLines}\n      }\n    }\n  }\n}`;
 }
 
-/** 从完整 JSON 中提取指定 server 的内部内容（不含 key 和外层花括号） */
-function extractServerValue(fullJson: string, serverName: string): string {
-  try {
-    const parsed = JSON.parse(fullJson);
-    const server = parsed?.mcp?.servers?.[serverName];
-    if (!server || typeof server !== 'object') return '';
-    const inner = JSON.stringify(server, null, 2);
-    const lines = inner.split('\n');
-    if (lines.length <= 2) return '';
-    return lines.slice(1, -1).map(l => l.replace(/^  /, '')).join('\n');
-  } catch {
-    return '';
+/**
+ * 从服务配置文本中提取 headers 里所有含占位符 <...> 的字段
+ * 返回 { headerKey, placeholder } 数组，支持多行 headers
+ */
+function extractCredentialPlaceholders(serverValueContent: string): Array<{ headerKey: string; placeholder: string }> {
+  const results: Array<{ headerKey: string; placeholder: string }> = [];
+  const lineRegex = /"([^"]+)"\s*:\s*"([^"]*<([^>]+)>[^"]*)"/g;
+  let m: RegExpExecArray | null;
+  while ((m = lineRegex.exec(serverValueContent)) !== null) {
+    results.push({ headerKey: m[1], placeholder: m[3] });
   }
+  return results;
 }
 
-/** name 格式校验：仅允许英文字母、数字、连字符，1-64 字符（参考 MCP 规范 SEP-986） */
+/** name 格式校验 */
 const NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,63}$/;
 
 interface MCPAddDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (mcp: MCPService) => void;
-  /** 已存在的 MCP 名称列表，用于名称去重校验 */
   existingNames?: string[];
 }
 
@@ -216,7 +205,8 @@ interface FormErrors {
   connectionCategory?: string;
   transport?: string;
   configJson?: string;
-  token?: string;
+  /** 凭据字段校验错误，以 headerKey 为 key */
+  credentialFields?: Record<string, string>;
 }
 
 export default function MCPAddDialog({
@@ -229,11 +219,8 @@ export default function MCPAddDialog({
   const [name, setName] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [description, setDescription] = useState('');
-  /** 连接类别：远程服务 / 本地命令 */
   const [connectionCategory, setConnectionCategory] = useState<MCPConnectionCategory | ''>('');
-  /** 远程服务的协议子类型（仅在 connectionCategory === 'remote' 时使用） */
   const [remoteProtocol, setRemoteProtocol] = useState<'streamable-http' | 'sse'>('streamable-http');
-  // 用户只编辑 server 对象的内部字段
   const [serverValueContent, setServerValueContent] = useState('');
   const [configRefExpanded, setConfigRefExpanded] = useState(false);
   const [usageDoc, setUsageDoc] = useState('');
@@ -241,15 +228,15 @@ export default function MCPAddDialog({
   const [usageViewMode, setUsageViewMode] = useState<'edit' | 'preview'>('edit');
   const [toolViewMode, setToolViewMode] = useState<'edit' | 'preview'>('edit');
   const [errors, setErrors] = useState<FormErrors>({});
-  const [tokenValidating, setTokenValidating] = useState(false);
-  /** 凭据托管开关 */
   const [credentialHostingEnabled, setCredentialHostingEnabled] = useState(false);
-  /** IP 白名单列表 */
+  /** 凭据托管全局模式：'hosted' = 填写真实凭据；'placeholder' = 保留占位符 */
+  const [credentialMode, setCredentialMode] = useState<'hosted' | 'placeholder'>('hosted');
   const [ipWhitelist, setIpWhitelist] = useState<string[]>(['']);
-  /** 凭据 Token */
-  const [credentialToken, setCredentialToken] = useState('');
+  /** 凭据字段列表，随 headers 动态更新，只存 headerKey + value */
+  const [credentialFields, setCredentialFields] = useState<MCPCredentialField[]>([]);
+  /** 正在校验的字段 headerKey */
+  const [validatingKey, setValidatingKey] = useState<string | null>(null);
 
-  /** 当前实际的 transportType（由 connectionCategory + remoteProtocol 派生） */
   const effectiveTransportType: MCPTransportType | '' =
     connectionCategory === 'local'
       ? 'stdio'
@@ -257,10 +244,8 @@ export default function MCPAddDialog({
         ? remoteProtocol
         : '';
 
-  /** 用于判断用户编辑区是否仍是模板（未改动时可自动替换） */
   const allTemplateValues = Object.values(SERVER_VALUE_TEMPLATES);
 
-  // 重置表单
   const resetForm = useCallback(() => {
     setStep(1);
     setName('');
@@ -276,9 +261,10 @@ export default function MCPAddDialog({
     setToolViewMode('edit');
     setErrors({});
     setCredentialHostingEnabled(false);
+    setCredentialMode('hosted');
     setIpWhitelist(['']);
-    setCredentialToken('');
-    setTokenValidating(false);
+    setCredentialFields([]);
+    setValidatingKey(null);
   }, []);
 
   useEffect(() => {
@@ -290,47 +276,56 @@ export default function MCPAddDialog({
     }
   }, [open, resetForm]);
 
-  /** 根据凭据托管开关状态返回对应的远程服务模板（开启后去掉 Authorization 行） */
-  const getRemoteTemplate = (protocol: 'streamable-http' | 'sse', hosting: boolean): string => {
-    if (!hosting) return SERVER_VALUE_TEMPLATES[protocol];
-    return [
-      `"transportType": "${protocol}",`,
-      `"url": "MCP服务的URL",`,
-      `"timeout": 60`,
-    ].join('\n');
-  };
+  /**
+   * 根据最新的 serverValueContent 同步更新 credentialFields：
+   * - 新增 header key → 追加一条默认 placeholder 配置
+   * - 删除 header key → 移除对应配置
+   * - 已有 key 保持不变（不覆盖用户已设置的 mode/value）
+   */
+  const syncCredentialFields = useCallback((content: string, fields: MCPCredentialField[]): MCPCredentialField[] => {
+    const placeholders = extractCredentialPlaceholders(content);
+    const updated: MCPCredentialField[] = placeholders.map(({ headerKey }) => {
+      const existing = fields.find(f => f.headerKey === headerKey);
+      return existing ?? { headerKey };
+    });
+    return updated;
+  }, []);
 
-  // 切换连接类别
+  // 当 serverValueContent 变化时，同步凭据字段列表
+  useEffect(() => {
+    if (credentialHostingEnabled) {
+      setCredentialFields(prev => syncCredentialFields(serverValueContent, prev));
+    }
+  }, [serverValueContent, credentialHostingEnabled, syncCredentialFields]);
+
   const handleCategoryChange = (category: MCPConnectionCategory) => {
     setConnectionCategory(category);
     if (category === 'local') {
-      // 本地命令 → 直接填充 stdio 模板
       if (!serverValueContent || allTemplateValues.includes(serverValueContent)) {
         setServerValueContent(SERVER_VALUE_TEMPLATES.stdio);
       }
     } else if (category === 'remote') {
-      // 远程服务 → 填充当前选中的协议模板
       if (!serverValueContent || allTemplateValues.includes(serverValueContent)) {
-        setServerValueContent(getRemoteTemplate(remoteProtocol, credentialHostingEnabled));
+        setServerValueContent(SERVER_VALUE_TEMPLATES[remoteProtocol]);
       }
     }
     setConfigRefExpanded(false);
   };
 
-  // 切换远程协议子类型
   const handleRemoteProtocolChange = (protocol: 'streamable-http' | 'sse') => {
     setRemoteProtocol(protocol);
     if (!serverValueContent || allTemplateValues.includes(serverValueContent)) {
-      setServerValueContent(getRemoteTemplate(protocol, credentialHostingEnabled));
+      setServerValueContent(SERVER_VALUE_TEMPLATES[protocol]);
     }
   };
 
-  // 切换凭据托管开关
   const handleCredentialHostingChange = (enabled: boolean) => {
     setCredentialHostingEnabled(enabled);
-    // 如果当前是远程服务且配置区是模板，同步更新模板（加渏或去掉 Authorization）
-    if (connectionCategory === 'remote' && (!serverValueContent || allTemplateValues.includes(serverValueContent))) {
-      setServerValueContent(getRemoteTemplate(remoteProtocol, enabled));
+    if (enabled) {
+      // 开启时立即从当前配置提取凭据字段
+      setCredentialFields(prev => syncCredentialFields(serverValueContent, prev));
+    } else {
+      setCredentialFields([]);
     }
   };
 
@@ -338,7 +333,6 @@ export default function MCPAddDialog({
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // name 校验
     if (!name.trim()) {
       newErrors.name = '请输入服务标识';
     } else if (!NAME_PATTERN.test(name.trim())) {
@@ -347,12 +341,10 @@ export default function MCPAddDialog({
       newErrors.name = '该标识已存在，请使用其他名称';
     }
 
-    // 连接类别校验
     if (!connectionCategory) {
       newErrors.connectionCategory = '请选择连接方式';
     }
 
-    // JSON 校验
     const transport = effectiveTransportType;
     if (!serverValueContent.trim()) {
       newErrors.configJson = '请填写服务配置';
@@ -365,13 +357,11 @@ export default function MCPAddDialog({
         if (!server || typeof server !== 'object') {
           newErrors.configJson = '配置格式错误，请检查 JSON 语法';
         } else {
-          // transport 匹配校验
           if (!newErrors.configJson && transport) {
             if (server.transport && server.transport !== transport) {
               newErrors.configJson = `transport 与连接方式不一致（期望 "${transport}"，实际 "${server.transport}"）`;
             }
           }
-          // URL / command 校验
           if (!newErrors.configJson && transport) {
             if (transport === 'sse' || transport === 'streamable-http') {
               if (!server.url || (typeof server.url === 'string' && !/^https?:\/\//.test(server.url) && server.url !== 'MCP服务的URL')) {
@@ -394,29 +384,36 @@ export default function MCPAddDialog({
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep1 = (): boolean => validate();
-
-  /** Mock 校验 Token 有效性：模拟异步请求，以 "invalid" 开头的 token 判定为无效 */
-  const mockValidateToken = async (token: string): Promise<boolean> => {
+  /** Mock 校验凭据有效性：以 "invalid" 开头的值判定为无效 */
+  const mockValidateCredential = async (value: string): Promise<boolean> => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(!token.toLowerCase().startsWith('invalid'));
+        resolve(!value.toLowerCase().startsWith('invalid'));
       }, 800);
     });
   };
 
   const handleNext = async () => {
-    if (!validateStep1()) return;
-    // 开启凭据托管且填写了 Token 时，需要校验 Token 有效性
-    if (credentialHostingEnabled && credentialToken.trim()) {
-      setTokenValidating(true);
-      const isValid = await mockValidateToken(credentialToken.trim());
-      setTokenValidating(false);
-      if (!isValid) {
-        setErrors(prev => ({ ...prev, token: 'Token 无效，请检查后重新填写' }));
-        return;
+    if (!validate()) return;
+
+    // 开启凭据托管且选择「填写真实凭据」时，校验所有填写了内容的字段
+    if (credentialHostingEnabled && credentialMode === 'hosted') {
+      for (const field of credentialFields) {
+        if (field.value?.trim()) {
+          setValidatingKey(field.headerKey);
+          const isValid = await mockValidateCredential(field.value.trim());
+          setValidatingKey(null);
+          if (!isValid) {
+            setErrors(prev => ({
+              ...prev,
+              credentialFields: { ...(prev.credentialFields ?? {}), [field.headerKey]: `${field.headerKey} 凭据无效，请检查后重新填写` },
+            }));
+            return;
+          }
+        }
       }
     }
+
     setStep(2);
   };
 
@@ -436,8 +433,9 @@ export default function MCPAddDialog({
       usageDoc: usageDoc.trim() || undefined,
       toolDoc: toolDoc.trim() || undefined,
       credentialHostingEnabled,
+      credentialMode: credentialHostingEnabled ? credentialMode : undefined,
       ipWhitelist: credentialHostingEnabled ? ipWhitelist.filter(ip => ip.trim()) : undefined,
-      token: credentialHostingEnabled && credentialToken.trim() ? credentialToken.trim() : undefined,
+      credentialFields: credentialHostingEnabled && credentialMode === 'hosted' ? credentialFields : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -447,44 +445,36 @@ export default function MCPAddDialog({
     onOpenChange(false);
   };
 
-  /** 显示用的 name，用于固化行展示 */
   const displayServerName = name.trim() && NAME_PATTERN.test(name.trim()) ? name.trim() : 'your-server-name';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-[720px]"
-        style={{ maxHeight: 'min(90vh, 780px)', display: 'flex', flexDirection: 'column' }}
+        className="sm:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0"
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
+        <DialogHeader className="px-6 pt-6 pb-0">
           <DialogTitle>新增 MCP 服务</DialogTitle>
         </DialogHeader>
 
-        {/* ── 步骤指示器（居中） ──────────────────────────── */}
-        <div className="flex justify-center mb-2">
+        {/* ── 步骤指示器 ──────────────────────────── */}
+        <div className="flex justify-center mb-2 px-6">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                step === 1
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-blue-100 text-blue-600'
+                step === 1 ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
               }`}>1</span>
               <span className={`text-sm ${step === 1 ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>基本信息</span>
             </div>
             <div className="w-16 h-px bg-gray-200" />
             <div className="flex items-center gap-2">
               <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                step === 2
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-400'
+                step === 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-400'
               }`}>2</span>
               <span className={`text-sm ${step === 2 ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>文档说明</span>
             </div>
           </div>
         </div>
-
-        <DialogBody className="flex-1">
 
         {/* ── 第一步：基本信息 + 服务配置 ────────── */}
         <AnimatePresence mode="wait">
@@ -495,22 +485,22 @@ export default function MCPAddDialog({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="space-y-4"
+            className="flex flex-col min-h-0 flex-1"
           >
-            <div className="space-y-4">
-              {/* 用户自填字段提示 */}
-              <Alert variant="warning">
-                <CircleAlert />
-                <AlertDescription>
+            <div className="flex-1 overflow-y-auto space-y-5 px-6">
+              {/* 提示 */}
+              <div className="flex items-start gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                <span className="text-gray-400 text-sm mt-0.5 shrink-0">💡</span>
+                <p className="text-xs text-gray-500 leading-relaxed">
                   用户可在租户端自选配此 MCP，请注意敏感数据泄露风险。
-                </AlertDescription>
-              </Alert>
+                </p>
+              </div>
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-[#0A0A0A]">基本信息</h3>
+                <Label className="text-base font-semibold">基本信息</Label>
 
-                {/* 服务标识 (name) — 唯一 key */}
+                {/* 服务标识 */}
                 <div>
-                  <Label htmlFor="mcp-name" className="text-xs font-medium text-[#525252]">
+                  <Label htmlFor="mcp-name" className="text-sm">
                     服务标识 <span className="text-red-500">*</span>
                   </Label>
                   <p className="text-xs text-gray-400 mt-0.5 mb-1">
@@ -521,7 +511,7 @@ export default function MCPAddDialog({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g., weather-mcp"
-                    className="mt-1 font-mono text-sm rounded-[4px] border-gray-200 bg-white"
+                    className="mt-1 font-mono text-sm"
                   />
                   {errors.name ? (
                     <p className="text-xs text-red-500 mt-1">{errors.name}</p>
@@ -530,11 +520,9 @@ export default function MCPAddDialog({
                   )}
                 </div>
 
-                {/* 名称 (displayName) */}
+                {/* 名称 */}
                 <div>
-                  <Label htmlFor="mcp-display-name" className="text-xs font-medium text-[#525252]">
-                    名称
-                  </Label>
+                  <Label htmlFor="mcp-display-name" className="text-sm">名称</Label>
                   <p className="text-xs text-gray-400 mt-0.5 mb-1">
                     可选的显示名称，不填则默认与服务标识一致
                   </p>
@@ -543,96 +531,28 @@ export default function MCPAddDialog({
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="e.g., 天气 MCP 服务"
-                    className="mt-1 rounded-[4px] border-gray-200 bg-white"
+                    className="mt-1"
                   />
                 </div>
 
                 {/* 描述 */}
                 <div>
-                  <Label htmlFor="mcp-desc" className="text-xs font-medium text-[#525252]">描述</Label>
+                  <Label htmlFor="mcp-desc" className="text-sm">描述</Label>
                   <Textarea
                     id="mcp-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="MCP 服务的简要说明"
-                    className="mt-1 resize-none rounded-[4px] border-gray-200 bg-white"
+                    className="mt-1 resize-none"
                     rows={2}
                   />
                 </div>
 
-                {/* 凭据托管 */}
-                <div className="space-y-3 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm font-medium">凭据托管</Label>
-                      <p className="text-xs text-gray-400 mt-0.5">开启后，平台将托管该 MCP 服务的访问凭据，用户端无需再填写凭据</p>
-                    </div>
-                    <Switch
-                      checked={credentialHostingEnabled}
-                      onCheckedChange={handleCredentialHostingChange}
-                    />
-                  </div>
-                  {credentialHostingEnabled && (
-                    <div className="space-y-2 pt-1">
-                      <Label className="text-sm">Token</Label>
-                      <Input
-                        value={credentialToken}
-                        onChange={(e) => {
-                          setCredentialToken(e.target.value);
-                          if (errors.token) setErrors(prev => ({ ...prev, token: undefined }));
-                        }}
-                        placeholder="请输入访问凭据 Token"
-                        className={`font-mono text-sm mt-1 ${errors.token ? 'border-red-400 focus-visible:ring-red-400' : ''}`}
-                      />
-                      {errors.token ? (
-                        <p className="text-xs text-red-500 mt-1">{errors.token}</p>
-                      ) : (
-                        <p className="text-xs text-gray-400 mt-1">注意：此处必须填写真实有效的 Token，填写错误将导致调用失败，不填写则代表调用该MCP无需认证</p>
-                      )}
-                      <Label className="text-sm mt-3 block">IP 白名单</Label>
-                      <p className="text-xs text-gray-400">仅允许以下 IP 地址访问该 MCP 服务，支持单个 IP 或 CIDR 格式，不填写则所有 IP 均可访问</p>
-                      <div className="space-y-2">
-                        {ipWhitelist.map((ip, idx) => (
-                          <div key={idx} className="flex items-center gap-2">
-                            <Input
-                              value={ip}
-                              onChange={(e) => {
-                                const next = [...ipWhitelist];
-                                next[idx] = e.target.value;
-                                setIpWhitelist(next);
-                              }}
-                              placeholder="e.g., 192.168.1.100 或 10.0.0.0/8"
-                              className="font-mono text-sm"
-                            />
-                            {ipWhitelist.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() => setIpWhitelist(ipWhitelist.filter((_, i) => i !== idx))}
-                                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => setIpWhitelist([...ipWhitelist, ''])}
-                          className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 transition-colors mt-1"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          添加 IP
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {/* 连接方式 — 两级 Radio */}
+                {/* 连接方式 */}
                 <div>
-                  <Label className="text-xs font-medium text-[#525252]">
+                  <Label className="text-sm">
                     连接方式 <span className="text-red-500">*</span>
                   </Label>
-                  {/* 第一级：远程服务 / 本地命令 */}
                   <div className="flex gap-3 mt-2">
                     {(Object.keys(MCP_CONNECTION_CATEGORY_MAP) as MCPConnectionCategory[]).map((cat) => {
                       const isSelected = connectionCategory === cat;
@@ -642,21 +562,20 @@ export default function MCPAddDialog({
                           key={cat}
                           type="button"
                           onClick={() => handleCategoryChange(cat)}
-                          className={cn(
-                            "flex-1 flex items-start gap-2.5 rounded-[4px] border px-3 py-3 transition-colors text-left",
-                            "border-gray-200 bg-white",
-                            !isSelected && "hover:border-[#1447E6]/40 cursor-pointer",
-                            isSelected && "border-[#1447E6] bg-[#1447E6]/5",
-                          )}
+                          className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border-2 transition-all ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50/60'
+                              : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                          }`}
                         >
-                          <IconComp className={cn("w-4 h-4 mt-0.5 shrink-0", isSelected ? "text-[#1447E6]" : "text-[#A3A3A3]")} />
-                          <div className="flex-1 min-w-0">
-                            <div className={cn("text-sm font-medium leading-snug", isSelected ? "text-[#0A0A0A]" : "text-[#0A0A0A]")}>
+                          <IconComp className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
+                          <div className="text-left">
+                            <div className={`text-sm font-medium ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
                               {MCP_CONNECTION_CATEGORY_MAP[cat].label}
                             </div>
-                            <p className="text-xs text-[#737373] leading-relaxed mt-0.5">
+                            <div className="text-xs text-gray-400 mt-0.5">
                               {MCP_CONNECTION_CATEGORY_MAP[cat].description}
-                            </p>
+                            </div>
                           </div>
                         </button>
                       );
@@ -666,7 +585,7 @@ export default function MCPAddDialog({
                     <p className="text-xs text-red-500 mt-1">{errors.connectionCategory}</p>
                   )}
 
-                  {/* 第二级：远程服务的协议子选项 */}
+                  {/* 远程协议子选项 */}
                   <AnimatePresence>
                   {connectionCategory === 'remote' && (
                     <motion.div
@@ -677,7 +596,7 @@ export default function MCPAddDialog({
                       className="overflow-hidden"
                     >
                     <div className="mt-3 ml-1">
-                      <Label className="text-xs font-medium text-[#525252] mb-1.5 block">传输协议</Label>
+                      <Label className="text-xs text-gray-500 mb-1.5 block">传输协议</Label>
                       <div className="flex gap-2">
                         {(Object.keys(MCP_REMOTE_PROTOCOL_MAP) as ('streamable-http' | 'sse')[]).map((proto) => {
                           const isSelected = remoteProtocol === proto;
@@ -687,7 +606,7 @@ export default function MCPAddDialog({
                               key={proto}
                               type="button"
                               onClick={() => handleRemoteProtocolChange(proto)}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all text-sm ${
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border transition-all text-sm ${
                                 isSelected
                                   ? 'border-blue-500 bg-blue-50/60 text-blue-700 font-medium'
                                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
@@ -727,16 +646,16 @@ export default function MCPAddDialog({
                 className="overflow-hidden"
               >
               <div className="space-y-2 border-t border-gray-200 pt-4">
-                <h3 className="text-sm font-medium text-[#0A0A0A]">
+                <Label className="text-base font-semibold">
                   服务配置 <span className="text-red-500">*</span>
-                </h3>
+                </Label>
                 <p className="text-xs text-gray-500 mb-1">
                   外层结构 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">mcp.servers.{displayServerName}</code> 已固定，仅需编辑服务器字段内容；可用 <code className="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">&lt;&gt;</code> 框住需用户填写的内容。
                 </p>
 
                 {/* 可折叠的配置参考 */}
                 {effectiveTransportType && (
-                  <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setConfigRefExpanded(!configRefExpanded)}
@@ -759,18 +678,15 @@ export default function MCPAddDialog({
                   </div>
                 )}
 
-                {/* 固化外层 + 可编辑 server 内部字段 的编辑器 */}
-                <div className="border border-gray-200 rounded-xl overflow-hidden font-mono text-xs">
-                  {/* 固定前缀行（不可编辑）— 4 层深度，2 空格缩进 */}
-                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-200 select-none leading-relaxed text-xs whitespace-pre">
+                {/* 固化外层 + 可编辑 server 内部字段 */}
+                <div className="border border-gray-200 rounded-lg overflow-hidden font-mono text-xs">
+                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-b border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'{'}</div>
                     <div>{'  "mcp": {'}</div>
                     <div>{'    "servers": {'}</div>
                     <div>{'      '}<span className="text-gray-500">{`"${displayServerName}"`}</span>{': {'}</div>
                   </div>
-                  {/* 可编辑区域（第四层内容） */}
                   <div className="relative">
-                    {/* 整理缩进按钮 — 悬浮在编辑区右上角 */}
                     <TooltipProvider delayDuration={300}>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -797,8 +713,7 @@ export default function MCPAddDialog({
                       style={{ paddingLeft: 'calc(0.75rem + 8ch)', fontSize: '12px' }}
                     />
                   </div>
-                  {/* 固定后缀行（不可编辑） */}
-                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-gray-200 select-none leading-relaxed text-xs whitespace-pre">
+                  <div className="bg-gray-50 text-gray-400 px-3 py-1.5 border-t border-gray-100 select-none leading-relaxed text-xs whitespace-pre">
                     <div>{'      }'}</div>
                     <div>{'    }'}</div>
                     <div>{'  }'}</div>
@@ -808,50 +723,218 @@ export default function MCPAddDialog({
                 {errors.configJson && (
                   <p className="text-xs text-red-500 mt-1">{errors.configJson}</p>
                 )}
-                {/* 展示配置中检测到的需用户填写字段 */}
-                {(() => {
+
+                {/* 需填写字段展示（凭据托管开启时隐藏） */}
+                {!credentialHostingEnabled && (() => {
                   const matches = serverValueContent.match(/<([^>]+)>/g);
-                  // 从配置文本中提取包含占位符的 JSON key 名称
                   const extractFieldKeys = (content: string, placeholders: string[]): string[] => {
                     const keys: string[] = [];
                     placeholders.forEach(ph => {
-                      // 匹配 "KeyName": "...<placeholder>..." 或 "KeyName": "<placeholder>" 模式
                       const keyMatch = content.match(new RegExp(`"([^"]+)"\\s*:\\s*"[^"]*${ph.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^"]*"`));
-                      if (keyMatch) {
-                        keys.push(keyMatch[1]);
-                      }
+                      if (keyMatch) keys.push(keyMatch[1]);
                     });
-                    return [...new Set(keys)];
+                    return Array.from(new Set(keys));
                   };
-                  const placeholders = matches ? [...new Set(matches)] : [];
+                  const placeholders = matches ?? [];
                   const fieldKeys = placeholders.length > 0 ? extractFieldKeys(serverValueContent, placeholders) : [];
                   return (
-                    <Alert variant="info" className="mt-2 mb-3">
-                      <Sparkles />
-                      <AlertDescription>
-                        <span className="inline-flex items-center gap-1.5 flex-wrap">
-                          <span>需填写字段：</span>
-                          {fieldKeys.length > 0 ? (
-                            fieldKeys.map((f, i) => (
-                              <span key={f} className="inline-flex items-center">
-                                {i > 0 && <span className="mx-0.5 text-[#94A3B8]">、</span>}
-                                <span className="px-2 py-0.5 bg-[#DBEAFE] text-[#1447E6] rounded-full font-medium text-xs">{f}</span>
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-[#94A3B8]">无</span>
-                          )}
-                        </span>
-                      </AlertDescription>
-                    </Alert>
+                    <div className="flex items-center gap-2 mt-2 mb-1 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+                      <Sparkles className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <div className="text-xs text-blue-700 leading-relaxed flex items-center gap-1.5 flex-wrap">
+                        <span>需填写字段：</span>
+                        {fieldKeys.length > 0 ? (
+                          fieldKeys.map((f, i) => (
+                            <span key={f} className="inline-flex items-center">
+                              {i > 0 && <span className="mx-0.5 text-blue-300">、</span>}
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium text-xs">{f}</span>
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-blue-400">无</span>
+                        )}
+                      </div>
+                    </div>
                   );
                 })()}
+
               </div>
               </motion.div>
               )}
               </AnimatePresence>
-            </div>
 
+              {/* ── 凭据托管开关（始终显示，不随服务配置折叠） ──────────── */}
+              <div className="space-y-3 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">凭据托管</Label>
+                    <p className="text-xs text-gray-400 mt-0.5">开启后，平台将托管该 MCP 服务的访问凭据</p>
+                  </div>
+                  <Switch
+                    checked={credentialHostingEnabled}
+                    onCheckedChange={handleCredentialHostingChange}
+                  />
+                </div>
+
+                {/* 凭据字段配置列表 */}
+                <AnimatePresence>
+                {credentialHostingEnabled && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="overflow-hidden"
+                  >
+                  <div className="space-y-4 pt-2">
+                    {credentialFields.length === 0 ? (
+                      <p className="text-xs text-gray-400">
+                        服务配置的 <code className="px-1 py-0.5 bg-gray-100 rounded font-mono">headers</code> 中暂无字段，请先在服务配置中添加 headers。
+                      </p>
+                    ) : (
+                      <>
+                        {/* 凭据配置标题 */}
+                        <p className="text-sm font-medium text-gray-700">凭据配置</p>
+
+                        {/* 全局模式选择：一次选择，所有字段统一应用 */}
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCredentialMode('hosted');
+                              setErrors(prev => ({ ...prev, credentialFields: undefined }));
+                            }}
+                            className={`flex-1 flex flex-col items-start px-3 py-2 rounded-lg border-2 transition-all text-left ${
+                              credentialMode === 'hosted'
+                                ? 'border-blue-500 bg-blue-50/60'
+                                : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            <span className={`text-xs font-medium ${credentialMode === 'hosted' ? 'text-blue-700' : 'text-gray-700'}`}>
+                              填写真实凭据
+                            </span>
+                            <span className="text-[11px] text-gray-400 mt-0.5">用户端直接使用，无需再填写</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCredentialMode('placeholder');
+                              setErrors(prev => ({ ...prev, credentialFields: undefined }));
+                            }}
+                            className={`flex-1 flex flex-col items-start px-3 py-2 rounded-lg border-2 transition-all text-left ${
+                              credentialMode === 'placeholder'
+                                ? 'border-blue-500 bg-blue-50/60'
+                                : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            <span className={`text-xs font-medium ${credentialMode === 'placeholder' ? 'text-blue-700' : 'text-gray-700'}`}>
+                              保留占位符
+                            </span>
+                            <span className="text-[11px] text-gray-400 mt-0.5">用户端自行填写凭据</span>
+                          </button>
+                        </div>
+
+                        {/* 选择「填写真实凭据」时，展示多行 key/value 输入 */}
+                        {credentialMode === 'hosted' && (
+                          <div className="space-y-2">
+                            {credentialFields.map((field) => (
+                              <div key={field.headerKey} className="flex items-center gap-2">
+                                <span className="w-40 shrink-0 px-2 py-2 text-xs font-mono bg-gray-100 border border-gray-300 rounded-md text-gray-700 text-left truncate block" title={field.headerKey}>
+                                  {field.headerKey}
+                                </span>
+                                <div className="flex-1">
+                                  <input
+                                    type="text"
+                                    value={field.value ?? ''}
+                                    onChange={(e) => {
+                                      setCredentialFields(prev =>
+                                        prev.map(f => f.headerKey === field.headerKey ? { ...f, value: e.target.value } : f)
+                                      );
+                                      if (errors.credentialFields?.[field.headerKey]) {
+                                        setErrors(prev => {
+                                          const cf = { ...(prev.credentialFields ?? {}) };
+                                          delete cf[field.headerKey];
+                                          return { ...prev, credentialFields: cf };
+                                        });
+                                      }
+                                    }}
+                                    placeholder="请输入真实凭据"
+                                    className={`w-full px-3 py-2 text-sm font-mono bg-white border rounded-md outline-none focus:ring-2 focus:ring-blue-500/20 ${
+                                      errors.credentialFields?.[field.headerKey] ? 'border-red-400' : 'border-gray-300'
+                                    }`}
+                                    disabled={validatingKey === field.headerKey}
+                                  />
+                                  {errors.credentialFields?.[field.headerKey] && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.credentialFields[field.headerKey]}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            <p className="text-xs text-gray-400 mt-1">必须填写真实凭据，填写错误将导致调用失败</p>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* IP 白名单 */}
+                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                      <label className="text-sm font-medium text-gray-700">IP 白名单</label>
+                      <p className="text-xs text-gray-400">
+                        仅允许以下 IP 地址访问该 MCP 服务，支持单个 IP 或 CIDR 格式，不填写则所有 IP 均可访问
+                      </p>
+                      <div className="space-y-2">
+                        {ipWhitelist.map((ip, ipIdx) => (
+                          <div key={ipIdx} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={ip}
+                              onChange={(e) => {
+                                const next = [...ipWhitelist];
+                                next[ipIdx] = e.target.value;
+                                setIpWhitelist(next);
+                              }}
+                              placeholder="e.g., 192.168.1.100 或 10.0.0.0/8"
+                              className="flex-1 px-3 py-2 text-sm font-mono border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500/20"
+                            />
+                            {ipWhitelist.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => setIpWhitelist(ipWhitelist.filter((_, i) => i !== ipIdx))}
+                                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setIpWhitelist([...ipWhitelist, ''])}
+                          className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 transition-colors mt-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          添加 IP
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  </motion.div>
+                )}
+                </AnimatePresence>
+              </div>
+            </div>
+            {/* ── 底部按钮（第一步） ──────────── */}
+            <div className="sticky bottom-0 bg-white pt-4 pb-6 border-t border-gray-200 flex justify-end gap-3 px-6">
+              <Button variant="claw-outline" onClick={() => onOpenChange(false)}>
+                取消
+              </Button>
+              <Button
+                variant="dialog-confirm"
+                onClick={handleNext}
+                disabled={validatingKey !== null}
+              >
+                {validatingKey !== null ? '校验中…' : '下一步'}
+              </Button>
+            </div>
           </motion.div>
         )}
 
@@ -863,13 +946,13 @@ export default function MCPAddDialog({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="space-y-4"
+            className="flex flex-col min-h-0 flex-1"
           >
-            <div className="space-y-4">
-              {/* ── 使用说明 (Markdown) ────────────────── */}
+            <div className="flex-1 overflow-y-auto space-y-5 px-6">
+              {/* 使用说明 */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-[#0A0A0A]">使用说明</h3>
+                  <Label className="text-base font-semibold">使用说明</Label>
                   <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                     <button
                       type="button"
@@ -903,11 +986,11 @@ export default function MCPAddDialog({
                     value={usageDoc}
                     onChange={(e) => setUsageDoc(e.target.value)}
                     placeholder="# 使用说明&#10;&#10;在此编写 Markdown 格式的使用说明..."
-                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto rounded-[4px] border-gray-200 bg-white"
+                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto"
                     rows={10}
                   />
                 ) : (
-                  <div className="border border-gray-200 rounded-xl p-4 max-h-[240px] overflow-y-auto bg-white">
+                  <div className="border border-gray-200 rounded-md p-4 max-h-[240px] overflow-y-auto bg-white">
                     {usageDoc.trim() ? (
                       <MDXRenderer content={usageDoc} />
                     ) : (
@@ -917,10 +1000,10 @@ export default function MCPAddDialog({
                 )}
               </div>
 
-              {/* ── 工具说明 (Markdown) ────────────────── */}
+              {/* 工具说明 */}
               <div className="space-y-2 border-t border-gray-200 pt-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-[#0A0A0A]">工具说明</h3>
+                  <Label className="text-base font-semibold">工具说明</Label>
                   <div className="flex items-center gap-0.5 bg-gray-200/60 rounded p-0.5">
                     <button
                       type="button"
@@ -954,11 +1037,11 @@ export default function MCPAddDialog({
                     value={toolDoc}
                     onChange={(e) => setToolDoc(e.target.value)}
                     placeholder="# 工具列表&#10;&#10;在此编写 Markdown 格式的工具说明..."
-                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto rounded-[4px] border-gray-200 bg-white"
+                    className="mt-1 font-mono text-xs max-h-[240px] overflow-y-auto"
                     rows={10}
                   />
                 ) : (
-                  <div className="border border-gray-200 rounded-xl p-4 max-h-[240px] overflow-y-auto bg-white">
+                  <div className="border border-gray-200 rounded-md p-4 max-h-[240px] overflow-y-auto bg-white">
                     {toolDoc.trim() ? (
                       <MDXRenderer content={toolDoc} />
                     ) : (
@@ -969,31 +1052,24 @@ export default function MCPAddDialog({
               </div>
             </div>
 
+            {/* 底部按钮（第二步） */}
+            <div className="sticky bottom-0 bg-white pt-4 pb-6 border-t border-gray-200 flex justify-between px-6">
+              <Button variant="claw-outline" onClick={handleBack}>
+                上一步
+              </Button>
+              <div className="flex gap-3">
+                <Button variant="claw-outline" onClick={() => onOpenChange(false)}>
+                  取消
+                </Button>
+                <Button variant="dialog-confirm" onClick={handleSubmit}>
+                  创建 MCP
+                </Button>
+              </div>
+            </div>
           </motion.div>
         )}
         </AnimatePresence>
-      </DialogBody>
-
-      <DialogFooter className="items-center">
-        <Button variant="outline" onClick={() => onOpenChange(false)}>
-          取消
-        </Button>
-        {step === 2 && (
-          <Button variant="outline" onClick={handleBack}>
-            上一步
-          </Button>
-        )}
-        {step === 1 ? (
-          <Button variant="dialog-confirm" onClick={handleNext}>
-            下一步
-          </Button>
-        ) : (
-          <Button variant="dialog-confirm" onClick={handleSubmit}>
-            创建 MCP
-          </Button>
-        )}
-      </DialogFooter>
-    </DialogContent>
+      </DialogContent>
     </Dialog>
   );
 }

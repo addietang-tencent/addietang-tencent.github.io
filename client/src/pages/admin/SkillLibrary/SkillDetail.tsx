@@ -11,6 +11,7 @@ import { StatusTag } from '@/components/ui/status-tag';
 import { Badge } from '@/components/ui/badge';
 import { MOCK_SKILLS, DEFAULT_CATEGORIES, MOCK_GROUPS, MOCK_OPENCLAW_INSTANCES } from './mockData';
 import BatchDistributeDialog from './BatchDistributeDialog';
+import BatchDeleteDialog from './BatchDeleteDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
 import MDXRenderer from '@/components/MDXRenderer';
@@ -92,6 +93,7 @@ interface SkillDetailProps {
   defaultTab?: string;
   onSkillUpdate?: (updatedSkill: Skill) => void;
   onSkillDelete?: (skillId: string) => void;
+  securityServiceActive?: boolean;
 }
 
 // hljs 亮色主题样式
@@ -127,8 +129,9 @@ const hljsStyle: Record<string, React.CSSProperties> = {
   'hljs-strong': { fontWeight: 'bold' },
 };
 
-export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSkillUpdate, onSkillDelete }: SkillDetailProps) {
+export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSkillUpdate, onSkillDelete, securityServiceActive = false }: SkillDetailProps) {
   const [distributeDialogOpen, setDistributeDialogOpen] = useState(false);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -139,6 +142,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
   const [detailSearchQuery, setDetailSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(defaultTab || 'overview');
   const [selectedVersion, setSelectedVersion] = useState<string>('');
+  /** 记录类型筛选：全部 / 下发记录 / 卸载记录 */
+  const [recordTypeFilter, setRecordTypeFilter] = useState<'all' | 'distribute' | 'delete'>('all');
   const [fileViewMode, setFileViewMode] = useState<'preview' | 'source'>('preview');
 
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
@@ -159,8 +164,8 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     return () => window.removeEventListener('distribution-cache-updated', handler);
   }, [refreshRecords]);
 
-  // 是否有进行中的下发任务
-  const hasInProgress = distributionRecords.some(r => r.status === 'distributing');
+  // 是否有进行中的下发或卸载任务
+  const hasInProgress = distributionRecords.some(r => r.status === 'distributing' || r.status === 'deleting');
   
   // 先从 props 传入的 skills 中查找，找不到再从 localStorage 缓存中查找
   const skill = useMemo(() => {
@@ -185,7 +190,23 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     }
     return found;
   }, [skillId, skillsArray]);
-  
+
+  // 本地安全检测状态覆盖（点击检测后立即生效，不依赖父组件 re-render）
+  const [localSecurityOverride, setLocalSecurityOverride] = useState<Skill['securityInfo'] | null>(null);
+  // 当 skillId 变化时重置本地覆盖
+  useEffect(() => {
+    setLocalSecurityOverride(null);
+  }, [skillId]);
+
+  // 合并后的 skill（本地覆盖优先）
+  const effectiveSkill = useMemo(() => {
+    if (!skill) return skill;
+    if (localSecurityOverride) {
+      return { ...skill, securityInfo: localSecurityOverride };
+    }
+    return skill;
+  }, [skill, localSecurityOverride]);
+
   useEffect(() => {
     if (skill?.versions && skill.versions.length > 0 && !selectedVersion) {
       setSelectedVersion(skill.versions[0]);
@@ -390,6 +411,108 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     simulateDistribution(recordId, failedInstances.length);
   };
 
+  // ========== 批量卸载实例 ==========
+
+  /** 从下发记录中聚合已下发成功的实例列表（用于卸载弹窗） */
+  const distributedInstancesForDelete = useMemo(() => {
+    // 从所有下发记录中找出成功下发的实例，去重
+    const instanceMap = new Map<string, any>();
+    distributionRecords
+      .filter(r => (r.type || 'distribute') === 'distribute') // 只看下发记录
+      .forEach(r => {
+        r.instances.forEach(inst => {
+          if (inst.distributionStatus === 'success' && !instanceMap.has(inst.id)) {
+            // 尝试从 MOCK_OPENCLAW_INSTANCES 获取更多信息
+            const fullInst = MOCK_OPENCLAW_INSTANCES.find(i => i.id === inst.id);
+            const groupName = fullInst?.groupIds?.[0]
+              ? MOCK_GROUPS.find(g => g.id === fullInst.groupIds[0])?.name
+              : undefined;
+            instanceMap.set(inst.id, {
+              id: inst.id,
+              name: inst.name,
+              createdBy: inst.createdBy || 'admin',
+              groupName: groupName || '全部用户',
+              distributedVersion: skill?.version,
+              distributedTime: r.timestamp,
+              deleteStatus: 'not_deleted' as const,
+            });
+          }
+        });
+      });
+    return Array.from(instanceMap.values());
+  }, [distributionRecords, skill?.version]);
+
+  const handleDeleteStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'deleting',
+      type: 'delete',
+      operator: 'yequanzheng',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as DistributionStatus, // 复用状态表示进行中
+      })),
+    };
+
+    addDistributionRecord(newRecord);
+    setActiveDistributionId(recordId);
+    setBatchDeleteDialogOpen(false);
+
+    // 模拟卸载进度
+    simulateDeletion(recordId, selectedInstanceIds.length);
+  };
+
+  const simulateDeletion = (recordId: string, totalCount: number) => {
+    let completed = 0;
+    const failReasons = ['实例离线', '权限不足', '技能被占用', '网络超时', '实例已停止'];
+    const interval = setInterval(() => {
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
+        clearInterval(interval);
+
+        // 90% 成功，10% 失败
+        const results = Array.from({ length: totalCount }, () => Math.random() < 0.9);
+        const successCount = results.filter(Boolean).length;
+        const failedCount = totalCount - successCount;
+
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: 'success' as DistributionStatus,
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: (results[idx] ? 'success' : 'failed') as DistributionStatus,
+            failReason: results[idx] ? undefined : failReasons[Math.floor(Math.random() * failReasons.length)],
+          })),
+        }));
+      } else {
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
+        }));
+      }
+    }, 800);
+  };
+
+  /** 根据记录类型筛选后的记录列表 */
+  const filteredRecords = useMemo(() => {
+    if (recordTypeFilter === 'all') return distributionRecords;
+    return distributionRecords.filter(r => (r.type || 'distribute') === recordTypeFilter);
+  }, [distributionRecords, recordTypeFilter]);
+
   // 下载 Skill
   const handleDownload = async () => {
     if (!skill) return;
@@ -404,21 +527,88 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
     }
   };
 
-  // 提交安全检测（只更新状态为 scanning，由父组件 SkillListTab 的 useEffect 统一管理自动完成）
+  // 提交安全检测（更新本地状态立即生效 + 通知父组件 + 10s后mock完成）
   const handleSecurityScan = () => {
     if (!skill) return;
     setSecurityScanDialogOpen(false);
     toast.success('已提交安全检测，预计 5 分钟后完成');
 
-    // 立即变为 scanning，通过 onSkillUpdate 同步给父组件
+    const newSecurityInfo = {
+      overallStatus: 'scanning' as const,
+      engines: [],
+    };
+    // 本地立即生效
+    setLocalSecurityOverride(newSecurityInfo);
+
+    // 同步给父组件（如果传了 onSkillUpdate）
     const updatedSkill: Skill = {
       ...skill,
-      securityInfo: {
-        overallStatus: 'scanning',
-        engines: [],
-      },
+      securityInfo: newSecurityInfo,
     };
     if (onSkillUpdate) onSkillUpdate(updatedSkill);
+
+    // 10s 后 mock 完成检测，随机生成结果
+    setTimeout(() => {
+      const rand = Math.random();
+      let result: 'safe' | 'suspicious' | 'malicious';
+      if (rand < 0.5) result = 'safe';
+      else if (rand < 0.8) result = 'suspicious';
+      else result = 'malicious';
+
+      const safeDims = [
+        { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+        { name: '命令执行风险', status: 'safe' as const, detail: '未检测到危险的系统命令调用或子进程执行操作' },
+        { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+        { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+        { name: '可疑编码/混淆', status: 'safe' as const, detail: '未发现可疑的代码编码混淆或加密逃逸技术' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+      const suspiciousDims = [
+        { name: '供应链风险', status: 'safe' as const, detail: '未发现可疑的第三方依赖引入或供应链污染行为' },
+        { name: '命令执行风险', status: 'suspicious' as const, detail: '检测到潜在的系统命令调用，存在一定风险' },
+        { name: '网络请求与数据外传', status: 'safe' as const, detail: '未发现未经授权的网络请求或敏感数据外传行为' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'safe' as const, detail: '未发现试图篡改 AI Agent 行为的 Prompt 注入指令' },
+        { name: '远程脚本下载执行', status: 'safe' as const, detail: '未检测到从远程服务器下载并执行脚本的行为' },
+        { name: '可疑编码/混淆', status: 'suspicious' as const, detail: '发现部分代码使用了 Base64 编码包裹，需人工确认' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+      const maliciousDims = [
+        { name: '供应链风险', status: 'malicious' as const, detail: '发现恶意第三方依赖注入，存在供应链污染' },
+        { name: '命令执行风险', status: 'malicious' as const, detail: '检测到危险的系统命令调用，执行反弹 shell' },
+        { name: '网络请求与数据外传', status: 'malicious' as const, detail: '发现向外部 C2 服务器发送敏感数据' },
+        { name: '文件操作与敏感路径访问', status: 'safe' as const, detail: '未检测到对敏感系统路径或凭证文件的异常访问' },
+        { name: 'Prompt 注入风险', status: 'suspicious' as const, detail: '发现可能篡改 AI Agent 行为的指令片段' },
+        { name: '远程脚本下载执行', status: 'malicious' as const, detail: '检测到从远程服务器下载并执行恶意脚本' },
+        { name: '可疑编码/混淆', status: 'malicious' as const, detail: '发现大量代码使用多层编码混淆，隐藏恶意逻辑' },
+        { name: '其他安全风险', status: 'safe' as const, detail: '未检测到其他类别的异常安全风险行为' },
+      ];
+
+      const dims = result === 'safe' ? safeDims : result === 'suspicious' ? suspiciousDims : maliciousDims;
+      const score2 = result === 'safe' ? 85 : result === 'suspicious' ? 55 : 15;
+
+      const completedSecurityInfo = {
+        overallStatus: result,
+        contentHash: Math.random().toString(36).slice(2, 18),
+        engines: [
+          { engineName: '科恩实验室', status: 'safe' as const, reportUrl: '#', score: 92, dimensions: safeDims },
+          { engineName: '云鼎实验室', status: result, reportUrl: '#', score: score2, dimensions: dims },
+        ],
+      };
+
+      // 本地更新
+      setLocalSecurityOverride(completedSecurityInfo);
+
+      // 同步给父组件
+      if (onSkillUpdate) {
+        onSkillUpdate({ ...skill, securityInfo: completedSecurityInfo });
+      }
+
+      const resultLabel = result === 'safe' ? '安全' : result === 'suspicious' ? '可疑' : '恶意';
+      toast.info(`「${skill.name}」安全检测完成：${resultLabel}`);
+    }, 10000);
   };
 
   // 更新 Skill 回调
@@ -487,19 +677,33 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
               </h1>
               {/* 安全状态徽标 */}
               {(() => {
-                const secStatus = skill.securityInfo?.overallStatus || 'not_scanned';
+                const secStatus = effectiveSkill?.securityInfo?.overallStatus || 'not_scanned';
                 const statusInfo = SECURITY_STATUS_MAP[secStatus];
                 if (secStatus === 'not_scanned') {
                   return (
                     <span className="inline-flex items-center gap-1.5">
                       <StatusTag mode="fill" variant="gray">未检测</StatusTag>
-                      <button
-                        onClick={() => setSecurityScanDialogOpen(true)}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-[#355EF1] bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
-                      >
-                        <ScanSearch className="w-3 h-3" />
-                        检测
-                      </button>
+                      {securityServiceActive ? (
+                        <button
+                          onClick={() => setSecurityScanDialogOpen(true)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-[#355EF1] bg-blue-50 hover:bg-blue-100 rounded-full transition-colors"
+                        >
+                          <ScanSearch className="w-3 h-3" />
+                          检测
+                        </button>
+                      ) : (
+                        <Tooltip delayDuration={300}>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium text-[#A3A3A3] bg-gray-100 rounded-full cursor-not-allowed">
+                              <ScanSearch className="w-3 h-3" />
+                              检测
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs max-w-[280px]">
+                            安全检测服务尚未开通，请前往技能库列表页右上角免费开通试用（26年6月30日前1000次免费试用）。
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
                     </span>
                   );
                 }
@@ -512,7 +716,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                   );
                 }
                 const IconComp = secStatus === 'safe' ? ShieldCheck : secStatus === 'suspicious' ? ShieldAlert : ShieldX;
-                const reportUrl = skill.securityInfo?.engines?.[0]?.reportUrl;
+                const reportUrl = effectiveSkill?.securityInfo?.engines?.[0]?.reportUrl;
                 return (
                   <span className="inline-flex items-center gap-1.5">
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 ${statusInfo.bgColor} ${statusInfo.color} text-xs font-medium rounded-full`}>
@@ -610,6 +814,29 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                 </Tooltip>
               </TooltipProvider>
 
+              <TooltipProvider>
+                <Tooltip delayDuration={1000}>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        variant="claw-outline"
+                        size="claw"
+                        onClick={() => setBatchDeleteDialogOpen(true)}
+                        disabled={hasInProgress || distributedInstancesForDelete.length === 0}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        {distributionRecords.some(r => r.status === 'deleting') ? '卸载中...' : '批量卸载'}
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {(hasInProgress || distributedInstancesForDelete.length === 0) && (
+                    <TooltipContent>
+                      {hasInProgress ? '有任务进行中，请等待完成' : '暂无已下发的实例'}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+
               <Button
                 variant="claw-primary"
                 size="claw"
@@ -635,7 +862,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           {[
             { id: "overview", label: "概述" },
             { id: "files", label: "文件列表" },
-            { id: "distribution", label: "下发记录" },
+            { id: "distribution", label: "下发和卸载记录" },
           ].map((t) => {
             const active = t.id === activeTab;
             return (
@@ -665,7 +892,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           <TabsList className="hidden">
             <TabsTrigger value="overview">概述</TabsTrigger>
             <TabsTrigger value="files">文件列表</TabsTrigger>
-            <TabsTrigger value="distribution">下发记录</TabsTrigger>
+            <TabsTrigger value="distribution">下发和卸载记录</TabsTrigger>
           </TabsList>
 
           {/* 概述 Tab */}
@@ -880,36 +1107,79 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
             <SurfaceCard className="p-6">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-[#0A0A0A]">下发记录</h3>
+                <h3 className="font-semibold text-[#0A0A0A]">下发和卸载记录</h3>
+              </div>
+
+              {/* 记录类型筛选 */}
+              <div className="inline-flex items-center gap-1 p-1 rounded-[4px] w-fit" style={{ background: "#F5F5F5" }}>
+                {([
+                  { key: 'all', label: '全部' },
+                  { key: 'distribute', label: '下发记录' },
+                  { key: 'delete', label: '卸载记录' },
+                ] as const).map(item => (
+                  <button
+                    key={item.key}
+                    onClick={() => setRecordTypeFilter(item.key)}
+                    className={`px-3 py-1 text-xs font-medium rounded-[3px] transition-all duration-150 ${
+                      recordTypeFilter === item.key
+                        ? 'bg-white text-[#0A0A0A]'
+                        : 'text-[#737373] hover:text-[#0A0A0A]'
+                    }`}
+                    style={recordTypeFilter === item.key ? { boxShadow: "var(--shadow-segment)" } : undefined}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="space-y-3 mt-4">
-              {distributionRecords.length === 0 ? (
+              {filteredRecords.length === 0 ? (
                 <div className="text-center py-8 bg-gray-50 rounded-[4px]">
-                  <p className="text-[#737373]">还没有下发记录</p>
+                  <p className="text-[#737373]">
+                    {recordTypeFilter === 'all' ? '还没有记录' : recordTypeFilter === 'distribute' ? '还没有下发记录' : '还没有卸载记录'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {distributionRecords.map((record, idx) => {
+                  {filteredRecords.map((record, idx) => {
                     const progress = record.totalCount > 0 ? Math.round((record.successCount / record.totalCount) * 100) : 0;
+                    const isDeleteRecord = (record.type || 'distribute') === 'delete';
+                    const isInProgress = record.status === 'distributing' || record.status === 'deleting';
                     return (
                       <div key={record.id} className="border border-gray-200 rounded-[4px] p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <p className="text-sm font-semibold text-[#0A0A0A]">
-                              #{idx + 1} · v{skill.version} {new Date(record.timestamp).toLocaleString('zh-CN')}
+                              #{idx + 1} · {(record.type || 'distribute') === 'distribute' ? `v${skill.version} ` : ''}{new Date(record.timestamp).toLocaleString('zh-CN')}
                             </p>
+                            {record.operator && (
+                              <p className="text-xs text-green-600 mt-0.5">操作人：{record.operator}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className={`inline-block px-3 py-1 rounded text-xs font-medium ${
-                              record.status === 'distributing' ? 'bg-blue-50 text-[#355EF1]' :
-                              record.successCount === record.totalCount ? 'bg-green-50 text-green-700' :
-                              'bg-yellow-50 text-yellow-700'
+                              isDeleteRecord
+                                ? (record.status === 'deleting'
+                                  ? 'bg-red-100 text-red-700'
+                                  : record.successCount === 0
+                                    ? 'bg-red-50 text-red-700'
+                                    : record.failedCount === 0
+                                      ? 'bg-green-50 text-green-700'
+                                      : 'bg-yellow-50 text-yellow-700')
+                                : (record.status === 'distributing'
+                                  ? 'bg-blue-50 text-[#355EF1]'
+                                  : record.successCount === record.totalCount
+                                    ? 'bg-green-50 text-green-700'
+                                    : 'bg-yellow-50 text-yellow-700')
                             }`}>
-                              {record.status === 'distributing'
-                                ? `下发中 ${progress}%`
-                                : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`}
+                              {isDeleteRecord
+                                ? (record.status === 'deleting'
+                                  ? `卸载中 ${progress}%`
+                                  : `卸载完成，${record.successCount}个卸载成功，${record.failedCount}个失败`)
+                                : (record.status === 'distributing'
+                                  ? `下发中 ${progress}%`
+                                  : `下发完成，${record.successCount}个下发成功，${record.failedCount}个失败`)}
                             </span>
                             <Button 
                               size="sm" 
@@ -927,12 +1197,12 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                           </div>
                         </div>
                         
-                        {record.status === 'distributing' && (
+                        {isInProgress && (
                           <>
                             <div className="mb-2">
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
-                                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                  className={`h-2 rounded-full transition-all duration-300 ${isDeleteRecord ? 'bg-red-500' : 'bg-blue-600'}`}
                                   style={{ width: `${progress}%` }}
                                 />
                               </div>
@@ -965,6 +1235,17 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
         groups={MOCK_GROUPS}
       />
 
+      {/* 批量卸载实例对话框 */}
+      <BatchDeleteDialog
+        open={batchDeleteDialogOpen}
+        onOpenChange={setBatchDeleteDialogOpen}
+        skillName={skill.name}
+        skillVersion={skill.version}
+        distributedInstances={distributedInstancesForDelete}
+        groups={MOCK_GROUPS}
+        onDeleteStart={handleDeleteStart}
+      />
+
       {/* 更新对话框 */}
       {skill && (
         <SkillUpdateDialog
@@ -976,6 +1257,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
           onDefaultSecurityScanChange={(value) => {
             localStorage.setItem('skill_default_security_scan', String(value));
           }}
+          securityServiceActive={securityServiceActive}
         />
       )}
 
@@ -991,7 +1273,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="sm:max-w-[720px] max-h-[80vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>下发详情</DialogTitle>
+            <DialogTitle>{activeDistribution && (activeDistribution.type || 'distribute') === 'delete' ? '卸载详情' : '下发详情'}</DialogTitle>
           </DialogHeader>
           
           {activeDistribution && (
@@ -1015,7 +1297,7 @@ export default function SkillDetail({ skillId, onBack, skills, defaultTab, onSki
                     <SelectItem value="all">全部</SelectItem>
                     <SelectItem value="success">成功</SelectItem>
                     <SelectItem value="failed">失败</SelectItem>
-                    <SelectItem value="distributing">下发中</SelectItem>
+                    <SelectItem value="distributing">{activeDistribution && (activeDistribution.type || 'distribute') === 'delete' ? '卸载中' : '下发中'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

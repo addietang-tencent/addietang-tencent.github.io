@@ -146,6 +146,18 @@ export const MCP_TRANSPORT_MAP: Record<MCPTransportType, { label: string; descri
   'stdio':            { label: 'STDIO',            description: '本地命令，通过标准输入输出通信' },
 };
 
+/**
+ * MCP 凭据字段（从服务配置 headers 中提取）
+ * - headerKey: headers 中的 key，如 "Authorization"
+ * - value: 当全局模式为 'hosted' 时用户填写的真实凭据内容
+ */
+export interface MCPCredentialField {
+  /** headers 中的 key，如 "Authorization" */
+  headerKey: string;
+  /** 当全局模式为 'hosted' 时用户填写的真实凭据内容 */
+  value?: string;
+}
+
 /** MCP 服务配置 */
 export interface MCPService {
   /** 服务标识（唯一 key），对应 JSON 中 mcp.servers.{name}，创建后不可修改 */
@@ -166,10 +178,13 @@ export interface MCPService {
   toolDoc?: string;
   /** 是否开启凭据托管 */
   credentialHostingEnabled?: boolean;
+  /** 凭据托管模式：'hosted' = 填写真实凭据；'placeholder' = 保留占位符 */
+  credentialMode?: 'hosted' | 'placeholder';
   /** IP 白名单（仅在 credentialHostingEnabled 为 true 时有效） */
   ipWhitelist?: string[];
-  /** 凭据 Token（仅在 credentialHostingEnabled 为 true 时有效） */
-  token?: string;
+  /** 凭据字段列表（从服务配置 headers 中提取，仅在 credentialHostingEnabled 为 true 且 credentialMode='hosted' 时有效） */
+  credentialFields?: MCPCredentialField[];
+
   createdAt: Date;
   updatedAt: Date;
 }

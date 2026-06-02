@@ -8,7 +8,7 @@ import { SegmentGroup, SegmentOption } from '@/components/ui/segment';
 
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableActionCell } from '@/components/ui/table';
 
-import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X } from 'lucide-react';
+import { Search, Grid3x3, List, Send, MoreHorizontal, Download, Trash2, Pencil, Loader, ChevronDown, Check, Edit2, ShieldCheck, ShieldAlert, ShieldX, ScanSearch, ExternalLink, Info, Settings2, X, PackageX } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogBody, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -40,9 +40,11 @@ import EditScopePopover from './EditScopeDialog';
 import SkillUpdateDialog from './SkillUpdateDialog';
 import DeleteSkillDialog from './DeleteSkillDialog';
 import CategoryManagementDialog from './CategoryManagementDialog';
+import BatchDeleteDialog from './BatchDeleteDialog';
 import { Skill, type SkillScope, SECURITY_STATUS_MAP, type SecurityStatus } from './types';
 import {
   getSkillDistributionSummary,
+  getAllDistributionRecords,
   addDistributionRecord,
   updateDistributionRecord,
   createDistributionRecordId,
@@ -148,6 +150,8 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
   const [updateSkillId, setUpdateSkillId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSkillId, setDeleteSkillId] = useState<string | null>(null);
+  const [uninstallDialogOpen, setUninstallDialogOpen] = useState(false);
+  const [uninstallSkillId, setUninstallSkillId] = useState<string | null>(null);
   const [downloadingSkillId, setDownloadingSkillId] = useState<string | null>(null);
   // 安全检测确认弹窗
   const [securityScanDialogOpen, setSecurityScanDialogOpen] = useState(false);
@@ -571,6 +575,101 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
     toast.success(`Skill「${skillName}」已删除`);
     setDeleteDialogOpen(false);
     setDeleteSkillId(null);
+  };
+
+  // 卸载 Skill（从实例上移除）
+  const handleUninstall = (skillId: string) => {
+    setUninstallSkillId(skillId);
+    setUninstallDialogOpen(true);
+  };
+
+  /** 从下发记录中聚合某 Skill 已下发成功的实例列表（用于卸载弹窗） */
+  const distributedInstancesForUninstall = useMemo(() => {
+    if (!uninstallSkillId) return [];
+    const allRecords = getAllDistributionRecords();
+    const instanceMap = new Map<string, any>();
+    allRecords
+      .filter(r => r.skillId === uninstallSkillId && (r.type || 'distribute') === 'distribute')
+      .forEach(r => {
+        r.instances.forEach(inst => {
+          if (inst.distributionStatus === 'success' && !instanceMap.has(inst.id)) {
+            const fullInst = MOCK_OPENCLAW_INSTANCES.find(i => i.id === inst.id);
+            const groupName = fullInst?.groupIds?.[0]
+              ? MOCK_GROUPS.find(g => g.id === fullInst.groupIds[0])?.name
+              : undefined;
+            const skill = skills.find(s => s.id === uninstallSkillId);
+            instanceMap.set(inst.id, {
+              id: inst.id,
+              name: inst.name,
+              createdBy: inst.createdBy || 'admin',
+              groupName: groupName || '全部用户',
+              distributedVersion: skill?.version,
+              distributedTime: r.timestamp,
+              deleteStatus: 'not_deleted' as const,
+            });
+          }
+        });
+      });
+    return Array.from(instanceMap.values());
+  }, [uninstallSkillId, skills]);
+
+  const handleUninstallStart = (selectedInstanceIds: string[], selectedInstancesData: any[]) => {
+    if (!uninstallSkillId) return;
+    const recordId = createDistributionRecordId();
+    const newRecord: CachedDistributionRecord = {
+      id: recordId,
+      skillId: uninstallSkillId,
+      timestamp: new Date().toISOString(),
+      totalCount: selectedInstanceIds.length,
+      successCount: 0,
+      failedCount: 0,
+      inProgressCount: selectedInstanceIds.length,
+      status: 'distributing',
+      type: 'delete',
+      operator: 'admin',
+      instances: selectedInstancesData.map(inst => ({
+        id: inst.id,
+        name: inst.name,
+        createdBy: inst.createdBy || 'admin',
+        distributionStatus: 'distributing' as const,
+      })),
+    };
+    addDistributionRecord(newRecord);
+    setUninstallDialogOpen(false);
+    toast.success('已开始卸载流程');
+
+    const totalCount = selectedInstanceIds.length;
+    let completed = 0;
+    const failReasons = ['实例离线', '权限不足', '技能被占用', '网络超时', '实例已停止'];
+    const interval = setInterval(() => {
+      completed += Math.floor(Math.random() * 3) + 1;
+      if (completed >= totalCount) {
+        completed = totalCount;
+        clearInterval(interval);
+        const results = Array.from({ length: totalCount }, () => Math.random() < 0.9);
+        const successCount = results.filter(Boolean).length;
+        const failedCount = totalCount - successCount;
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount,
+          failedCount,
+          inProgressCount: 0,
+          status: 'success',
+          instances: record.instances.map((inst, idx) => ({
+            ...inst,
+            distributionStatus: (results[idx] ? 'success' : 'failed') as 'success' | 'failed',
+            failReason: results[idx] ? undefined : failReasons[Math.floor(Math.random() * failReasons.length)],
+          })),
+        }));
+        toast.success('卸载完成');
+      } else {
+        updateDistributionRecord(recordId, (record) => ({
+          ...record,
+          successCount: completed,
+          inProgressCount: totalCount - completed,
+        }));
+      }
+    }, 800);
   };
 
   // 下载 Skill
@@ -1052,6 +1151,13 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                           下载
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                          onClick={() => handleUninstall(skill.id)}
+                          disabled={distributing}
+                        >
+                          <PackageX className="w-4 h-4 mr-2" />
+                          卸载
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                           onClick={() => handleDelete(skill.id)}
                           disabled={distributing}
                         >
@@ -1312,6 +1418,13 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
                               下载
                             </DropdownMenuItem>
                             <DropdownMenuItem
+                              onClick={() => handleUninstall(skill.id)}
+                              disabled={distributing}
+                            >
+                              <PackageX className="w-4 h-4 mr-2" />
+                              卸载
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
                               onClick={() => handleDelete(skill.id)}
                               disabled={distributing}
                               className="text-red-600 focus:text-red-600"
@@ -1355,6 +1468,22 @@ export default function SkillListTab({ onSelectSkill, securityServiceActive: sec
           onDistributionStart={handleDistributeStart}
           instances={MOCK_OPENCLAW_INSTANCES}
           groups={MOCK_GROUPS}
+        />
+      )}
+
+      {/* 批量卸载对话框 */}
+      {uninstallSkillId && (
+        <BatchDeleteDialog
+          open={uninstallDialogOpen}
+          onOpenChange={(open) => {
+            setUninstallDialogOpen(open);
+            if (!open) setUninstallSkillId(null);
+          }}
+          skillName={skills.find(s => s.id === uninstallSkillId)?.name || ''}
+          skillVersion={skills.find(s => s.id === uninstallSkillId)?.version || ''}
+          distributedInstances={distributedInstancesForUninstall}
+          groups={MOCK_GROUPS}
+          onDeleteStart={handleUninstallStart}
         />
       )}
 

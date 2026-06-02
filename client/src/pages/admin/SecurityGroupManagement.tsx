@@ -449,7 +449,7 @@ const MOCK_SECURITY_GROUPS: SecurityGroup[] = [
 const MOCK_SECURITY_GROUP_DIALOG_EXTRA_CANDIDATES: SecurityGroup[] = [
   {
     name: "Office-Standard-SG",
-    remark: "办公网标准安全组，适合常规员工办公实例",
+    remark: "办公网标准安全组，适合常规用户办公实例",
     inboundCount: 4,
     outboundCount: 2,
     inboundRules: [
